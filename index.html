@@ -595,6 +595,23 @@
         <button onclick="openCategoryModal()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-xl text-xs font-semibold text-white shadow-md theme-bg"><i class="fa-solid fa-plus mr-1"></i> Add Spending Bucket</button>
       </div>
 
+      <!-- DATA BACKUP & DEVICE TRANSFER -->
+      <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-indigo-200 dark:border-indigo-900 space-y-4 shadow-sm">
+        <div>
+          <h3 class="text-md font-bold text-indigo-600 dark:text-indigo-400 theme-text"><i class="fa-solid fa-cloud-arrow-up mr-2"></i>Backup & Transfer Between Devices</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Move your FinHub data between your laptop, phone, or tablet using a backup file. Save the exported file somewhere both devices can access, such as Google Drive or iCloud.</p>
+        </div>
+        <div class="flex flex-col sm:flex-row gap-3">
+          <button onclick="exportData()" class="flex-1 px-4 py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl text-sm font-semibold text-white shadow-md theme-bg"><i class="fa-solid fa-download mr-2"></i>Export Backup</button>
+          <button onclick="document.getElementById('backup-import-file').click()" class="flex-1 px-4 py-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl text-sm font-semibold"><i class="fa-solid fa-upload mr-2"></i>Import Backup</button>
+          <input id="backup-import-file" type="file" accept=".json,application/json" class="hidden" onchange="importData(event)">
+        </div>
+        <div id="backup-status" class="w-full text-right text-[10px] text-gray-400">No exported backup recorded yet</div>
+        <div class="rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 p-3 text-xs text-amber-800 dark:text-amber-200">
+          <strong>Important:</strong> Importing replaces the data currently on this device; it does not merge two sets of changes. Export after making updates, and import that latest backup on the other device. Keep a separate backup before importing.
+        </div>
+      </div>
+
       <!-- COLOR THEME SELECTOR -->
       <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-3 shadow-sm">
         <h3 class="text-md font-bold">App Color Theme Selector</h3>
@@ -2868,19 +2885,30 @@
       state.lastBackupAt = new Date().toISOString();
       saveData();
       renderBackupStatus();
+      // Export the app's structured state, not every unrelated key in browser localStorage.
       const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href = url; a.download = 'finhub_central_backup.json'; a.click();
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `finhub_backup_${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     }
 
     function importData(e) {
-      const file = e.target.files[0];
+      const file = e.target.files && e.target.files[0];
       if (!file) return;
       const reader = new FileReader();
       reader.onload = function(evt) {
         try {
-          const loaded = JSON.parse(evt.target.result);
+          let loaded = JSON.parse(evt.target.result);
+          // Also accept the older whole-localStorage export format if one was created previously.
+          if (loaded && typeof loaded === 'object' && !Array.isArray(loaded)
+              && !Array.isArray(loaded.accounts) && typeof loaded.finhub_central_v25 === 'string') {
+            loaded = JSON.parse(loaded.finhub_central_v25);
+          }
           const requiredArrays = ['accounts', 'transactions', 'calendarBills', 'categories'];
           const valid = loaded && typeof loaded === 'object' && !Array.isArray(loaded)
             && requiredArrays.every(key => Array.isArray(loaded[key]));
