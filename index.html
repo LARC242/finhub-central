@@ -88,7 +88,7 @@
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 class="text-2xl font-bold">Financial Dashboard</h2>
-          <p class="text-sm text-gray-500 dark:text-gray-400">Executive cash flow, liquid runway, and balance monitoring</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400">A clear overview of balances, spending trends, and account activity</p>
         </div>
         <div class="flex flex-wrap items-center gap-2">
           <button onclick="toggleAllCollapsibles(true)" class="px-3 py-1.5 bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 rounded-xl text-xs font-semibold transition-colors"><i class="fa-solid fa-compress mr-1"></i> Collapse All</button>
@@ -103,6 +103,17 @@
         </div>
       </div>
 
+      <div class="flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-gray-900 p-3 rounded-xl border border-gray-200 dark:border-gray-800">
+        <div class="text-xs text-gray-500">Dashboard activity period</div>
+        <select id="dashboard-period" onchange="setDashboardPeriod(this.value)" class="text-sm bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2">
+          <option value="month">This month</option>
+          <option value="previous">Last month</option>
+          <option value="3months">Last 3 months</option>
+          <option value="6months">Last 6 months</option>
+          <option value="ytd">Year to date</option>
+        </select>
+      </div>
+
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <div class="bg-white dark:bg-gray-900 p-5 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
           <div class="text-xs font-medium text-gray-500 uppercase tracking-wider">Total Cash & Assets</div>
@@ -113,49 +124,59 @@
           <div id="dash-liabilities" class="text-xl font-bold text-rose-600 dark:text-rose-400 mt-1 accounting-num blur-target">$ - </div>
         </div>
         <div class="bg-white dark:bg-gray-900 p-5 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
-          <div class="text-xs font-medium text-gray-500 uppercase tracking-wider">Monthly Income</div>
+          <div id="dash-income-label" class="text-xs font-medium text-gray-500 uppercase tracking-wider">Income · This month</div>
           <div id="dash-income" class="text-xl font-bold text-indigo-600 dark:text-indigo-400 mt-1 accounting-num blur-target theme-text">$ - </div>
         </div>
         <div class="bg-white dark:bg-gray-900 p-5 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
-          <div class="text-xs font-medium text-gray-500 uppercase tracking-wider">Monthly Expenses</div>
+          <div id="dash-expenses-label" class="text-xs font-medium text-gray-500 uppercase tracking-wider">Expenses · This month</div>
           <div id="dash-expenses" class="text-xl font-bold text-amber-600 dark:text-amber-400 mt-1 accounting-num blur-target">$ - </div>
         </div>
         <div class="bg-white dark:bg-gray-900 p-5 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
-          <div class="text-xs font-medium text-gray-500 uppercase tracking-wider">Liquid Runway Buffer</div>
-          <div id="dash-runway" class="text-xl font-bold text-indigo-500 mt-1 theme-text">0.0 Months</div>
-          <div class="text-[10px] text-gray-400 mt-1">Planning amounts only. Enter actual due dates in the Bill & Income Calendar.</div>
+          <div class="text-xs font-medium text-gray-500 uppercase tracking-wider">Net Worth</div>
+          <div id="dash-networth" class="text-xl font-bold text-indigo-500 mt-1 accounting-num blur-target theme-text">$ - </div>
+          <div class="text-[10px] text-gray-400 mt-1">Assets less included debt accounts.</div>
         </div>
       </div>
 
-      <!-- 90-DAY ROLLING CASH FLOW FORECAST -->
+      <!-- NET WORTH TREND -->
       <div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
-        <button onclick="toggleCollapse('sec-cashflow-chart')" class="w-full p-5 flex justify-between items-center text-left border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
+        <button onclick="toggleCollapse('sec-networth-chart')" class="w-full p-5 flex justify-between items-center text-left hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
           <div class="flex items-center space-x-2">
             <i class="fa-solid fa-chart-line text-emerald-500"></i>
-            <h3 class="font-bold text-md">90-Day Rolling Checking Balance Forecast</h3>
+            <div><h3 class="font-bold text-md">Net Worth Trend</h3><p class="text-xs text-gray-400 mt-1">Based on manually recorded historical snapshots.</p></div>
           </div>
-          <i id="sec-cashflow-chart-icon" class="fa-solid fa-chevron-down text-gray-400 transition-transform"></i>
+          <i id="sec-networth-chart-icon" class="fa-solid fa-chevron-down text-gray-400 transition-transform"></i>
         </button>
-        <div id="sec-cashflow-chart-content" class="p-6 space-y-4">
-          <div class="flex justify-between items-center text-xs text-gray-400">
-            <span>Plots checking account balance dips & surges based on scheduled calendar items</span>
-            <span id="forecast-min-balance" class="font-bold text-amber-500">Min Projected Bal: $ - </span>
-          </div>
-          <div id="forecast-timeline-bars" class="flex items-end space-x-1 h-32 pt-6 border-b border-gray-200 dark:border-gray-800 overflow-x-auto custom-scrollbar"></div>
+        <div id="sec-networth-chart-content" class="p-5 border-t border-gray-200 dark:border-gray-800">
+          <div id="networth-trend-chart" class="w-full min-h-[190px]"></div>
+          <p id="networth-chart-note" class="text-[10px] text-gray-400 mt-2"></p>
         </div>
       </div>
 
-      <!-- OPTIONAL PORTFOLIO BREAKDOWN -->
+      <!-- SPENDING BY CATEGORY -->
       <div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
-        <button onclick="toggleCollapse('sec-portfolio-allocation')" class="w-full p-4 flex justify-between items-center text-left hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
-          <div>
-            <h3 class="font-bold text-sm text-indigo-600 dark:text-indigo-400 theme-text">Optional Portfolio Mix Allocation</h3>
-            <p class="text-xs text-gray-400 mt-1">An account-type breakdown; expand only if this view is useful.</p>
+        <button onclick="toggleCollapse('sec-spending-chart')" class="w-full p-5 flex justify-between items-center text-left hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
+          <div class="flex items-center space-x-2">
+            <i class="fa-solid fa-chart-column text-amber-500"></i>
+            <div><h3 class="font-bold text-md">Spending by Category</h3><p id="spending-chart-period" class="text-xs text-gray-400 mt-1">Expense transactions in the selected period.</p></div>
           </div>
-          <i id="sec-portfolio-allocation-icon" class="fa-solid fa-chevron-down text-gray-400 transition-transform"></i>
+          <i id="sec-spending-chart-icon" class="fa-solid fa-chevron-down text-gray-400 transition-transform"></i>
         </button>
-        <div id="sec-portfolio-allocation-content" class="p-5 border-t border-gray-200 dark:border-gray-800 hidden">
-          <div id="asset-allocation-bars" class="space-y-3"></div>
+        <div id="sec-spending-chart-content" class="p-5 border-t border-gray-200 dark:border-gray-800">
+          <div id="spending-category-chart" class="space-y-3"></div>
+          <div id="spending-category-detail" class="hidden mt-5 pt-4 border-t border-gray-200 dark:border-gray-800"></div>
+        </div>
+      </div>
+
+      <!-- OPTIONAL FINANCIAL TRENDS -->
+      <div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+        <button onclick="toggleCollapse('sec-extra-charts')" class="w-full p-4 flex justify-between items-center text-left hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
+          <div><h3 class="font-bold text-sm text-indigo-600 dark:text-indigo-400 theme-text">Additional Financial Trends</h3><p class="text-xs text-gray-400 mt-1">Income vs. expenses and debt payoff progress.</p></div>
+          <i id="sec-extra-charts-icon" class="fa-solid fa-chevron-down text-gray-400 transition-transform"></i>
+        </button>
+        <div id="sec-extra-charts-content" class="p-5 border-t border-gray-200 dark:border-gray-800 hidden space-y-6">
+          <div><h4 class="text-sm font-semibold mb-3">Income vs. Expenses by Month</h4><div id="income-expense-chart" class="space-y-3"></div></div>
+          <div class="border-t border-gray-200 dark:border-gray-800 pt-5"><h4 class="text-sm font-semibold mb-3">Debt Reduction Progress</h4><div id="debt-progress-chart" class="space-y-3"></div></div>
         </div>
       </div>
 
@@ -164,11 +185,13 @@
           <button onclick="toggleCollapse('sec-accounts')" class="w-full p-5 flex justify-between items-center text-left border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
             <div class="flex items-center space-x-2">
               <i class="fa-solid fa-building-columns text-indigo-500 theme-text"></i>
-              <h3 class="font-bold text-md">Account Balances & Classifications (Click to Edit / Delete)</h3>
+              <h3 class="font-bold text-md">Account Balances</h3>
+              <p class="text-xs text-gray-400 mt-1">Drag accounts to reorder. Use the switch to include or exclude an account from totals.</p>
             </div>
             <i id="sec-accounts-icon" class="fa-solid fa-chevron-down text-gray-400 transition-transform"></i>
           </button>
           <div id="sec-accounts-content" class="p-6 space-y-6">
+            <div class="flex justify-end -mt-2 mb-3"><label class="text-xs text-gray-500 flex items-center gap-2"><input id="show-excluded-accounts" type="checkbox" checked onchange="toggleExcludedAccounts(this.checked)" class="accent-indigo-600"> Show excluded accounts</label></div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div class="space-y-4">
                 <div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-800 pb-2">
@@ -203,15 +226,15 @@
       </div>
 
       <!-- HISTORICAL NET WORTH SNAPSHOTS -->
-      <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-4 shadow-sm">
-        <div class="flex justify-between items-center flex-wrap gap-3">
-          <div>
+      <div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+        <div class="w-full p-5 flex justify-between items-center gap-3 text-left">
+          <button onclick="toggleCollapse('sec-snapshots')" class="flex-1 text-left">
             <h3 class="text-md font-bold text-indigo-600 dark:text-indigo-400 theme-text"><i class="fa-solid fa-clock-rotate-left mr-2"></i>Historical Net Worth Snapshots</h3>
             <p class="text-xs text-gray-400 mt-1">Track changes in assets, liabilities and net worth over time.</p>
-          </div>
-          <button onclick="recordNetWorthSnapshot()" class="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold theme-bg"><i class="fa-solid fa-camera mr-1"></i> Record Current Snapshot</button>
+          </button>
+          <div class="flex items-center gap-3"><button onclick="recordNetWorthSnapshot()" class="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold theme-bg"><i class="fa-solid fa-camera mr-1"></i> Record Snapshot</button><button onclick="toggleCollapse('sec-snapshots')" aria-label="Expand or collapse snapshot history"><i id="sec-snapshots-icon" class="fa-solid fa-chevron-down text-gray-400 transition-transform"></i></button></div>
         </div>
-        <div id="snapshot-history-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2"></div>
+        <div id="sec-snapshots-content" class="p-5 pt-0"><div id="snapshot-history-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2"></div></div>
       </div>
     </section>
 
@@ -1011,15 +1034,20 @@
       extraPayoff: 0,
       debtStrategy: 'custom',
       collapsibles: {
-        'sec-cashflow-chart': false,
         'sec-accounts': false,
-        'sec-portfolio-allocation': true,
+        'sec-networth-chart': true,
+        'sec-spending-chart': true,
+        'sec-extra-charts': true,
+        'sec-snapshots': true,
         'sec-advanced-types': true,
         'sec-variable-budgets': false,
         'sec-upcoming-bills': false,
         'sec-debt-upcoming': false,
         'sec-debt-priority': false
       },
+      dashboardPeriod: 'month',
+      accountOrder: { assets: [], debts: [] },
+      showHiddenAccounts: true,
       netWorthSnapshots: [
         { id: 'snp1', date: '2026-09-01', netWorth: 11800, assets: 15300, debt: 3500 },
         { id: 'snp2', date: '2026-10-01', netWorth: 12450, assets: 15950, debt: 3500 }
@@ -1080,7 +1108,15 @@
 
     // Migrate optional UI preferences without changing existing financial data.
     state.collapsibles = state.collapsibles || {};
-    if (state.collapsibles['sec-portfolio-allocation'] === undefined) state.collapsibles['sec-portfolio-allocation'] = true;
+    if (state.collapsibles['sec-networth-chart'] === undefined) state.collapsibles['sec-networth-chart'] = true;
+    if (state.collapsibles['sec-spending-chart'] === undefined) state.collapsibles['sec-spending-chart'] = true;
+    if (state.collapsibles['sec-extra-charts'] === undefined) state.collapsibles['sec-extra-charts'] = true;
+    if (state.collapsibles['sec-snapshots'] === undefined) state.collapsibles['sec-snapshots'] = true;
+    state.dashboardPeriod = state.dashboardPeriod || 'month';
+    state.accountOrder = state.accountOrder || { assets: [], debts: [] };
+    state.accountOrder.assets = Array.isArray(state.accountOrder.assets) ? state.accountOrder.assets : [];
+    state.accountOrder.debts = Array.isArray(state.accountOrder.debts) ? state.accountOrder.debts : [];
+    if (state.showHiddenAccounts === undefined) state.showHiddenAccounts = true;
     if (state.collapsibles['sec-advanced-types'] === undefined) state.collapsibles['sec-advanced-types'] = true;
     state.lastBackupAt = state.lastBackupAt || null;
 
@@ -1188,154 +1224,267 @@
       applyThemeColor(state.appThemeColor || 'indigo');
     }
 
+    function getDashboardDateRange(period = state.dashboardPeriod || 'month') {
+      const now = new Date();
+      const start = new Date(now.getFullYear(), now.getMonth(), 1);
+      const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      if (period === 'previous') {
+        start.setMonth(start.getMonth() - 1);
+        end.setFullYear(start.getFullYear(), start.getMonth() + 1, 0);
+      } else if (period === '3months' || period === '6months') {
+        start.setMonth(start.getMonth() - (period === '3months' ? 2 : 5));
+      } else if (period === 'ytd') {
+        start.setMonth(0, 1);
+      }
+      const toISO = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+      return { start: toISO(start), end: toISO(end) };
+    }
+
+    function setDashboardPeriod(period) {
+      state.dashboardPeriod = period;
+      saveData();
+      renderDashboard();
+    }
+
+    function getTransactionsInDashboardPeriod(type) {
+      const range = getDashboardDateRange();
+      return state.transactions.filter(t => t.type === type && t.date >= range.start && t.date <= range.end);
+    }
+
     function renderDashboard() {
       updateSidebarNetWorth();
       const visibleAccounts = state.accounts.filter(a => !a.hidden);
-      const assets = visibleAccounts.filter(a => a.type === 'asset').reduce((s, a) => s + a.balance, 0);
-      const liabilities = visibleAccounts.filter(a => a.type === 'debt').reduce((s, a) => s + a.balance, 0);
-      const totalIncome = state.transactions.filter(t => t.type === 'Income').reduce((s, t) => s + t.amount, 0);
-      const totalExpenses = state.transactions.filter(t => t.type === 'Expense').reduce((s, t) => s + t.amount, 0);
+      const assets = visibleAccounts.filter(a => a.type === 'asset').reduce((s, a) => s + (Number(a.balance) || 0), 0);
+      const liabilities = visibleAccounts.filter(a => a.type === 'debt').reduce((s, a) => s + (Number(a.balance) || 0), 0);
+      const totalIncome = getTransactionsInDashboardPeriod('Income').reduce((s, t) => s + (Number(t.amount) || 0), 0);
+      const totalExpenses = getTransactionsInDashboardPeriod('Expense').reduce((s, t) => s + (Number(t.amount) || 0), 0);
+      const netWorth = assets - liabilities;
+      const periodLabels = { month: 'This month', previous: 'Last month', '3months': 'Last 3 months', '6months': 'Last 6 months', ytd: 'Year to date' };
+      const periodLabel = periodLabels[state.dashboardPeriod] || 'This month';
 
-      // Calculate fixed monthly bills from active ZBB template
-      const zbb = getActiveZbbTemplate();
-      const fixedMonthlyBills = (zbb.bills || []).reduce((sum, b) => sum + b.monthly, 0);
-      const liquidRunwayMonths = fixedMonthlyBills > 0 ? (assets / fixedMonthlyBills).toFixed(1) : 'N/A';
-
+      document.getElementById('dashboard-period').value = state.dashboardPeriod || 'month';
+      document.getElementById('dash-income-label').innerText = `Income · ${periodLabel}`;
+      document.getElementById('dash-expenses-label').innerText = `Expenses · ${periodLabel}`;
       document.getElementById('dash-assets').innerText = formatFinancial(assets);
       document.getElementById('dash-liabilities').innerText = formatFinancial(liabilities);
       document.getElementById('dash-income').innerText = formatFinancial(totalIncome);
       document.getElementById('dash-expenses').innerText = formatFinancial(totalExpenses, true);
-      document.getElementById('dash-runway').innerText = `${liquidRunwayMonths} Months`;
+      document.getElementById('dash-networth').innerText = formatFinancial(netWorth);
       document.getElementById('dash-asset-sum').innerText = formatFinancial(assets);
       document.getElementById('dash-debt-sum').innerText = formatFinancial(liabilities);
 
-      renderCashFlowForecastChart();
-      renderAssetAllocationBars(visibleAccounts);
-
       const varGrid = document.getElementById('dash-variance-grid');
       varGrid.innerHTML = '';
-      
+      const currentMonth = getDashboardDateRange('month');
       state.categories.forEach(bucket => {
         (bucket.subcategories || []).forEach(sub => {
-          const spent = state.transactions.filter(t => t.subcategory === sub.name && t.type === 'Expense').reduce((s, t) => s + t.amount, 0);
-          const limit = sub.limit || 0;
+          const spent = state.transactions.filter(t => t.type === 'Expense' && t.subcategory === sub.name && t.date >= currentMonth.start && t.date <= currentMonth.end).reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
+          const limit = Number(sub.limit) || 0;
           const pct = limit > 0 ? Math.min(100, Math.round((spent / limit) * 100)) : 0;
-          const statusClass = spent > limit ? 'text-rose-500 bg-rose-50 dark:bg-rose-950/40 border-rose-200' : pct > 85 ? 'text-amber-500 bg-amber-50 dark:bg-amber-950/40 border-amber-200' : 'text-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200';
-          const statusText = spent > limit ? 'Over Limit' : pct > 85 ? 'Near Limit' : 'On Track';
-
+          const statusClass = limit > 0 && spent > limit ? 'text-rose-500 bg-rose-50 dark:bg-rose-950/40 border-rose-200' : pct > 85 ? 'text-amber-500 bg-amber-50 dark:bg-amber-950/40 border-amber-200' : 'text-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200';
+          const statusText = limit <= 0 ? 'No Limit' : spent > limit ? 'Over Limit' : pct > 85 ? 'Near Limit' : 'On Track';
           varGrid.innerHTML += `
             <div class="p-3.5 rounded-xl border ${statusClass} flex flex-col justify-between">
-              <div class="flex justify-between items-center text-xs">
-                <div>
-                  <span class="font-bold text-gray-800 dark:text-gray-200">${sub.name}</span>
-                  ${sub.rollover ? '<span class="text-[9px] bg-indigo-500/20 text-indigo-400 px-1.5 py-0.5 rounded font-semibold ml-1">Rollover Cap</span>' : ''}
-                  <div class="text-[10px] text-gray-400">Bucket: ${bucket.name}</div>
-                </div>
-                <span class="font-semibold text-[10px] uppercase px-1.5 py-0.5 rounded border">${statusText}</span>
-              </div>
-              <div class="mt-2 text-xs">
-                <div class="flex justify-between text-gray-500"><span>Spent: <strong class="accounting-num">${formatFinancial(spent, true)}</strong></span><span>Limit: <strong class="accounting-num">${formatFinancial(limit)}</strong></span></div>
-                <div class="w-full bg-gray-200 dark:bg-gray-800 h-1.5 rounded-full mt-1.5 overflow-hidden">
-                  <div class="h-full ${spent > limit ? 'bg-rose-500' : 'bg-indigo-600'}" style="width: ${pct}%"></div>
-                </div>
-              </div>
-            </div>
-          `;
+              <div class="flex justify-between items-center text-xs"><div><span class="font-bold text-gray-800 dark:text-gray-200">${sub.name}</span>${sub.rollover ? '<span class="text-[9px] bg-indigo-500/20 text-indigo-400 px-1.5 py-0.5 rounded font-semibold ml-1">Rollover Cap</span>' : ''}<div class="text-[10px] text-gray-400">Bucket: ${bucket.name}</div></div><span class="font-semibold text-[10px] uppercase px-1.5 py-0.5 rounded border">${statusText}</span></div>
+              <div class="mt-2 text-xs"><div class="flex justify-between text-gray-500"><span>Spent: <strong class="accounting-num">${formatFinancial(spent, true)}</strong></span><span>Limit: <strong class="accounting-num">${limit > 0 ? formatFinancial(limit) : 'Not set'}</strong></span></div><div class="w-full bg-gray-200 dark:bg-gray-800 h-1.5 rounded-full mt-1.5 overflow-hidden"><div class="h-full ${spent > limit && limit > 0 ? 'bg-rose-500' : 'bg-indigo-600'}" style="width: ${pct}%"></div></div></div>
+            </div>`;
         });
       });
 
+      const sortBySavedOrder = (accounts, key) => {
+        const order = state.accountOrder[key] || [];
+        return [...accounts].sort((a,b) => {
+          const ai = order.indexOf(a.id), bi = order.indexOf(b.id);
+          return (ai < 0 ? 999999 : ai) - (bi < 0 ? 999999 : bi);
+        });
+      };
       const assetList = document.getElementById('dash-asset-list');
       const debtList = document.getElementById('dash-debt-list');
       assetList.innerHTML = ''; debtList.innerHTML = '';
-
-      state.accounts.forEach((acc) => {
-        const isAsset = acc.type === 'asset';
-        const rateText = acc.interestRate ? `${acc.interestRate}% APY/APR` : '0.00%';
-        const indType = acc.individualType || (isAsset ? 'Chequing' : 'Credit Card');
-
-        const html = `
-          <div class="flex justify-between items-center bg-gray-50 dark:bg-gray-950 p-3.5 rounded-xl border border-gray-200 dark:border-gray-800 ${acc.hidden ? 'opacity-50' : ''}">
-            <div class="cursor-pointer flex-1" onclick="openAccountDetail('${acc.id}')">
-              <div class="font-semibold text-sm flex items-center space-x-2">
-                <span>${acc.name}</span>
-                <span class="text-[10px] bg-indigo-100 dark:bg-indigo-950/60 text-indigo-400 px-2 py-0.5 rounded border border-indigo-500/20 font-medium">${indType}</span>
-                ${acc.hidden ? '<span class="text-[10px] bg-gray-200 dark:bg-gray-800 px-1.5 py-0.5 rounded text-gray-500">Archived</span>' : ''}
+      const renderAccountRows = (accounts, list, group) => {
+        const ordered = sortBySavedOrder(accounts, group);
+        const shown = state.showHiddenAccounts ? ordered : ordered.filter(a => !a.hidden);
+        if (!shown.length) { list.innerHTML = '<p class="text-xs text-gray-400 py-3">No accounts to display.</p>'; return; }
+        shown.forEach((acc, index) => {
+          const isAsset = acc.type === 'asset';
+          const rateText = acc.interestRate ? `${acc.interestRate}% APY/APR` : '0.00%';
+          const indType = acc.individualType || (isAsset ? 'Asset' : 'Credit Card');
+          const row = document.createElement('div');
+          row.className = `account-sort-row flex justify-between items-center bg-gray-50 dark:bg-gray-950 p-3.5 rounded-xl border border-gray-200 dark:border-gray-800 ${acc.hidden ? 'opacity-60' : ''}`;
+          row.draggable = true;
+          row.dataset.accountId = acc.id;
+          row.dataset.accountGroup = group;
+          row.addEventListener('dragstart', event => { event.dataTransfer.setData('text/plain', acc.id); event.dataTransfer.effectAllowed = 'move'; row.classList.add('ring-2','ring-indigo-400'); });
+          row.addEventListener('dragend', () => row.classList.remove('ring-2','ring-indigo-400'));
+          row.addEventListener('dragover', event => { event.preventDefault(); event.dataTransfer.dropEffect = 'move'; });
+          row.addEventListener('drop', event => { event.preventDefault(); reorderAccount(event.dataTransfer.getData('text/plain'), acc.id, group); });
+          row.innerHTML = `
+            <div class="flex items-center gap-2 flex-1 min-w-0">
+              <span class="text-gray-400 cursor-grab px-1" title="Drag to reorder"><i class="fa-solid fa-grip-vertical"></i></span>
+              <div class="cursor-pointer flex-1 min-w-0" onclick="openAccountDetail('${acc.id}')">
+                <div class="font-semibold text-sm flex flex-wrap items-center gap-2"><span>${acc.name}</span><span class="text-[10px] bg-indigo-100 dark:bg-indigo-950/60 text-indigo-400 px-2 py-0.5 rounded border border-indigo-500/20 font-medium">${indType}</span>${acc.hidden ? '<span class="text-[10px] bg-gray-200 dark:bg-gray-800 px-1.5 py-0.5 rounded text-gray-500">Excluded</span>' : ''}</div>
+                <div class="text-xs text-gray-400 mt-0.5">Rate: <strong class="text-gray-500 dark:text-gray-300">${rateText}</strong> · Last reconciled: ${acc.lastReconciledAt || 'Not recorded'}</div>
               </div>
-              <div class="text-xs text-gray-400 mt-0.5">Rate: <strong class="text-gray-300">${rateText}</strong> | Click to view & settings</div>
             </div>
-            <div class="flex items-center space-x-2">
+            <div class="flex items-center gap-2 ml-2">
               <span class="font-bold text-sm ${isAsset ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'} accounting-num blur-target">${formatFinancial(acc.balance, !isAsset)}</span>
-              <button onclick="toggleAccountHide('${acc.id}')" title="Archive / Restore account" class="text-gray-400 hover:text-indigo-500 text-xs px-1"><i class="fa-solid fa-box-archive"></i></button>
-            </div>
-          </div>
-        `;
-        if (isAsset) assetList.innerHTML += html; else debtList.innerHTML += html;
-      });
+              <button onclick="moveAccount('${acc.id}','${group}',-1)" title="Move account up" class="text-gray-400 hover:text-indigo-500 text-xs px-1" ${index===0?'disabled':''}><i class="fa-solid fa-chevron-up"></i></button>
+              <button onclick="moveAccount('${acc.id}','${group}',1)" title="Move account down" class="text-gray-400 hover:text-indigo-500 text-xs px-1" ${index===shown.length-1?'disabled':''}><i class="fa-solid fa-chevron-down"></i></button>
+              <button onclick="markAccountReconciled('${acc.id}')" title="Record today's reconciliation date" class="text-gray-400 hover:text-emerald-500 text-xs px-1"><i class="fa-solid fa-check-double"></i></button>
+              <label class="flex items-center gap-1 text-[10px] text-gray-500 whitespace-nowrap" title="Include this account in Dashboard totals"><input type="checkbox" ${acc.hidden ? '' : 'checked'} onchange="setAccountIncluded('${acc.id}',this.checked)" class="accent-indigo-600"> Include</label>
+            </div>`;
+          list.appendChild(row);
+        });
+      };
+      renderAccountRows(state.accounts.filter(a => a.type === 'asset'), assetList, 'assets');
+      renderAccountRows(state.accounts.filter(a => a.type === 'debt'), debtList, 'debts');
+      const showHiddenControl = document.getElementById('show-excluded-accounts');
+      if (showHiddenControl) showHiddenControl.checked = !!state.showHiddenAccounts;
 
+      renderNetWorthTrendChart();
+      renderSpendingCategoryChart();
+      renderIncomeExpenseChart();
+      renderDebtProgressChart();
       renderSnapshots();
+      applyPrivacyBlurState();
     }
 
-    function renderAssetAllocationBars(accounts) {
-      const container = document.getElementById('asset-allocation-bars');
-      container.innerHTML = '';
-      const totalAssets = accounts.filter(a => a.type === 'asset').reduce((s, a) => s + a.balance, 0) || 1;
-      
-      const categories = {};
-      accounts.filter(a => a.type === 'asset').forEach(a => {
-        const t = a.individualType || 'Other';
-        categories[t] = (categories[t] || 0) + a.balance;
-      });
+    function setAccountIncluded(id, included) {
+      const acc = state.accounts.find(a => a.id === id);
+      if (!acc) return;
+      acc.hidden = !included;
+      saveData();
+      renderDashboard();
+    }
 
-      Object.keys(categories).forEach(cat => {
-        const val = categories[cat];
-        const pct = Math.round((val / totalAssets) * 100);
-        container.innerHTML += `
-          <div>
-            <div class="flex justify-between text-xs mb-1 font-semibold"><span>${cat}</span><span class="accounting-num">${formatFinancial(val)} (${pct}%)</span></div>
-            <div class="w-full bg-gray-200 dark:bg-gray-800 h-2 rounded-full overflow-hidden">
-              <div class="h-full bg-indigo-600 theme-bg" style="width: ${pct}%"></div>
-            </div>
-          </div>
-        `;
+    function markAccountReconciled(id) {
+      const acc = state.accounts.find(a => a.id === id);
+      if (!acc) return;
+      const now = new Date();
+      acc.lastReconciledAt = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+      saveData();
+      renderDashboard();
+    }
+
+    function toggleExcludedAccounts(show) {
+      state.showHiddenAccounts = !!show;
+      saveData();
+      renderDashboard();
+    }
+
+    function reorderAccount(draggedId, targetId, group) {
+      if (!draggedId || draggedId === targetId) return;
+      const accounts = state.accounts.filter(a => (group === 'assets' ? a.type === 'asset' : a.type === 'debt'));
+      if (!accounts.some(a => a.id === draggedId) || !accounts.some(a => a.id === targetId)) return;
+      const order = sortAccountIds(group);
+      const from = order.indexOf(draggedId), to = order.indexOf(targetId);
+      if (from < 0 || to < 0) return;
+      order.splice(from, 1); order.splice(to, 0, draggedId);
+      state.accountOrder[group] = order;
+      saveData(); renderDashboard();
+    }
+
+    function sortAccountIds(group) {
+      const order = state.accountOrder[group] || [];
+      return state.accounts.filter(a => (group === 'assets' ? a.type === 'asset' : a.type === 'debt'))
+        .sort((a,b) => { const ai=order.indexOf(a.id), bi=order.indexOf(b.id); return (ai<0?999999:ai)-(bi<0?999999:bi); }).map(a => a.id);
+    }
+
+    function moveAccount(id, group, direction) {
+      const order = sortAccountIds(group);
+      const index = order.indexOf(id), target = index + direction;
+      if (index < 0 || target < 0 || target >= order.length) return;
+      [order[index], order[target]] = [order[target], order[index]];
+      state.accountOrder[group] = order;
+      saveData(); renderDashboard();
+    }
+
+    function renderNetWorthTrendChart() {
+      const el = document.getElementById('networth-trend-chart');
+      const note = document.getElementById('networth-chart-note');
+      const snaps = [...(state.netWorthSnapshots || [])].sort((a,b) => a.date.localeCompare(b.date));
+      if (!snaps.length) { el.innerHTML = '<p class="text-xs text-gray-400 py-8 text-center">No snapshots yet. Select “Record Current Snapshot” below to start tracking net worth over time.</p>'; note.textContent = ''; return; }
+      const width = 760, height = 190, pad = 34;
+      const values = snaps.map(s => Number(s.netWorth) || 0);
+      let min = Math.min(...values), max = Math.max(...values);
+      if (min === max) { min -= Math.max(100, Math.abs(min)*0.05); max += Math.max(100, Math.abs(max)*0.05); }
+      const x = i => pad + (snaps.length === 1 ? (width-pad*2)/2 : i*(width-pad*2)/(snaps.length-1));
+      const y = v => height-pad - ((v-min)/(max-min))*(height-pad*2);
+      const points = snaps.map((s,i) => `${x(i)},${y(Number(s.netWorth)||0)}`).join(' ');
+      const labels = snaps.map((s,i) => `<text x="${x(i)}" y="${height-8}" text-anchor="middle" font-size="10" fill="currentColor">${s.date.slice(5)}</text>`).join('');
+      const dots = snaps.map((s,i) => `<circle cx="${x(i)}" cy="${y(Number(s.netWorth)||0)}" r="4" fill="#6366f1"><title>${s.date}: ${formatFinancial(s.netWorth)}</title></circle>`).join('');
+      el.innerHTML = `<div class="w-full overflow-x-auto"><svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Net worth trend line chart" class="w-full min-w-[320px]" style="max-height:220px"><line x1="${pad}" y1="${height-pad}" x2="${width-pad}" y2="${height-pad}" stroke="currentColor" opacity=".2"/><polyline points="${points}" fill="none" stroke="#6366f1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>${dots}${labels}</svg></div>`;
+      note.textContent = `${snaps.length} recorded snapshot${snaps.length===1?'':'s'} · ${snaps[0].date} to ${snaps[snaps.length-1].date}. This chart changes when a snapshot is recorded.`;
+    }
+
+    function renderSpendingCategoryChart() {
+      const el = document.getElementById('spending-category-chart');
+      const detail = document.getElementById('spending-category-detail');
+      const label = document.getElementById('spending-chart-period');
+      const range = getDashboardDateRange();
+      const expenses = state.transactions.filter(t => t.type === 'Expense' && t.date >= range.start && t.date <= range.end);
+      const totals = {};
+      expenses.forEach(t => { const key = t.category || t.subcategory || 'Uncategorized'; totals[key] = (totals[key] || 0) + (Number(t.amount) || 0); });
+      const entries = Object.entries(totals).sort((a,b) => b[1]-a[1]).slice(0,8);
+      label.textContent = `Expense transactions · ${range.start} to ${range.end} · Select a category for details`;
+      detail.classList.add('hidden');
+      detail.innerHTML = '';
+      if (!entries.length) { el.innerHTML = '<p class="text-xs text-gray-400 py-6 text-center">No expense transactions in this period yet.</p>'; return; }
+      const max = Math.max(...entries.map(e => e[1])) || 1;
+      el.innerHTML = '';
+      entries.forEach(([name,value]) => {
+        const row = document.createElement('button');
+        row.type = 'button';
+        row.className = 'w-full text-left rounded-lg p-1 hover:bg-gray-50 dark:hover:bg-gray-800/60 focus:outline-none focus:ring-2 focus:ring-indigo-400';
+        const heading = document.createElement('div');
+        heading.className = 'flex justify-between gap-3 text-xs mb-1';
+        const nameEl = document.createElement('span'); nameEl.className = 'font-medium truncate'; nameEl.textContent = name;
+        const valueEl = document.createElement('strong'); valueEl.className = 'accounting-num'; valueEl.textContent = formatFinancial(value);
+        heading.append(nameEl,valueEl);
+        const track = document.createElement('div'); track.className = 'w-full h-2.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden';
+        const bar = document.createElement('div'); bar.className = 'h-full bg-amber-500 rounded-full'; bar.style.width = `${Math.max(2,(value/max)*100)}%`;
+        track.appendChild(bar); row.append(heading,track);
+        row.addEventListener('click', () => showCategoryTransactions(name));
+        el.appendChild(row);
       });
     }
 
+    function showCategoryTransactions(category) {
+      const detail = document.getElementById('spending-category-detail');
+      const range = getDashboardDateRange();
+      const matches = state.transactions.filter(t => t.type === 'Expense' && t.date >= range.start && t.date <= range.end && (t.category || t.subcategory || 'Uncategorized') === category);
+      detail.innerHTML = '';
+      const title = document.createElement('div'); title.className = 'font-semibold text-sm mb-3'; title.textContent = `${category} · ${matches.length} transaction${matches.length===1?'':'s'}`;
+      const close = document.createElement('button'); close.type = 'button'; close.className = 'float-right text-xs text-indigo-500 hover:underline'; close.textContent = 'Close'; close.addEventListener('click',()=>detail.classList.add('hidden'));
+      title.appendChild(close); detail.appendChild(title);
+      if (!matches.length) { const empty=document.createElement('p'); empty.className='text-xs text-gray-400'; empty.textContent='No transactions found.'; detail.appendChild(empty); }
+      matches.sort((a,b)=>b.date.localeCompare(a.date)).forEach(t=>{
+        const row=document.createElement('div'); row.className='flex justify-between gap-3 py-2 border-t border-gray-100 dark:border-gray-800 text-xs';
+        const desc=document.createElement('div'); desc.className='min-w-0';
+        const main=document.createElement('div'); main.className='font-medium truncate'; main.textContent=t.desc || 'Expense';
+        const date=document.createElement('div'); date.className='text-gray-400'; date.textContent=t.date;
+        desc.append(main,date);
+        const amount=document.createElement('strong'); amount.className='accounting-num whitespace-nowrap'; amount.textContent=formatFinancial(t.amount,true);
+        row.append(desc,amount); detail.appendChild(row);
+      });
+      detail.classList.remove('hidden');
+    }
 
-    function renderCashFlowForecastChart() {
-      const container = document.getElementById('forecast-timeline-bars');
-      container.innerHTML = '';
-      const chequingAcc = state.accounts.find(a => a.individualType === 'Chequing' || a.type === 'asset');
-      let currBal = chequingAcc ? chequingAcc.balance : 4000;
-      let minBal = currBal;
+    function renderIncomeExpenseChart() {
+      const el = document.getElementById('income-expense-chart');
+      const now = new Date();
+      const months = [];
+      for (let i=5; i>=0; i--) { const d = new Date(now.getFullYear(), now.getMonth()-i, 1); const ym = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; months.push({ ym, label: d.toLocaleString(undefined,{month:'short'}) }); }
+      const values = months.map(m => ({...m, income: state.transactions.filter(t=>t.type==='Income' && t.date.startsWith(m.ym)).reduce((s,t)=>s+(Number(t.amount)||0),0), expense: state.transactions.filter(t=>t.type==='Expense' && t.date.startsWith(m.ym)).reduce((s,t)=>s+(Number(t.amount)||0),0)}));
+      const max = Math.max(1,...values.flatMap(v=>[v.income,v.expense]));
+      el.innerHTML = `<div class="flex gap-4 text-[10px] text-gray-500 mb-2"><span><i class="fa-solid fa-square text-indigo-500 mr-1"></i>Income</span><span><i class="fa-solid fa-square text-amber-500 mr-1"></i>Expenses</span></div>` + values.map(v=>`<div class="grid grid-cols-[42px_1fr] gap-2 items-center"><span class="text-[10px] text-gray-400">${v.label}</span><div class="space-y-1"><div class="h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden"><div class="h-full bg-indigo-500" style="width:${v.income/max*100}%"></div></div><div class="h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden"><div class="h-full bg-amber-500" style="width:${v.expense/max*100}%"></div></div></div></div>`).join('');
+    }
 
-      const dates = [];
-      const today = new Date();
-      for (let i = 0; i < 90; i++) {
-        const d = new Date(today);
-        d.setDate(d.getDate() + i);
-        const dateStr = d.toISOString().split('T')[0];
-        const dayBills = state.calendarBills.filter(b => b.date === dateStr);
-        let dayInc = 0, dayExp = 0;
-        dayBills.forEach(b => { if (b.type === 'income') dayInc += b.amount; else dayExp += b.amount; });
-        currBal += (dayInc - dayExp);
-        if (currBal < minBal) minBal = currBal;
-        dates.push({ dateStr, dayInc, dayExp, bal: currBal });
-      }
-
-      document.getElementById('forecast-min-balance').innerText = `Min Projected Bal: ${formatFinancial(minBal)}`;
-
-      const step = 6;
-      for (let i = 0; i < dates.length; i += step) {
-        const point = dates[i];
-        const heightPct = Math.min(100, Math.max(10, Math.round((point.bal / 8000) * 100)));
-        const colorClass = point.bal < 1000 ? 'bg-rose-500' : point.bal < 2500 ? 'bg-amber-500' : 'bg-emerald-500';
-        container.innerHTML += `
-          <div class="flex flex-col items-center flex-1 group min-w-[20px]">
-            <div class="w-full ${colorClass} rounded-t transition-all" style="height: ${heightPct}%" title="${point.dateStr}: ${formatFinancial(point.bal)}"></div>
-            <span class="text-[9px] text-gray-400 mt-1">${point.dateStr.substring(8)}</span>
-          </div>
-        `;
-      }
+    function renderDebtProgressChart() {
+      const el = document.getElementById('debt-progress-chart');
+      const debts = state.accounts.filter(a=>a.type==='debt' && !a.hidden && Number(a.startBal)>0);
+      if (!debts.length) { el.innerHTML = '<p class="text-xs text-gray-400">Add a starting balance to a debt account to track its reduction here.</p>'; return; }
+      el.innerHTML = debts.map(a=>{ const start=Number(a.startBal), current=Number(a.balance)||0; const paid=Math.max(0,Math.min(100,((start-current)/start)*100)); return `<div><div class="flex justify-between gap-3 text-xs mb-1"><span class="font-medium">${a.name}</span><span class="accounting-num">${paid.toFixed(0)}% reduced</span></div><div class="h-2.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden"><div class="h-full bg-emerald-500" style="width:${paid}%"></div></div><div class="text-[10px] text-gray-400 mt-1">${formatFinancial(current)} remaining of ${formatFinancial(start)}</div></div>`; }).join('');
     }
 
     function recordNetWorthSnapshot() {
@@ -1389,7 +1538,7 @@
 
     function toggleAccountHide(id) {
       const acc = state.accounts.find(a => a.id === id);
-      if (acc) { acc.hidden = !acc.hidden; saveData(); renderDashboard(); }
+      if (acc) setAccountIncluded(id, !!acc.hidden);
     }
 
     function openAccountDetail(accId) {
@@ -2749,7 +2898,15 @@
           catch (backupErr) { alert('A safety copy could not be created because browser storage is full. Export a backup first; import cancelled.'); e.target.value = ''; return; }
           state = loaded;
           state.collapsibles = state.collapsibles || {};
-          if (state.collapsibles['sec-portfolio-allocation'] === undefined) state.collapsibles['sec-portfolio-allocation'] = true;
+          if (state.collapsibles['sec-networth-chart'] === undefined) state.collapsibles['sec-networth-chart'] = true;
+          if (state.collapsibles['sec-spending-chart'] === undefined) state.collapsibles['sec-spending-chart'] = true;
+          if (state.collapsibles['sec-extra-charts'] === undefined) state.collapsibles['sec-extra-charts'] = true;
+          if (state.collapsibles['sec-snapshots'] === undefined) state.collapsibles['sec-snapshots'] = true;
+          state.dashboardPeriod = state.dashboardPeriod || 'month';
+          state.accountOrder = state.accountOrder || { assets: [], debts: [] };
+          state.accountOrder.assets = Array.isArray(state.accountOrder.assets) ? state.accountOrder.assets : [];
+          state.accountOrder.debts = Array.isArray(state.accountOrder.debts) ? state.accountOrder.debts : [];
+          if (state.showHiddenAccounts === undefined) state.showHiddenAccounts = true;
           if (state.collapsibles['sec-advanced-types'] === undefined) state.collapsibles['sec-advanced-types'] = true;
           state.lastBackupAt = state.lastBackupAt || null;
           saveData();
