@@ -499,22 +499,24 @@
         </div>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-4 shadow-sm">
-          <h3 class="text-md font-bold">Debt Summary & Minimums</h3>
-          <div class="space-y-3 text-sm">
-            <div class="flex justify-between"><span class="text-gray-500">Total Debt Balance:</span><span id="debt-total-bal" class="font-bold text-rose-600 dark:text-rose-400 accounting-num">$ - </span></div>
-          </div>
-        </div>
-        <div class="md:col-span-2 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
-          <button onclick="toggleCollapse('sec-debt-priority')" class="w-full p-5 flex justify-between items-center text-left border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
-            <h3 class="text-md font-bold">Payoff Priority Order & Minimums (Click Item to Edit)</h3>
-            <i id="sec-debt-priority-icon" class="fa-solid fa-chevron-down text-gray-400 transition-transform"></i>
-          </button>
-          <div id="sec-debt-priority-content" class="p-6 space-y-3">
-            <div id="debt-priority-list" class="space-y-3"></div>
-          </div>
-        </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+        <div class="bg-white dark:bg-gray-900 p-4 rounded-2xl border border-gray-200 dark:border-gray-800"><div class="text-[10px] uppercase tracking-wide text-gray-500">Total debt</div><div id="debt-total-bal" class="text-xl font-bold text-rose-600 dark:text-rose-400 accounting-num">$ - </div></div>
+        <div class="bg-white dark:bg-gray-900 p-4 rounded-2xl border border-gray-200 dark:border-gray-800"><div class="text-[10px] uppercase tracking-wide text-gray-500">Known monthly minimums</div><div id="debt-monthly-minimums" class="text-xl font-bold accounting-num">$ - </div><div id="debt-minimum-note" class="text-[10px] text-gray-400">Across listed debt accounts</div></div>
+        <div class="bg-white dark:bg-gray-900 p-4 rounded-2xl border border-gray-200 dark:border-gray-800"><div class="text-[10px] uppercase tracking-wide text-gray-500">Weighted average APR</div><div id="debt-weighted-apr" class="text-xl font-bold accounting-num">—</div><div class="text-[10px] text-gray-400">Based on balances with an APR entered</div></div>
+        <div class="bg-white dark:bg-gray-900 p-4 rounded-2xl border border-gray-200 dark:border-gray-800"><div class="text-[10px] uppercase tracking-wide text-gray-500">Extra monthly payoff</div><div id="debt-extra-summary" class="text-xl font-bold text-emerald-600 accounting-num">$0.00</div><div class="text-[10px] text-gray-400">In addition to minimums</div></div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+        <div class="p-5 border-b border-gray-200 dark:border-gray-800"><h3 class="font-bold">Debt Accounts & Required Minimums</h3><p class="text-xs text-gray-500 mt-1">Select a debt to edit its balance, APR, minimum payment, due date and credit limit. Missing information is flagged rather than assumed.</p></div>
+        <div class="overflow-x-auto"><table class="w-full text-left text-xs"><thead class="text-gray-500 bg-gray-50 dark:bg-gray-950"><tr><th class="px-4 py-3">Debt account</th><th class="px-3 py-3 text-right">Balance</th><th class="px-3 py-3 text-right">APR</th><th class="px-3 py-3 text-right">Monthly minimum</th><th class="px-3 py-3">Due date</th><th class="px-3 py-3 text-right">Credit limit</th><th class="px-4 py-3">Data status</th></tr></thead><tbody id="debt-overview-rows" class="divide-y divide-gray-100 dark:divide-gray-800"></tbody><tfoot id="debt-overview-foot" class="font-bold bg-gray-50 dark:bg-gray-950"></tfoot></table></div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+        <button onclick="toggleCollapse('sec-debt-priority')" class="w-full p-5 flex justify-between items-center text-left border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
+          <h3 class="text-md font-bold">Payoff Priority Order (Click Item to Edit)</h3>
+          <i id="sec-debt-priority-icon" class="fa-solid fa-chevron-down text-gray-400 transition-transform"></i>
+        </button>
+        <div id="sec-debt-priority-content" class="p-6 space-y-3"><div id="debt-priority-list" class="space-y-3"></div></div>
       </div>
 
       <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-4 shadow-sm">
@@ -573,12 +575,12 @@
         <table class="w-full text-left text-sm">
           <thead class="bg-gray-50 dark:bg-gray-950 text-xs uppercase border-b border-gray-200 dark:border-gray-800 text-gray-500">
             <tr>
-              <th class="px-4 py-3">Date</th><th class="px-4 py-3">Description</th><th class="px-4 py-3">Vendor</th><th class="px-4 py-3">Type</th><th class="px-4 py-3">Bucket</th><th class="px-4 py-3">Subcategory</th><th class="px-4 py-3">Account</th><th class="px-4 py-3 text-right">Amount</th><th class="px-4 py-3 text-center">Actions</th>
+              <th class="px-4 py-3">Date</th><th class="px-4 py-3">Vendor</th><th class="px-4 py-3">Description</th><th class="px-4 py-3">Type</th><th class="px-4 py-3">Bucket</th><th class="px-4 py-3">Subcategory</th><th class="px-4 py-3">Account</th><th class="px-4 py-3 text-right">Amount</th><th class="px-4 py-3 text-center">Actions</th>
             </tr>
             <tr class="bg-gray-100 dark:bg-gray-900/80 border-t border-gray-200 dark:border-gray-800">
               <th class="px-2 py-2"><input type="text" id="filter-date" onkeyup="renderLedger()" placeholder="Filter..." class="w-full bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded px-2 py-1 text-xs font-normal"></th>
-              <th class="px-2 py-2"><input type="text" id="filter-desc" onkeyup="renderLedger()" placeholder="Filter..." class="w-full bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded px-2 py-1 text-xs font-normal"></th>
               <th class="px-2 py-2"><input type="text" id="filter-vendor" onkeyup="renderLedger()" placeholder="Filter..." class="w-full bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded px-2 py-1 text-xs font-normal"></th>
+              <th class="px-2 py-2"><input type="text" id="filter-desc" onkeyup="renderLedger()" placeholder="Filter..." class="w-full bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded px-2 py-1 text-xs font-normal"></th>
               <th class="px-2 py-2"><input type="text" id="filter-type" onkeyup="renderLedger()" placeholder="Filter..." class="w-full bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded px-2 py-1 text-xs font-normal"></th>
               <th class="px-2 py-2"><input type="text" id="filter-category" onkeyup="renderLedger()" placeholder="Filter..." class="w-full bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded px-2 py-1 text-xs font-normal"></th>
               <th class="px-2 py-2"><input type="text" id="filter-subcategory" onkeyup="renderLedger()" placeholder="Filter..." class="w-full bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded px-2 py-1 text-xs font-normal"></th>
@@ -588,6 +590,16 @@
           </thead>
           <tbody id="ledger-rows" class="divide-y divide-gray-200 dark:divide-gray-800"></tbody>
         </table>
+      </div>
+      <div id="ledger-summary" class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-4 shadow-sm">
+        <div class="text-xs font-bold uppercase tracking-wide text-gray-500 mb-3">Filtered transaction totals</div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
+          <div><div class="text-xs text-gray-500">Expenses</div><div id="ledger-total-expenses" class="font-bold text-rose-500 accounting-num">$0.00</div></div>
+          <div><div class="text-xs text-gray-500">Income</div><div id="ledger-total-income" class="font-bold text-emerald-500 accounting-num">$0.00</div></div>
+          <div><div class="text-xs text-gray-500">Transfers / other</div><div id="ledger-total-other" class="font-bold accounting-num">$0.00</div></div>
+          <div><div class="text-xs text-gray-500">Net (income less expenses)</div><div id="ledger-total-net" class="font-bold accounting-num">$0.00</div></div>
+        </div>
+        <p class="text-[10px] text-gray-400 mt-2">Totals update automatically using the filters above and include only the matching transactions.</p>
       </div>
 
       <!-- CALENDAR VIEW CONTAINER -->
@@ -733,6 +745,10 @@
         <div class="grid grid-cols-2 gap-3">
           <div><label class="block text-xs font-semibold text-gray-500 mb-1">APR Interest Rate (%)</label><input type="number" step="0.01" id="ed-apr" value="19.99" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
           <div><label class="block text-xs font-semibold text-gray-500 mb-1">Monthly Minimum Payment ($)</label><input type="number" step="0.01" id="ed-minpay" value="50" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div><label class="block text-xs font-semibold text-gray-500 mb-1">Payment Due Date</label><input type="date" id="ed-duedate" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
+          <div><label class="block text-xs font-semibold text-gray-500 mb-1">Credit Limit ($)</label><input type="number" step="0.01" min="0" id="ed-limit" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
         </div>
         <div><label class="block text-xs font-semibold text-gray-500 mb-1">Notes / Strategy</label><textarea id="ed-notes" rows="2" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-2 text-xs" placeholder="Add debt notes..."></textarea></div>
         <div class="flex space-x-3 pt-3">
@@ -975,8 +991,8 @@
           <div><label class="block text-xs font-semibold text-gray-500 mb-1">Date</label><input type="date" id="tx-date" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
           <div><label class="block text-xs font-semibold text-gray-500 mb-1">Account</label><select id="tx-account" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></select></div>
         </div>
-        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Description</label><input type="text" id="tx-desc" oninput="applySmartMerchantRules(this.value)" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" placeholder="e.g. Weekly groceries"></div>
-        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Vendor (Optional)</label><input type="text" id="tx-vendor" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" placeholder="e.g. Costco"></div>
+        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Vendor <span class="text-rose-500">*</span></label><input type="text" id="tx-vendor" oninput="applySmartMerchantRules(this.value)" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" placeholder="e.g. Costco"></div>
+        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Description (Optional)</label><input type="text" id="tx-desc" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" placeholder="e.g. Weekly groceries"></div>
         <div><label class="block text-xs font-semibold text-gray-500 mb-1">Transaction Type</label><select id="tx-type" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></select></div>
 
         <!-- SINGLE TRANSACTION FIELDS (OPTIONAL DROPDOWNS) -->
@@ -1611,8 +1627,8 @@
           rows.innerHTML += `
             <tr class="hover:bg-gray-50 dark:hover:bg-gray-950">
               <td class="px-4 py-3">${t.date}</td>
+              <td class="px-4 py-3">${t.vendor || 'Vendor not recorded'}</td>
               <td class="px-4 py-3">${t.desc || '-'}</td>
-              <td class="px-4 py-3">${t.vendor || '-'}</td>
               <td class="px-4 py-3"><span class="px-2 py-0.5 rounded text-[10px] bg-gray-100 dark:bg-gray-800">${t.type}</span></td>
               <td class="px-4 py-3 text-right font-bold ${isExp ? 'text-rose-600' : 'text-emerald-600'} accounting-num">${formatFinancial(t.amount, isExp)}</td>
             </tr>
@@ -1833,6 +1849,17 @@
       renderZbbFundingTracker();
     }
 
+    function addBillReserveContribution(itemId) {
+      const input = document.getElementById(`bill-contribution-${itemId}`);
+      const contribution = Math.max(0, Number(input?.value) || 0);
+      if (!contribution) return;
+      const record = getZbbTrackingRecord(itemId);
+      record.reserved = Math.max(0, Number(record.reserved) || 0) + contribution;
+      record.contribution = 0;
+      saveData();
+      renderZbbFundingTracker();
+    }
+
     function renderZbbFundingTracker() {
       const host = document.getElementById('zbb-funding-tracker');
       if (!host) return;
@@ -1840,13 +1867,14 @@
       const bills = zbb.bills || [];
       const variables = zbb.variable || [];
       const money = n => formatFinancial(Number(n) || 0);
-      let html = `<div><h4 class="text-xs font-bold uppercase tracking-wide text-gray-500 mb-2">Monthly bill reserves</h4><div class="overflow-x-auto"><table class="w-full text-xs"><thead><tr class="text-left text-gray-400 border-b border-gray-200 dark:border-gray-800"><th class="py-2 pr-2">Bill</th><th class="py-2 px-2">Monthly target</th><th class="py-2 px-2">Reserved so far</th><th class="py-2 pl-2 text-right">Still needed</th></tr></thead><tbody>`;
-      if (!bills.length) html += `<tr><td colspan="4" class="py-3 text-gray-400">Add fixed bills above to track their reserves.</td></tr>`;
+      let html = `<div><h4 class="text-xs font-bold uppercase tracking-wide text-gray-500 mb-1">Monthly bill reserves</h4><p class="text-[10px] text-gray-400 mb-2">Enter the amount you're setting aside from this paycheque, then select Add. The app adds it to the current reserve balance.</p><div class="overflow-x-auto"><table class="w-full text-xs"><thead><tr class="text-left text-gray-400 border-b border-gray-200 dark:border-gray-800"><th class="py-2 pr-2">Bill</th><th class="py-2 px-2">Monthly target</th><th class="py-2 px-2">Current reserve</th><th class="py-2 px-2">This paycheque contribution</th><th class="py-2 pl-2 text-right">Still needed</th></tr></thead><tbody>`;
+      if (!bills.length) html += `<tr><td colspan="5" class="py-3 text-gray-400">Add fixed bills above to track their reserves.</td></tr>`;
       bills.forEach(item => {
         const rec = getZbbTrackingRecord(item.id);
         const target = Number(item.monthly) || 0;
         const reserved = Number(rec.reserved) || 0;
-        html += `<tr class="border-b border-gray-100 dark:border-gray-800/70"><td class="py-2 pr-2 font-semibold">${item.name}</td><td class="py-2 px-2 accounting-num">${money(target)}</td><td class="py-2 px-2"><input aria-label="Reserved so far for ${item.name}" type="number" min="0" step="0.01" value="${reserved}" onchange="updateZbbTracking('${item.id}','reserved',this.value)" class="w-28 max-w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-1"></td><td class="py-2 pl-2 text-right font-semibold accounting-num ${target-reserved>0?'text-amber-500':'text-emerald-500'}">${money(Math.max(0,target-reserved))}</td></tr>`;
+        const contribution = Number(rec.contribution) || 0;
+        html += `<tr class="border-b border-gray-100 dark:border-gray-800/70"><td class="py-2 pr-2 font-semibold">${item.name}</td><td class="py-2 px-2 accounting-num">${money(target)}</td><td class="py-2 px-2"><input aria-label="Current reserve balance for ${item.name}" type="number" min="0" step="0.01" value="${reserved}" onchange="updateZbbTracking('${item.id}','reserved',this.value)" class="w-24 max-w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-1"></td><td class="py-2 px-2"><div class="flex items-center gap-1"><input aria-label="This paycheque contribution for ${item.name}" id="bill-contribution-${item.id}" type="number" min="0" step="0.01" value="${contribution || ''}" placeholder="0.00" class="w-20 max-w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-1"><button type="button" onclick="addBillReserveContribution('${item.id}')" class="px-2 py-1 rounded-lg bg-indigo-600 text-white font-semibold">Add</button></div></td><td class="py-2 pl-2 text-right font-semibold accounting-num ${target-reserved>0?'text-amber-500':'text-emerald-500'}">${money(Math.max(0,target-reserved))}</td></tr>`;
       });
       html += `</tbody></table></div></div>`;
       html += `<div><h4 class="text-xs font-bold uppercase tracking-wide text-gray-500 mb-2">Variable budget carry-forward</h4><p class="text-[10px] text-gray-400 mb-2">Enter the unused amount brought into this month and actual spending to see the remaining available budget.</p><div class="overflow-x-auto"><table class="w-full text-xs"><thead><tr class="text-left text-gray-400 border-b border-gray-200 dark:border-gray-800"><th class="py-2 pr-2">Category</th><th class="py-2 px-2">Monthly budget</th><th class="py-2 px-2">Carry-in</th><th class="py-2 px-2">Actual spent</th><th class="py-2 pl-2 text-right">Available</th></tr></thead><tbody>`;
@@ -2355,6 +2383,22 @@
         return true;
       });
 
+      const totalExpenses = matchedTxs.reduce((sum, t) => sum + (['Expense', 'Debt Payment'].includes(t.type) ? (Number(t.amount) || 0) : 0), 0);
+      const totalIncome = matchedTxs.reduce((sum, t) => sum + (t.type === 'Income' ? (Number(t.amount) || 0) : 0), 0);
+      const totalOther = matchedTxs.reduce((sum, t) => sum + (!['Expense', 'Debt Payment', 'Income'].includes(t.type) ? (Number(t.amount) || 0) : 0), 0);
+      const netTotal = totalIncome - totalExpenses;
+      const expenseTotalEl = document.getElementById('ledger-total-expenses');
+      const incomeTotalEl = document.getElementById('ledger-total-income');
+      const otherTotalEl = document.getElementById('ledger-total-other');
+      const netTotalEl = document.getElementById('ledger-total-net');
+      if (expenseTotalEl) expenseTotalEl.textContent = formatFinancial(totalExpenses);
+      if (incomeTotalEl) incomeTotalEl.textContent = formatFinancial(totalIncome);
+      if (otherTotalEl) otherTotalEl.textContent = formatFinancial(totalOther);
+      if (netTotalEl) {
+        netTotalEl.textContent = formatFinancial(Math.abs(netTotal), netTotal < 0);
+        netTotalEl.className = `font-bold accounting-num ${netTotal < 0 ? 'text-rose-500' : 'text-emerald-500'}`;
+      }
+
       if (matchedTxs.length === 0) {
         tbody.innerHTML = `<tr><td colspan="9" class="px-6 py-6 text-center text-xs text-gray-400">No matching transactions found.</td></tr>`;
       } else {
@@ -2364,8 +2408,8 @@
           tbody.innerHTML += `
             <tr class="hover:bg-gray-50 dark:hover:bg-gray-950">
               <td class="px-4 py-3">${t.date}</td>
+              <td class="px-4 py-3">${t.vendor || 'Vendor not recorded'}</td>
               <td class="px-4 py-3">${t.desc || '-'}</td>
-              <td class="px-4 py-3">${t.vendor || '-'}</td>
               <td class="px-4 py-3"><span class="px-2 py-0.5 rounded text-[10px] bg-gray-100 dark:bg-gray-800">${t.type}</span></td>
               <td class="px-4 py-3">${t.category || '-'}</td>
               <td class="px-4 py-3">${t.subcategory || '-'}</td>
@@ -2396,7 +2440,7 @@
           let badges = '';
           dayTxs.forEach(t => {
             const isInc = t.type === 'Income';
-            badges += `<div class="text-[9px] p-1 rounded bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 truncate"><strong>${t.desc}</strong>: ${formatFinancial(t.amount, !isInc)}</div>`;
+            badges += `<div class="text-[9px] p-1 rounded bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 truncate"><strong>${t.vendor || 'Vendor not recorded'}</strong>: ${formatFinancial(t.amount, !isInc)}</div>`;
           });
           calGrid.innerHTML += `
             <div class="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-2 min-h-[80px]">
@@ -2421,7 +2465,7 @@
           const date = parts[0].trim();
           const desc = parts[1].trim();
           const amt = Math.abs(parseFloat(parts[2].trim())) || 0;
-          state.transactions.unshift({ id: Date.now().toString() + Math.random(), date, desc, type: 'Expense', category: 'Living Expenses', subcategory: 'Groceries', amount: amt, accountId: '1' });
+          state.transactions.unshift({ id: Date.now().toString() + Math.random(), date, desc: '', vendor: desc, type: 'Expense', category: 'Living Expenses', subcategory: 'Groceries', amount: amt, accountId: '1' });
           added++;
         }
       });
@@ -2441,7 +2485,8 @@
       state.transactions.unshift({
         id: Date.now().toString(),
         date: bill.date,
-        desc: bill.desc,
+        desc: bill.desc || '',
+        vendor: bill.vendor || bill.desc || 'Scheduled bill',
         type: bill.type === 'income' ? 'Income' : bill.type === 'debt' ? 'Debt Payment' : 'Expense',
         category: bill.category || 'Living Expenses',
         subcategory: bill.subcategory || '',
@@ -2672,50 +2717,102 @@
       alert(`Paid ${formatFinancial(bill.amount)} from ${fundAcc.name} and updated debt balance!`);
     }
 
+    function simulateDebtPayoff(debts, extraMonthly) {
+      const valid = debts.filter(d => Number.isFinite(Number(d.apr)) && d.apr >= 0 && Number.isFinite(Number(d.minPay)) && d.minPay > 0 && d.balance > 0);
+      if (!valid.length || valid.length !== debts.filter(d => d.balance > 0).length) return null;
+      let items = valid.map(d => ({ id:d.id, balance:Math.max(0,Number(d.balance)||0), apr:Number(d.apr), min:Number(d.minPay)||0 }));
+      let totalInterest = 0, months = 0;
+      const strategy = document.getElementById('debt-strategy')?.value || 'custom';
+      while (items.some(x => x.balance > 0.005) && months < 1200) {
+        months++;
+        items.forEach(x => { const interest = x.balance * (x.apr / 100 / 12); x.balance += interest; totalInterest += interest; });
+        // Treat all minimums plus the extra amount as the monthly payment pool.
+        // If an account needs less than its minimum to clear, the unused amount rolls to the next debt.
+        let paymentPool = items.reduce((sum,x)=>sum+x.min,0) + Math.max(0, Number(extraMonthly)||0);
+        items.forEach(x => {
+          if (x.balance <= 0 || paymentPool <= 0) return;
+          const payment = Math.min(x.balance, x.min, paymentPool);
+          x.balance -= payment; paymentPool -= payment;
+        });
+        let ordered = [...items].filter(x=>x.balance>0.005);
+        if (strategy === 'snowball') ordered.sort((a,b)=>a.balance-b.balance);
+        else if (strategy === 'avalanche') ordered.sort((a,b)=>b.apr-a.apr);
+        else { const ids = (state.accounts||[]).filter(a=>a.type==='debt').map(a=>a.id); ordered.sort((a,b)=>ids.indexOf(a.id)-ids.indexOf(b.id)); }
+        for (const x of ordered) {
+          if (paymentPool <= 0) break;
+          const payment = Math.min(x.balance, paymentPool);
+          x.balance -= payment; paymentPool -= payment;
+        }
+        if (items.every(x=>x.balance<=0.005)) break;
+        if (months===1200) return null;
+      }
+      return { months, interest:totalInterest };
+    }
+
     function renderDebtPlanner() {
       let debts = state.accounts.filter(a => a.type === 'debt');
       const strategy = document.getElementById('debt-strategy').value;
-      if (strategy === 'snowball') debts.sort((a,b) => a.balance - b.balance);
-      if (strategy === 'avalanche') debts.sort((a,b) => (b.apr||19.99) - (a.apr||19.99));
+      if (strategy === 'snowball') debts.sort((a,b) => (Number(a.balance)||0) - (Number(b.balance)||0));
+      if (strategy === 'avalanche') debts.sort((a,b) => (Number(b.apr)||0) - (Number(a.apr)||0));
 
-      const totalBal = debts.reduce((s, d) => s + d.balance, 0);
+      const totalBal = debts.reduce((s, d) => s + (Number(d.balance)||0), 0);
+      const knownMinimums = debts.filter(d => Number.isFinite(Number(d.minPay)) && d.minPay !== '' && Number(d.minPay) >= 0).reduce((s,d)=>s+Number(d.minPay),0);
+      const missingMinimums = debts.filter(d => d.minPay === undefined || d.minPay === null || d.minPay === '').length;
+      const aprDebts = debts.filter(d => Number.isFinite(Number(d.apr)) && d.apr !== '' && Number(d.apr) >= 0 && Number(d.balance)>0);
+      const aprWeight = aprDebts.reduce((s,d)=>s+Number(d.balance),0);
+      const weightedApr = aprWeight ? aprDebts.reduce((s,d)=>s+(Number(d.balance)*Number(d.apr)),0)/aprWeight : null;
       document.getElementById('debt-total-bal').innerText = formatFinancial(totalBal);
+      const minEl = document.getElementById('debt-monthly-minimums');
+      if (minEl) minEl.innerText = formatFinancial(knownMinimums);
+      const note = document.getElementById('debt-minimum-note');
+      if (note) note.innerText = missingMinimums ? `${missingMinimums} account(s) missing a minimum payment` : 'Across all listed debt accounts';
+      const aprEl = document.getElementById('debt-weighted-apr');
+      if (aprEl) aprEl.innerText = weightedApr === null ? 'Not available' : `${weightedApr.toFixed(2)}%`;
+      const extra = Number(state.extraPayoff)||0;
+      const extraEl = document.getElementById('debt-extra-summary');
+      if (extraEl) extraEl.innerText = formatFinancial(extra);
+
+      const overview = document.getElementById('debt-overview-rows');
+      const foot = document.getElementById('debt-overview-foot');
+      if (overview) {
+        overview.innerHTML = '';
+        debts.forEach(d => {
+          const missing = [];
+          if (d.apr === undefined || d.apr === null || d.apr === '') missing.push('APR');
+          if (d.minPay === undefined || d.minPay === null || d.minPay === '') missing.push('Minimum');
+          if (!d.dueDate) missing.push('Due date');
+          const status = missing.length ? `<span class="text-amber-600">Missing: ${missing.join(', ')}</span>` : `<span class="text-emerald-600">Complete</span>`;
+          overview.innerHTML += `<tr class="hover:bg-gray-50 dark:hover:bg-gray-950 cursor-pointer" onclick="openDebtDetailModal('${d.id}')"><td class="px-4 py-3 font-semibold">${d.name}</td><td class="px-3 py-3 text-right accounting-num">${formatFinancial(d.balance||0)}</td><td class="px-3 py-3 text-right">${d.apr!==undefined && d.apr!==null && d.apr!=='' ? `${Number(d.apr).toFixed(2)}%` : '—'}</td><td class="px-3 py-3 text-right accounting-num">${d.minPay!==undefined && d.minPay!==null && d.minPay!=='' ? formatFinancial(d.minPay) : '—'}</td><td class="px-3 py-3">${d.dueDate || '—'}</td><td class="px-3 py-3 text-right accounting-num">${d.limit ? formatFinancial(d.limit) : '—'}</td><td class="px-4 py-3">${status}</td></tr>`;
+        });
+        if (!debts.length) overview.innerHTML = `<tr><td colspan="7" class="px-4 py-5 text-center text-gray-400">No debt accounts added yet.</td></tr>`;
+        if (foot) foot.innerHTML = `<tr><td class="px-4 py-3">TOTAL / KNOWN MINIMUMS</td><td class="px-3 py-3 text-right">${formatFinancial(totalBal)}</td><td></td><td class="px-3 py-3 text-right">${formatFinancial(knownMinimums)}</td><td colspan="3" class="px-4 py-3 text-right text-gray-500">${missingMinimums ? `${missingMinimums} minimum(s) not included` : 'All minimums entered'}</td></tr>`;
+      }
+
       const list = document.getElementById('debt-priority-list');
       const picker = document.getElementById('debt-account-picker');
       list.innerHTML = ''; picker.innerHTML = '';
-
       debts.forEach((d, idx) => {
         picker.innerHTML += `<option value="${d.id}">${d.name}</option>`;
-        list.innerHTML += `
-          <div class="flex justify-between items-center bg-gray-50 dark:bg-gray-950 p-3 rounded-xl text-xs hover:border-indigo-500 border border-transparent transition-colors">
-            <div onclick="openDebtDetailModal('${d.id}')" class="cursor-pointer flex-1">
-              <div class="font-bold">${d.name} <span class="text-[10px] text-gray-400 ml-2">(APR: ${d.apr || 19.99}% | Min Pay: ${formatFinancial(d.minPay || 50)})</span></div>
-              <div class="text-[10px] text-gray-400">Limit: ${formatFinancial(d.limit || 0)} | Notes: ${d.notes || 'None'}</div>
-            </div>
-            <div class="flex items-center space-x-3">
-              <span class="font-bold text-rose-600 accounting-num">${formatFinancial(d.balance)}</span>
-              <div class="flex flex-col space-y-0.5">
-                <button onclick="moveDebtPriority('${d.id}', -1)" title="Move Up" class="text-gray-400 hover:text-indigo-400 text-[10px] px-1"><i class="fa-solid fa-chevron-up"></i></button>
-                <button onclick="moveDebtPriority('${d.id}', 1)" title="Move Down" class="text-gray-400 hover:text-indigo-400 text-[10px] px-1"><i class="fa-solid fa-chevron-down"></i></button>
-              </div>
-            </div>
-          </div>
-        `;
+        list.innerHTML += `<div class="flex justify-between items-center bg-gray-50 dark:bg-gray-950 p-3 rounded-xl text-xs hover:border-indigo-500 border border-transparent transition-colors"><div onclick="openDebtDetailModal('${d.id}')" class="cursor-pointer flex-1"><div class="font-bold">${d.name} <span class="text-[10px] text-gray-400 ml-2">(APR: ${d.apr!==undefined && d.apr!==null && d.apr!=='' ? Number(d.apr).toFixed(2)+'%' : 'Not entered'} | Min: ${d.minPay!==undefined && d.minPay!==null && d.minPay!=='' ? formatFinancial(d.minPay) : 'Not entered'})</span></div><div class="text-[10px] text-gray-400">Due: ${d.dueDate || 'Not entered'} | Limit: ${formatFinancial(d.limit||0)} | ${d.notes || 'No notes'}</div></div><div class="flex items-center space-x-3"><span class="font-bold text-rose-600 accounting-num">${formatFinancial(d.balance||0)}</span><div class="flex flex-col space-y-0.5"><button onclick="moveDebtPriority('${d.id}', -1)" title="Move Up" class="text-gray-400 hover:text-indigo-400 text-[10px] px-1"><i class="fa-solid fa-chevron-up"></i></button><button onclick="moveDebtPriority('${d.id}', 1)" title="Move Down" class="text-gray-400 hover:text-indigo-400 text-[10px] px-1"><i class="fa-solid fa-chevron-down"></i></button></div></div></div>`;
       });
 
-      const extra = state.extraPayoff || 0;
-      const baseMonthlyPay = debts.reduce((s, d) => s + (d.minPay || 50), 0) || 350;
-      const monthsBaseline = totalBal > 0 ? Math.ceil(totalBal / baseMonthlyPay) : 0;
-      const monthsAccelerated = totalBal > 0 ? Math.ceil(totalBal / (baseMonthlyPay + extra)) : 0;
-      const monthsSaved = Math.max(0, monthsBaseline - monthsAccelerated);
-      const estInterestSaved = totalBal * 0.15 * (monthsSaved / 12);
-
-      const futureDate = new Date();
-      futureDate.setMonth(futureDate.getMonth() + monthsAccelerated);
-      document.getElementById('debt-sim-payoff-date').innerText = totalBal > 0 ? `Estimated Debt-Free: ${futureDate.toLocaleString('default', { month: 'short', year: 'numeric' })}` : 'Debt Free!';
-      document.getElementById('debt-interest-saved').innerText = formatFinancial(estInterestSaved);
-      document.getElementById('debt-time-saved').innerText = `${monthsSaved} Months`;
-
+      const baseline = simulateDebtPayoff(debts, 0);
+      const accelerated = simulateDebtPayoff(debts, extra);
+      const dateEl = document.getElementById('debt-sim-payoff-date');
+      if (!debts.length || totalBal <= 0) {
+        dateEl.innerText = 'Add debt accounts to estimate payoff';
+        document.getElementById('debt-interest-saved').innerText = formatFinancial(0);
+        document.getElementById('debt-time-saved').innerText = '0 Months';
+      } else if (!baseline || !accelerated) {
+        dateEl.innerText = 'Complete APRs and minimums to calculate';
+        document.getElementById('debt-interest-saved').innerText = '—';
+        document.getElementById('debt-time-saved').innerText = '—';
+      } else {
+        const futureDate = new Date(); futureDate.setDate(1); futureDate.setMonth(futureDate.getMonth() + accelerated.months);
+        dateEl.innerText = `Estimated Debt-Free: ${futureDate.toLocaleString('default',{month:'short',year:'numeric'})}`;
+        document.getElementById('debt-interest-saved').innerText = formatFinancial(Math.max(0,baseline.interest-accelerated.interest));
+        document.getElementById('debt-time-saved').innerText = `${Math.max(0,baseline.months-accelerated.months)} Months`;
+      }
       renderDebtPaymentHistory();
       renderDebtUpcomingBills();
     }
@@ -2727,8 +2824,10 @@
       document.getElementById('ed-name').value = d.name;
       document.getElementById('ed-balance').value = d.balance;
       document.getElementById('ed-startbal').value = d.startBal || d.balance;
-      document.getElementById('ed-apr').value = d.apr || 19.99;
-      document.getElementById('ed-minpay').value = d.minPay || 50;
+      document.getElementById('ed-apr').value = d.apr ?? '';
+      document.getElementById('ed-minpay').value = d.minPay ?? '';
+      document.getElementById('ed-duedate').value = d.dueDate || '';
+      document.getElementById('ed-limit').value = d.limit ?? '';
       document.getElementById('ed-notes').value = d.notes || '';
       document.getElementById('debt-detail-modal').classList.remove('hidden');
     }
@@ -2742,8 +2841,13 @@
         d.name = document.getElementById('ed-name').value;
         d.balance = parseFloat(document.getElementById('ed-balance').value) || 0;
         d.startBal = parseFloat(document.getElementById('ed-startbal').value) || d.balance;
-        d.apr = parseFloat(document.getElementById('ed-apr').value) || 19.99;
-        d.minPay = parseFloat(document.getElementById('ed-minpay').value) || 50;
+        const aprInput = document.getElementById('ed-apr').value;
+        const minInput = document.getElementById('ed-minpay').value;
+        const limitInput = document.getElementById('ed-limit').value;
+        d.apr = aprInput === '' ? null : Math.max(0, Number(aprInput));
+        d.minPay = minInput === '' ? null : Math.max(0, Number(minInput));
+        d.dueDate = document.getElementById('ed-duedate').value || '';
+        d.limit = limitInput === '' ? 0 : Math.max(0, Number(limitInput));
         d.notes = document.getElementById('ed-notes').value;
       }
       saveData(); closeDebtDetailModal(); renderDebtPlanner(); renderDashboard();
@@ -2958,9 +3062,14 @@
       const isSplit = document.getElementById('tx-is-split').value === "true";
       const accountId = document.getElementById('tx-account').value;
       const type = document.getElementById('tx-type').value;
-      const desc = document.getElementById('tx-desc').value;
+      const desc = (document.getElementById('tx-desc').value || '').trim();
       const vendor = (document.getElementById('tx-vendor')?.value || '').trim();
       const date = document.getElementById('tx-date').value;
+      if (!vendor) {
+        document.getElementById('tx-vendor')?.focus();
+        alert('Please enter a vendor before saving this transaction.');
+        return;
+      }
       captureUndo(editId ? 'Edit transaction' : 'Add transaction');
 
       if (isSplit) {
