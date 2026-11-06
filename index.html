@@ -680,10 +680,33 @@
           <div><label class="block text-xs font-semibold text-gray-500 mb-1">Monthly Minimum Payment ($)</label><input type="number" step="0.01" id="ed-minpay" value="50" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
         </div>
         <div><label class="block text-xs font-semibold text-gray-500 mb-1">Notes / Strategy</label><textarea id="ed-notes" rows="2" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-2 text-xs" placeholder="Add debt notes..."></textarea></div>
-        <div class="flex space-x-3 pt-3">
-          <button type="button" onclick="closeDebtDetailModal()" class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold">Cancel</button>
-          <button type="submit" class="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold theme-bg">Save Debt</button>
-        </div>
+        <div class="pt-3 border-t border-gray-200 dark:border-gray-800">
+  <div class="flex justify-between items-center bg-gray-50 dark:bg-gray-950 p-3 rounded-xl border border-gray-200 dark:border-gray-800 mb-3">
+    <div>
+      <div class="text-xs font-bold text-rose-500">Danger Zone</div>
+      <div class="text-[11px] text-gray-400">
+        Permanently delete this debt account and its history
+      </div>
+    </div>
+
+    <button
+      type="button"
+      onclick="deleteDebtAccount()"
+      class="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-semibold">
+      Delete Account
+    </button>
+  </div>
+
+  <div class="flex space-x-3">
+    <button type="button" onclick="closeDebtDetailModal()" class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold">
+      Cancel
+    </button>
+
+    <button type="submit" class="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold theme-bg">
+      Save Debt
+    </button>
+  </div>
+</div>
       </form>
     </div>
   </div>
@@ -710,9 +733,32 @@
           <div><label class="block text-xs font-semibold text-gray-500 mb-1">Due Date</label><input type="date" id="jb-date" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
         </div>
         <div><label class="block text-xs font-semibold text-gray-500 mb-1">Notes / Comments</label><textarea id="jb-notes" rows="2" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-2 text-xs" placeholder="Add optional notes..."></textarea></div>
-        <div class="flex space-x-3 pt-3">
-          <button type="button" onclick="closeJointBillModal()" class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold">Cancel</button>
-          <button type="submit" class="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold theme-bg">Save Bill</button>
+        <div class="pt-3 border-t border-gray-200 dark:border-gray-800">
+          <div class="flex justify-between items-center bg-gray-50 dark:bg-gray-950 p-3 rounded-xl border border-gray-200 dark:border-gray-800 mb-3">
+            <div>
+              <div class="text-xs font-bold text-rose-500">Danger Zone</div>
+              <div class="text-[11px] text-gray-400">
+                Permanently delete this joint bill
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onclick="deleteJointBill()"
+              class="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-semibold">
+              Delete Bill
+            </button>
+          </div>
+
+          <div class="flex space-x-3">
+            <button type="button" onclick="closeJointBillModal()" class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold">
+              Cancel
+            </button>
+
+            <button type="submit" class="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold theme-bg">
+              Save Bill
+            </button>
+          </div>
         </div>
       </form>
     </div>
@@ -2498,6 +2544,35 @@
       }
       saveData(); closeDebtDetailModal(); renderDebtPlanner(); renderDashboard();
     }
+    function deleteDebtAccount() {
+  const id = document.getElementById('edit-debt-id').value;
+
+  const debt = state.accounts.find(a => a.id === id);
+
+  if (!debt) return;
+
+  if (
+    confirm(
+      `Are you sure you want to delete "${debt.name}"?\n\nThis action cannot be undone.`
+    )
+  ) {
+    state.accounts =
+      state.accounts.filter(a => a.id !== id);
+
+    state.debtPayments =
+      (state.debtPayments || []).filter(
+        p => p.accountId !== id
+      );
+
+    saveData();
+
+    closeDebtDetailModal();
+
+    renderDashboard();
+    renderDebtPlanner();
+    renderLedger();
+  }
+}
 
     function renderDebtPaymentHistory() {
       const picker = document.getElementById('debt-account-picker');
