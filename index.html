@@ -240,10 +240,11 @@
 
     <!-- TAB 2: PAYCHEQUE ZBB PLANNER -->
     <section id="tab-biweekly" class="tab-content hidden space-y-6">
+      <div id="zbb-monthly-rollup" class="bg-white dark:bg-gray-900 p-5 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm"></div>
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 class="text-2xl font-bold">Paycheque Zero-Based Budget Planner</h2>
-          <p class="text-sm text-gray-500 dark:text-gray-400">Rolling period templates (Amount or Percentage split) reaching $0.00</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400">Zero-based allocations with custom amounts or percentages for each of three paycheques; monthly roll-up combines the first two</p>
         </div>
         <div class="flex items-center space-x-3">
           <input type="month" id="zbb-period-picker" onchange="changeZbbPeriod(this.value)" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-1.5 text-xs font-semibold shadow-sm">
@@ -352,6 +353,16 @@
           <h3 class="text-md font-bold text-indigo-600 dark:text-indigo-400 theme-text"><i class="fa-solid fa-bullseye mr-2"></i>Sinking Funds Goal Progress & Target Date Tracker</h3>
         </div>
         <div id="sinking-funds-progress-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+      </div>
+
+      <!-- BILL RESERVES AND VARIABLE ROLLOVER -->
+      <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-4 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-200 dark:border-gray-800 pb-3">
+          <div><h3 class="text-md font-bold"><i class="fa-solid fa-vault mr-2 text-indigo-500"></i>Bill Reserves & Variable Carry-Forward</h3>
+          <p class="text-xs text-gray-400 mt-1">Track money actually set aside for upcoming bills and unused variable-budget amounts. These are tracking balances, not additional expenses.</p></div>
+          <span class="text-[10px] text-indigo-400">Saved by budget month</span>
+        </div>
+        <div id="zbb-funding-tracker" class="space-y-4"></div>
       </div>
     </section>
 
@@ -562,11 +573,12 @@
         <table class="w-full text-left text-sm">
           <thead class="bg-gray-50 dark:bg-gray-950 text-xs uppercase border-b border-gray-200 dark:border-gray-800 text-gray-500">
             <tr>
-              <th class="px-4 py-3">Date</th><th class="px-4 py-3">Description</th><th class="px-4 py-3">Type</th><th class="px-4 py-3">Bucket</th><th class="px-4 py-3">Subcategory</th><th class="px-4 py-3">Account</th><th class="px-4 py-3 text-right">Amount</th><th class="px-4 py-3 text-center">Actions</th>
+              <th class="px-4 py-3">Date</th><th class="px-4 py-3">Description</th><th class="px-4 py-3">Vendor</th><th class="px-4 py-3">Type</th><th class="px-4 py-3">Bucket</th><th class="px-4 py-3">Subcategory</th><th class="px-4 py-3">Account</th><th class="px-4 py-3 text-right">Amount</th><th class="px-4 py-3 text-center">Actions</th>
             </tr>
             <tr class="bg-gray-100 dark:bg-gray-900/80 border-t border-gray-200 dark:border-gray-800">
               <th class="px-2 py-2"><input type="text" id="filter-date" onkeyup="renderLedger()" placeholder="Filter..." class="w-full bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded px-2 py-1 text-xs font-normal"></th>
               <th class="px-2 py-2"><input type="text" id="filter-desc" onkeyup="renderLedger()" placeholder="Filter..." class="w-full bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded px-2 py-1 text-xs font-normal"></th>
+              <th class="px-2 py-2"><input type="text" id="filter-vendor" onkeyup="renderLedger()" placeholder="Filter..." class="w-full bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded px-2 py-1 text-xs font-normal"></th>
               <th class="px-2 py-2"><input type="text" id="filter-type" onkeyup="renderLedger()" placeholder="Filter..." class="w-full bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded px-2 py-1 text-xs font-normal"></th>
               <th class="px-2 py-2"><input type="text" id="filter-category" onkeyup="renderLedger()" placeholder="Filter..." class="w-full bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded px-2 py-1 text-xs font-normal"></th>
               <th class="px-2 py-2"><input type="text" id="filter-subcategory" onkeyup="renderLedger()" placeholder="Filter..." class="w-full bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded px-2 py-1 text-xs font-normal"></th>
@@ -963,7 +975,8 @@
           <div><label class="block text-xs font-semibold text-gray-500 mb-1">Date</label><input type="date" id="tx-date" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
           <div><label class="block text-xs font-semibold text-gray-500 mb-1">Account</label><select id="tx-account" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></select></div>
         </div>
-        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Description / Store</label><input type="text" id="tx-desc" oninput="applySmartMerchantRules(this.value)" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" placeholder="e.g. Walmart"></div>
+        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Description</label><input type="text" id="tx-desc" oninput="applySmartMerchantRules(this.value)" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" placeholder="e.g. Weekly groceries"></div>
+        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Vendor (Optional)</label><input type="text" id="tx-vendor" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" placeholder="e.g. Costco"></div>
         <div><label class="block text-xs font-semibold text-gray-500 mb-1">Transaction Type</label><select id="tx-type" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></select></div>
 
         <!-- SINGLE TRANSACTION FIELDS (OPTIONAL DROPDOWNS) -->
@@ -1136,6 +1149,8 @@
     if (state.showHiddenAccounts === undefined) state.showHiddenAccounts = true;
     if (state.collapsibles['sec-advanced-types'] === undefined) state.collapsibles['sec-advanced-types'] = true;
     state.lastBackupAt = state.lastBackupAt || null;
+    state.zbbTracking = state.zbbTracking || {};
+    // Per-period reserve and rollover tracking is additive; legacy budget items need no migration.
 
     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
@@ -1347,7 +1362,7 @@
               <span class="font-bold text-sm ${isAsset ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'} accounting-num blur-target">${formatFinancial(acc.balance, !isAsset)}</span>
               <button onclick="moveAccount('${acc.id}','${group}',-1)" title="Move account up" class="text-gray-400 hover:text-indigo-500 text-xs px-1" ${index===0?'disabled':''}><i class="fa-solid fa-chevron-up"></i></button>
               <button onclick="moveAccount('${acc.id}','${group}',1)" title="Move account down" class="text-gray-400 hover:text-indigo-500 text-xs px-1" ${index===shown.length-1?'disabled':''}><i class="fa-solid fa-chevron-down"></i></button>
-              <button onclick="markAccountReconciled('${acc.id}')" title="Record today's reconciliation date" class="text-gray-400 hover:text-emerald-500 text-xs px-1"><i class="fa-solid fa-check-double"></i></button>
+              <button onclick="markAccountReconciled('${acc.id}')" title="Record today's reconciliation date" class="text-gray-400 hover:text-emerald-500 text-xs px-1"><i class="fa-solid fa-check-double"></i></button><button onclick="editAccountReconciliationDate('${acc.id}')" title="Edit reconciliation date" class="text-gray-400 hover:text-indigo-500 text-xs px-1"><i class="fa-solid fa-calendar-pen"></i></button><button onclick="clearAccountReconciliationDate('${acc.id}')" title="Clear reconciliation date" class="text-gray-400 hover:text-rose-500 text-xs px-1"><i class="fa-solid fa-calendar-xmark"></i></button>
               <label class="flex items-center gap-1 text-[10px] text-gray-500 whitespace-nowrap" title="Include this account in Dashboard totals"><input type="checkbox" ${acc.hidden ? '' : 'checked'} onchange="setAccountIncluded('${acc.id}',this.checked)" class="accent-indigo-600"> Include</label>
             </div>`;
           list.appendChild(row);
@@ -1387,6 +1402,24 @@
       state.showHiddenAccounts = !!show;
       saveData();
       renderDashboard();
+    }
+
+    function editAccountReconciliationDate(id) {
+      const acc = state.accounts.find(a => a.id === id);
+      if (!acc) return;
+      const nextDate = prompt('Enter the reconciliation date (YYYY-MM-DD):', acc.lastReconciledAt || new Date().toISOString().slice(0,10));
+      if (nextDate === null) return;
+      if (nextDate && !/^\d{4}-\d{2}-\d{2}$/.test(nextDate)) { alert('Please use YYYY-MM-DD format.'); return; }
+      acc.lastReconciledAt = nextDate || '';
+      saveData(); renderDashboard();
+    }
+
+    function clearAccountReconciliationDate(id) {
+      const acc = state.accounts.find(a => a.id === id);
+      if (!acc || !acc.lastReconciledAt) return;
+      if (!confirm(`Clear the reconciliation date for ${acc.name}? This will not affect transactions or balances.`)) return;
+      delete acc.lastReconciledAt;
+      saveData(); renderDashboard();
     }
 
     function reorderAccount(draggedId, targetId, group) {
@@ -1578,7 +1611,8 @@
           rows.innerHTML += `
             <tr class="hover:bg-gray-50 dark:hover:bg-gray-950">
               <td class="px-4 py-3">${t.date}</td>
-              <td class="px-4 py-3">${t.desc}</td>
+              <td class="px-4 py-3">${t.desc || '-'}</td>
+              <td class="px-4 py-3">${t.vendor || '-'}</td>
               <td class="px-4 py-3"><span class="px-2 py-0.5 rounded text-[10px] bg-gray-100 dark:bg-gray-800">${t.type}</span></td>
               <td class="px-4 py-3 text-right font-bold ${isExp ? 'text-rose-600' : 'text-emerald-600'} accounting-num">${formatFinancial(t.amount, isExp)}</td>
             </tr>
@@ -1642,6 +1676,27 @@
 
       const zbb = getActiveZbbTemplate();
       const cycle = state.selectedPayCycle || 1;
+      const monthlyAmount = item => {
+        const split = item.split || [50, 50, 0];
+        if (item.splitMode === 'dollar') return (Number(split[0]) || 0) + (Number(split[1]) || 0);
+        return (Number(item.monthly) || 0) * (((Number(split[0]) || 0) + (Number(split[1]) || 0)) / 100);
+      };
+      const sumMonthly = list => (list || []).reduce((sum, item) => sum + monthlyAmount(item), 0);
+      const monthlyIncome = sumMonthly(zbb.incomes), monthlyBills = sumMonthly(zbb.bills), monthlyVariable = sumMonthly(zbb.variable), monthlyDebt = sumMonthly(zbb.debts), monthlySavings = sumMonthly(zbb.savings);
+      const thirdChequeAmount = item => { const split = item.split || [50, 50, 0]; return item.splitMode === 'dollar' ? (Number(split[2]) || 0) : (Number(item.monthly) || 0) * ((Number(split[2]) || 0) / 100); };
+      const sumThird = list => (list || []).reduce((sum, item) => sum + thirdChequeAmount(item), 0);
+      const thirdChequeNet = sumThird(zbb.incomes) - sumThird(zbb.bills) - sumThird(zbb.variable) - sumThird(zbb.debts) - sumThird(zbb.savings);
+      const monthlyPanel = document.getElementById('zbb-monthly-rollup');
+      if (monthlyPanel) monthlyPanel.innerHTML = `
+        <div class="flex items-center justify-between mb-3"><div><h3 class="font-bold text-sm">Calendar-month roll-up</h3><p class="text-[10px] text-gray-400">Combined allocation from Paycheques 1 and 2. Paycheque 3 is shown separately below.</p></div><span class="text-[10px] text-indigo-400">Monthly view</span></div>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 text-xs">
+          <div class="p-2 rounded-lg bg-gray-50 dark:bg-gray-950"><div class="text-gray-400">Income</div><strong>${formatFinancial(monthlyIncome)}</strong></div>
+          <div class="p-2 rounded-lg bg-gray-50 dark:bg-gray-950"><div class="text-gray-400">Fixed bills</div><strong>${formatFinancial(monthlyBills, true)}</strong></div>
+          <div class="p-2 rounded-lg bg-gray-50 dark:bg-gray-950"><div class="text-gray-400">Variable</div><strong>${formatFinancial(monthlyVariable, true)}</strong></div>
+          <div class="p-2 rounded-lg bg-gray-50 dark:bg-gray-950"><div class="text-gray-400">Debt</div><strong>${formatFinancial(monthlyDebt, true)}</strong></div>
+          <div class="p-2 rounded-lg bg-gray-50 dark:bg-gray-950"><div class="text-gray-400">Savings</div><strong>${formatFinancial(monthlySavings, true)}</strong></div>
+          <div class="p-2 rounded-lg bg-gray-50 dark:bg-gray-950"><div class="text-gray-400">Unallocated</div><strong>${formatFinancial(monthlyIncome-monthlyBills-monthlyVariable-monthlyDebt-monthlySavings)}</strong></div>
+        </div><div class="mt-3 p-3 rounded-xl border border-indigo-500/20 bg-indigo-500/5 text-xs"><span class="font-semibold">Paycheque 3 (custom allocation):</span> Net planned amount <strong class="accounting-num">${formatFinancial(thirdChequeNet)}</strong>. This is shown separately and is not automatically added to the regular two-paycheque monthly baseline.</div>`;
       let incomeSum = 0, billsSum = 0, variableSum = 0, debtSum = 0, savingsSum = 0;
 
       const calcAmt = (item) => {
@@ -1760,6 +1815,52 @@
           </div>
         `;
       });
+      renderZbbFundingTracker();
+    }
+
+    function getZbbTrackingRecord(itemId) {
+      const period = state.selectedZbbPeriod || '2026-11';
+      state.zbbTracking = state.zbbTracking || {};
+      state.zbbTracking[period] = state.zbbTracking[period] || {};
+      state.zbbTracking[period][itemId] = state.zbbTracking[period][itemId] || {};
+      return state.zbbTracking[period][itemId];
+    }
+
+    function updateZbbTracking(itemId, field, value) {
+      const record = getZbbTrackingRecord(itemId);
+      record[field] = Math.max(0, Number(value) || 0);
+      saveData();
+      renderZbbFundingTracker();
+    }
+
+    function renderZbbFundingTracker() {
+      const host = document.getElementById('zbb-funding-tracker');
+      if (!host) return;
+      const zbb = getActiveZbbTemplate();
+      const bills = zbb.bills || [];
+      const variables = zbb.variable || [];
+      const money = n => formatFinancial(Number(n) || 0);
+      let html = `<div><h4 class="text-xs font-bold uppercase tracking-wide text-gray-500 mb-2">Monthly bill reserves</h4><div class="overflow-x-auto"><table class="w-full text-xs"><thead><tr class="text-left text-gray-400 border-b border-gray-200 dark:border-gray-800"><th class="py-2 pr-2">Bill</th><th class="py-2 px-2">Monthly target</th><th class="py-2 px-2">Reserved so far</th><th class="py-2 pl-2 text-right">Still needed</th></tr></thead><tbody>`;
+      if (!bills.length) html += `<tr><td colspan="4" class="py-3 text-gray-400">Add fixed bills above to track their reserves.</td></tr>`;
+      bills.forEach(item => {
+        const rec = getZbbTrackingRecord(item.id);
+        const target = Number(item.monthly) || 0;
+        const reserved = Number(rec.reserved) || 0;
+        html += `<tr class="border-b border-gray-100 dark:border-gray-800/70"><td class="py-2 pr-2 font-semibold">${item.name}</td><td class="py-2 px-2 accounting-num">${money(target)}</td><td class="py-2 px-2"><input aria-label="Reserved so far for ${item.name}" type="number" min="0" step="0.01" value="${reserved}" onchange="updateZbbTracking('${item.id}','reserved',this.value)" class="w-28 max-w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-1"></td><td class="py-2 pl-2 text-right font-semibold accounting-num ${target-reserved>0?'text-amber-500':'text-emerald-500'}">${money(Math.max(0,target-reserved))}</td></tr>`;
+      });
+      html += `</tbody></table></div></div>`;
+      html += `<div><h4 class="text-xs font-bold uppercase tracking-wide text-gray-500 mb-2">Variable budget carry-forward</h4><p class="text-[10px] text-gray-400 mb-2">Enter the unused amount brought into this month and actual spending to see the remaining available budget.</p><div class="overflow-x-auto"><table class="w-full text-xs"><thead><tr class="text-left text-gray-400 border-b border-gray-200 dark:border-gray-800"><th class="py-2 pr-2">Category</th><th class="py-2 px-2">Monthly budget</th><th class="py-2 px-2">Carry-in</th><th class="py-2 px-2">Actual spent</th><th class="py-2 pl-2 text-right">Available</th></tr></thead><tbody>`;
+      if (!variables.length) html += `<tr><td colspan="5" class="py-3 text-gray-400">Add variable expenses above to track carry-forward.</td></tr>`;
+      variables.forEach(item => {
+        const rec = getZbbTrackingRecord(item.id);
+        const budget = Number(item.monthly) || 0;
+        const carry = Number(rec.carryIn) || 0;
+        const spent = Number(rec.actualSpent) || 0;
+        const available = budget + carry - spent;
+        html += `<tr class="border-b border-gray-100 dark:border-gray-800/70"><td class="py-2 pr-2 font-semibold">${item.name}</td><td class="py-2 px-2 accounting-num">${money(budget)}</td><td class="py-2 px-2"><input aria-label="Carry-in for ${item.name}" type="number" min="0" step="0.01" value="${carry}" onchange="updateZbbTracking('${item.id}','carryIn',this.value)" class="w-24 max-w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-1"></td><td class="py-2 px-2"><input aria-label="Actual spending for ${item.name}" type="number" min="0" step="0.01" value="${spent}" onchange="updateZbbTracking('${item.id}','actualSpent',this.value)" class="w-24 max-w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-1"></td><td class="py-2 pl-2 text-right font-semibold accounting-num ${available<0?'text-rose-500':'text-emerald-500'}">${money(available)}</td></tr>`;
+      });
+      html += `</tbody></table></div></div>`;
+      host.innerHTML = html;
     }
 
     function openZbbItemModal(type, editId = null) {
@@ -1888,7 +1989,7 @@
           }
 
           badges += `
-            <div onclick="editCalendarItem('${b.id}', event)" class="text-[10px] p-1.5 rounded border ${style} font-medium mt-1 cursor-pointer shadow-sm flex flex-col justify-between hover:scale-[1.02] transition-transform">
+            <div draggable="${!b.paid}" ondragstart="startCalendarBillDrag(event, '${b.id}')" onclick="editCalendarItem('${b.id}', event)" class="text-[10px] p-1.5 rounded border ${style} font-medium mt-1 cursor-pointer shadow-sm flex flex-col justify-between hover:scale-[1.02] transition-transform">
               <div class="flex justify-between items-center">
                 <span class="truncate font-bold">${b.desc}</span>
                 <span class="accounting-num ml-1">${formatFinancial(b.amount, !isInc)}</span>
@@ -1904,12 +2005,30 @@
         });
 
         grid.innerHTML += `
-          <div onclick="openCalendarModal('${dateStr}')" class="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-2 min-h-[90px] cursor-pointer hover:border-indigo-500 transition-colors">
+          <div ondragover="event.preventDefault()" ondrop="dropCalendarBill(event, '${dateStr}')" onclick="openCalendarModal('${dateStr}')" class="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-2 min-h-[90px] cursor-pointer hover:border-indigo-500 transition-colors">
             <span class="text-xs font-semibold text-gray-500">${day}</span>
             <div class="space-y-1 mt-1">${badges}</div>
           </div>
         `;
       }
+    }
+
+    let draggedCalendarBillId = null;
+    function startCalendarBillDrag(event, billId) {
+      const bill = state.calendarBills.find(b => b.id === billId);
+      if (!bill || bill.paid) { event.preventDefault(); return; }
+      draggedCalendarBillId = billId;
+      event.dataTransfer.setData('text/plain', billId);
+      event.dataTransfer.effectAllowed = 'move';
+    }
+    function dropCalendarBill(event, newDate) {
+      event.preventDefault(); event.stopPropagation();
+      const id = event.dataTransfer.getData('text/plain') || draggedCalendarBillId;
+      const bill = state.calendarBills.find(b => b.id === id);
+      if (!bill || bill.paid || !newDate) return;
+      bill.date = newDate;
+      draggedCalendarBillId = null;
+      saveData(); renderCalendar(); renderLedger();
     }
 
     function changeAnnualYear(delta) {
@@ -2177,7 +2296,7 @@
     }
 
     function clearLedgerFilters() {
-      ['filter-date', 'filter-desc', 'filter-type', 'filter-category', 'filter-subcategory', 'filter-account'].forEach(id => {
+      ['filter-date', 'filter-desc', 'filter-vendor', 'filter-type', 'filter-category', 'filter-subcategory', 'filter-account'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.value = '';
       });
@@ -2214,6 +2333,7 @@
 
       const fDate = (document.getElementById('filter-date')?.value || '').toLowerCase();
       const fDesc = (document.getElementById('filter-desc')?.value || '').toLowerCase();
+      const fVendor = (document.getElementById('filter-vendor')?.value || '').toLowerCase();
       const fType = (document.getElementById('filter-type')?.value || '').toLowerCase();
       const fCat = (document.getElementById('filter-category')?.value || '').toLowerCase();
       const fSub = (document.getElementById('filter-subcategory')?.value || '').toLowerCase();
@@ -2226,7 +2346,8 @@
         const acc = state.accounts.find(a => a.id === t.accountId);
         const accName = acc ? acc.name.toLowerCase() : '';
         if (fDate && !t.date.toLowerCase().includes(fDate)) return false;
-        if (fDesc && !t.desc.toLowerCase().includes(fDesc)) return false;
+        if (fDesc && !(t.desc || '').toLowerCase().includes(fDesc)) return false;
+        if (fVendor && !(t.vendor || '').toLowerCase().includes(fVendor)) return false;
         if (fType && !t.type.toLowerCase().includes(fType)) return false;
         if (fCat && !(t.category || '').toLowerCase().includes(fCat)) return false;
         if (fSub && !(t.subcategory || '').toLowerCase().includes(fSub)) return false;
@@ -2235,7 +2356,7 @@
       });
 
       if (matchedTxs.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-6 text-center text-xs text-gray-400">No matching transactions found.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" class="px-6 py-6 text-center text-xs text-gray-400">No matching transactions found.</td></tr>`;
       } else {
         matchedTxs.forEach(t => {
           const acc = state.accounts.find(a => a.id === t.accountId);
@@ -2243,7 +2364,8 @@
           tbody.innerHTML += `
             <tr class="hover:bg-gray-50 dark:hover:bg-gray-950">
               <td class="px-4 py-3">${t.date}</td>
-              <td class="px-4 py-3">${t.desc}</td>
+              <td class="px-4 py-3">${t.desc || '-'}</td>
+              <td class="px-4 py-3">${t.vendor || '-'}</td>
               <td class="px-4 py-3"><span class="px-2 py-0.5 rounded text-[10px] bg-gray-100 dark:bg-gray-800">${t.type}</span></td>
               <td class="px-4 py-3">${t.category || '-'}</td>
               <td class="px-4 py-3">${t.subcategory || '-'}</td>
@@ -2772,7 +2894,8 @@
           document.getElementById('tx-modal-title').innerText = "Edit Transaction";
           document.getElementById('tx-edit-id').value = tx.id;
           document.getElementById('tx-date').value = tx.date;
-          document.getElementById('tx-desc').value = tx.desc;
+          document.getElementById('tx-desc').value = tx.desc || '';
+          document.getElementById('tx-vendor').value = tx.vendor || '';
           document.getElementById('tx-type').value = tx.type;
           document.getElementById('tx-category').value = tx.category || '';
           updateSubcategoryDropdown();
@@ -2785,6 +2908,7 @@
         document.getElementById('tx-edit-id').value = '';
         document.getElementById('transaction-form').reset();
         document.getElementById('tx-date').value = new Date().toISOString().split('T')[0];
+        document.getElementById('tx-vendor').value = '';
       }
       document.getElementById('transaction-modal').classList.remove('hidden');
     }
@@ -2835,6 +2959,7 @@
       const accountId = document.getElementById('tx-account').value;
       const type = document.getElementById('tx-type').value;
       const desc = document.getElementById('tx-desc').value;
+      const vendor = (document.getElementById('tx-vendor')?.value || '').trim();
       const date = document.getElementById('tx-date').value;
       captureUndo(editId ? 'Edit transaction' : 'Add transaction');
 
@@ -2847,7 +2972,7 @@
           if (amt > 0) {
             state.transactions.unshift({
               id: Date.now().toString() + Math.random(),
-              date, desc, type,
+              date, desc, vendor, type,
               category: catSub[0] || '',
               subcategory: catSub[1] || '',
               amount: amt, accountId
@@ -2867,12 +2992,12 @@
             const oldT = state.transactions[idx];
             const oldAcc = state.accounts.find(a => a.id === oldT.accountId);
             if (oldAcc) { if (oldT.type === 'Income') oldAcc.balance -= oldT.amount; else oldAcc.balance += oldT.amount; }
-            state.transactions[idx] = { id: editId, date, desc, type, category, subcategory, amount, accountId };
+            state.transactions[idx] = { ...oldT, id: editId, date, desc, vendor, type, category, subcategory, amount, accountId };
             const newAcc = state.accounts.find(a => a.id === accountId);
             if (newAcc) { if (type === 'Income') newAcc.balance += amount; else newAcc.balance -= amount; }
           }
         } else {
-          state.transactions.unshift({ id: Date.now().toString(), date, desc, type, category, subcategory, amount, accountId });
+          state.transactions.unshift({ id: Date.now().toString(), date, desc, vendor, type, category, subcategory, amount, accountId });
           const acc = state.accounts.find(a => a.id === accountId);
           if (acc) { if (type === 'Income') acc.balance += amount; else acc.balance -= amount; }
         }
@@ -2937,6 +3062,9 @@
           if (state.showHiddenAccounts === undefined) state.showHiddenAccounts = true;
           if (state.collapsibles['sec-advanced-types'] === undefined) state.collapsibles['sec-advanced-types'] = true;
           state.lastBackupAt = state.lastBackupAt || null;
+          state.zbbTracking = state.zbbTracking || {};
+    state.zbbTracking = state.zbbTracking || {};
+    // Per-period reserve and rollover tracking is additive; legacy budget items need no migration.
           saveData();
           initThemeAndBlur();
           applyCollapsibles();
