@@ -645,12 +645,16 @@
         <h3 id="acc-detail-title" class="text-lg font-bold">Account Transactions & Settings</h3>
         <button onclick="closeAccountDetailModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-lg"></i></button>
       </div>
-      <div class="flex justify-between items-center bg-gray-50 dark:bg-gray-950 p-3 rounded-xl border border-gray-200 dark:border-gray-800">
+      <div class="flex flex-wrap justify-between items-center gap-3 bg-gray-50 dark:bg-gray-950 p-3 rounded-xl border border-gray-200 dark:border-gray-800">
         <div>
-          <div class="text-xs font-bold text-rose-500">Danger Zone</div>
-          <div class="text-[11px] text-gray-400">Permanently delete this account and its records</div>
+          <div class="text-xs font-bold text-rose-500">Account Actions</div>
+          <div class="text-[11px] text-gray-400">Manage this account or permanently delete it</div>
         </div>
-        <button onclick="confirmDeleteAccountFromModal()" class="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-semibold"><i class="fa-solid fa-trash mr-1"></i> Delete Account</button>
+        <div class="flex items-center gap-2">
+          <button id="acc-detail-edit-asset" onclick="openAssetEditModal(window.currentEditingAccountId)" class="hidden px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold theme-bg"><i class="fa-solid fa-pen mr-1"></i> Edit Account</button>
+          <button id="acc-detail-edit-debt" onclick="openDebtDetailModal(window.currentEditingAccountId)" class="hidden px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold theme-bg"><i class="fa-solid fa-pen mr-1"></i> Edit Liability</button>
+          <button onclick="confirmDeleteAccountFromModal()" class="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-semibold"><i class="fa-solid fa-trash mr-1"></i> Delete Account</button>
+        </div>
       </div>
       <div class="overflow-x-auto max-h-72 custom-scrollbar">
         <table class="w-full text-left text-sm">
@@ -1251,7 +1255,7 @@
 
         const html = `
           <div class="flex justify-between items-center bg-gray-50 dark:bg-gray-950 p-3.5 rounded-xl border border-gray-200 dark:border-gray-800 ${acc.hidden ? 'opacity-50' : ''}">
-            <div class="cursor-pointer flex-1" onclick="${isAsset ? `openAccountDetail('${acc.id}')` : `openDebtDetailModal('${acc.id}')`}">
+            <div class="cursor-pointer flex-1" onclick="openAccountDetail('${acc.id}')">
               <div class="font-semibold text-sm flex items-center space-x-2">
                 <span>${acc.name}</span>
                 <span class="text-[10px] bg-indigo-100 dark:bg-indigo-950/60 text-indigo-400 px-2 py-0.5 rounded border border-indigo-500/20 font-medium">${indType}</span>
@@ -1262,7 +1266,6 @@
             <div class="flex items-center space-x-2">
               <span class="font-bold text-sm ${isAsset ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'} accounting-num blur-target">${formatFinancial(acc.balance, !isAsset)}</span>
               <button onclick="toggleAccountHide('${acc.id}')" title="Archive / Restore account" class="text-gray-400 hover:text-indigo-500 text-xs px-1"><i class="fa-solid fa-box-archive"></i></button>
-              ${!isAsset ? `<button onclick="deleteAccountById('${acc.id}')" title="Delete liability account" class="text-gray-400 hover:text-rose-500 text-xs px-1"><i class="fa-solid fa-trash"></i></button>` : ''}
             </div>
           </div>
         `;
@@ -1394,6 +1397,10 @@
       if (!acc) return;
       window.currentEditingAccountId = acc.id;
       document.getElementById('acc-detail-title').innerText = `${acc.name} - Transactions & Settings`;
+      const debtEditButton = document.getElementById('acc-detail-edit-debt');
+      const assetEditButton = document.getElementById('acc-detail-edit-asset');
+      if (debtEditButton) debtEditButton.classList.toggle('hidden', acc.type !== 'debt');
+      if (assetEditButton) assetEditButton.classList.toggle('hidden', acc.type !== 'asset');
       const rows = document.getElementById('acc-detail-rows');
       rows.innerHTML = '';
       const matched = state.transactions.filter(t => t.accountId === accId);
@@ -2532,25 +2539,50 @@
       saveData(); closeTransferModal(); renderDashboard(); renderLedger();
     }
 
-    function openAccountModal() { document.getElementById('account-modal').classList.remove('hidden'); }
+    function openAccountModal() {
+      document.getElementById('account-form').reset();
+      document.getElementById('acc-edit-id').value = '';
+      document.getElementById('acc-modal-title').innerText = 'Add Account';
+      document.getElementById('account-modal').classList.remove('hidden');
+    }
+    function openAssetEditModal(accountId) {
+      const acc = state.accounts.find(a => a.id === accountId && a.type === 'asset');
+      if (!acc) return;
+      document.getElementById('acc-edit-id').value = acc.id;
+      document.getElementById('acc-modal-title').innerText = 'Edit Account';
+      document.getElementById('acc-name').value = acc.name || '';
+      document.getElementById('acc-individual-type').value = acc.individualType || 'Chequing';
+      document.getElementById('acc-type').value = 'asset';
+      document.getElementById('acc-balance').value = Number(acc.balance) || 0;
+      document.getElementById('acc-interest-rate').value = Number(acc.interestRate) || 0;
+      document.getElementById('account-modal').classList.remove('hidden');
+    }
     function closeAccountModal() { document.getElementById('account-modal').classList.add('hidden'); }
     function saveAccount(e) {
       e.preventDefault();
-      const newAcc = {
-        id: Date.now().toString(),
+      const editId = document.getElementById('acc-edit-id').value;
+      const accountData = {
         name: document.getElementById('acc-name').value,
         type: document.getElementById('acc-type').value,
         individualType: document.getElementById('acc-individual-type').value,
         balance: parseFloat(document.getElementById('acc-balance').value) || 0,
-        interestRate: parseFloat(document.getElementById('acc-interest-rate').value) || 0,
-        hidden: false
+        interestRate: parseFloat(document.getElementById('acc-interest-rate').value) || 0
       };
-      state.accounts.push(newAcc);
-      saveData(); closeAccountModal(); renderDashboard();
-      pushUndoState(`Add Account "${newAcc.name}"`, () => {
-        state.accounts = state.accounts.filter(a => a.id !== newAcc.id);
-        saveData(); renderDashboard();
-      });
+      if (editId) {
+        const existing = state.accounts.find(a => a.id === editId);
+        if (!existing || existing.type !== 'asset') return;
+        captureUndo(`Edit Account "${existing.name}"`);
+        Object.assign(existing, accountData);
+        saveData(); closeAccountModal(); closeAccountDetailModal(); renderDashboard(); renderLedger();
+      } else {
+        const newAcc = { id: Date.now().toString(), ...accountData, hidden: false };
+        state.accounts.push(newAcc);
+        saveData(); closeAccountModal(); renderDashboard();
+        pushUndoState(`Add Account "${newAcc.name}"`, () => {
+          state.accounts = state.accounts.filter(a => a.id !== newAcc.id);
+          saveData(); renderDashboard();
+        });
+      }
     }
 
     function openTransactionModal(editId = null) {
