@@ -56,6 +56,81 @@
       #dash-asset-list > div > div:last-child, #dash-debt-list > div > div:last-child { width:100%; margin-left:1.4rem; flex-wrap:wrap; }
       .dashboard-order-controls { opacity:1; }
     }
+
+    /* FinHub full-interface visual themes. Classic remains the original design. */
+    body[data-finhub-theme="silver"] { background:#e7ebef !important; color:#26313c; }
+    html.dark body[data-finhub-theme="silver"] { background:#171d24 !important; color:#e5eaf0; }
+    body[data-finhub-theme="silver"] aside,
+    body[data-finhub-theme="silver"] .tab-content .bg-white,
+    body[data-finhub-theme="silver"] #transaction-modal > div,
+    body[data-finhub-theme="silver"] #bulk-edit-modal > div,
+    body[data-finhub-theme="silver"] #vendor-rule-modal > div,
+    body[data-finhub-theme="silver"] #recon-modal > div { background-color:#f5f7f9 !important; border-color:#cbd3dc !important; }
+    html.dark body[data-finhub-theme="silver"] aside,
+    html.dark body[data-finhub-theme="silver"] .tab-content .bg-white,
+    html.dark body[data-finhub-theme="silver"] #transaction-modal > div,
+    html.dark body[data-finhub-theme="silver"] #bulk-edit-modal > div,
+    html.dark body[data-finhub-theme="silver"] #vendor-rule-modal > div,
+    html.dark body[data-finhub-theme="silver"] #recon-modal > div { background-color:#222b35 !important; border-color:#3b4856 !important; }
+    body[data-finhub-theme="silver"] .theme-bg { background-color:#536474 !important; }
+    body[data-finhub-theme="silver"] .theme-text { color:#536b80 !important; }
+    html.dark body[data-finhub-theme="silver"] .theme-text { color:#a9c0d3 !important; }
+    body[data-finhub-theme="silver"] .bg-gray-50,
+    body[data-finhub-theme="silver"] .bg-gray-100 { background-color:#e9eef2 !important; }
+    html.dark body[data-finhub-theme="silver"] .bg-gray-950,
+    html.dark body[data-finhub-theme="silver"] .bg-gray-900 { background-color:#19222c !important; }
+
+    body[data-finhub-theme="neutral"] { background:#eee9e1 !important; color:#39352f; }
+    html.dark body[data-finhub-theme="neutral"] { background:#211f1b !important; color:#eee8de; }
+    body[data-finhub-theme="neutral"] aside,
+    body[data-finhub-theme="neutral"] .tab-content .bg-white,
+    body[data-finhub-theme="neutral"] #transaction-modal > div,
+    body[data-finhub-theme="neutral"] #bulk-edit-modal > div,
+    body[data-finhub-theme="neutral"] #vendor-rule-modal > div,
+    body[data-finhub-theme="neutral"] #recon-modal > div { background-color:#faf7f1 !important; border-color:#d9d0c3 !important; }
+    html.dark body[data-finhub-theme="neutral"] aside,
+    html.dark body[data-finhub-theme="neutral"] .tab-content .bg-white,
+    html.dark body[data-finhub-theme="neutral"] #transaction-modal > div,
+    html.dark body[data-finhub-theme="neutral"] #bulk-edit-modal > div,
+    html.dark body[data-finhub-theme="neutral"] #vendor-rule-modal > div,
+    html.dark body[data-finhub-theme="neutral"] #recon-modal > div { background-color:#302c26 !important; border-color:#51483d !important; }
+    body[data-finhub-theme="neutral"] .theme-bg { background-color:#88745d !important; }
+    body[data-finhub-theme="neutral"] .theme-text { color:#88745d !important; }
+    html.dark body[data-finhub-theme="neutral"] .theme-text { color:#c5ad8e !important; }
+    body[data-finhub-theme="neutral"] .bg-gray-50,
+    body[data-finhub-theme="neutral"] .bg-gray-100 { background-color:#f0ebe2 !important; }
+    html.dark body[data-finhub-theme="neutral"] .bg-gray-950,
+    html.dark body[data-finhub-theme="neutral"] .bg-gray-900 { background-color:#27231e !important; }
+
+    body[data-finhub-theme="colorful"] { background:#f0edf7 !important; color:#302b40; }
+    html.dark body[data-finhub-theme="colorful"] { background:#191727 !important; color:#eeeafa; }
+    body[data-finhub-theme="colorful"] aside,
+    body[data-finhub-theme="colorful"] .tab-content .bg-white,
+    body[data-finhub-theme="colorful"] #transaction-modal > div,
+    body[data-finhub-theme="colorful"] #bulk-edit-modal > div,
+    body[data-finhub-theme="colorful"] #vendor-rule-modal > div,
+    body[data-finhub-theme="colorful"] #recon-modal > div { background-color:#fbfaff !important; border-color:#ddd5ee !important; }
+    html.dark body[data-finhub-theme="colorful"] aside,
+    html.dark body[data-finhub-theme="colorful"] .tab-content .bg-white,
+    html.dark body[data-finhub-theme="colorful"] #transaction-modal > div,
+    html.dark body[data-finhub-theme="colorful"] #bulk-edit-modal > div,
+    html.dark body[data-finhub-theme="colorful"] #vendor-rule-modal > div,
+    html.dark body[data-finhub-theme="colorful"] #recon-modal > div { background-color:#252139 !important; border-color:#454064 !important; }
+    body[data-finhub-theme="colorful"] .theme-bg { background-color:#7658bd !important; }
+    body[data-finhub-theme="colorful"] .theme-text { color:#7658bd !important; }
+    html.dark body[data-finhub-theme="colorful"] .theme-text { color:#b7a3f0 !important; }
+    body[data-finhub-theme="colorful"] .bg-gray-50,
+    body[data-finhub-theme="colorful"] .bg-gray-100 { background-color:#f0edf8 !important; }
+    html.dark body[data-finhub-theme="colorful"] .bg-gray-950,
+    html.dark body[data-finhub-theme="colorful"] .bg-gray-900 { background-color:#1e1b31 !important; }
+
+    body[data-finhub-theme="silver"] #brand-logo, body[data-finhub-theme="silver"] .nav-btn[style*="background-color"] { background-color:#536474 !important; }
+    body[data-finhub-theme="neutral"] #brand-logo, body[data-finhub-theme="neutral"] .nav-btn[style*="background-color"] { background-color:#88745d !important; }
+    body[data-finhub-theme="colorful"] #brand-logo, body[data-finhub-theme="colorful"] .nav-btn[style*="background-color"] { background-color:#7658bd !important; }
+    body[data-finhub-theme="silver"] input, body[data-finhub-theme="silver"] select, body[data-finhub-theme="silver"] textarea,
+    body[data-finhub-theme="neutral"] input, body[data-finhub-theme="neutral"] select, body[data-finhub-theme="neutral"] textarea,
+    body[data-finhub-theme="colorful"] input, body[data-finhub-theme="colorful"] select, body[data-finhub-theme="colorful"] textarea { border-color:rgba(120,130,145,.38) !important; }
+
   </style>
 </head>
 <body id="app-body" class="bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 min-h-screen flex flex-col md:flex-row transition-colors duration-200 relative">
@@ -709,9 +784,22 @@
         </div>
       </div>
 
+      <!-- FULL APPLICATION THEME SELECTOR -->
+      <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-3 shadow-sm">
+        <h3 class="text-md font-bold">Application Themes</h3>
+        <p class="text-xs text-gray-400">Choose a complete interface palette. Your theme is saved with your FinHub settings and does not change financial data.</p>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <button type="button" onclick="setVisualTheme('classic')" class="text-left rounded-xl border border-gray-200 dark:border-gray-700 p-3 hover:ring-2 ring-indigo-400"><span class="block h-7 rounded-lg mb-2" style="background:linear-gradient(90deg,#f3f4f6 50%,#4f46e5 50%)"></span><strong class="text-xs">Classic</strong><span class="block text-[10px] text-gray-400">Original FinHub look</span></button>
+          <button type="button" onclick="setVisualTheme('silver')" class="text-left rounded-xl border border-gray-200 dark:border-gray-700 p-3 hover:ring-2 ring-slate-400"><span class="block h-7 rounded-lg mb-2" style="background:linear-gradient(90deg,#e7ebef 50%,#536474 50%)"></span><strong class="text-xs">Silver Bengal</strong><span class="block text-[10px] text-gray-400">Silver, charcoal, icy blue</span></button>
+          <button type="button" onclick="setVisualTheme('neutral')" class="text-left rounded-xl border border-gray-200 dark:border-gray-700 p-3 hover:ring-2 ring-amber-700"><span class="block h-7 rounded-lg mb-2" style="background:linear-gradient(90deg,#eee9e1 50%,#88745d 50%)"></span><strong class="text-xs">Warm Neutral</strong><span class="block text-[10px] text-gray-400">Ivory, cream, taupe</span></button>
+          <button type="button" onclick="setVisualTheme('colorful')" class="text-left rounded-xl border border-gray-200 dark:border-gray-700 p-3 hover:ring-2 ring-violet-400"><span class="block h-7 rounded-lg mb-2" style="background:linear-gradient(90deg,#f0edf7 33%,#7658bd 33% 66%,#43a6a0 66%)"></span><strong class="text-xs">Colourful Modern</strong><span class="block text-[10px] text-gray-400">Purple, teal, coral accents</span></button>
+        </div>
+        <p id="active-visual-theme-label" class="text-[10px] text-gray-500">Current theme: Classic</p>
+      </div>
+
       <!-- COLOR THEME SELECTOR -->
       <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-3 shadow-sm">
-        <h3 class="text-md font-bold">App Color Theme Selector</h3>
+        <h3 class="text-md font-bold">Accent Color</h3>
         <p class="text-xs text-gray-400">Select an accent color palette to customize your FinHub interface</p>
         <div class="flex flex-wrap items-center gap-3 pt-2">
           <button type="button" title="Indigo" onclick="setAppThemeColor('indigo')" class="w-8 h-8 rounded-full bg-indigo-600 hover:ring-2 ring-indigo-400"></button>
@@ -810,7 +898,9 @@
       <form onsubmit="saveVendorCleanupRule(event)" class="space-y-3">
         <div><label class="block text-xs font-semibold text-gray-500 mb-1">Bank statement text contains</label><input id="vendor-rule-match" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" placeholder="e.g. TIM HORTONS #" /></div>
         <div><label class="block text-xs font-semibold text-gray-500 mb-1">Clean vendor name</label><input id="vendor-rule-replacement" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" placeholder="e.g. Tim Hortons" /></div>
-        <p class="text-[10px] text-gray-400">Rules match case-insensitively and ignore punctuation/spacing differences. More specific rules should be listed before broader ones.</p>
+        <input type="hidden" id="vendor-rule-row-id" value=""><input type="hidden" id="vendor-rule-edit-index" value="-1">
+        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Apply rule to</label><select id="vendor-rule-scope" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"><option value="future">Future imports and new transactions only</option><option value="historical">Existing matching transactions and future imports</option></select></div>
+        <p class="text-[10px] text-gray-400">Rules match case-insensitively and ignore punctuation/spacing differences. Historical changes are previewed before applying. The original bank description remains available in statement reconciliation history.</p>
         <div class="flex gap-2"><button type="button" onclick="closeVendorRuleModal()" class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold">Cancel</button><button type="submit" class="flex-1 py-2 bg-indigo-600 text-white rounded-xl text-sm font-semibold theme-bg">Save Rule</button></div>
       </form>
     </div>
@@ -961,11 +1051,12 @@
   <!-- MODAL: MERCHANT RULE -->
   <div id="merchant-rule-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50">
     <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
-      <h3 class="text-lg font-bold">Add Smart Merchant Auto-Tag Rule</h3>
+      <h3 id="merchant-rule-modal-title" class="text-lg font-bold">Add Smart Merchant Auto-Tag Rule</h3>
+        <input type="hidden" id="mr-edit-index" value="-1">
       <form id="merchant-rule-form" onsubmit="saveMerchantRule(event)" class="space-y-3">
         <div><label class="block text-xs font-semibold text-gray-500 mb-1">Merchant Keyword / Name</label><input type="text" id="mr-keyword" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" placeholder="e.g. Walmart"></div>
         <div><label class="block text-xs font-semibold text-gray-500 mb-1">Spending Bucket</label><select id="mr-category" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></select></div>
-        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Subcategory</label><input type="text" id="mr-subcategory" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" placeholder="e.g. Groceries"></div>
+        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Subcategory</label><input type="text" id="mr-subcategory" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" placeholder="e.g. Groceries"></div>
         <div class="flex space-x-3 pt-3">
           <button type="button" onclick="closeMerchantRuleModal()" class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold">Cancel</button>
           <button type="submit" class="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold theme-bg">Save Rule</button>
@@ -1135,7 +1226,8 @@
         </div>
         <div><label class="block text-xs font-semibold text-gray-500 mb-1">Vendor <span class="text-rose-500">*</span></label><input type="text" id="tx-vendor" oninput="applySmartMerchantRules(this.value)" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" placeholder="e.g. Costco"></div>
         <div><label class="block text-xs font-semibold text-gray-500 mb-1">Description (Optional)</label><input type="text" id="tx-desc" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" placeholder="e.g. Weekly groceries"></div>
-        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Transaction Type</label><select id="tx-type" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></select></div>
+        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Transaction Type</label><select id="tx-type" onchange="updateTransactionTypeFields()" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></select></div>
+        <div id="tx-transfer-destination-wrap" class="hidden"><label class="block text-xs font-semibold text-gray-500 mb-1">Transfer To Account</label><select id="tx-transfer-to" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></select></div>
         <div><label class="block text-xs font-semibold text-gray-500 mb-1">Related Debt Account (Optional)</label><select id="tx-related-debt" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"><option value="">Not linked to a debt account</option></select><p class="text-[10px] text-gray-400 mt-1">Use this for interest expenses or other transactions you want included in a debt account's activity.</p></div>
 
         <!-- SINGLE TRANSACTION FIELDS (OPTIONAL DROPDOWNS) -->
@@ -1151,6 +1243,14 @@
             </div>
           </div>
           <div><label class="block text-xs font-semibold text-gray-500 mb-1">Total Amount ($)</label><input type="number" step="0.01" id="tx-amount" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
+          <div class="border-t border-gray-200 dark:border-gray-800 pt-3 space-y-2">
+            <label class="flex items-center gap-2 text-xs font-semibold"><input type="checkbox" id="tx-save-category-rule" onchange="toggleTransactionRuleOptions()" class="accent-indigo-600"> Save this vendor-to-bucket assignment as a rule</label>
+            <div id="tx-category-rule-options" class="hidden pl-5 space-y-1">
+              <label class="block text-[10px] text-gray-500">Apply rule to</label>
+              <select id="tx-category-rule-scope" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-1.5 text-xs"><option value="future">Future transactions only</option><option value="historical">Existing matching transactions and future ones</option></select>
+              <p class="text-[10px] text-gray-400">Uses the vendor name as the matching keyword. Historical changes are previewed before they are applied.</p>
+            </div>
+          </div>
         </div>
 
         <!-- SPLIT TRANSACTION ENGINE -->
@@ -1326,6 +1426,8 @@
     state.zbbPoolTracking = state.zbbPoolTracking || {};
     state.statementReconciliation = state.statementReconciliation || { batches: [] };
     state.vendorCleanupRules = Array.isArray(state.vendorCleanupRules) ? state.vendorCleanupRules : [];
+    state.merchantRules = Array.isArray(state.merchantRules) ? state.merchantRules : [];
+    state.appVisualTheme = ['classic','silver','neutral','colorful'].includes(state.appVisualTheme) ? state.appVisualTheme : 'classic';
     if (!Array.isArray(state.variablePoolCategories)) state.variablePoolCategories = (state.categories || []).filter(c => !/housing|bill|debt service/i.test(c.name)).map(c => c.name);
     // New planner and reconciliation fields are additive; existing transactions and budgets remain intact.
 
@@ -1356,9 +1458,23 @@
       if (state.darkMode) document.documentElement.classList.add('dark');
       else document.documentElement.classList.remove('dark');
       applyThemeColor(state.appThemeColor || 'indigo');
+      applyVisualTheme(state.appVisualTheme || 'classic');
       applyPrivacyBlurState();
     }
 
+    const FINHUB_VISUAL_THEMES = ['classic','silver','neutral','colorful'];
+    function applyVisualTheme(theme) {
+      const chosen = FINHUB_VISUAL_THEMES.includes(theme) ? theme : 'classic';
+      document.getElementById('app-body')?.setAttribute('data-finhub-theme', chosen);
+      const label = document.getElementById('active-visual-theme-label');
+      if (label) label.textContent = `Current theme: ${{classic:'Classic',silver:'Silver Bengal',neutral:'Warm Neutral',colorful:'Colourful Modern'}[chosen]}`;
+    }
+    function setVisualTheme(theme) {
+      if (!FINHUB_VISUAL_THEMES.includes(theme)) return;
+      state.appVisualTheme = theme;
+      applyVisualTheme(theme);
+      saveData();
+    }
     function toggleTheme() { state.darkMode = !state.darkMode; initThemeAndBlur(); saveData(); }
     function togglePrivacyBlur() { state.privacyBlur = !state.privacyBlur; applyPrivacyBlurState(); saveData(); }
     function applyPrivacyBlurState() {
@@ -1499,6 +1615,7 @@
       applyCollapsibles();
       applyPrivacyBlurState();
       applyThemeColor(state.appThemeColor || 'indigo');
+      applyVisualTheme(state.appVisualTheme || 'classic');
     }
 
     function getDashboardDateRange(period = state.dashboardPeriod || 'month') {
@@ -3002,7 +3119,7 @@
               <td data-label="Account" class="px-4 py-3">${acc ? (t.transferToAccountId ? `${acc.name} → ${(state.accounts.find(a=>a.id===t.transferToAccountId)||{}).name||'Account'}` : acc.name) : '-'}</td>
               <td data-label="Amount" class="px-4 py-3 text-right font-bold ${isExp ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'} accounting-num">${formatFinancial(t.amount, isExp)}</td>
               <td data-label="Actions" class="px-4 py-3 text-center space-x-2">
-                ${t.type === 'Transfer' ? '' : `<button onclick="openTransactionModal('${t.id}')" class="text-indigo-400 hover:text-indigo-300 theme-text"><i class="fa-solid fa-pen"></i></button>`}
+                <button title="Edit transaction" onclick="openTransactionModal('${t.id}')" class="text-indigo-400 hover:text-indigo-300 theme-text"><i class="fa-solid fa-pen"></i></button>
                 <button onclick="deleteTransaction('${t.id}')" class="text-rose-500 hover:text-rose-400"><i class="fa-solid fa-trash"></i></button>
               </td>
             </tr>
@@ -3096,24 +3213,54 @@
       const rule=rules.find(r=>{const needle=normalizeStatementText(r.match);return needle && normalized.includes(needle);});
       return rule ? rule.replacement : original;
     }
-    function openVendorRuleModal() { document.getElementById('vendor-rule-match').value=''; document.getElementById('vendor-rule-replacement').value=''; document.getElementById('vendor-rule-modal').classList.remove('hidden'); }
+    function openVendorRuleModal(rowId = '', ruleIndex = -1) {
+      const row = rowId ? pendingStatementRows.find(r => r.id === rowId) : null;
+      const editingRule = ruleIndex >= 0 ? (state.vendorCleanupRules || [])[ruleIndex] : null;
+      document.getElementById('vendor-rule-match').value = editingRule ? editingRule.match : (row ? row.description : '');
+      document.getElementById('vendor-rule-replacement').value = editingRule ? editingRule.replacement : (row ? (row.cleanedVendorName || applyVendorCleanupRules(row.description)) : '');
+      document.getElementById('vendor-rule-row-id').value = rowId || '';
+      document.getElementById('vendor-rule-edit-index').value = String(ruleIndex);
+      document.getElementById('vendor-rule-scope').value = 'future';
+      document.getElementById('vendor-rule-modal').classList.remove('hidden');
+    }
     function closeVendorRuleModal() { document.getElementById('vendor-rule-modal').classList.add('hidden'); }
     function saveVendorCleanupRule(e) {
       e.preventDefault();
       const match=document.getElementById('vendor-rule-match').value.trim();
       const replacement=document.getElementById('vendor-rule-replacement').value.trim();
+      const scope=document.getElementById('vendor-rule-scope').value;
+      const rowId=document.getElementById('vendor-rule-row-id').value;
       if(!match||!replacement)return;
       state.vendorCleanupRules=state.vendorCleanupRules||[];
-      state.vendorCleanupRules.unshift({match,replacement});
-      saveData();closeVendorRuleModal();renderSettings();
+      const normalized=normalizeStatementText(match);
+      const editIndex=Number(document.getElementById('vendor-rule-edit-index').value);
+      captureUndo(editIndex >= 0 ? 'Edit vendor cleanup rule' : 'Add vendor cleanup rule');
+      const historicalMatches=scope==='historical' ? (state.transactions||[]).filter(t=>normalizeStatementText(t.vendor||'').includes(normalized)) : [];
+      if(editIndex >= 0 && state.vendorCleanupRules[editIndex]) {
+        state.vendorCleanupRules[editIndex]={match,replacement};
+      } else {
+        const existing=state.vendorCleanupRules.find(r=>normalizeStatementText(r.match)===normalized);
+        if(existing) existing.replacement=replacement;
+        else state.vendorCleanupRules.unshift({match,replacement});
+      }
+      if(scope==='historical' && historicalMatches.length) {
+        if(confirm(`This cleanup rule matches ${historicalMatches.length} existing transaction${historicalMatches.length===1?'':'s'}. Apply the cleaned vendor name to them too?`)) {
+          historicalMatches.forEach(t=>{t.vendor=replacement;if(t.calendarBillId){const bill=(state.calendarBills||[]).find(b=>b.id===t.calendarBillId);if(bill)bill.vendor=replacement;}});
+        }
+      }
+      const row=rowId ? pendingStatementRows.find(r=>r.id===rowId) : null;
+      if(row) row.cleanedVendorName=replacement;
+      saveData();closeVendorRuleModal();renderSettings();renderLedger();renderStatementPreview();
     }
-    function deleteVendorCleanupRule(index) { state.vendorCleanupRules.splice(index,1);saveData();renderSettings(); }
+    function deleteVendorCleanupRule(index) { captureUndo('Delete vendor cleanup rule'); state.vendorCleanupRules.splice(index,1);saveData();renderSettings(); }
     function applyVendorCleanupToExisting() {
       const rows=state.transactions.filter(t=>t.vendor);
-      let changed=0;
-      rows.forEach(t=>{const clean=applyVendorCleanupRules(t.vendor);if(clean!==t.vendor){t.vendor=clean;changed++;}});
-      if(!changed){alert('No existing vendor names matched your cleanup rules.');return;}
-      saveData();renderLedger();renderDashboard();alert(`Cleaned ${changed} existing vendor name${changed===1?'':'s'}.`);
+      const changes=rows.map(t=>({t,clean:applyVendorCleanupRules(t.vendor)})).filter(x=>x.clean!==x.t.vendor);
+      if(!changes.length){alert('No existing vendor names matched your cleanup rules.');return;}
+      if(!confirm(`This will clean ${changes.length} existing vendor name${changes.length===1?'':'s'}. Continue?`))return;
+      captureUndo('Apply vendor cleanup rules to existing transactions');
+      changes.forEach(x=>{x.t.vendor=x.clean;});
+      saveData();renderLedger();renderDashboard();alert(`Cleaned ${changes.length} existing vendor name${changes.length===1?'':'s'}.`);
     }
     function findStatementMatches(row) {
       const target=normalizeStatementText(applyVendorCleanupRules(row.description));
@@ -3129,7 +3276,7 @@
         const candidates=findStatementMatches(row);const suggested=candidates[0];
         const status=row.status==='matched'?'Matched':row.status==='imported'?'Imported':row.status==='skipped'?'Skipped':suggested?'Suggested match':'No match found';
         const options=candidates.map(t=>`<option value="${t.id}" ${suggested&&t.id===suggested.id?'selected':''}>${t.date} · ${escapeHtml(t.vendor||t.desc||'Transaction')} · ${formatFinancial(t.amount)}</option>`).join('');
-        return `<div class="border border-gray-200 dark:border-gray-800 rounded-xl p-3 space-y-2"><div class="flex justify-between gap-3"><div class="min-w-0"><div class="font-semibold text-xs">${escapeHtml(row.description)}</div><div class="text-[10px] text-indigo-400">Vendor name: ${escapeHtml(applyVendorCleanupRules(row.description))}</div><div class="text-[10px] text-gray-400">${row.date} · ${row.type}</div></div><strong class="text-sm accounting-num whitespace-nowrap">${formatFinancial(row.amount)}</strong></div><div class="flex flex-wrap items-center gap-2"><span class="text-[10px] ${row.status==='matched'?'text-emerald-500':'text-gray-400'}">${status}</span>${row.status==='pending'&&candidates.length?`<select id="stmt-match-${row.id}" class="flex-1 min-w-[180px] bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-1 text-xs">${options}</select><button onclick="linkStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-emerald-600 text-white rounded-lg text-xs">Match</button>`:''}${row.status==='pending'?`<button onclick="importStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-indigo-600 text-white rounded-lg text-xs">Import as new</button><button onclick="skipStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-gray-200 dark:bg-gray-800 rounded-lg text-xs">Skip</button>`:row.status==='matched'?`<button onclick="unlinkStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-gray-200 dark:bg-gray-800 rounded-lg text-xs">Undo match</button>`:''}</div></div>`;
+        return `<div class="border border-gray-200 dark:border-gray-800 rounded-xl p-3 space-y-2"><div class="flex justify-between gap-3"><div class="min-w-0"><div class="font-semibold text-xs">${escapeHtml(row.description)}</div><div class="text-[10px] text-indigo-400">Vendor name: ${escapeHtml(row.cleanedVendorName || applyVendorCleanupRules(row.description))}</div><div class="text-[10px] text-gray-400">${row.date} · ${row.type}</div></div><strong class="text-sm accounting-num whitespace-nowrap">${formatFinancial(row.amount)}</strong></div><div class="flex flex-wrap items-center gap-2"><span class="text-[10px] ${row.status==='matched'?'text-emerald-500':'text-gray-400'}">${status}</span>${row.status==='pending'&&candidates.length?`<select id="stmt-match-${row.id}" class="flex-1 min-w-[180px] bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-1 text-xs">${options}</select><button onclick="linkStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-emerald-600 text-white rounded-lg text-xs">Match</button>`:''}${row.status==='pending'?`<button onclick="openVendorRuleModal('${row.id}')" class="px-2.5 py-1.5 bg-violet-600/15 text-violet-500 rounded-lg text-xs">Clean name / create rule</button><button onclick="importStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-indigo-600 text-white rounded-lg text-xs">Import as new</button><button onclick="skipStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-gray-200 dark:bg-gray-800 rounded-lg text-xs">Skip</button>`:row.status==='matched'?`<button onclick="unlinkStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-gray-200 dark:bg-gray-800 rounded-lg text-xs">Undo match</button>`:''}</div></div>`;
       }).join('')}</div><div class="text-[10px] text-gray-400">Matching uses account, transaction type, amount and a date within one day. Merchant text helps rank suggestions but you confirm every match.</div>`;
     }
     function linkStatementRow(rowId) {
@@ -3152,7 +3299,7 @@
       const row=pendingStatementRows.find(r=>r.id===rowId);if(!row||row.status!=='pending')return;
       const account=state.accounts.find(a=>a.id===row.accountId);if(!account)return;
       const merchantRule=(state.merchantRules||[]).find(rule=>normalizeStatementText(row.description).includes(normalizeStatementText(rule.keyword)));
-      const transaction={id:`tx_stmt_${Date.now()}_${Math.random().toString(36).slice(2,7)}`,date:row.date,vendor:applyVendorCleanupRules(row.description),desc:'Imported from bank statement',type:row.type,category:merchantRule?.category||'',subcategory:merchantRule?.subcategory||'',amount:row.amount,accountId:row.accountId,statementMatchId:row.id,reconciled:true,reconciledAt:new Date().toISOString(),source:'statement-import'};
+      const transaction={id:`tx_stmt_${Date.now()}_${Math.random().toString(36).slice(2,7)}`,date:row.date,vendor:(row.cleanedVendorName || applyVendorCleanupRules(row.description)),desc:row.description,type:row.type,category:merchantRule?.category||'',subcategory:merchantRule?.subcategory||'',amount:row.amount,accountId:row.accountId,statementMatchId:row.id,reconciled:true,reconciledAt:new Date().toISOString(),source:'statement-import'};
       state.transactions.unshift(transaction);
       if(row.type==='Expense') account.balance-=row.amount; else if(row.type==='Income') account.balance+=row.amount;
       row.status='imported';row.matchedTransactionId=transaction.id;
@@ -3281,7 +3428,7 @@
         rulesList.innerHTML += `
           <div class="flex justify-between items-center bg-gray-50 dark:bg-gray-950 p-2.5 rounded-xl text-xs">
             <div><strong>${r.keyword}</strong> &rarr; <span class="text-indigo-400 theme-text">${r.category} : ${r.subcategory}</span></div>
-            <button onclick="deleteMerchantRule(${idx})" class="text-rose-500"><i class="fa-solid fa-trash"></i></button>
+            <div class="flex gap-3"><button onclick="openMerchantRuleModal(${idx})" class="text-indigo-400" title="Edit categorization rule"><i class="fa-solid fa-pen"></i></button><button onclick="deleteMerchantRule(${idx})" class="text-rose-500" title="Delete categorization rule"><i class="fa-solid fa-trash"></i></button></div>
           </div>
         `;
       });
@@ -3290,7 +3437,7 @@
       if (vendorRulesList) {
         vendorRulesList.innerHTML = '';
         (state.vendorCleanupRules || []).forEach((r, idx) => {
-          vendorRulesList.innerHTML += `<div class="flex flex-wrap justify-between items-center gap-2 bg-gray-50 dark:bg-gray-950 p-2.5 rounded-xl text-xs"><div><strong>${escapeHtml(r.match)}</strong> <span class="text-gray-400">→</span> <span class="text-indigo-400 theme-text font-semibold">${escapeHtml(r.replacement)}</span></div><button onclick="deleteVendorCleanupRule(${idx})" class="text-rose-500" title="Delete cleanup rule"><i class="fa-solid fa-trash"></i></button></div>`;
+          vendorRulesList.innerHTML += `<div class="flex flex-wrap justify-between items-center gap-2 bg-gray-50 dark:bg-gray-950 p-2.5 rounded-xl text-xs"><div><strong>${escapeHtml(r.match)}</strong> <span class="text-gray-400">→</span> <span class="text-indigo-400 theme-text font-semibold">${escapeHtml(r.replacement)}</span></div><div class="flex gap-3"><button onclick="openVendorRuleModal('',${idx})" class="text-indigo-400" title="Edit cleanup rule"><i class="fa-solid fa-pen"></i></button><button onclick="deleteVendorCleanupRule(${idx})" class="text-rose-500" title="Delete cleanup rule"><i class="fa-solid fa-trash"></i></button></div></div>`;
         });
         if (!(state.vendorCleanupRules||[]).length) vendorRulesList.innerHTML='<p class="text-xs text-gray-400">No vendor cleanup rules yet. Add one when a bank statement uses an inconsistent merchant description.</p>';
       }
@@ -3334,11 +3481,19 @@
     }
     function deleteType(idx) { state.transactionTypes.splice(idx, 1); saveData(); renderSettings(); }
 
-    function openMerchantRuleModal() {
+    function openMerchantRuleModal(editIndex = -1) {
       const select = document.getElementById('mr-category');
       select.innerHTML = '';
-      state.categories.forEach(c => select.innerHTML += `<option value="${c.name}">${c.name}</option>`);
+      state.categories.forEach(c => select.innerHTML += `<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`);
       document.getElementById('merchant-rule-form').reset();
+      document.getElementById('mr-edit-index').value = String(editIndex);
+      const existing = editIndex >= 0 ? (state.merchantRules || [])[editIndex] : null;
+      document.getElementById('merchant-rule-modal-title').textContent = existing ? 'Edit Categorization Rule' : 'Add Smart Merchant Auto-Tag Rule';
+      if (existing) {
+        document.getElementById('mr-keyword').value = existing.keyword || '';
+        document.getElementById('mr-category').value = existing.category || '';
+        document.getElementById('mr-subcategory').value = existing.subcategory || '';
+      }
       document.getElementById('merchant-rule-modal').classList.remove('hidden');
     }
     function closeMerchantRuleModal() { document.getElementById('merchant-rule-modal').classList.add('hidden'); }
@@ -3347,10 +3502,19 @@
       const keyword = document.getElementById('mr-keyword').value.toLowerCase().trim();
       const category = document.getElementById('mr-category').value;
       const subcategory = document.getElementById('mr-subcategory').value.trim();
-      state.merchantRules.push({ keyword, category, subcategory });
+      if (!keyword || !category) return;
+      const editIndex = Number(document.getElementById('mr-edit-index').value);
+      captureUndo(editIndex >= 0 ? 'Edit categorization rule' : 'Add categorization rule');
+      if (editIndex >= 0 && state.merchantRules[editIndex]) state.merchantRules[editIndex] = { keyword, category, subcategory };
+      else {
+        const normalized = normalizeStatementText(keyword);
+        const existing = state.merchantRules.find(r => normalizeStatementText(r.keyword) === normalized);
+        if (existing) Object.assign(existing, {keyword,category,subcategory});
+        else state.merchantRules.unshift({ keyword, category, subcategory });
+      }
       saveData(); closeMerchantRuleModal(); renderSettings();
     }
-    function deleteMerchantRule(idx) { state.merchantRules.splice(idx, 1); saveData(); renderSettings(); }
+    function deleteMerchantRule(idx) { captureUndo('Delete categorization rule'); state.merchantRules.splice(idx, 1); saveData(); renderSettings(); }
 
     function applySmartMerchantRules(desc) {
       const d = desc.toLowerCase();
@@ -3839,6 +4003,40 @@
       }
     }
 
+    function updateTransactionTypeFields() {
+      const isTransfer = document.getElementById('tx-type')?.value === 'Transfer';
+      document.getElementById('tx-transfer-destination-wrap')?.classList.toggle('hidden', !isTransfer);
+      if (isTransfer) {
+        document.getElementById('tx-category').value = 'Transfer';
+        document.getElementById('tx-subcategory').value = '';
+        document.getElementById('tx-is-split').value = 'false';
+        document.getElementById('single-tx-fields').classList.remove('hidden');
+        document.getElementById('split-tx-fields').classList.add('hidden');
+        document.getElementById('split-tx-toggle-btn').classList.add('hidden');
+      } else {
+        if (document.getElementById('tx-category').value === 'Transfer') document.getElementById('tx-category').value = '';
+        if (!document.getElementById('tx-edit-id').value) document.getElementById('split-tx-toggle-btn').classList.remove('hidden');
+      }
+    }
+    function toggleTransactionRuleOptions() {
+      document.getElementById('tx-category-rule-options')?.classList.toggle('hidden', !document.getElementById('tx-save-category-rule')?.checked);
+    }
+    function saveTransactionCategoryRule(vendor, category, subcategory, scope) {
+      if (!vendor || !category || category === 'Transfer') return;
+      const keyword = vendor.trim().toLowerCase();
+      state.merchantRules = state.merchantRules || [];
+      const existing = state.merchantRules.find(r => normalizeStatementText(r.keyword) === normalizeStatementText(keyword));
+      if (existing) Object.assign(existing, {keyword, category, subcategory:subcategory || ''});
+      else state.merchantRules.unshift({keyword, category, subcategory:subcategory || ''});
+      if (scope === 'historical') {
+        const matches = (state.transactions || []).filter(t => normalizeStatementText(t.vendor || '').includes(normalizeStatementText(keyword)));
+        const count = matches.length;
+        if (count && confirm(`This rule matches ${count} existing transaction${count===1?'':'s'}. Apply the bucket and subcategory to those transactions too?`)) {
+          matches.forEach(t => { t.category = category; t.subcategory = subcategory || ''; if (t.calendarBillId) { const bill = (state.calendarBills || []).find(b => b.id === t.calendarBillId); if (bill) { bill.category = category; bill.subcategory = subcategory || ''; } } });
+        }
+      }
+    }
+
     function openTransactionModal(editId = null) {
       const tSelect = document.getElementById('tx-type');
       tSelect.innerHTML = ''; state.transactionTypes.forEach(t => tSelect.innerHTML += `<option value="${t}">${t}</option>`);
@@ -3846,7 +4044,9 @@
       cSelect.innerHTML = '<option value="">-- None --</option><option value="Transfer">Transfer</option>';
       state.categories.filter(c => c.name !== 'Transfer').forEach(c => cSelect.innerHTML += `<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`);
       const aSelect = document.getElementById('tx-account');
-      aSelect.innerHTML = ''; state.accounts.forEach(a => aSelect.innerHTML += `<option value="${a.id}">${a.name}</option>`);
+      aSelect.innerHTML = ''; state.accounts.forEach(a => aSelect.innerHTML += `<option value="${a.id}">${escapeHtml(a.name)}</option>`);
+      const transferSelect = document.getElementById('tx-transfer-to');
+      transferSelect.innerHTML = '<option value="">Choose destination account</option>' + state.accounts.map(a => `<option value="${a.id}">${escapeHtml(a.name)}</option>`).join('');
       const debtLinkSelect = document.getElementById('tx-related-debt'); debtLinkSelect.innerHTML = '<option value="">Not linked to a debt account</option>'; state.accounts.filter(a => a.type === 'debt').forEach(a => debtLinkSelect.innerHTML += `<option value="${a.id}">${a.name}</option>`);
       updateSubcategoryDropdown();
 
@@ -3854,6 +4054,11 @@
       document.getElementById('single-tx-fields').classList.remove('hidden');
       document.getElementById('split-tx-fields').classList.add('hidden');
       document.getElementById('split-tx-toggle-btn').innerText = "Enable Split Transaction";
+      document.getElementById('tx-save-category-rule').checked = false;
+      document.getElementById('tx-category-rule-options').classList.add('hidden');
+      document.getElementById('tx-category-rule-scope').value = 'future';
+      document.getElementById('tx-transfer-to').value = '';
+      document.getElementById('tx-transfer-destination-wrap').classList.add('hidden');
 
       if (editId) {
         const tx = state.transactions.find(t => t.id === editId);
@@ -3869,15 +4074,21 @@
           document.getElementById('tx-subcategory').value = tx.subcategory || '';
           document.getElementById('tx-amount').value = tx.amount;
           document.getElementById('tx-account').value = tx.accountId;
-          document.getElementById('tx-related-debt').value = tx.debtAccountId || ''; 
+          document.getElementById('tx-related-debt').value = tx.debtAccountId || '';
+          document.getElementById('tx-transfer-to').value = tx.transferToAccountId || '';
+          updateTransactionTypeFields();
+          document.getElementById('split-tx-toggle-btn').classList.add('hidden');
         }
       } else {
+        document.getElementById('split-tx-toggle-btn').classList.remove('hidden');
         document.getElementById('tx-modal-title').innerText = "Log Transaction";
         document.getElementById('tx-edit-id').value = '';
         document.getElementById('transaction-form').reset();
         document.getElementById('tx-date').value = new Date().toISOString().split('T')[0];
         document.getElementById('tx-vendor').value = '';
         document.getElementById('tx-related-debt').value = '';
+        document.getElementById('tx-transfer-to').value = '';
+        updateTransactionTypeFields();
         if (state.lastUsedAccountId && state.accounts.some(a => a.id === state.lastUsedAccountId)) {
           document.getElementById('tx-account').value = state.lastUsedAccountId;
         }
@@ -3993,17 +4204,54 @@
       const isSplit = document.getElementById('tx-is-split').value === "true";
       const accountId = document.getElementById('tx-account').value;
       const type = document.getElementById('tx-type').value;
+      const amount = parseFloat(document.getElementById('tx-amount').value) || 0;
       const desc = (document.getElementById('tx-desc').value || '').trim();
-      const vendor = applyVendorCleanupRules((document.getElementById('tx-vendor')?.value || '').trim());
+      const enteredVendor = (document.getElementById('tx-vendor')?.value || '').trim();
+      const vendor = type === 'Transfer' ? (enteredVendor || 'Account transfer') : applyVendorCleanupRules(enteredVendor);
       const date = document.getElementById('tx-date').value;
+      const transferToAccountId = document.getElementById('tx-transfer-to').value || '';
+      const saveCategoryRule = document.getElementById('tx-save-category-rule').checked;
+      const categoryRuleScope = document.getElementById('tx-category-rule-scope').value;
       if (!vendor) {
         document.getElementById('tx-vendor')?.focus();
         alert('Please enter a vendor before saving this transaction.');
         return;
       }
+      if (saveCategoryRule && type !== 'Transfer' && (!document.getElementById('tx-category').value || document.getElementById('tx-category').value === 'Transfer')) {
+        alert('Choose a spending bucket before saving a categorization rule.');
+        document.getElementById('tx-category').focus();
+        return;
+      }
       captureUndo(editId ? 'Edit transaction' : 'Add transaction');
 
-      if (isSplit) {
+      const editingRecord = editId ? state.transactions.find(t => t.id === editId) : null;
+      if (editingRecord && (editingRecord.calendarBillId || editingRecord.debtPaymentId) && editingRecord.type !== type) {
+        alert('This transaction is linked to a scheduled bill or debt payment. Its transaction type cannot be changed here because that would break the payment linkage. You can still edit its other fields.');
+        return;
+      }
+      if ((editId && state.transactions.some(t => t.id === editId && t.type === 'Transfer')) || type === 'Transfer') {
+        const idx = state.transactions.findIndex(t => t.id === editId);
+        const oldT = idx >= 0 ? state.transactions[idx] : null;
+        if (type === 'Transfer' && (!transferToAccountId || transferToAccountId === accountId)) { alert('Choose a destination account different from the source account.'); return; }
+        if (type === 'Transfer' && (state.accounts.find(a=>a.id===accountId)?.type !== 'asset' || state.accounts.find(a=>a.id===transferToAccountId)?.type !== 'asset')) { alert('Transfers must be between two asset accounts. Use the debt payment workflow for payments to a liability.'); return; }
+        if (type === 'Transfer' && amount <= 0) { alert('Enter a transfer amount greater than zero.'); return; }
+        if (oldT && oldT.type === 'Transfer' && oldT.transferToAccountId) {
+          const oldFrom = state.accounts.find(a => a.id === oldT.accountId); const oldTo = state.accounts.find(a => a.id === oldT.transferToAccountId);
+          if (oldFrom) oldFrom.balance = (Number(oldFrom.balance)||0) + (Number(oldT.amount)||0);
+          if (oldTo) oldTo.balance = (Number(oldTo.balance)||0) - (Number(oldT.amount)||0);
+        } else if (oldT) {
+          const oldAcc = state.accounts.find(a => a.id === oldT.accountId); if (oldAcc) { if (oldT.type === 'Income') oldAcc.balance = (Number(oldAcc.balance)||0) - (Number(oldT.amount)||0); else oldAcc.balance = (Number(oldAcc.balance)||0) + (Number(oldT.amount)||0); }
+        }
+        if (type === 'Transfer') {
+          const from = state.accounts.find(a => a.id === accountId); const to = state.accounts.find(a => a.id === transferToAccountId);
+          if (from) from.balance = (Number(from.balance)||0) - amount; if (to) to.balance = (Number(to.balance)||0) + amount;
+          const transferRecord = { ...(oldT||{}), id:editId || Date.now().toString(), date, desc:desc || `Transfer to ${to?.name || 'account'}`, vendor:vendor || 'Account transfer', type:'Transfer', category:'Transfer', subcategory:'', amount, accountId, transferToAccountId };
+          if (idx >= 0) state.transactions[idx] = transferRecord; else state.transactions.unshift(transferRecord);
+        } else if (oldT) {
+          const newAcc = state.accounts.find(a => a.id === accountId); if (newAcc) { if (type === 'Income') newAcc.balance = (Number(newAcc.balance)||0) + amount; else newAcc.balance = (Number(newAcc.balance)||0) - amount; }
+          state.transactions[idx] = { ...oldT, date, desc, vendor, type, category:document.getElementById('tx-category').value, subcategory:document.getElementById('tx-subcategory').value, amount, accountId, debtAccountId:document.getElementById('tx-related-debt').value || undefined };
+        } else { alert('The transaction could not be found.'); return; }
+      } else if (isSplit && !editId) {
         const rows = document.querySelectorAll('#split-rows-container > div');
         rows.forEach(r => {
           const val = r.querySelector('.split-cat-select').value;
@@ -4022,7 +4270,6 @@
           }
         });
       } else {
-        const amount = parseFloat(document.getElementById('tx-amount').value) || 0;
         const category = document.getElementById('tx-category').value;
         const subcategory = document.getElementById('tx-subcategory').value;
         const relatedDebtAccountId = document.getElementById('tx-related-debt').value || '';
@@ -4082,6 +4329,11 @@
         }
       }
 
+      if (saveCategoryRule && !isSplit && type !== 'Transfer') {
+        const ruleCategory = document.getElementById('tx-category').value;
+        const ruleSubcategory = document.getElementById('tx-subcategory').value;
+        if (ruleCategory && ruleCategory !== 'Transfer') saveTransactionCategoryRule(vendor, ruleCategory, ruleSubcategory, categoryRuleScope);
+      }
       saveData(); closeTransactionModal(); renderLedger(); renderDashboard(); renderZbbFundingTracker();
     }
 
@@ -4188,6 +4440,8 @@
     state.zbbPoolTracking = state.zbbPoolTracking || {};
     state.statementReconciliation = state.statementReconciliation || { batches: [] };
           state.vendorCleanupRules = Array.isArray(state.vendorCleanupRules) ? state.vendorCleanupRules : [];
+    state.merchantRules = Array.isArray(state.merchantRules) ? state.merchantRules : [];
+    state.appVisualTheme = ['classic','silver','neutral','colorful'].includes(state.appVisualTheme) ? state.appVisualTheme : 'classic';
           if (!isValidHexColor(state.appAccentHex)) delete state.appAccentHex;
           if (!isValidHexColor(state.appBackgroundHex)) delete state.appBackgroundHex;
     if (!Array.isArray(state.variablePoolCategories)) state.variablePoolCategories = (state.categories || []).filter(c => !/housing|bill|debt service/i.test(c.name)).map(c => c.name);
