@@ -570,13 +570,21 @@
       </div>
 
       <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-4 shadow-sm">
-        <div class="flex justify-between items-center">
-          <select id="debt-account-picker" onchange="renderDebtPaymentHistory()" class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-1.5 text-xs"></select>
-          <button onclick="openDebtPaymentModal()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold"><i class="fa-solid fa-plus mr-1"></i> Log Payment</button>
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div><h3 class="font-bold">Debt Account Activity</h3><p class="text-xs text-gray-500">Linked payments and other transactions associated with the selected debt.</p></div>
+          <div class="flex flex-wrap gap-2">
+            <select id="debt-account-picker" onchange="renderDebtPaymentHistory()" class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-1.5 text-xs"></select>
+            <button onclick="openDebtPaymentModal()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold"><i class="fa-solid fa-plus mr-1"></i> Log Payment</button>
+          </div>
         </div>
-        <table class="w-full text-left text-sm">
-          <tbody id="debt-payment-rows" class="divide-y divide-gray-200 dark:divide-gray-800"></tbody>
-        </table>
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-2">
+          <input type="date" id="debt-activity-from" onchange="renderDebtPaymentHistory()" aria-label="Activity from date" class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-2 text-xs">
+          <input type="date" id="debt-activity-to" onchange="renderDebtPaymentHistory()" aria-label="Activity to date" class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-2 text-xs">
+          <select id="debt-activity-type" onchange="renderDebtPaymentHistory()" class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-2 text-xs"><option value="all">All transaction types</option><option value="payment">Debt payments</option><option value="interest">Interest expenses</option><option value="other">Other related activity</option></select>
+          <input type="search" id="debt-activity-search" oninput="renderDebtPaymentHistory()" placeholder="Search description/vendor" class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-2 text-xs">
+        </div>
+        <div class="overflow-x-auto"><table class="w-full text-left text-xs"><thead class="text-gray-500 border-b border-gray-200 dark:border-gray-800"><tr><th class="py-2 pr-3">Date</th><th class="py-2 pr-3">Description</th><th class="py-2 pr-3">Type</th><th class="py-2 pr-3 text-right">Amount</th><th class="py-2 pr-3 text-right">Principal</th><th class="py-2">Funding account</th></tr></thead><tbody id="debt-payment-rows" class="divide-y divide-gray-200 dark:divide-gray-800"></tbody></table></div>
+        <div id="debt-activity-empty" class="hidden text-xs text-gray-400 py-3">No matching activity for these filters.</div>
       </div>
     </section>
 
@@ -867,6 +875,7 @@
           <div><label class="block text-xs font-semibold text-gray-500 mb-1">APR Interest Rate (%)</label><input type="number" step="0.01" id="ed-apr" value="19.99" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
           <div><label class="block text-xs font-semibold text-gray-500 mb-1">Monthly Minimum Payment ($)</label><input type="number" step="0.01" id="ed-minpay" value="50" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
         </div>
+        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Typical Payment Method</label><select id="ed-payment-method" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"><option value="principal-interest">Principal + interest (default full payment to principal unless split entered)</option><option value="interest-only">Interest-only (no principal reduction)</option><option value="principal-only">Principal-only</option><option value="custom">Custom split when recording payment</option></select></div>
         <div class="grid grid-cols-2 gap-3">
           <div><label class="block text-xs font-semibold text-gray-500 mb-1">Payment Due Date</label><input type="date" id="ed-duedate" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
           <div><label class="block text-xs font-semibold text-gray-500 mb-1">Credit Limit ($)</label><input type="number" step="0.01" min="0" id="ed-limit" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
@@ -1027,7 +1036,9 @@
         <div id="cal-debt-account-wrap" class="hidden">
           <label class="block text-xs font-semibold text-gray-500 mb-1">Credit / Debt Account Being Paid</label>
           <select id="cal-debt-account" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></select>
-          <p class="text-[10px] text-gray-400 mt-1">This is the liability whose outstanding balance will be reduced when the payment is marked paid.</p>
+          <p class="text-[10px] text-gray-400 mt-1">Select the liability being paid. Enter zero for an interest-only payment; only the principal portion reduces this balance.</p>
+          <label class="block text-xs font-semibold text-gray-500 mt-2 mb-1">Principal portion ($)</label>
+          <input type="number" step="0.01" min="0" id="cal-principal-amount" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" placeholder="Defaults to full payment">
         </div>
         <div><label class="block text-xs font-semibold text-gray-500 mb-1">Amount ($)</label><input type="number" step="0.01" id="cal-amount" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
         <div>
@@ -1120,6 +1131,7 @@
         <div><label class="block text-xs font-semibold text-gray-500 mb-1">Vendor <span class="text-rose-500">*</span></label><input type="text" id="tx-vendor" oninput="applySmartMerchantRules(this.value)" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" placeholder="e.g. Costco"></div>
         <div><label class="block text-xs font-semibold text-gray-500 mb-1">Description (Optional)</label><input type="text" id="tx-desc" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" placeholder="e.g. Weekly groceries"></div>
         <div><label class="block text-xs font-semibold text-gray-500 mb-1">Transaction Type</label><select id="tx-type" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></select></div>
+        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Related Debt Account (Optional)</label><select id="tx-related-debt" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"><option value="">Not linked to a debt account</option></select><p class="text-[10px] text-gray-400 mt-1">Use this for interest expenses or other transactions you want included in a debt account's activity.</p></div>
 
         <!-- SINGLE TRANSACTION FIELDS (OPTIONAL DROPDOWNS) -->
         <div id="single-tx-fields" class="space-y-3">
@@ -1158,7 +1170,9 @@
         <input type="hidden" id="dp-edit-id" value="">
         <div><label class="block text-xs font-semibold text-gray-500 mb-1">Date</label><input type="date" id="dp-date" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
         <div><label class="block text-xs font-semibold text-gray-500 mb-1">Description</label><input type="text" id="dp-desc" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" placeholder="Principal Payment"></div>
-        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Amount ($)</label><input type="number" step="0.01" min="0.01" id="dp-amount" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
+        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Total payment ($)</label><input type="number" step="0.01" min="0.01" id="dp-amount" required oninput="updateDebtPaymentSplit()" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
+        <div class="grid grid-cols-2 gap-3"><div><label class="block text-xs font-semibold text-gray-500 mb-1">Principal portion ($)</label><input type="number" step="0.01" min="0" id="dp-principal" required oninput="this.dataset.manual='1';updateDebtPaymentSplit()" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div><div><label class="block text-xs font-semibold text-gray-500 mb-1">Interest portion ($)</label><input type="number" id="dp-interest" readonly class="w-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div></div>
+        <p class="text-[10px] text-gray-400">Only the principal portion reduces the debt balance. Interest is included in the total cash payment.</p>
         <div><label class="block text-xs font-semibold text-gray-500 mb-1">Paid From</label><select id="dp-funding-account" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></select></div>
         <div class="flex space-x-3 pt-3"><button type="button" onclick="closeDebtPaymentModal()" class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold">Cancel</button><button type="submit" class="flex-1 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-sm font-semibold">Record</button></div>
       </form>
@@ -2470,6 +2484,7 @@
       accSelect.innerHTML = '';
       state.accounts.filter(a => a.type === 'asset').forEach(a => accSelect.innerHTML += `<option value="${a.id}">${a.name}</option>`);
       populateCalendarDebtAccount();
+      document.getElementById('cal-principal-amount').value = '';
       document.getElementById('calendar-modal').classList.remove('hidden');
     }
 
@@ -2484,6 +2499,7 @@
       document.getElementById('cal-desc').value = item.desc;
       document.getElementById('cal-type').value = item.type;
       document.getElementById('cal-amount').value = item.amount;
+      document.getElementById('cal-principal-amount').value = item.principalAmount ?? item.amount;
       document.getElementById('cal-recurring').value = item.recurring || 'none';
       const accSelect = document.getElementById('cal-account');
       accSelect.innerHTML = '';
@@ -2529,7 +2545,7 @@
         accountId: document.getElementById('cal-account').value,
         recurring,
         paid: false,
-        ...(document.getElementById('cal-type').value === 'debt' ? { debtAccountId: document.getElementById('cal-debt-account').value || '' } : {})
+        ...(document.getElementById('cal-type').value === 'debt' ? { debtAccountId: document.getElementById('cal-debt-account').value || '', principalAmount: document.getElementById('cal-principal-amount').value === '' ? ((state.accounts.find(a => a.id === document.getElementById('cal-debt-account').value)?.paymentMethod === 'interest-only') ? 0 : (parseFloat(document.getElementById('cal-amount').value) || 0)) : Math.max(0, parseFloat(document.getElementById('cal-principal-amount').value) || 0) } : {})
       };
       if (data.type === 'debt' && !data.debtAccountId && state.accounts.some(a => a.type === 'debt')) {
         alert('Select the credit or debt account this scheduled payment will reduce.');
@@ -3103,73 +3119,57 @@
     }
 
     function setCalendarBillPaid(bill, shouldBePaid) {
-      if (!bill) return;
-      if (Boolean(bill.paid) === Boolean(shouldBePaid)) return;
-      const account = state.accounts.find(a => a.id === bill.accountId);
+      if (!bill || Boolean(bill.paid) === Boolean(shouldBePaid)) return;
+      const fundingAccount = state.accounts.find(a => a.id === bill.accountId);
       const debtAccount = bill.type === 'debt' ? resolveDebtAccountForBill(bill) : null;
-      if (shouldBePaid && bill.type === 'debt' && (!account || account.type !== 'asset' || !debtAccount)) {
-        alert('This debt payment needs both a funding account and the specific credit/debt account being paid. Edit the calendar item and select both before marking it paid.');
-        return;
+      const totalAmount = Math.max(0, Number(bill.amount) || 0);
+      if (bill.type === 'debt' && bill.principalAmount === undefined) bill.principalAmount = debtAccount?.paymentMethod === 'interest-only' ? 0 : totalAmount;
+      const principalAmount = bill.type === 'debt' ? Math.min(totalAmount, Math.max(0, Number(bill.principalAmount ?? totalAmount) || 0)) : 0;
+      if (shouldBePaid && bill.type === 'debt' && (!fundingAccount || fundingAccount.type !== 'asset' || !debtAccount)) {
+        alert('This debt payment needs both a funding account and the specific credit/debt account being paid. Edit the calendar item and select both before marking it paid.'); return;
       }
+      if (shouldBePaid && !fundingAccount) { alert('Select a valid funding account before marking this item paid.'); return; }
       captureUndo(`${shouldBePaid ? 'Pay' : 'Unpay'} scheduled item "${bill.desc}"`);
       const existing = findBillPaymentTransaction(bill);
-
       if (shouldBePaid) {
         if (existing) {
           bill.linkedTransactionId = existing.id;
           existing.calendarBillId = bill.id;
-          if (debtAccount) {
-            // Legacy ledger payment already reduced cash; bring the linked liability into sync.
-            debtAccount.balance = Math.max(0, (Number(debtAccount.balance) || 0) - (Number(existing.amount) || Number(bill.amount) || 0));
+          if (bill.type === 'debt') {
+            existing.debtAccountId = debtAccount.id;
+            existing.debtPrincipalAmount = principalAmount;
+            existing.debtInterestAmount = Math.max(0, totalAmount - principalAmount);
+            // Existing legacy transaction already affected cash; apply only the liability side here.
+            debtAccount.balance = Math.max(0, (Number(debtAccount.balance) || 0) - principalAmount);
           }
         } else {
           const transactionId = `tx_bill_${bill.id}_${Date.now()}`;
-          const transaction = {
-            id: transactionId,
-            date: bill.date,
-            desc: bill.desc || '',
-            vendor: bill.vendor || bill.desc || 'Scheduled bill',
-            type: bill.type === 'income' ? 'Income' : bill.type === 'debt' ? 'Debt Payment' : 'Expense',
-            category: bill.category || '',
-            subcategory: bill.subcategory || '',
-            amount: Number(bill.amount) || 0,
-            accountId: bill.accountId,
-            calendarBillId: bill.id,
-            source: 'calendar-bill'
-          };
-          state.transactions.unshift(transaction);
-          bill.linkedTransactionId = transactionId;
-          if (account) {
-            if (bill.type === 'income') account.balance += transaction.amount;
-            else account.balance -= transaction.amount;
-          }
-          if (debtAccount) debtAccount.balance = Math.max(0, (Number(debtAccount.balance) || 0) - transaction.amount);
+          const transaction = { id: transactionId, date: bill.date, desc: bill.desc || '', vendor: bill.vendor || bill.desc || 'Scheduled bill', type: bill.type === 'income' ? 'Income' : bill.type === 'debt' ? 'Debt Payment' : 'Expense', category: bill.category || (bill.type === 'debt' ? 'Debt Service' : ''), subcategory: bill.subcategory || '', amount: totalAmount, accountId: bill.accountId, calendarBillId: bill.id, source: 'calendar-bill' };
+          if (bill.type === 'debt') { transaction.debtAccountId = debtAccount.id; transaction.debtPrincipalAmount = principalAmount; transaction.debtInterestAmount = Math.max(0, totalAmount - principalAmount); }
+          state.transactions.unshift(transaction); bill.linkedTransactionId = transactionId;
+          if (bill.type === 'income') fundingAccount.balance = (Number(fundingAccount.balance) || 0) + totalAmount;
+          else fundingAccount.balance = (Number(fundingAccount.balance) || 0) - totalAmount;
+          if (debtAccount) debtAccount.balance = Math.max(0, (Number(debtAccount.balance) || 0) - principalAmount);
         }
         bill.paid = true;
       } else {
-        if (existing) {
-          // Reverse the balance effect of the linked transaction, then remove it from the ledger.
-          if (account) {
-            if (existing.type === 'Income') account.balance -= Number(existing.amount) || 0;
-            else account.balance += Number(existing.amount) || 0;
+        const linked = existing || (bill.linkedTransactionId ? state.transactions.find(t => t.id === bill.linkedTransactionId) : null);
+        const principalToReverse = bill.type === 'debt' ? Number(linked?.debtPrincipalAmount ?? bill.principalAmount ?? bill.amount) || 0 : 0;
+        if (linked) {
+          const linkedFunding = state.accounts.find(a => a.id === linked.accountId);
+          if (linkedFunding) {
+            if (linked.type === 'Income') linkedFunding.balance = (Number(linkedFunding.balance) || 0) - (Number(linked.amount) || 0);
+            else linkedFunding.balance = (Number(linkedFunding.balance) || 0) + (Number(linked.amount) || 0);
           }
-          state.transactions = state.transactions.filter(t => t.id !== existing.id);
-        } else if (account) {
-          // Legacy paid bills may have been recorded before transaction links existed.
-          // Reverse the original account adjustment; do not delete an ambiguous ledger row.
-          if (bill.type === 'income') account.balance -= Number(bill.amount) || 0;
-          else account.balance += Number(bill.amount) || 0;
+          state.transactions = state.transactions.filter(t => t.id !== linked.id);
+        } else if (fundingAccount) {
+          if (bill.type === 'income') fundingAccount.balance = (Number(fundingAccount.balance) || 0) - totalAmount;
+          else fundingAccount.balance = (Number(fundingAccount.balance) || 0) + totalAmount;
         }
-        if (debtAccount) debtAccount.balance = (Number(debtAccount.balance) || 0) + (existing ? Number(existing.amount) || 0 : Number(bill.amount) || 0);
-        delete bill.linkedTransactionId;
-        bill.paid = false;
+        if (debtAccount) debtAccount.balance = (Number(debtAccount.balance) || 0) + principalToReverse;
+        delete bill.linkedTransactionId; bill.paid = false;
       }
-
-      saveData();
-      renderLedger();
-      renderDashboard();
-      renderCalendar();
-      renderZbbFundingTracker();
+      saveData(); renderLedger(); renderDashboard(); renderCalendar(); renderZbbFundingTracker(); renderDebtPlanner();
     }
 
     function markBillPaid(billId) {
@@ -3198,7 +3198,7 @@
           if (linkedBill) {
             if (linkedBill.type === 'debt') {
               const debtAccount = resolveDebtAccountForBill(linkedBill);
-              if (debtAccount) debtAccount.balance = (Number(debtAccount.balance) || 0) + (Number(t.amount) || 0);
+              if (debtAccount) debtAccount.balance = (Number(debtAccount.balance) || 0) + (Number(t.debtPrincipalAmount ?? t.amount) || 0);
             }
             linkedBill.paid = false; delete linkedBill.linkedTransactionId;
           }
@@ -3439,6 +3439,7 @@
       if (fundAcc.balance < amount && !confirm('The funding account has less balance than the payment amount. Proceed anyway?')) return;
       bill.accountId = fundAcc.id;
       bill.debtAccountId = debtAcc.id;
+      if (bill.principalAmount === undefined) bill.principalAmount = debtAcc.paymentMethod === 'interest-only' ? 0 : Number(bill.amount) || 0;
       setCalendarBillPaid(bill, true);
       alert(`Paid ${formatFinancial(amount)} from ${fundAcc.name}. ${debtAcc.name} balance was reduced and the payment was added to the Expense Tracker.`);
     }
@@ -3548,6 +3549,7 @@
       document.getElementById('ed-apr').value = d.apr ?? '';
       document.getElementById('ed-minpay').value = d.minPay ?? '';
       document.getElementById('ed-duedate').value = d.dueDate || '';
+      document.getElementById('ed-payment-method').value = d.paymentMethod || 'principal-interest';
       document.getElementById('ed-limit').value = d.limit ?? '';
       document.getElementById('ed-notes').value = d.notes || '';
       document.getElementById('debt-detail-modal').classList.remove('hidden');
@@ -3568,6 +3570,7 @@
         d.apr = aprInput === '' ? null : Math.max(0, Number(aprInput));
         d.minPay = minInput === '' ? null : Math.max(0, Number(minInput));
         d.dueDate = document.getElementById('ed-duedate').value || '';
+        d.paymentMethod = document.getElementById('ed-payment-method').value || 'principal-interest';
         d.limit = limitInput === '' ? 0 : Math.max(0, Number(limitInput));
         d.notes = document.getElementById('ed-notes').value;
       }
@@ -3575,27 +3578,55 @@
     }
 
     function renderDebtPaymentHistory() {
-      const accId = document.getElementById('debt-account-picker').value;
-      const tbody = document.getElementById('debt-payment-rows');
-      tbody.innerHTML = '';
-      (state.debtPayments || []).filter(p => p.accountId === accId).forEach(p => {
-        tbody.innerHTML += `
-          <tr class="hover:bg-gray-50 dark:hover:bg-gray-950">
-            <td class="px-4 py-3">${p.date}</td>
-            <td class="px-4 py-3">${p.desc}</td>
-            <td class="px-4 py-3 text-right font-bold text-emerald-600 accounting-num">${formatFinancial(p.amount)}</td>
-            <td class="px-4 py-3 text-center"><button onclick="deleteDebtPayment('${p.id}')" class="text-rose-500 hover:text-rose-400"><i class="fa-solid fa-trash"></i></button></td>
-          </tr>
-        `;
+      const picker = document.getElementById('debt-account-picker');
+      if (!picker) return;
+      const accId = picker.value;
+      const debt = state.accounts.find(a => a.id === accId && a.type === 'debt');
+      const tbody = document.getElementById('debt-payment-rows'); tbody.innerHTML = '';
+      const from = document.getElementById('debt-activity-from')?.value || '';
+      const to = document.getElementById('debt-activity-to')?.value || '';
+      const typeFilter = document.getElementById('debt-activity-type')?.value || 'all';
+      const query = (document.getElementById('debt-activity-search')?.value || '').trim().toLowerCase();
+      const payments = new Map((state.debtPayments || []).map(p => [p.id, p]));
+      const rows = (state.transactions || []).filter(t => {
+        const payment = t.debtPaymentId ? payments.get(t.debtPaymentId) : null;
+        const bill = t.calendarBillId ? (state.calendarBills || []).find(b => b.id === t.calendarBillId) : null;
+        const related = t.debtAccountId === accId || payment?.accountId === accId || (bill && resolveDebtAccountForBill(bill)?.id === accId) || (!t.debtAccountId && !payment && !bill && debt && `${t.vendor || ''} ${t.desc || ''}`.toLowerCase().includes(String(debt.name || '').toLowerCase()));
+        if (!related) return false;
+        if (from && t.date < from) return false;
+        if (to && t.date > to) return false;
+        const isInterest = (Number(t.debtInterestAmount || 0) > 0 && Number(t.debtPrincipalAmount || 0) === 0) || /interest/i.test(`${t.category || ''} ${t.subcategory || ''} ${t.desc || ''} ${t.vendor || ''}`);
+        const label = t.type === 'Debt Payment' ? (isInterest && Number(t.debtPrincipalAmount || 0) === 0 ? 'interest' : 'payment') : (isInterest ? 'interest' : 'other');
+        if (typeFilter !== 'all' && label !== typeFilter) return false;
+        return !query || `${t.vendor || ''} ${t.desc || ''} ${t.category || ''} ${t.subcategory || ''}`.toLowerCase().includes(query);
+      }).sort((a,b) => String(b.date || '').localeCompare(String(a.date || '')));
+      rows.forEach(t => {
+        const funding = state.accounts.find(a => a.id === t.accountId);
+        const principal = t.debtPrincipalAmount !== undefined ? Number(t.debtPrincipalAmount) : (t.type === 'Debt Payment' ? Number(t.amount) : 0);
+        const isInterestTxn = /interest/i.test(`${t.category || ''} ${t.subcategory || ''} ${t.desc || ''} ${t.vendor || ''}`) || Number(t.debtInterestAmount || 0) > 0;
+        const kind = t.type === 'Debt Payment' ? (principal === 0 && Number(t.amount) > 0 ? 'Interest-only payment' : 'Debt payment') : (isInterestTxn ? 'Interest expense' : (t.type || 'Transaction'));
+        tbody.innerHTML += `<tr><td class="py-3 pr-3 whitespace-nowrap">${t.date || ''}</td><td class="py-3 pr-3">${t.vendor || t.desc || 'Transaction'}<div class="text-[10px] text-gray-400">${t.desc && t.vendor && t.desc !== t.vendor ? t.desc : ''}</div></td><td class="py-3 pr-3">${kind}</td><td class="py-3 pr-3 text-right font-semibold accounting-num">${formatFinancial(t.amount)}</td><td class="py-3 pr-3 text-right accounting-num">${t.type === 'Debt Payment' ? formatFinancial(principal) : '—'}</td><td class="py-3">${funding?.name || '—'}</td></tr>`;
       });
+      document.getElementById('debt-activity-empty')?.classList.toggle('hidden', rows.length > 0);
     }
 
+    function updateDebtPaymentSplit() {
+      const total = Math.max(0, Number(document.getElementById('dp-amount').value) || 0);
+      const principalInput = document.getElementById('dp-principal');
+      const debt = state.accounts.find(a => a.id === document.getElementById('debt-account-picker').value);
+      if (principalInput.dataset.manual !== '1') principalInput.value = debt?.paymentMethod === 'interest-only' ? '0.00' : total.toFixed(2);
+      const principal = Math.min(total, Math.max(0, Number(principalInput.value) || 0));
+      document.getElementById('dp-interest').value = (total - principal).toFixed(2);
+    }
     function openDebtPaymentModal() {
       document.getElementById('debt-payment-form').reset();
       document.getElementById('dp-date').value = new Date().toISOString().split('T')[0];
-      const funding = document.getElementById('dp-funding-account');
-      funding.innerHTML = '';
+      const funding = document.getElementById('dp-funding-account'); funding.innerHTML = '';
       state.accounts.filter(a => a.type === 'asset').forEach(a => funding.innerHTML += `<option value="${a.id}">${a.name} (${formatFinancial(a.balance)})</option>`);
+      const debt = state.accounts.find(a => a.id === document.getElementById('debt-account-picker').value);
+      document.getElementById('dp-principal').value = debt?.paymentMethod === 'interest-only' ? '0.00' : '';
+      document.getElementById('dp-principal').dataset.manual = '0';
+      document.getElementById('dp-interest').value = '0.00';
       document.getElementById('debt-payment-modal').classList.remove('hidden');
     }
     function closeDebtPaymentModal() { document.getElementById('debt-payment-modal').classList.add('hidden'); }
@@ -3604,35 +3635,34 @@
       e.preventDefault();
       const accountId = document.getElementById('debt-account-picker').value;
       const fundingAccountId = document.getElementById('dp-funding-account').value;
-      const amount = Math.max(0, parseFloat(document.getElementById('dp-amount').value) || 0);
+      const amount = Math.max(0, Number(document.getElementById('dp-amount').value) || 0);
+      const principalAmount = Math.max(0, Number(document.getElementById('dp-principal').value) || 0);
+      const interestAmount = amount - principalAmount;
       const debtAcc = state.accounts.find(a => a.id === accountId && a.type === 'debt');
       const fundingAcc = state.accounts.find(a => a.id === fundingAccountId && a.type === 'asset');
-      if (!debtAcc || !fundingAcc || amount <= 0) { alert('Select a debt account, funding account, and valid payment amount.'); return; }
+      if (!debtAcc || !fundingAcc || amount <= 0 || principalAmount > amount + 0.005) { alert('Select both accounts and enter a valid payment split. Principal cannot exceed the total payment.'); return; }
       if (fundingAcc.balance < amount && !confirm('The funding account has less balance than the payment amount. Proceed anyway?')) return;
       const paymentId = `dp_${Date.now()}_${Math.random().toString(36).slice(2,6)}`;
       const transactionId = `tx_${paymentId}`;
-      const date = document.getElementById('dp-date').value;
-      const desc = document.getElementById('dp-desc').value;
-      state.debtPayments.push({ id: paymentId, accountId, fundingAccountId, transactionId, date, desc, amount });
-      state.transactions.unshift({ id: transactionId, date, desc, vendor: desc, type: 'Debt Payment', category: 'Debt Service', subcategory: 'Principal Paydown', amount, accountId: fundingAccountId, debtPaymentId: paymentId, source: 'debt-payment-log' });
-      debtAcc.balance = Math.max(0, (Number(debtAcc.balance) || 0) - amount);
-      fundingAcc.balance -= amount;
+      const date = document.getElementById('dp-date').value; const desc = document.getElementById('dp-desc').value;
+      const payment = { id: paymentId, accountId, fundingAccountId, transactionId, date, desc, amount, principalAmount, interestAmount, source: 'debt-payment-log' };
+      state.debtPayments.push(payment);
+      state.transactions.unshift({ id: transactionId, date, desc, vendor: desc, type: 'Debt Payment', category: 'Debt Service', subcategory: principalAmount > 0 ? 'Principal Paydown' : 'Interest Payment', amount, accountId: fundingAccountId, debtPaymentId: paymentId, debtAccountId: accountId, debtPrincipalAmount: principalAmount, debtInterestAmount: interestAmount, source: 'debt-payment-log' });
+      debtAcc.balance = Math.max(0, (Number(debtAcc.balance) || 0) - principalAmount); fundingAcc.balance = (Number(fundingAcc.balance) || 0) - amount;
       saveData(); closeDebtPaymentModal(); renderDebtPlanner(); renderDebtPaymentHistory(); renderLedger(); renderDashboard();
     }
 
     function deleteDebtPayment(id) {
-      const p = state.debtPayments.find(dp => dp.id === id);
-      if (!p || !confirm('Delete this debt payment and reverse its account balance effects?')) return;
-      const debtAcc = state.accounts.find(a => a.id === p.accountId && a.type === 'debt');
-      if (debtAcc) debtAcc.balance = (Number(debtAcc.balance) || 0) + (Number(p.amount) || 0);
+      const p = (state.debtPayments || []).find(dp => dp.id === id); if (!p || !confirm('Delete this debt payment and reverse its account balance effects?')) return;
       const linked = state.transactions.find(t => t.id === p.transactionId || t.debtPaymentId === id);
+      const debtAcc = state.accounts.find(a => a.id === p.accountId && a.type === 'debt');
+      if (debtAcc) debtAcc.balance = (Number(debtAcc.balance) || 0) + Number(p.principalAmount ?? p.amount ?? 0);
       if (linked) {
         const fundingAcc = state.accounts.find(a => a.id === linked.accountId);
         if (fundingAcc) fundingAcc.balance = (Number(fundingAcc.balance) || 0) + (Number(linked.amount) || 0);
         state.transactions = state.transactions.filter(t => t.id !== linked.id);
       } else if (p.fundingAccountId) {
-        const fundingAcc = state.accounts.find(a => a.id === p.fundingAccountId);
-        if (fundingAcc) fundingAcc.balance = (Number(fundingAcc.balance) || 0) + (Number(p.amount) || 0);
+        const fundingAcc = state.accounts.find(a => a.id === p.fundingAccountId); if (fundingAcc) fundingAcc.balance = (Number(fundingAcc.balance) || 0) + (Number(p.amount) || 0);
       }
       state.debtPayments = state.debtPayments.filter(dp => dp.id !== id);
       saveData(); renderDebtPaymentHistory(); renderDashboard(); renderDebtPlanner(); renderLedger();
@@ -3720,6 +3750,7 @@
       state.categories.filter(c => c.name !== 'Transfer').forEach(c => cSelect.innerHTML += `<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`);
       const aSelect = document.getElementById('tx-account');
       aSelect.innerHTML = ''; state.accounts.forEach(a => aSelect.innerHTML += `<option value="${a.id}">${a.name}</option>`);
+      const debtLinkSelect = document.getElementById('tx-related-debt'); debtLinkSelect.innerHTML = '<option value="">Not linked to a debt account</option>'; state.accounts.filter(a => a.type === 'debt').forEach(a => debtLinkSelect.innerHTML += `<option value="${a.id}">${a.name}</option>`);
       updateSubcategoryDropdown();
 
       document.getElementById('tx-is-split').value = "false";
@@ -3741,6 +3772,7 @@
           document.getElementById('tx-subcategory').value = tx.subcategory || '';
           document.getElementById('tx-amount').value = tx.amount;
           document.getElementById('tx-account').value = tx.accountId;
+          document.getElementById('tx-related-debt').value = tx.debtAccountId || ''; 
         }
       } else {
         document.getElementById('tx-modal-title').innerText = "Log Transaction";
@@ -3748,6 +3780,7 @@
         document.getElementById('transaction-form').reset();
         document.getElementById('tx-date').value = new Date().toISOString().split('T')[0];
         document.getElementById('tx-vendor').value = '';
+        document.getElementById('tx-related-debt').value = '';
         if (state.lastUsedAccountId && state.accounts.some(a => a.id === state.lastUsedAccountId)) {
           document.getElementById('tx-account').value = state.lastUsedAccountId;
         }
@@ -3895,6 +3928,7 @@
         const amount = parseFloat(document.getElementById('tx-amount').value) || 0;
         const category = document.getElementById('tx-category').value;
         const subcategory = document.getElementById('tx-subcategory').value;
+        const relatedDebtAccountId = document.getElementById('tx-related-debt').value || '';
 
         if (!editId) {
           const normalize = value => String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -3917,11 +3951,12 @@
             const oldDebtAccount = linkedBeforeEdit && linkedBeforeEdit.type === 'debt' ? resolveDebtAccountForBill(linkedBeforeEdit) : null;
             const linkedDebtPayment = oldT.debtPaymentId ? (state.debtPayments || []).find(p => p.id === oldT.debtPaymentId) : null;
             const loggedDebtAccount = linkedDebtPayment ? state.accounts.find(a => a.id === linkedDebtPayment.accountId && a.type === 'debt') : null;
-            if (oldDebtAccount) oldDebtAccount.balance = (Number(oldDebtAccount.balance) || 0) + (Number(oldT.amount) || 0);
-            if (loggedDebtAccount) loggedDebtAccount.balance = (Number(loggedDebtAccount.balance) || 0) + (Number(oldT.amount) || 0);
+            if (oldDebtAccount) oldDebtAccount.balance = (Number(oldDebtAccount.balance) || 0) + (Number(oldT.debtPrincipalAmount ?? oldT.amount) || 0);
+            if (loggedDebtAccount) loggedDebtAccount.balance = (Number(loggedDebtAccount.balance) || 0) + (Number(oldT.debtPrincipalAmount ?? linkedDebtPayment.principalAmount ?? oldT.amount) || 0);
             const oldAcc = state.accounts.find(a => a.id === oldT.accountId);
             if (oldAcc) { if (oldT.type === 'Income') oldAcc.balance -= oldT.amount; else oldAcc.balance += oldT.amount; }
-            state.transactions[idx] = { ...oldT, id: editId, date, desc, vendor, type, category, subcategory, amount, accountId };
+            state.transactions[idx] = { ...oldT, id: editId, date, desc, vendor, type, category, subcategory, amount, accountId, ...(oldT.debtPaymentId || oldT.calendarBillId ? {} : { debtAccountId: relatedDebtAccountId || undefined }) };
+            const updatedT = state.transactions[idx];
             if (oldT.calendarBillId) {
               const linkedBill = (state.calendarBills || []).find(b => b.id === oldT.calendarBillId);
               if (linkedBill) {
@@ -3933,18 +3968,18 @@
                 linkedBill.subcategory = subcategory;
                 linkedBill.amount = amount;
                 linkedBill.accountId = accountId;
-                if (type === 'Debt Payment' && oldDebtAccount) oldDebtAccount.balance = Math.max(0, (Number(oldDebtAccount.balance) || 0) - amount);
+                if (type === 'Debt Payment' && oldDebtAccount) { const principal = Number(oldT.debtPrincipalAmount ?? linkedBeforeEdit?.principalAmount ?? amount) || 0; updatedT.debtPrincipalAmount = principal; updatedT.debtInterestAmount = Math.max(0, amount - principal); updatedT.amount = amount; linkedBill.principalAmount = principal; oldDebtAccount.balance = Math.max(0, (Number(oldDebtAccount.balance) || 0) - principal); }
               }
             }
             if (linkedDebtPayment) {
               linkedDebtPayment.date = date; linkedDebtPayment.desc = desc || vendor; linkedDebtPayment.amount = amount; linkedDebtPayment.fundingAccountId = accountId;
-              if (type === 'Debt Payment' && loggedDebtAccount) loggedDebtAccount.balance = Math.max(0, (Number(loggedDebtAccount.balance) || 0) - amount);
+              if (type === 'Debt Payment' && loggedDebtAccount) { const principal = Math.max(0, Number(oldT.debtPrincipalAmount ?? linkedDebtPayment.principalAmount ?? amount) || 0); updatedT.debtPrincipalAmount = principal; updatedT.debtInterestAmount = Math.max(0, amount - principal); linkedDebtPayment.amount = amount; linkedDebtPayment.principalAmount = principal; linkedDebtPayment.interestAmount = Math.max(0, amount - principal); loggedDebtAccount.balance = Math.max(0, (Number(loggedDebtAccount.balance) || 0) - principal); }
             }
             const newAcc = state.accounts.find(a => a.id === accountId);
             if (newAcc) { if (type === 'Income') newAcc.balance += amount; else newAcc.balance -= amount; }
           }
         } else {
-          state.transactions.unshift({ id: Date.now().toString(), date, desc, vendor, type, category, subcategory, amount, accountId });
+          state.transactions.unshift({ id: Date.now().toString(), date, desc, vendor, type, category, subcategory, amount, accountId, ...(relatedDebtAccountId ? { debtAccountId: relatedDebtAccountId } : {}) });
           const acc = state.accounts.find(a => a.id === accountId);
           if (acc) { if (type === 'Income') acc.balance += amount; else acc.balance -= amount; }
         }
