@@ -698,12 +698,33 @@
       <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-3 shadow-sm">
         <h3 class="text-md font-bold">App Color Theme Selector</h3>
         <p class="text-xs text-gray-400">Select an accent color palette to customize your FinHub interface</p>
-        <div class="flex space-x-3 pt-2">
-          <button onclick="setAppThemeColor('indigo')" class="w-8 h-8 rounded-full bg-indigo-600 hover:ring-2 ring-indigo-400"></button>
-          <button onclick="setAppThemeColor('emerald')" class="w-8 h-8 rounded-full bg-emerald-600 hover:ring-2 ring-emerald-400"></button>
-          <button onclick="setAppThemeColor('violet')" class="w-8 h-8 rounded-full bg-violet-600 hover:ring-2 ring-violet-400"></button>
-          <button onclick="setAppThemeColor('rose')" class="w-8 h-8 rounded-full bg-rose-600 hover:ring-2 ring-rose-400"></button>
-          <button onclick="setAppThemeColor('amber')" class="w-8 h-8 rounded-full bg-amber-600 hover:ring-2 ring-amber-400"></button>
+        <div class="flex flex-wrap items-center gap-3 pt-2">
+          <button type="button" title="Indigo" onclick="setAppThemeColor('indigo')" class="w-8 h-8 rounded-full bg-indigo-600 hover:ring-2 ring-indigo-400"></button>
+          <button type="button" title="Emerald" onclick="setAppThemeColor('emerald')" class="w-8 h-8 rounded-full bg-emerald-600 hover:ring-2 ring-emerald-400"></button>
+          <button type="button" title="Violet" onclick="setAppThemeColor('violet')" class="w-8 h-8 rounded-full bg-violet-600 hover:ring-2 ring-violet-400"></button>
+          <button type="button" title="Rose" onclick="setAppThemeColor('rose')" class="w-8 h-8 rounded-full bg-rose-600 hover:ring-2 ring-rose-400"></button>
+          <button type="button" title="Amber" onclick="setAppThemeColor('amber')" class="w-8 h-8 rounded-full bg-amber-600 hover:ring-2 ring-amber-400"></button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-gray-200 dark:border-gray-800">
+          <div class="space-y-2">
+            <label class="block text-xs font-semibold text-gray-500">Custom accent color</label>
+            <div class="flex items-center gap-2">
+              <input id="custom-accent-picker" type="color" value="#4f46e5" aria-label="Choose accent color" onchange="setCustomAppColor('accent',this.value)" class="h-10 w-14 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent p-1">
+              <input id="custom-accent-hex" type="text" value="" placeholder="#4F46E5" maxlength="7" onchange="setCustomAppColor('accent',this.value)" class="min-w-0 flex-1 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm font-mono">
+            </div>
+            <p class="text-[10px] text-gray-400">Enter a six-digit hex code or use the color picker.</p>
+          </div>
+          <div class="space-y-2">
+            <label class="block text-xs font-semibold text-gray-500">Custom page background</label>
+            <div class="flex items-center gap-2">
+              <input id="custom-background-picker" type="color" value="#030712" aria-label="Choose page background color" onchange="setCustomAppColor('background',this.value)" class="h-10 w-14 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent p-1">
+              <input id="custom-background-hex" type="text" value="" placeholder="#030712" maxlength="7" onchange="setCustomAppColor('background',this.value)" class="min-w-0 flex-1 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm font-mono">
+            </div>
+            <p class="text-[10px] text-gray-400">Changes the page canvas behind the cards. Cards keep their light/dark surfaces.</p>
+          </div>
+        </div>
+        <div class="flex justify-end">
+          <button type="button" onclick="resetCustomAppColors()" class="px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-xs font-semibold">Reset custom colors</button>
         </div>
       </div>
 
@@ -1289,6 +1310,8 @@
     }
 
     function initThemeAndBlur() {
+      if (!isValidHexColor(state.appAccentHex)) delete state.appAccentHex;
+      if (!isValidHexColor(state.appBackgroundHex)) delete state.appBackgroundHex;
       if (state.darkMode) document.documentElement.classList.add('dark');
       else document.documentElement.classList.remove('dark');
       applyThemeColor(state.appThemeColor || 'indigo');
@@ -1304,25 +1327,88 @@
       else { targets.forEach(el => el.classList.remove('blur-sensitive')); if (icon) icon.className = "fa-solid fa-eye"; }
     }
 
+    const APP_THEME_PALETTES = {
+      indigo: { bg: '#4f46e5', text: '#6366f1' },
+      emerald: { bg: '#059669', text: '#10b981' },
+      violet: { bg: '#7c3aed', text: '#8b5cf6' },
+      rose: { bg: '#e11d48', text: '#f43f5e' },
+      amber: { bg: '#d97706', text: '#f59e0b' }
+    };
+
+    function isValidHexColor(value) {
+      return /^#[0-9a-fA-F]{6}$/.test(String(value || '').trim());
+    }
+
+    function getActiveAccentColors() {
+      if (isValidHexColor(state.appAccentHex)) {
+        const accent = state.appAccentHex.trim().toLowerCase();
+        return { bg: accent, text: accent };
+      }
+      return APP_THEME_PALETTES[state.appThemeColor] || APP_THEME_PALETTES.indigo;
+    }
+
+    function syncCustomColorControls() {
+      const accent = document.getElementById('custom-accent-picker');
+      const accentHex = document.getElementById('custom-accent-hex');
+      const background = document.getElementById('custom-background-picker');
+      const backgroundHex = document.getElementById('custom-background-hex');
+      if (accent) accent.value = isValidHexColor(state.appAccentHex) ? state.appAccentHex : getActiveAccentColors().bg;
+      if (accentHex) accentHex.value = isValidHexColor(state.appAccentHex) ? state.appAccentHex : '';
+      const defaultBackground = state.darkMode ? '#030712' : '#f3f4f6';
+      if (background) background.value = isValidHexColor(state.appBackgroundHex) ? state.appBackgroundHex : defaultBackground;
+      if (backgroundHex) backgroundHex.value = isValidHexColor(state.appBackgroundHex) ? state.appBackgroundHex : '';
+    }
+
+    function setCustomAppColor(kind, value) {
+      const normalized = String(value || '').trim();
+      if (!isValidHexColor(normalized)) {
+        alert('Please enter a valid six-digit hex color, such as #4F46E5.');
+        syncCustomColorControls();
+        return;
+      }
+      if (kind === 'accent') {
+        state.appAccentHex = normalized.toLowerCase();
+        state.appThemeColor = 'custom';
+        applyThemeColor('custom');
+      } else if (kind === 'background') {
+        state.appBackgroundHex = normalized.toLowerCase();
+        applyBackgroundColor();
+      } else return;
+      saveData();
+      syncCustomColorControls();
+    }
+
+    function resetCustomAppColors() {
+      delete state.appAccentHex;
+      delete state.appBackgroundHex;
+      state.appThemeColor = APP_THEME_PALETTES[state.appThemeColor] ? state.appThemeColor : 'indigo';
+      applyThemeColor(state.appThemeColor);
+      applyBackgroundColor();
+      saveData();
+      syncCustomColorControls();
+    }
+
     function setAppThemeColor(color) {
       state.appThemeColor = color;
+      delete state.appAccentHex;
       applyThemeColor(color);
       saveData();
+      syncCustomColorControls();
+    }
+
+    function applyBackgroundColor() {
+      const body = document.getElementById('app-body');
+      if (!body) return;
+      body.style.backgroundColor = isValidHexColor(state.appBackgroundHex) ? state.appBackgroundHex : '';
     }
 
     function applyThemeColor(color) {
-      const colorMap = {
-        indigo: { bg: '#4f46e5', text: '#6366f1' },
-        emerald: { bg: '#059669', text: '#10b981' },
-        violet: { bg: '#7c3aed', text: '#8b5cf6' },
-        rose: { bg: '#e11d48', text: '#f43f5e' },
-        amber: { bg: '#d97706', text: '#f59e0b' }
-      };
-      const active = colorMap[color] || colorMap['indigo'];
+      const active = getActiveAccentColors();
       document.querySelectorAll('.theme-bg').forEach(el => el.style.backgroundColor = active.bg);
       document.querySelectorAll('.theme-text').forEach(el => el.style.color = active.text);
       const brandLogo = document.getElementById('brand-logo');
       if (brandLogo) brandLogo.style.backgroundColor = active.bg;
+      applyBackgroundColor();
     }
 
     function toggleCollapse(secId) {
@@ -1359,7 +1445,7 @@
       if (activeNav) {
         activeNav.classList.add('text-white', 'shadow-md', 'shadow-indigo-600/20');
         activeNav.classList.remove('text-gray-600', 'dark:text-gray-400');
-        activeNav.style.backgroundColor = state.appThemeColor === 'emerald' ? '#059669' : state.appThemeColor === 'violet' ? '#7c3aed' : state.appThemeColor === 'rose' ? '#e11d48' : state.appThemeColor === 'amber' ? '#d97706' : '#4f46e5';
+        activeNav.style.backgroundColor = getActiveAccentColors().bg;
       }
 
       if (tabId === 'dashboard') renderDashboard();
@@ -1802,7 +1888,7 @@
         const btn = document.getElementById(`cycle-btn-${c}`);
         if (btn) {
           btn.className = c === cycle ? 'px-3 py-1.5 rounded-lg text-xs font-semibold text-white theme-bg' : 'px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-500 hover:text-gray-900';
-          if (c === cycle) btn.style.backgroundColor = state.appThemeColor === 'emerald' ? '#059669' : state.appThemeColor === 'violet' ? '#7c3aed' : state.appThemeColor === 'rose' ? '#e11d48' : state.appThemeColor === 'amber' ? '#d97706' : '#4f46e5';
+          if (c === cycle) btn.style.backgroundColor = getActiveAccentColors().bg;
           else btn.style.backgroundColor = '';
         }
       });
@@ -2087,7 +2173,7 @@
       },0);
       const rec = getZbbPoolRecord(period, cycle);
       const selectedBuckets = Array.isArray(state.variablePoolCategories) ? state.variablePoolCategories : [];
-      const inPool = t => selectedBuckets.includes(t.category || 'Uncategorized');
+      const inPool = t => t.category !== 'Transfer' && selectedBuckets.includes(t.category || 'Uncategorized');
       const hasDates = !!(rec.startDate && rec.endDate);
       const poolTransactions = hasDates ? (state.transactions||[]).filter(t => t.type === 'Expense' && t.date >= rec.startDate && t.date <= rec.endDate && inPool(t) && !t.reconciledDuplicate) : [];
       const actuals = poolTransactions.reduce((sum,t)=>sum+(Number(t.amount)||0),0);
@@ -2571,7 +2657,7 @@
       if (!ids.length) { selectedLedgerIds.clear(); updateLedgerSelectionUI(); return; }
       document.getElementById('bulk-edit-count').textContent = `${ids.length} transaction${ids.length===1?'':'s'} selected`;
       const category = document.getElementById('bulk-category');
-      category.innerHTML = '<option value="">No change</option><option value="__CLEAR__">Clear bucket</option><option value="Transfer">Transfer</option>' +
+      category.innerHTML = '<option value="">No change</option><option value="__CLEAR__">Clear bucket</option><option value="Transfer">Transfer (internal movement)</option>' +
         (state.categories || []).filter(c=>c.name !== 'Transfer').map(c=>`<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`).join('');
       ['bulk-vendor','bulk-category','bulk-subcategory'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
       updateBulkSubcategoryOptions();
@@ -2631,13 +2717,18 @@
       const clearBucket=categoryValue==='__CLEAR__';
       const confirmationDetail=clearBucket
         ? ' The bucket and subcategory will be cleared.'
-        : (targetCategory ? ` The bucket will be set to “${targetCategory}”.` : '');
+        : targetCategory === 'Transfer'
+          ? ' The bucket will be set to Transfer and the subcategory cleared. Account balances will not be changed.'
+          : (targetCategory ? ` The bucket will be set to “${targetCategory}”.` : '');
       if (!confirm(`Apply the selected changes to ${valid.length} transaction${valid.length===1?'':'s'}?${confirmationDetail}`))return;
 
       valid.forEach(t=>{
         if(vendorValue!=='')t.vendor=vendorValue;
         if(clearBucket) {
           t.category='';
+          t.subcategory='';
+        } else if(targetCategory === 'Transfer') {
+          t.category='Transfer';
           t.subcategory='';
         } else if(targetCategory) {
           t.category=targetCategory;
@@ -3010,6 +3101,7 @@
           </div>
         `;
       });
+      syncCustomColorControls();
     }
 
     function openTypeModal() { document.getElementById('type-modal').classList.remove('hidden'); }
@@ -3662,6 +3754,8 @@
     state.zbbPoolTracking = state.zbbPoolTracking || {};
     state.statementReconciliation = state.statementReconciliation || { batches: [] };
           state.vendorCleanupRules = Array.isArray(state.vendorCleanupRules) ? state.vendorCleanupRules : [];
+          if (!isValidHexColor(state.appAccentHex)) delete state.appAccentHex;
+          if (!isValidHexColor(state.appBackgroundHex)) delete state.appBackgroundHex;
     if (!Array.isArray(state.variablePoolCategories)) state.variablePoolCategories = (state.categories || []).filter(c => !/housing|bill|debt service/i.test(c.name)).map(c => c.name);
     // New planner, reconciliation, and vendor cleanup fields are additive; existing transactions remain intact.
           saveData();
