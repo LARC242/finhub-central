@@ -2570,29 +2570,92 @@
       const ids = Array.from(selectedLedgerIds).filter(id => state.transactions.some(t => t.id === id));
       if (!ids.length) { selectedLedgerIds.clear(); updateLedgerSelectionUI(); return; }
       document.getElementById('bulk-edit-count').textContent = `${ids.length} transaction${ids.length===1?'':'s'} selected`;
-      const category = document.getElementById('bulk-category'); category.innerHTML = '<option value="">No change</option>' + state.categories.map(c=>`<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`).join('');
+      const category = document.getElementById('bulk-category');
+      category.innerHTML = '<option value="">No change</option><option value="__CLEAR__">Clear bucket</option>' +
+        (state.categories || []).map(c=>`<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`).join('');
       ['bulk-vendor','bulk-category','bulk-subcategory'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
       updateBulkSubcategoryOptions();
       document.getElementById('bulk-edit-modal').classList.remove('hidden');
     }
     function closeBulkEditModal() { document.getElementById('bulk-edit-modal').classList.add('hidden'); }
     function updateBulkSubcategoryOptions() {
-      const select=document.getElementById('bulk-subcategory'); if(!select)return;
-      const category=document.getElementById('bulk-category').value;
-      const bucket=state.categories.find(c=>c.name===category);
-      select.innerHTML='<option value="">No change</option>' + (bucket?.subcategories||[]).map(sub=>`<option value="${escapeHtml(sub.name)}">${escapeHtml(sub.name)}</option>`).join('');
+      const select=document.getElementById('bulk-subcategory');
+      if(!select)return;
+      const categoryValue=document.getElementById('bulk-category').value;
+      const buckets=state.categories || [];
+      let options='<option value="">No change</option>';
+
+      if (categoryValue === '__CLEAR__') {
+        options += '<option value="" disabled>Select a bucket first</option>';
+      } else if (categoryValue) {
+        const bucket=buckets.find(c=>c.name===categoryValue);
+        (bucket?.subcategories || []).forEach(sub=>{
+          options += `<option value="${escapeHtml(sub.name)}">${escapeHtml(sub.name)}</option>`;
+        });
+      } else {
+        options += '<option value="" disabled>Choosing a subcategory will also set its bucket</option>';
+        buckets.forEach((bucket, bucketIndex)=>{
+          (bucket.subcategories || []).forEach((sub, subIndex)=>{
+            const value=`__PAIR__${encodeURIComponent(bucket.name)}::${encodeURIComponent(sub.name)}`;
+            options += `<option value="${escapeHtml(value)}">${escapeHtml(bucket.name)} — ${escapeHtml(sub.name)}</option>`;
+          });
+        });
+      }
+      select.innerHTML=options;
     }
     function applyBulkEdit() {
-      const ids=Array.from(selectedLedgerIds); const changes={
-        vendor:document.getElementById('bulk-vendor').value.trim(),
-        category:document.getElementById('bulk-category').value, subcategory:document.getElementById('bulk-subcategory').value
-      };
-      if (!Object.values(changes).some(v=>v!=='')) { alert('Choose at least one field to update.'); return; }
+      const ids=Array.from(selectedLedgerIds);
+      const vendorValue=document.getElementById('bulk-vendor').value.trim();
+      const categoryValue=document.getElementById('bulk-category').value;
+      const subcategoryValue=document.getElementById('bulk-subcategory').value;
+      const hasChanges=vendorValue!=='' || categoryValue!=='' || subcategoryValue!=='';
+      if (!hasChanges) { alert('Choose at least one field to update.'); return; }
       const valid=ids.map(id=>state.transactions.find(t=>t.id===id)).filter(Boolean);
       if (!valid.length)return;
-      if (!confirm(`Apply the selected changes to ${valid.length} transaction${valid.length===1?'':'s'}? Account changes do not alter account balances; use them only to correct the account assignment.`))return;
-      valid.forEach(t=>Object.entries(changes).forEach(([key,value])=>{if(value!=='')t[key]=value;}));
-      selectedLedgerIds.clear(); saveData(); closeBulkEditModal(); renderLedger(); renderDashboard(); renderZbbFundingTracker();
+
+      let pairedCategory='', pairedSubcategory='';
+      if (subcategoryValue.startsWith('__PAIR__')) {
+        const pair=subcategoryValue.slice(8).split('::');
+        try {
+          pairedCategory=decodeURIComponent(pair[0] || '');
+          pairedSubcategory=decodeURIComponent(pair[1] || '');
+        } catch(e) {
+          alert('That subcategory selection could not be read. Please choose it again.');
+          return;
+        }
+      }
+      const targetCategory=pairedCategory || (categoryValue && categoryValue!=='__CLEAR__' ? categoryValue : '');
+      const targetSubcategory=pairedSubcategory || (subcategoryValue && !subcategoryValue.startsWith('__PAIR__') ? subcategoryValue : '');
+      const clearBucket=categoryValue==='__CLEAR__';
+      const confirmationDetail=clearBucket
+        ? ' The bucket and subcategory will be cleared.'
+        : (targetCategory ? ` The bucket will be set to “${targetCategory}”.` : '');
+      if (!confirm(`Apply the selected changes to ${valid.length} transaction${valid.length===1?'':'s'}?${confirmationDetail}`))return;
+
+      valid.forEach(t=>{
+        if(vendorValue!=='')t.vendor=vendorValue;
+        if(clearBucket) {
+          t.category='';
+          t.subcategory='';
+        } else if(targetCategory) {
+          t.category=targetCategory;
+          if(targetSubcategory) {
+            t.subcategory=targetSubcategory;
+          } else {
+            const targetBucket=(state.categories || []).find(c=>c.name===targetCategory);
+            const stillValid=(targetBucket?.subcategories || []).some(sub=>sub.name===t.subcategory);
+            if(!stillValid)t.subcategory='';
+          }
+        } else if(targetSubcategory) {
+          t.subcategory=targetSubcategory;
+        }
+      });
+      selectedLedgerIds.clear();
+      saveData();
+      closeBulkEditModal();
+      renderLedger();
+      renderDashboard();
+      renderZbbFundingTracker();
       alert(`Updated ${valid.length} transactions.`);
     }
     function setLedgerView(v) {
