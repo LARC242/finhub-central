@@ -354,8 +354,8 @@
       <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-4 shadow-sm">
         <div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-800 pb-3">
           <div>
-            <h3 class="text-md font-bold text-rose-600 dark:text-rose-400"><i class="fa-solid fa-file-invoice-dollar mr-2"></i>2. Budgeted Fixed Bills & Commitments</h3>
-            <p class="text-xs text-gray-400 mt-0.5">Subtotal: <strong id="zbb-sub-bills-disp" class="accounting-num">$ - </strong> | Remaining Bal: <strong id="zbb-rem-bills-disp" class="accounting-num">$ - </strong></p>
+            <h3 class="text-md font-bold text-rose-600 dark:text-rose-400"><i class="fa-solid fa-file-invoice-dollar mr-2"></i>2. Monthly Bills Funding</h3>
+            <p class="text-xs text-gray-400 mt-0.5">This paycheque allocation: <strong id="zbb-sub-bills-disp" class="accounting-num">$ - </strong> | Remaining Bal: <strong id="zbb-rem-bills-disp" class="accounting-num">$ - </strong></p>
           </div>
           <button onclick="openZbbItemModal('bill')" class="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold theme-bg"><i class="fa-solid fa-plus mr-1"></i> Add Bill</button>
         </div>
@@ -381,7 +381,7 @@
             <h3 class="text-md font-bold text-amber-600 dark:text-amber-400"><i class="fa-solid fa-credit-card mr-2"></i>4. Debt Payments</h3>
             <p class="text-xs text-gray-400 mt-0.5">Subtotal: <strong id="zbb-sub-debt-disp" class="accounting-num">$ - </strong> | Remaining Bal: <strong id="zbb-rem-debt-disp" class="accounting-num">$ - </strong></p>
           </div>
-          <button onclick="openZbbItemModal('debt')" class="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold theme-bg"><i class="fa-solid fa-plus mr-1"></i> Add Debt</button>
+          <div class="flex flex-wrap gap-2"><button onclick="syncDebtMinimumsToZbb()" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold"><i class="fa-solid fa-rotate mr-1"></i> Sync Account Minimums</button><button onclick="openZbbItemModal('debt')" class="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold theme-bg"><i class="fa-solid fa-plus mr-1"></i> Add Debt</button></div>
         </div>
         <div id="zbb-debt-list" class="space-y-2"></div>
       </div>
@@ -406,12 +406,12 @@
         <div id="sinking-funds-progress-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
       </div>
 
-      <!-- BILL RESERVES AND VARIABLE ROLLOVER -->
+      <!-- SHARED VARIABLE SPENDING POOL -->
       <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-4 shadow-sm">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-200 dark:border-gray-800 pb-3">
-          <div><h3 class="text-md font-bold"><i class="fa-solid fa-vault mr-2 text-indigo-500"></i>Bill Reserves & Variable Carry-Forward</h3>
-          <p class="text-xs text-gray-400 mt-1">Track money actually set aside for upcoming bills and unused variable-budget amounts. These are tracking balances, not additional expenses.</p></div>
-          <span class="text-[10px] text-indigo-400">Saved by budget month</span>
+          <div><h3 class="text-md font-bold"><i class="fa-solid fa-arrows-rotate mr-2 text-indigo-500"></i>Shared Variable Spending Pool</h3>
+          <p class="text-xs text-gray-400 mt-1">All variable categories share one pool. Spending in one category can be offset by underspending in another. Actuals come from Expense Tracker transactions within the selected paycheque dates.</p></div>
+          <span class="text-[10px] text-indigo-400">Carry-forward or reset each paycheque</span>
         </div>
         <div id="zbb-funding-tracker" class="space-y-4"></div>
       </div>
@@ -739,16 +739,18 @@
     </button>
   </div>
 
-  <!-- MODAL: BANK STATEMENT RECONCILIATION HELPER -->
-  <div id="recon-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50">
-    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-xl p-6 space-y-4 shadow-2xl">
-      <h3 class="text-lg font-bold">Bank Statement Reconciliation Helper</h3>
-      <p class="text-xs text-gray-400">Paste raw CSV or copied text from your online bank statement (Format: Date, Description, Amount).</p>
-      <textarea id="recon-paste-area" rows="6" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-3 text-xs font-mono" placeholder="2026-11-04, Grocery Store, -84.20"></textarea>
-      <div class="flex justify-end space-x-3">
-        <button onclick="closeReconciliationModal()" class="px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-xs font-semibold">Cancel</button>
-        <button onclick="processReconciliation()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold theme-bg">Parse & Match</button>
+  <!-- MODAL: BANK STATEMENT MATCH & RECONCILIATION -->
+  <div id="recon-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center p-3 hidden z-50">
+    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-4xl max-h-[92vh] overflow-y-auto p-5 space-y-4 shadow-2xl">
+      <div class="flex items-start justify-between gap-3"><div><h3 class="text-lg font-bold">Statement Helper · Match & Reconcile</h3><p class="text-xs text-gray-400 mt-1">Import statement rows as a review batch. FinHub suggests matches to manually entered transactions so you can reconcile them without duplicating the ledger.</p></div><button onclick="closeReconciliationModal()" class="text-gray-400"><i class="fa-solid fa-xmark"></i></button></div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Statement account</label><select id="recon-account" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></select></div>
+        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Upload CSV statement</label><input id="recon-file" type="file" accept=".csv,text/csv,.txt,text/plain" onchange="loadStatementFile(event)" class="w-full text-xs"></div>
+        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Statement amount convention</label><select id="recon-sign" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"><option value="negative-expense">Negative = expense, positive = income</option><option value="positive-expense">Positive = expense, negative = income</option></select></div>
       </div>
+      <div><label class="block text-xs font-semibold text-gray-500 mb-1">Or paste statement rows (Date, Description, Amount)</label><textarea id="recon-paste-area" rows="4" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-3 text-xs font-mono" placeholder="2026-11-04, Grocery Store, -84.20"></textarea></div>
+      <div class="flex flex-wrap justify-end gap-2"><button onclick="closeReconciliationModal()" class="px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-xs font-semibold">Close</button><button onclick="processReconciliation()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold theme-bg">Parse & Find Matches</button></div>
+      <div id="recon-preview" class="space-y-3"></div>
     </div>
   </div>
 
@@ -1116,6 +1118,8 @@
       });
     }
 
+    function escapeHtml(value) { return String(value ?? '').replace(/[&<>\"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[ch])); }
+
     let state = JSON.parse(localStorage.getItem('finhub_central_v25')) || JSON.parse(localStorage.getItem('finhub_central_v24')) || {
       darkMode: true,
       privacyBlur: false,
@@ -1219,7 +1223,10 @@
     if (state.collapsibles['sec-advanced-types'] === undefined) state.collapsibles['sec-advanced-types'] = true;
     state.lastBackupAt = state.lastBackupAt || null;
     state.zbbTracking = state.zbbTracking || {};
-    // Per-period reserve and rollover tracking is additive; legacy budget items need no migration.
+    state.zbbPoolTracking = state.zbbPoolTracking || {};
+    state.statementReconciliation = state.statementReconciliation || { batches: [] };
+    if (!Array.isArray(state.variablePoolCategories)) state.variablePoolCategories = (state.categories || []).filter(c => !/housing|bill|debt service/i.test(c.name)).map(c => c.name);
+    // New planner and reconciliation fields are additive; existing transactions and budgets remain intact.
 
     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
@@ -1723,7 +1730,7 @@
               <td class="px-4 py-3">${t.date}</td>
               <td class="px-4 py-3">${t.vendor || 'Vendor not recorded'}</td>
               <td class="px-4 py-3">${t.desc || '-'}</td>
-              <td class="px-4 py-3"><span class="px-2 py-0.5 rounded text-[10px] bg-gray-100 dark:bg-gray-800">${t.type}</span></td>
+              <td class="px-4 py-3"><span class="px-2 py-0.5 rounded text-[10px] bg-gray-100 dark:bg-gray-800">${t.type}</span>${t.reconciled ? '<span class="ml-1 px-1.5 py-0.5 rounded text-[9px] bg-emerald-500/10 text-emerald-500">Reconciled</span>' : ''}</td>
               <td class="px-4 py-3 text-right font-bold ${isExp ? 'text-rose-600' : 'text-emerald-600'} accounting-num">${formatFinancial(t.amount, isExp)}</td>
             </tr>
           `;
@@ -1807,6 +1814,16 @@
           <div class="p-2 rounded-lg bg-gray-50 dark:bg-gray-950"><div class="text-gray-400">Savings</div><strong>${formatFinancial(monthlySavings, true)}</strong></div>
           <div class="p-2 rounded-lg bg-gray-50 dark:bg-gray-950"><div class="text-gray-400">Unallocated</div><strong>${formatFinancial(monthlyIncome-monthlyBills-monthlyVariable-monthlyDebt-monthlySavings)}</strong></div>
         </div><div class="mt-3 p-3 rounded-xl border border-indigo-500/20 bg-indigo-500/5 text-xs"><span class="font-semibold">Paycheque 3 (custom allocation):</span> Net planned amount <strong class="accounting-num">${formatFinancial(thirdChequeNet)}</strong>. This is shown separately and is not automatically added to the regular two-paycheque monthly baseline.</div>`;
+      if (monthlyPanel) {
+        const nextCycle = cycle === 3 ? 1 : cycle + 1;
+        const nextPeriod = cycle === 3 ? nextZbbMonth(period) : period;
+        const nextTemplate = state.zbbTemplates[nextPeriod] || zbb;
+        const cycleTotal = (template, group, idx) => (template[group] || []).reduce((sum,item) => { const split=item.split||[50,50,0]; const raw=Number(split[idx])||0; return sum + (item.splitMode==='dollar' ? raw : (Number(item.monthly)||0)*raw/100); },0);
+        const groups = [['Income','incomes',false],['Fixed bills','bills',true],['Variable','variable',true],['Debt','debts',true],['Savings','savings',true]];
+        const rolling = groups.map(([label,key,expense]) => { const total=cycleTotal(zbb,key,cycle-1)+cycleTotal(nextTemplate,key,nextCycle-1); return `<div class="p-2 rounded-lg bg-gray-50 dark:bg-gray-950"><div class="text-gray-400">${label}</div><strong>${formatFinancial(total,expense)}</strong></div>`; }).join('');
+        const rollingNet = cycleTotal(zbb,'incomes',cycle-1)+cycleTotal(nextTemplate,'incomes',nextCycle-1)-['bills','variable','debts','savings'].reduce((sum,key)=>sum+cycleTotal(zbb,key,cycle-1)+cycleTotal(nextTemplate,key,nextCycle-1),0);
+        monthlyPanel.insertAdjacentHTML('beforeend', `<div class="mt-4 pt-3 border-t border-gray-200 dark:border-gray-800"><div class="flex flex-wrap items-center justify-between gap-2 mb-2"><div><h4 class="font-bold text-sm">Rolling two-paycheque view</h4><p class="text-[10px] text-gray-400">Paycheque ${cycle} + Paycheque ${nextCycle}${cycle===3?' in the following month':''}; independent of the calendar-month roll-up above.</p></div><strong class="text-sm accounting-num">Net ${formatFinancial(rollingNet)}</strong></div><div class="grid grid-cols-2 md:grid-cols-5 gap-2 text-xs">${rolling}</div></div>`);
+      }
       let incomeSum = 0, billsSum = 0, variableSum = 0, debtSum = 0, savingsSum = 0;
 
       const calcAmt = (item) => {
@@ -1840,6 +1857,16 @@
       const renderSection = (containerId, itemsList, sectionKey, colorClass) => {
         const container = document.getElementById(containerId);
         container.innerHTML = '';
+        if (sectionKey === 'bill') {
+          const money = n => formatFinancial(Number(n) || 0);
+          const rows = (itemsList || []).map(item => {
+            const split = item.split || [50,50,0];
+            const alloc = [0,1,2].map(i => item.splitMode === 'dollar' ? (Number(split[i])||0) : (Number(item.monthly)||0) * ((Number(split[i])||0)/100));
+            return `<div class="grid grid-cols-[minmax(0,1.5fr)_repeat(3,minmax(62px,0.7fr))_auto] gap-2 items-center bg-gray-50 dark:bg-gray-950 p-3 rounded-xl border border-gray-200 dark:border-gray-800 text-xs"><div class="min-w-0"><div class="font-semibold truncate">${escapeHtml(item.name)}</div><div class="text-[10px] text-gray-400">Monthly bill · ${money(item.monthly)}</div></div><div class="text-right"><div class="text-[9px] text-gray-400">P1</div><strong class="accounting-num">${money(alloc[0])}</strong></div><div class="text-right"><div class="text-[9px] text-gray-400">P2</div><strong class="accounting-num">${money(alloc[1])}</strong></div><div class="text-right"><div class="text-[9px] text-gray-400">P3</div><strong class="accounting-num">${money(alloc[2])}</strong></div><div class="flex gap-2"><button onclick="openZbbItemModal('bill','${item.id}')" class="text-indigo-400" title="Edit allocations"><i class="fa-solid fa-pen"></i></button><button onclick="deleteZbbItem('bill','${item.id}')" class="text-rose-500" title="Delete bill"><i class="fa-solid fa-trash"></i></button></div></div>`;
+          }).join('');
+          container.innerHTML = `<div class="grid grid-cols-[minmax(0,1.5fr)_repeat(3,minmax(62px,0.7fr))_auto] gap-2 px-3 text-[10px] uppercase tracking-wide text-gray-400"><div>Monthly bill</div><div class="text-right">Paycheque 1</div><div class="text-right">Paycheque 2</div><div class="text-right">Third cheque</div><div></div></div>${rows || '<p class="text-xs text-gray-400 py-3">No monthly bills added yet.</p>'}<p class="text-[10px] text-gray-400">Edit any bill to adjust its custom dollar or percentage allocation. Allocations are budget funding, not recorded bill payments.</p>`;
+          return;
+        }
         (itemsList || []).forEach(item => {
           const amt = calcAmt(item);
           const pctOfIncome = incomeSum > 0 ? ((amt / incomeSum) * 100).toFixed(1) : '0.0';
@@ -1954,35 +1981,91 @@
       renderZbbFundingTracker();
     }
 
+    function getZbbPoolRecord(period, cycle) {
+      state.zbbPoolTracking = state.zbbPoolTracking || {};
+      state.zbbPoolTracking[period] = state.zbbPoolTracking[period] || {};
+      state.zbbPoolTracking[period][cycle] = state.zbbPoolTracking[period][cycle] || {};
+      const rec = state.zbbPoolTracking[period][cycle];
+      if (!rec.startDate || !rec.endDate) {
+        const [y,m] = period.split('-').map(Number);
+        if (cycle === 1) { rec.startDate = `${period}-01`; rec.endDate = `${period}-14`; }
+        else if (cycle === 2) { rec.startDate = `${period}-15`; rec.endDate = new Date(y,m,0).toISOString().slice(0,10); }
+      }
+      return rec;
+    }
+
+    function toggleVariablePoolCategory(category, checked) {
+      state.variablePoolCategories = Array.isArray(state.variablePoolCategories) ? state.variablePoolCategories : [];
+      if (checked && !state.variablePoolCategories.includes(category)) state.variablePoolCategories.push(category);
+      if (!checked) state.variablePoolCategories = state.variablePoolCategories.filter(name => name !== category);
+      saveData(); renderZbbFundingTracker();
+    }
+
+    function updateZbbPoolDate(cycle, field, value) {
+      const rec = getZbbPoolRecord(state.selectedZbbPeriod || '2026-11', cycle);
+      rec[field] = value;
+      saveData(); renderZbbFundingTracker();
+    }
+
+    function commitVariablePoolDecision(cycle, decision) {
+      const period = state.selectedZbbPeriod || '2026-11';
+      const rec = getZbbPoolRecord(period, cycle);
+      const remaining = Number(rec.poolRemaining) || 0;
+      const transferAmount = decision === 'carry' ? Math.max(0, remaining) : 0;
+      const destination = cycle === 1 ? `Paycheque 2 (${period})` : cycle === 2 ? `Paycheque 3 (${period})` : `Paycheque 1 (${nextZbbMonth(period)})`;
+      const verb = decision === 'carry' ? `carry ${formatFinancial(transferAmount)} forward to ${destination}` : `release ${formatFinancial(Math.max(0, remaining))} and reset the pool to $0 for ${destination}`;
+      if (!confirm(`Confirm: ${verb}? This decision can be changed later by revisiting this paycheque.`)) return;
+      rec.decision = decision; rec.carryOut = transferAmount; rec.decidedAt = new Date().toISOString();
+      rec.decisionHistory = Array.isArray(rec.decisionHistory) ? rec.decisionHistory : [];
+      rec.decisionHistory.push({ decision, amount: transferAmount, remainingAtDecision: remaining, destination, date: rec.decidedAt });
+      const next = cycle === 1 ? 2 : cycle === 2 ? 3 : 1;
+      const nextPeriod = cycle === 3 ? nextZbbMonth(period) : period;
+      const nextRec = getZbbPoolRecord(nextPeriod, next);
+      nextRec.carryIn = transferAmount;
+      nextRec.carrySource = `${period}-P${cycle}`;
+      saveData(); renderZbbFundingTracker();
+    }
+
+    function nextZbbMonth(period) {
+      const [y,m] = period.split('-').map(Number);
+      const d = new Date(y,m,1);
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    }
+
     function renderZbbFundingTracker() {
       const host = document.getElementById('zbb-funding-tracker');
       if (!host) return;
+      const period = state.selectedZbbPeriod || '2026-11';
+      const cycle = state.selectedPayCycle || 1;
       const zbb = getActiveZbbTemplate();
-      const bills = zbb.bills || [];
-      const variables = zbb.variable || [];
-      const money = n => formatFinancial(Number(n) || 0);
-      let html = `<div><h4 class="text-xs font-bold uppercase tracking-wide text-gray-500 mb-1">Monthly bill reserves</h4><p class="text-[10px] text-gray-400 mb-2">Enter the amount you're setting aside from this paycheque, then select Add. The app adds it to the current reserve balance.</p><div class="overflow-x-auto"><table class="w-full text-xs"><thead><tr class="text-left text-gray-400 border-b border-gray-200 dark:border-gray-800"><th class="py-2 pr-2">Bill</th><th class="py-2 px-2">Monthly target</th><th class="py-2 px-2">Current reserve</th><th class="py-2 px-2">This paycheque contribution</th><th class="py-2 pl-2 text-right">Still needed</th></tr></thead><tbody>`;
-      if (!bills.length) html += `<tr><td colspan="5" class="py-3 text-gray-400">Add fixed bills above to track their reserves.</td></tr>`;
-      bills.forEach(item => {
-        const rec = getZbbTrackingRecord(item.id);
-        const target = Number(item.monthly) || 0;
-        const reserved = Number(rec.reserved) || 0;
-        const contribution = Number(rec.contribution) || 0;
-        html += `<tr class="border-b border-gray-100 dark:border-gray-800/70"><td class="py-2 pr-2 font-semibold">${item.name}</td><td class="py-2 px-2 accounting-num">${money(target)}</td><td class="py-2 px-2"><input aria-label="Current reserve balance for ${item.name}" type="number" min="0" step="0.01" value="${reserved}" onchange="updateZbbTracking('${item.id}','reserved',this.value)" class="w-24 max-w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-1"></td><td class="py-2 px-2"><div class="flex items-center gap-1"><input aria-label="This paycheque contribution for ${item.name}" id="bill-contribution-${item.id}" type="number" min="0" step="0.01" value="${contribution || ''}" placeholder="0.00" class="w-20 max-w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-1"><button type="button" onclick="addBillReserveContribution('${item.id}')" class="px-2 py-1 rounded-lg bg-indigo-600 text-white font-semibold">Add</button></div></td><td class="py-2 pl-2 text-right font-semibold accounting-num ${target-reserved>0?'text-amber-500':'text-emerald-500'}">${money(Math.max(0,target-reserved))}</td></tr>`;
-      });
-      html += `</tbody></table></div></div>`;
-      html += `<div><h4 class="text-xs font-bold uppercase tracking-wide text-gray-500 mb-2">Variable budget carry-forward</h4><p class="text-[10px] text-gray-400 mb-2">Enter the unused amount brought into this month and actual spending to see the remaining available budget.</p><div class="overflow-x-auto"><table class="w-full text-xs"><thead><tr class="text-left text-gray-400 border-b border-gray-200 dark:border-gray-800"><th class="py-2 pr-2">Category</th><th class="py-2 px-2">Monthly budget</th><th class="py-2 px-2">Carry-in</th><th class="py-2 px-2">Actual spent</th><th class="py-2 pl-2 text-right">Available</th></tr></thead><tbody>`;
-      if (!variables.length) html += `<tr><td colspan="5" class="py-3 text-gray-400">Add variable expenses above to track carry-forward.</td></tr>`;
-      variables.forEach(item => {
-        const rec = getZbbTrackingRecord(item.id);
-        const budget = Number(item.monthly) || 0;
-        const carry = Number(rec.carryIn) || 0;
-        const spent = Number(rec.actualSpent) || 0;
-        const available = budget + carry - spent;
-        html += `<tr class="border-b border-gray-100 dark:border-gray-800/70"><td class="py-2 pr-2 font-semibold">${item.name}</td><td class="py-2 px-2 accounting-num">${money(budget)}</td><td class="py-2 px-2"><input aria-label="Carry-in for ${item.name}" type="number" min="0" step="0.01" value="${carry}" onchange="updateZbbTracking('${item.id}','carryIn',this.value)" class="w-24 max-w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-1"></td><td class="py-2 px-2"><input aria-label="Actual spending for ${item.name}" type="number" min="0" step="0.01" value="${spent}" onchange="updateZbbTracking('${item.id}','actualSpent',this.value)" class="w-24 max-w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-1"></td><td class="py-2 pl-2 text-right font-semibold accounting-num ${available<0?'text-rose-500':'text-emerald-500'}">${money(available)}</td></tr>`;
-      });
-      html += `</tbody></table></div></div>`;
-      host.innerHTML = html;
+      const basePool = (zbb.variable || []).reduce((sum,item) => {
+        const split = item.split || [50,50,0];
+        const value = item.splitMode === 'dollar' ? Number(split[cycle-1]) || 0 : (Number(item.monthly)||0) * ((Number(split[cycle-1])||0)/100);
+        return sum + value;
+      },0);
+      const rec = getZbbPoolRecord(period, cycle);
+      const selectedBuckets = Array.isArray(state.variablePoolCategories) ? state.variablePoolCategories : [];
+      const inPool = t => selectedBuckets.includes(t.category || 'Uncategorized');
+      const hasDates = !!(rec.startDate && rec.endDate);
+      const poolTransactions = hasDates ? (state.transactions||[]).filter(t => t.type === 'Expense' && t.date >= rec.startDate && t.date <= rec.endDate && inPool(t) && !t.reconciledDuplicate) : [];
+      const actuals = poolTransactions.reduce((sum,t)=>sum+(Number(t.amount)||0),0);
+      const carryIn = Number(rec.carryIn)||0;
+      const remaining = basePool + carryIn - actuals;
+      rec.poolRemaining = remaining;
+      const categoryTotals = {};
+      poolTransactions.forEach(t=>{const key=t.category||'Uncategorized';categoryTotals[key]=(categoryTotals[key]||0)+(Number(t.amount)||0);});
+      const categoryRows = Object.entries(categoryTotals).sort((a,b)=>b[1]-a[1]).map(([name,value])=>`<div class="flex justify-between gap-3 py-1.5 border-b border-gray-100 dark:border-gray-800 text-xs"><span class="truncate">${escapeHtml(name)}</span><strong class="accounting-num">${formatFinancial(value)}</strong></div>`).join('') || '<p class="text-xs text-gray-400">No expense transactions in this date range.</p>';
+      const decisionText = rec.decision ? `Last decision: ${rec.decision === 'carry' ? 'Carried forward' : 'Reset'} · ${formatFinancial(rec.carryOut||0)} moved to next paycheque` : 'No end-of-paycheque decision recorded yet.';
+      const usedPct = (basePool + carryIn) > 0 ? Math.round((actuals / (basePool + carryIn)) * 100) : 0;
+      const historyRows = (rec.decisionHistory || []).slice().reverse().map(h => `<div class="text-[10px] text-gray-400 py-1 border-t border-gray-100 dark:border-gray-800">${new Date(h.date).toLocaleString()} · ${h.decision === 'carry' ? 'Carried' : 'Reset'} · ${formatFinancial(h.amount)} to ${escapeHtml(h.destination || 'next paycheque')}</div>`).join('') || '<div class="text-[10px] text-gray-400">No prior decisions for this paycheque.</div>';
+      const bucketControls = (state.categories||[]).map(cat=>`<label class="inline-flex items-center gap-1.5 text-xs mr-3 mb-1"><input type="checkbox" ${selectedBuckets.includes(cat.name)?'checked':''} onchange="toggleVariablePoolCategory('${String(cat.name).replace(/'/g, "\\'")}',this.checked)" class="accent-indigo-600">${escapeHtml(cat.name)}</label>`).join('');
+      host.innerHTML = `<div class="flex flex-wrap items-center justify-between gap-2"><div><div class="font-bold text-sm">Paycheque ${cycle} · Shared pool</div><div class="text-[10px] text-gray-400">Combined variable allocation across all variable budget lines</div></div><div class="text-right"><div class="text-[10px] text-gray-400">Available before spending</div><strong class="text-lg accounting-num">${formatFinancial(basePool+carryIn)}</strong></div></div>
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-2"><div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-950"><div class="text-[10px] text-gray-400">Budgeted pool</div><strong>${formatFinancial(basePool)}</strong></div><div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-950"><div class="text-[10px] text-gray-400">Carry-in</div><strong>${formatFinancial(carryIn)}</strong></div><div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-950"><div class="text-[10px] text-gray-400">Actual expenses</div><strong>${formatFinancial(actuals,true)}</strong></div><div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-950"><div class="text-[10px] text-gray-400">Pool used</div><strong>${usedPct}%</strong></div><div class="p-3 rounded-xl ${remaining<0?'bg-rose-500/10':'bg-emerald-500/10'}"><div class="text-[10px] text-gray-400">Remaining</div><strong class="${remaining<0?'text-rose-500':'text-emerald-500'}">${formatFinancial(remaining)}</strong></div></div>
+        <div class="rounded-xl border border-gray-200 dark:border-gray-800 p-3"><div class="text-xs font-semibold mb-2">Which spending buckets count toward this pool?</div><div>${bucketControls || '<span class="text-xs text-gray-400">Add expense buckets in Settings.</span>'}</div></div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3"><div><label class="block text-xs font-semibold text-gray-500 mb-1">Paycheque ${cycle} start date</label><input type="date" value="${rec.startDate||''}" onchange="updateZbbPoolDate(${cycle},'startDate',this.value)" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div><div><label class="block text-xs font-semibold text-gray-500 mb-1">Paycheque ${cycle} end date</label><input type="date" value="${rec.endDate||''}" onchange="updateZbbPoolDate(${cycle},'endDate',this.value)" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div></div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><h4 class="text-xs font-bold uppercase tracking-wide text-gray-500 mb-2">Actual spending by category</h4>${categoryRows}</div><div class="rounded-xl border border-gray-200 dark:border-gray-800 p-3 space-y-2"><h4 class="text-xs font-bold uppercase tracking-wide text-gray-500">End-of-paycheque decision</h4><p class="text-xs text-gray-400">Choose what happens to the remaining shared pool. You'll see the amount and confirm before it is carried forward or released.</p><div class="text-sm font-bold accounting-num ${remaining<0?'text-rose-500':'text-emerald-500'}">${formatFinancial(Math.max(0,remaining))} available to carry</div><div class="flex flex-wrap gap-2"><button onclick="commitVariablePoolDecision(${cycle},'carry')" class="px-3 py-2 rounded-lg bg-indigo-600 text-white text-xs font-semibold theme-bg">Carry forward</button><button onclick="commitVariablePoolDecision(${cycle},'reset')" class="px-3 py-2 rounded-lg bg-gray-200 dark:bg-gray-800 text-xs font-semibold">Reset pool</button></div><p class="text-[10px] text-gray-400">${decisionText}</p><div class="pt-2"><div class="text-[10px] font-semibold text-gray-500 mb-1">Decision history</div>${historyRows}</div></div></div>
+        ${remaining<0?`<p class="text-xs font-semibold text-rose-500">The shared pool is over budget by ${formatFinancial(Math.abs(remaining))}. A carry-forward will be $0 until the overspend is covered.</p>`:''}
+        <p class="text-[10px] text-gray-400">Actual spending is pulled from Expense Tracker entries dated within the selected range. Transfers, income and debt-payment transactions are not included. Set the dates to match your actual pay cycle before relying on the remaining balance.</p>`;
     }
 
     function openZbbItemModal(type, editId = null) {
@@ -2055,6 +2138,21 @@
         list.push({ id: Date.now().toString(), name, monthly, splitMode, split, ...extraSavingsData });
       }
       saveData(); closeZbbItemModal(); renderZbbPlanner();
+    }
+
+    function syncDebtMinimumsToZbb() {
+      const zbb = getActiveZbbTemplate();
+      zbb.debts = zbb.debts || [];
+      const debts = (state.accounts || []).filter(a => a.type === 'debt' && a.minPay !== null && a.minPay !== undefined && a.minPay !== '' && Number(a.minPay) > 0);
+      if (!debts.length) { alert('No debt accounts have a monthly minimum payment entered. Add minimums to the debt account details first.'); return; }
+      let added = 0, updated = 0;
+      debts.forEach(account => {
+        let item = (zbb.debts || []).find(d => d.linkedAccountId === account.id);
+        if (!item) item = (zbb.debts || []).find(d => d.name === `${account.name} Minimum` || d.name === account.name);
+        if (item) { item.name = `${account.name} Minimum`; item.monthly = Number(account.minPay) || 0; item.linkedAccountId = account.id; updated++; }
+        else { zbb.debts.push({ id: `zd_${account.id}`, name: `${account.name} Minimum`, monthly: Number(account.minPay) || 0, splitMode: 'pct', split: [50,50,0], linkedAccountId: account.id }); added++; }
+      });
+      saveData(); renderZbbPlanner(); alert(`Debt minimums synced. Added ${added}; updated ${updated}. Review the paycheque splits before relying on the totals.`);
     }
 
     function deleteZbbItem(type, id) {
@@ -2504,7 +2602,7 @@
               <td data-label="Date" class="px-4 py-3">${t.date}</td>
               <td data-label="Vendor" class="px-4 py-3">${t.vendor || 'Vendor not recorded'}</td>
               <td data-label="Description" class="px-4 py-3">${t.desc || '-'}</td>
-              <td data-label="Type" class="px-4 py-3"><span class="px-2 py-0.5 rounded text-[10px] bg-gray-100 dark:bg-gray-800">${t.type}</span></td>
+              <td data-label="Type" class="px-4 py-3"><span class="px-2 py-0.5 rounded text-[10px] bg-gray-100 dark:bg-gray-800">${t.type}</span>${t.reconciled ? '<span class="ml-1 px-1.5 py-0.5 rounded text-[9px] bg-emerald-500/10 text-emerald-500">Reconciled</span>' : ''}</td>
               <td data-label="Bucket" class="px-4 py-3">${t.category || '-'}</td>
               <td data-label="Subcategory" class="px-4 py-3">${t.subcategory || '-'}</td>
               <td data-label="Account" class="px-4 py-3">${acc ? (t.transferToAccountId ? `${acc.name} → ${(state.accounts.find(a=>a.id===t.transferToAccountId)||{}).name||'Account'}` : acc.name) : '-'}</td>
@@ -2546,25 +2644,98 @@
       }
     }
 
-    function openReconciliationModal() { document.getElementById('recon-modal').classList.remove('hidden'); }
-    function closeReconciliationModal() { document.getElementById('recon-modal').classList.add('hidden'); }
-    function processReconciliation() {
-      const text = document.getElementById('recon-paste-area').value;
-      if (!text.trim()) return;
-      const lines = text.split('\n');
-      let added = 0;
-      lines.forEach(line => {
-        const parts = line.split(',');
-        if (parts.length >= 3) {
-          const date = parts[0].trim();
-          const desc = parts[1].trim();
-          const amt = Math.abs(parseFloat(parts[2].trim())) || 0;
-          state.transactions.unshift({ id: Date.now().toString() + Math.random(), date, desc: '', vendor: desc, type: 'Expense', category: 'Living Expenses', subcategory: 'Groceries', amount: amt, accountId: '1' });
-          added++;
-        }
-      });
-      saveData(); closeReconciliationModal(); renderLedger(); alert(`Parsed and imported ${added} transactions into ledger!`);
+    let pendingStatementRows = [];
+    function openReconciliationModal() {
+      const sel = document.getElementById('recon-account');
+      sel.innerHTML = (state.accounts||[]).filter(a=>a.type==='asset').map(a=>`<option value="${a.id}">${escapeHtml(a.name)}</option>`).join('');
+      document.getElementById('recon-preview').innerHTML = '';
+      document.getElementById('recon-paste-area').value = '';
+      pendingStatementRows = [];
+      document.getElementById('recon-modal').classList.remove('hidden');
     }
+    function closeReconciliationModal() { document.getElementById('recon-modal').classList.add('hidden'); }
+    function loadStatementFile(event) {
+      const file = event.target.files && event.target.files[0]; if (!file) return;
+      const reader = new FileReader(); reader.onload = e => { document.getElementById('recon-paste-area').value = String(e.target.result||''); processReconciliation(); };
+      reader.readAsText(file);
+    }
+    function parseStatementCSVLine(line) {
+      const out=[]; let value=''; let quoted=false;
+      for(let i=0;i<line.length;i++){const ch=line[i];if(ch==='"' && line[i+1]==='"' && quoted){value+='"';i++;}else if(ch==='"'){quoted=!quoted;}else if((ch===','||ch==='\t'||ch===';')&&!quoted){out.push(value.trim());value='';}else value+=ch;}
+      out.push(value.trim()); return out;
+    }
+    function normalizeStatementText(value) { return String(value||'').toLowerCase().replace(/[^a-z0-9]/g,''); }
+    function statementDate(value) {
+      const v=String(value||'').trim();
+      if(/^\d{4}-\d{2}-\d{2}$/.test(v)) return v;
+      const m=v.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
+      if(m){let y=Number(m[3]);if(y<100)y+=2000;return `${y}-${String(Number(m[1])).padStart(2,'0')}-${String(Number(m[2])).padStart(2,'0')}`;}
+      const d=new Date(v);return Number.isNaN(d.getTime())?'':`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    }
+    function processReconciliation() {
+      const raw=document.getElementById('recon-paste-area').value.trim(); if(!raw)return;
+      const rows=[];
+      raw.split(/\r?\n/).forEach((line,index)=>{
+        if(!line.trim())return; const parts=parseStatementCSVLine(line);
+        if(index===0 && /date/i.test(parts[0]||''))return;
+        if(parts.length<3)return;
+        const date=statementDate(parts[0]);
+        const rawAmount=String(parts[parts.length-1]||'').trim();
+        const parenthesized=/^\(.*\)$/.test(rawAmount);
+        const amountText=rawAmount.replace(/[()$ ,\s]/g,'');
+        let amountNum=Number(amountText); if(parenthesized) amountNum=-Math.abs(amountNum);
+        const positiveExpense=document.getElementById('recon-sign')?.value==='positive-expense';
+        const desc=parts.slice(1,-1).join(' ').trim();
+        if(!date||!Number.isFinite(amountNum)||amountNum===0||!desc)return;
+        rows.push({id:`st_${Date.now()}_${index}_${Math.random().toString(36).slice(2,7)}`,date,description:desc,amount:Math.abs(amountNum),type:(positiveExpense ? amountNum>0 : amountNum<0)?'Expense':'Income',accountId:document.getElementById('recon-account').value,status:'pending'});
+      });
+      pendingStatementRows=rows; renderStatementPreview();
+    }
+    function findStatementMatches(row) {
+      const target=normalizeStatementText(row.description);
+      return (state.transactions||[]).filter(t=>!t.statementMatchId&&!t.reconciled && t.accountId===row.accountId && (t.type===row.type || (row.type==='Expense' && t.type==='Debt Payment')) && Math.abs((Number(t.amount)||0)-row.amount)<0.011)
+        .map(t=>{const delta=Math.abs(new Date(t.date+'T00:00:00').getTime()-new Date(row.date+'T00:00:00').getTime())/86400000;const name=normalizeStatementText(t.vendor||t.desc);const textScore=target&&name?(target.includes(name)||name.includes(target)?2:0):0;return {t,delta,score:(delta===0?4:delta<=1?2:0)+textScore};})
+        .filter(x=>x.delta<=1).sort((a,b)=>b.score-a.score||a.delta-b.delta).slice(0,6).map(x=>x.t);
+    }
+    function renderStatementPreview() {
+      const host=document.getElementById('recon-preview'); if(!host)return;
+      if(!pendingStatementRows.length){host.innerHTML='<p class="text-xs text-gray-400">No valid statement rows found. Expected Date, Description, Amount.</p>';return;}
+      const matches=pendingStatementRows.filter(r=>findStatementMatches(r).length).length;
+      host.innerHTML=`<div class="flex flex-wrap justify-between gap-2"><div><h4 class="font-bold text-sm">Review ${pendingStatementRows.length} statement rows</h4><p class="text-xs text-gray-400">${matches} have suggested manual transaction matches. Nothing has been added or changed yet.</p></div><button onclick="importAllUnmatchedStatementRows()" class="px-3 py-2 rounded-lg bg-indigo-600 text-white text-xs font-semibold theme-bg">Import unmatched rows only</button></div><div class="space-y-2">${pendingStatementRows.map(row=>{
+        const candidates=findStatementMatches(row);const suggested=candidates[0];
+        const status=row.status==='matched'?'Matched':row.status==='imported'?'Imported':row.status==='skipped'?'Skipped':suggested?'Suggested match':'No match found';
+        const options=candidates.map(t=>`<option value="${t.id}" ${suggested&&t.id===suggested.id?'selected':''}>${t.date} · ${escapeHtml(t.vendor||t.desc||'Transaction')} · ${formatFinancial(t.amount)}</option>`).join('');
+        return `<div class="border border-gray-200 dark:border-gray-800 rounded-xl p-3 space-y-2"><div class="flex justify-between gap-3"><div class="min-w-0"><div class="font-semibold text-xs">${escapeHtml(row.description)}</div><div class="text-[10px] text-gray-400">${row.date} · ${row.type}</div></div><strong class="text-sm accounting-num whitespace-nowrap">${formatFinancial(row.amount)}</strong></div><div class="flex flex-wrap items-center gap-2"><span class="text-[10px] ${row.status==='matched'?'text-emerald-500':'text-gray-400'}">${status}</span>${row.status==='pending'&&candidates.length?`<select id="stmt-match-${row.id}" class="flex-1 min-w-[180px] bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-1 text-xs">${options}</select><button onclick="linkStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-emerald-600 text-white rounded-lg text-xs">Match</button>`:''}${row.status==='pending'?`<button onclick="importStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-indigo-600 text-white rounded-lg text-xs">Import as new</button><button onclick="skipStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-gray-200 dark:bg-gray-800 rounded-lg text-xs">Skip</button>`:row.status==='matched'?`<button onclick="unlinkStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-gray-200 dark:bg-gray-800 rounded-lg text-xs">Undo match</button>`:''}</div></div>`;
+      }).join('')}</div><div class="text-[10px] text-gray-400">Matching uses account, transaction type, amount and a date within one day. Merchant text helps rank suggestions but you confirm every match.</div>`;
+    }
+    function linkStatementRow(rowId) {
+      const row=pendingStatementRows.find(r=>r.id===rowId); if(!row)return;
+      const selected=document.getElementById(`stmt-match-${rowId}`)?.value;
+      const transaction=state.transactions.find(t=>t.id===selected); if(!transaction)return;
+      transaction.statementMatchId=row.id; transaction.reconciled=true; transaction.reconciledAt=new Date().toISOString(); transaction.statementDescription=row.description;
+      row.status='matched'; row.matchedTransactionId=transaction.id;
+      state.statementReconciliation=state.statementReconciliation||{batches:[]};
+      saveData(); renderLedger(); renderStatementPreview();
+    }
+    function unlinkStatementRow(rowId) {
+      const row=pendingStatementRows.find(r=>r.id===rowId); if(!row)return;
+      const transaction=state.transactions.find(t=>t.id===row.matchedTransactionId);
+      if(transaction){delete transaction.statementMatchId;delete transaction.reconciled;delete transaction.reconciledAt;delete transaction.statementDescription;}
+      row.status='pending';delete row.matchedTransactionId;
+      saveData();renderLedger();renderStatementPreview();
+    }
+    function importStatementRow(rowId) {
+      const row=pendingStatementRows.find(r=>r.id===rowId);if(!row||row.status!=='pending')return;
+      const account=state.accounts.find(a=>a.id===row.accountId);if(!account)return;
+      const merchantRule=(state.merchantRules||[]).find(rule=>normalizeStatementText(row.description).includes(normalizeStatementText(rule.keyword)));
+      const transaction={id:`tx_stmt_${Date.now()}_${Math.random().toString(36).slice(2,7)}`,date:row.date,vendor:row.description,desc:'Imported from bank statement',type:row.type,category:merchantRule?.category||'',subcategory:merchantRule?.subcategory||'',amount:row.amount,accountId:row.accountId,statementMatchId:row.id,reconciled:true,reconciledAt:new Date().toISOString(),source:'statement-import'};
+      state.transactions.unshift(transaction);
+      if(row.type==='Expense') account.balance-=row.amount; else if(row.type==='Income') account.balance+=row.amount;
+      row.status='imported';row.matchedTransactionId=transaction.id;
+      saveData();renderLedger();renderDashboard();renderZbbFundingTracker();renderStatementPreview();
+    }
+    function skipStatementRow(rowId) { const row=pendingStatementRows.find(r=>r.id===rowId);if(row){row.status='skipped';renderStatementPreview();} }
+    function importAllUnmatchedStatementRows() { pendingStatementRows.filter(r=>r.status==='pending'&&!findStatementMatches(r).length).forEach(r=>importStatementRow(r.id));renderStatementPreview(); }
 
     function markBillPaid(billId) {
       const bill = state.calendarBills.find(b => b.id === billId);
@@ -2587,7 +2758,7 @@
         amount: bill.amount,
         accountId: bill.accountId
       });
-      saveData(); renderLedger(); renderDashboard(); renderCalendar();
+      saveData(); renderLedger(); renderDashboard(); renderCalendar(); renderZbbFundingTracker();
     }
 
     function deleteTransaction(id) {
@@ -2598,7 +2769,7 @@
         if (t.type === 'Transfer' && t.transferToAccountId) { const target=state.accounts.find(a=>a.id===t.transferToAccountId); if(acc) acc.balance += Number(t.amount)||0; if(target) target.balance -= Number(t.amount)||0; }
         else if (acc) { if (t.type === 'Income') acc.balance -= t.amount; else acc.balance += t.amount; }
         state.transactions.splice(idx, 1);
-        saveData(); renderLedger(); renderDashboard();
+        saveData(); renderLedger(); renderDashboard(); renderZbbFundingTracker();
       }
     }
 
@@ -3198,7 +3369,7 @@
         }
       }
 
-      saveData(); closeTransactionModal(); renderLedger(); renderDashboard();
+      saveData(); closeTransactionModal(); renderLedger(); renderDashboard(); renderZbbFundingTracker();
     }
 
     function downloadBlob(blob, filename) { const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1200); }
@@ -3295,7 +3466,10 @@
           state.lastBackupAt = state.lastBackupAt || null;
           state.zbbTracking = state.zbbTracking || {};
     state.zbbTracking = state.zbbTracking || {};
-    // Per-period reserve and rollover tracking is additive; legacy budget items need no migration.
+    state.zbbPoolTracking = state.zbbPoolTracking || {};
+    state.statementReconciliation = state.statementReconciliation || { batches: [] };
+    if (!Array.isArray(state.variablePoolCategories)) state.variablePoolCategories = (state.categories || []).filter(c => !/housing|bill|debt service/i.test(c.name)).map(c => c.name);
+    // New planner and reconciliation fields are additive; existing transactions and budgets remain intact.
           saveData();
           initThemeAndBlur();
           applyCollapsibles();
