@@ -2571,8 +2571,8 @@
       if (!ids.length) { selectedLedgerIds.clear(); updateLedgerSelectionUI(); return; }
       document.getElementById('bulk-edit-count').textContent = `${ids.length} transaction${ids.length===1?'':'s'} selected`;
       const category = document.getElementById('bulk-category');
-      category.innerHTML = '<option value="">No change</option><option value="__CLEAR__">Clear bucket</option>' +
-        (state.categories || []).map(c=>`<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`).join('');
+      category.innerHTML = '<option value="">No change</option><option value="__CLEAR__">Clear bucket</option><option value="Transfer">Transfer</option>' +
+        (state.categories || []).filter(c=>c.name !== 'Transfer').map(c=>`<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`).join('');
       ['bulk-vendor','bulk-category','bulk-subcategory'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
       updateBulkSubcategoryOptions();
       document.getElementById('bulk-edit-modal').classList.remove('hidden');
@@ -2587,6 +2587,8 @@
 
       if (categoryValue === '__CLEAR__') {
         options += '<option value="" disabled>Select a bucket first</option>';
+      } else if (categoryValue === 'Transfer') {
+        options += '<option value="" disabled>Transfer has no subcategories</option>';
       } else if (categoryValue) {
         const bucket=buckets.find(c=>c.name===categoryValue);
         (bucket?.subcategories || []).forEach(sub=>{
