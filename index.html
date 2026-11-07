@@ -57,33 +57,22 @@
     .dark #ledger-filter-popover { background:#111827; color:#f3f4f6; border-color:#374151; }
     #ledger-filter-options { max-height:17rem; overflow-y:auto; overscroll-behavior:contain; }
     #ledger-filter-popover input[type="search"] { color:inherit; }
-    @media(max-width:640px) {
-      #ledger-table-container { overflow-x:auto !important; }
-      #ledger-table-container table { min-width:980px; }
-      #ledger-table-container thead tr:nth-child(2) { display:none !important; }
-    }
-
+    /* Expense Tracker remains a true table and scrolls horizontally on narrow screens. */
+    #ledger-table-container { max-width:100%; overflow-x:auto !important; overflow-y:visible; -webkit-overflow-scrolling:touch; }
+    #ledger-table-container table { min-width:1250px; width:100%; }
+    #ledger-table-container th, #ledger-table-container td { white-space:nowrap; }
     @media(max-width:640px) {
       main { min-width:0; }
-      #ledger-table-container { overflow:visible; border:0; background:transparent; box-shadow:none; }
-      #ledger-table-container table, #ledger-table-container tbody { display:block; width:100%; }
-      #ledger-table-container thead { display:block; }
-      #ledger-table-container thead tr:first-child { display:none; }
-      #ledger-table-container thead tr:nth-child(2) { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.35rem; padding:.45rem; background:transparent; border:0; }
-      #ledger-table-container thead tr:nth-child(2) th { display:block; padding:0; min-width:0; }
-      #ledger-table-container thead tr:nth-child(2) th:last-child { grid-column:1 / -1; }
-      #ledger-rows tr { display:grid; grid-template-columns:1fr 1fr; gap:.15rem .7rem; margin:0 0 .75rem; padding:.65rem; border:1px solid #374151; border-radius:.9rem; background:#fff; }
-      .dark #ledger-rows tr { background:#111827; }
-      #ledger-rows tr td { display:flex; justify-content:space-between; align-items:flex-start; gap:.5rem; padding:.25rem .1rem; min-width:0; font-size:.72rem; overflow-wrap:anywhere; }
-      #ledger-rows tr td:before { content:attr(data-label); color:#9ca3af; font-size:.64rem; flex:0 0 auto; }
-      #ledger-rows tr td:nth-child(2), #ledger-rows tr td:nth-child(3) { grid-column:1 / -1; }
-      #ledger-rows tr td:nth-child(8) { font-weight:700; }
-      #ledger-rows tr td:nth-child(9) { grid-column:1 / -1; justify-content:flex-end; }
-      #ledger-rows tr td:nth-child(9) button { min-width:2.4rem; min-height:2.4rem; border-radius:.6rem; background:rgba(99,102,241,.08); }
+      #ledger-table-container { overflow-x:auto !important; border-radius:.9rem; }
+      #ledger-table-container table { min-width:1250px; display:table; }
+      #ledger-table-container thead { display:table-header-group; }
+      #ledger-table-container tbody { display:table-row-group; }
+      #ledger-table-container tr { display:table-row; }
+      #ledger-table-container th, #ledger-table-container td { display:table-cell; }
+      #ledger-rows tr td:before { content:none !important; }
       #calendar-grid > div { padding:.75rem !important; border-radius:.75rem; }
       #calendar-grid > div > div { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:.35rem; }
       #calendar-grid > div > div > div { margin-top:0 !important; }
-      #ledger-rows tr td[colspan] { grid-column:1 / -1; justify-content:center; }
       #calendar-grid { grid-template-columns:1fr !important; gap:.45rem !important; }
       #calendar-grid > div:empty { display:none; }
       #calendar-grid > div { min-height:0 !important; }
@@ -764,7 +753,7 @@
       </div>
 
       <!-- TABLE VIEW CONTAINER -->
-      <div id="ledger-table-container" class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-sm">
+      <div id="ledger-table-container" class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-x-auto overflow-y-visible shadow-sm custom-scrollbar">
         <table class="w-full text-left text-sm">
           <thead class="bg-gray-50 dark:bg-gray-950 text-xs uppercase border-b border-gray-200 dark:border-gray-800 text-gray-500">
             <tr>
@@ -2670,10 +2659,14 @@
           date = recurringOccurrenceDate(anchor, root.recurring, index);
         }
         while (date && date <= horizonStr && index < 500) {
+          // A series can be ended from a selected occurrence onward. The cutoff
+          // is exclusive: the selected date and all later generated dates stop.
+          if (root.recurrenceEndDate && date >= root.recurrenceEndDate) break;
+          const skippedDates = Array.isArray(root.recurrenceSkipDates) ? root.recurrenceSkipDates : [];
           const exists = state.calendarBills.some(b =>
             b && b.recurrenceRootId === root.id && b.recurrenceSlotDate === date
           );
-          if (!exists) {
+          if (!exists && !skippedDates.includes(date)) {
             const occurrence = {
               ...root,
               id: `${root.id}_rec_${date.replace(/-/g, '')}`,
@@ -2715,7 +2708,7 @@
 
       for (let day = 1; day <= daysInMonth; day++) {
         const dateStr = `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
-        const items = state.calendarBills.filter(b => b.date === dateStr);
+        const items = state.calendarBills.filter(b => b.date === dateStr && !b.recurrenceOccurrenceDeleted);
         let badges = '';
         items.forEach(b => {
           const isInc = b.type === 'income';
@@ -2787,7 +2780,7 @@
       grid.innerHTML = '';
       for (let m = 0; m < 12; m++) {
         const prefix = `${year}-${(m + 1).toString().padStart(2, '0')}`;
-        const bList = state.calendarBills.filter(b => typeof b.date === 'string' && b.date.slice(0, 7) === prefix);
+        const bList = state.calendarBills.filter(b => !b.recurrenceOccurrenceDeleted && typeof b.date === 'string' && b.date.slice(0, 7) === prefix);
         const inc = bList.filter(b => b.type === 'income').reduce((s, b) => s + b.amount, 0);
         const exp = bList.filter(b => b.type !== 'income').reduce((s, b) => s + b.amount, 0);
         grid.innerHTML += `<div class="bg-gray-50 dark:bg-gray-950 p-4 rounded-xl border border-gray-200 dark:border-gray-800"><div class="font-bold">${monthNames[m]}</div><div class="text-xs text-emerald-600 mt-1">Inc: ${formatFinancial(inc)}</div><div class="text-xs text-rose-600 mt-1">Exp: ${formatFinancial(exp, true)}</div></div>`;
@@ -2852,18 +2845,63 @@
 
     function deleteCalendarItemFromModal() {
       const id = document.getElementById('cal-edit-id').value;
-      if (id) {
-        const bill = state.calendarBills.find(b => b.id === id);
-        if (!bill) return;
-        if (bill.paid) {
-          alert('This bill is marked paid. Unmark it first so FinHub can reverse the account balance and remove its linked Expense Tracker transaction safely.');
-          return;
-        }
-        if (confirm("Delete this transaction from the calendar?")) {
+      if (!id) return;
+      const bill = state.calendarBills.find(b => b.id === id);
+      if (!bill) return;
+      if (bill.paid) {
+        alert('This bill is marked paid. Unmark it first so FinHub can reverse the account balance and remove its linked Expense Tracker transaction safely.');
+        return;
+      }
+
+      const isSeriesOccurrence = !!(bill.recurring && bill.recurring !== 'none') ||
+        !!bill.recurrenceGenerated || !!bill.recurrenceRootId;
+      if (!isSeriesOccurrence) {
+        if (!confirm('Delete this calendar item?')) return;
+        state.calendarBills = state.calendarBills.filter(b => b.id !== id);
+      } else {
+        const choice = window.prompt(
+          'This item belongs to a recurring series. Choose how to delete it:\n\n1 = Delete this occurrence only (future dates remain)\n2 = Delete this occurrence and all future unpaid occurrences\n\nCancel = Keep the item',
+          '1'
+        );
+        if (choice === null || !['1', '2'].includes(String(choice).trim())) return;
+
+        const rootId = bill.recurrenceRootId || bill.id;
+        const root = state.calendarBills.find(b => b.id === rootId && !b.recurrenceGenerated) ||
+          state.calendarBills.find(b => b.id === rootId);
+        const occurrenceDate = bill.date;
+        if (root) {
+          root.recurrenceRootId = root.id;
+          root.recurrenceAnchorDate = root.recurrenceAnchorDate || root.date;
+          root.recurrenceSkipDates = Array.isArray(root.recurrenceSkipDates) ? root.recurrenceSkipDates : [];
+
+          if (String(choice).trim() === '1') {
+            // Keep the series metadata/root intact so the recurrence generator
+            // can continue, but suppress the selected anchor/occurrence date.
+            if (!root.recurrenceSkipDates.includes(occurrenceDate)) root.recurrenceSkipDates.push(occurrenceDate);
+            if (bill.id === root.id) root.recurrenceOccurrenceDeleted = true;
+            else state.calendarBills = state.calendarBills.filter(b => b.id !== id);
+          } else {
+            // End the series before this occurrence and remove this and later
+            // unpaid generated entries. Paid history is deliberately retained.
+            root.recurrenceEndDate = occurrenceDate;
+            if (bill.id === root.id) root.recurrenceOccurrenceDeleted = true;
+            state.calendarBills = state.calendarBills.filter(b => {
+              if (b.id === root.id) return true; // retain series metadata
+              if (b.recurrenceRootId !== rootId || !b.recurrenceGenerated) return true;
+              if (b.date < occurrenceDate || b.paid) return true;
+              return false;
+            });
+          }
+        } else {
+          // Defensive fallback for malformed legacy series records.
           state.calendarBills = state.calendarBills.filter(b => b.id !== id);
-          saveData(); closeCalendarModal(); renderCalendar(); renderLedger();
         }
       }
+      saveData();
+      closeCalendarModal();
+      renderCalendar();
+      renderLedger();
+      renderDashboard();
     }
 
     function closeCalendarModal() { document.getElementById('calendar-modal').classList.add('hidden'); }
@@ -3314,7 +3352,7 @@
 
       const prepList = document.getElementById('prepopulated-bills-list');
       prepList.innerHTML = '';
-      const filteredBills = state.calendarBills.filter(b => !b.paid && b.date.startsWith(filterYM));
+      const filteredBills = state.calendarBills.filter(b => !b.recurrenceOccurrenceDeleted && !b.paid && b.date.startsWith(filterYM));
       if (filteredBills.length === 0) {
         prepList.innerHTML = `<div class="text-xs text-gray-400 py-2">No unpaid upcoming items for ${filterYM}.</div>`;
       } else {
@@ -4002,7 +4040,7 @@
       state.accounts.filter(a => a.type === 'asset').forEach(a => {
         fundSelect.innerHTML += `<option value="${a.id}">${a.name} (${formatFinancial(a.balance)})</option>`;
       });
-      const upcomingDebts = state.calendarBills.filter(b => b.type === 'debt' && !b.paid);
+      const upcomingDebts = state.calendarBills.filter(b => !b.recurrenceOccurrenceDeleted && b.type === 'debt' && !b.paid);
       if (upcomingDebts.length === 0) {
         container.innerHTML = '<div class="text-xs text-gray-400 py-1">No upcoming unpaid debt minimum bills scheduled.</div>';
         return;
