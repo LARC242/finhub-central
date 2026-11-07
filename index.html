@@ -473,7 +473,7 @@
           <button onclick="openZbbItemModal('variable')" class="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold theme-bg"><i class="fa-solid fa-plus mr-1"></i> Add Variable Exp</button>
         </div>
         <div id="zbb-variable-list" class="space-y-2"></div>
-        <p class="text-[10px] text-gray-400">Allocate the fixed pool across your variable categories for this paycheque. Change one category and adjust another to stay within the overall pool. Actual spending is tracked separately in the Expense Tracker.</p>
+        <p class="text-[10px] text-gray-400">Allocate the fixed pool across your variable categories for this paycheque. Set the overall pool above, then distribute it across categories. Moving money between categories does not change the overall pool or bottom line; changing the pool amount does. Actual spending is tracked separately in the Expense Tracker.</p>
       </div>
 
       <!-- STEP 4: DEBT PAYMENTS -->
@@ -483,7 +483,7 @@
             <h3 class="text-md font-bold text-amber-600 dark:text-amber-400"><i class="fa-solid fa-credit-card mr-2"></i>4. Debt Payments</h3>
             <p class="text-xs text-gray-400 mt-0.5">Subtotal: <strong id="zbb-sub-debt-disp" class="accounting-num">$ - </strong> | Remaining Bal: <strong id="zbb-rem-debt-disp" class="accounting-num">$ - </strong></p>
           </div>
-          <div class="flex flex-wrap gap-2"><button onclick="syncDebtMinimumsToZbb()" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold"><i class="fa-solid fa-rotate mr-1"></i> Sync Account Minimums</button><button onclick="openZbbItemModal('debt')" class="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold theme-bg"><i class="fa-solid fa-plus mr-1"></i> Add Debt</button></div>
+          <div class="flex flex-wrap gap-2"><button onclick="syncDebtMinimumsToZbb()" title="Copies the current minimum payment amounts from Debt Account details into this paycheque budget. Existing paycheque splits are preserved." class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold"><i class="fa-solid fa-rotate mr-1"></i> Refresh Debt Minimums</button><button onclick="openZbbItemModal('debt')" class="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold theme-bg"><i class="fa-solid fa-plus mr-1"></i> Add Debt</button></div>
         </div>
         <div id="zbb-debt-list" class="space-y-2"></div>
       </div>
@@ -1177,14 +1177,16 @@
 
   <!-- MODAL: RECURRING CALENDAR DELETE CHOICE -->
   <div id="recurrence-delete-choice-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-[70]">
-    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl">
-      <div class="flex items-center gap-2"><i class="fa-solid fa-repeat text-rose-500"></i><h3 class="font-bold">Delete recurring item?</h3></div>
+    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl relative">
+      <button type="button" onclick="cancelRecurringDeleteChoice()" aria-label="Cancel deletion" title="Cancel" class="absolute top-3 right-3 h-8 w-8 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800"><i class="fa-solid fa-xmark"></i></button>
+      <div class="flex items-center gap-2 pr-8"><i class="fa-solid fa-repeat text-rose-500"></i><h3 class="font-bold">Delete recurring item?</h3></div>
       <p class="text-sm text-gray-500 dark:text-gray-400">Do you want to delete this occurrence and end the recurring series from this date onward?</p>
       <div class="flex justify-end gap-2 pt-1">
+        <button type="button" onclick="cancelRecurringDeleteChoice()" class="px-4 py-2 rounded-lg bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700 text-sm font-semibold">Cancel</button>
         <button type="button" onclick="confirmRecurringDeleteChoice(false)" class="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-sm font-semibold">No</button>
         <button type="button" onclick="confirmRecurringDeleteChoice(true)" class="px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-sm font-semibold">Yes</button>
       </div>
-      <p class="text-[10px] text-gray-400">No = delete this occurrence only. Yes = delete this occurrence and all future unpaid occurrences. Previously paid history is preserved.</p>
+      <p class="text-[10px] text-gray-400">No = delete this occurrence only. Yes = delete this occurrence and all future unpaid occurrences. Cancel or × = keep the item and series unchanged. Previously paid history is preserved.</p>
     </div>
   </div>
 
@@ -2225,15 +2227,20 @@
         const raw = Number(split[cycle - 1]) || 0;
         defaults[item.id] = item.splitMode === 'dollar' ? raw : (Number(item.monthly) || 0) * raw / 100;
       });
-      const poolBudget = Object.values(defaults).reduce((sum, value) => sum + (Number(value) || 0), 0);
+      const defaultPoolBudget = Object.values(defaults).reduce((sum, value) => sum + (Number(value) || 0), 0);
       const rec = getZbbPoolRecord(period, cycle);
       if (!rec.variableAllocations || typeof rec.variableAllocations !== 'object' || Array.isArray(rec.variableAllocations)) {
         rec.variableAllocations = { ...defaults };
+        rec.variableAllocationInitialized = true;
       } else {
         items.forEach(item => {
-          if (!Object.prototype.hasOwnProperty.call(rec.variableAllocations, item.id)) rec.variableAllocations[item.id] = defaults[item.id] || 0;
+          // New buckets are added unallocated; the user can redistribute the existing pool.
+          if (!Object.prototype.hasOwnProperty.call(rec.variableAllocations, item.id)) rec.variableAllocations[item.id] = 0;
         });
+        rec.variableAllocationInitialized = true;
       }
+      const storedPool = Number(rec.variablePoolBudget);
+      const poolBudget = Number.isFinite(storedPool) && storedPool >= 0 ? storedPool : defaultPoolBudget;
       rec.variablePoolBudget = poolBudget;
       const allocations = {};
       items.forEach(item => { allocations[item.id] = Math.max(0, Number(rec.variableAllocations[item.id]) || 0); });
@@ -2254,6 +2261,22 @@
       }
       allocationState.rec.variableAllocations[itemId] = value;
       captureUndo('Adjust variable spending allocation');
+      saveData();
+      renderZbbPlanner();
+    }
+
+    function updateVariablePoolBudget(cycle, rawValue) {
+      const period = state.selectedZbbPeriod || '2026-11';
+      const zbb = getActiveZbbTemplate();
+      const allocationState = getVariablePoolAllocationState(zbb, cycle, period);
+      const nextBudget = Math.round(Math.max(0, Number(rawValue) || 0) * 100) / 100;
+      if (nextBudget + 0.0001 < allocationState.allocated) {
+        alert(`The pool cannot be lower than the ${formatFinancial(allocationState.allocated)} already allocated. Reduce category allocations first.`);
+        renderZbbPlanner();
+        return;
+      }
+      captureUndo('Adjust variable spending pool budget');
+      allocationState.rec.variablePoolBudget = nextBudget;
       saveData();
       renderZbbPlanner();
     }
@@ -2282,10 +2305,10 @@
         return (Number(item.monthly) || 0) * (((Number(split[0]) || 0) + (Number(split[1]) || 0)) / 100);
       };
       const sumMonthly = list => (list || []).reduce((sum, item) => sum + monthlyAmount(item), 0);
-      const monthlyIncome = sumMonthly(zbb.incomes), monthlyBills = sumMonthly(zbb.bills), monthlyVariable = sumMonthly(zbb.variable), monthlyDebt = sumMonthly(zbb.debts), monthlySavings = sumMonthly(zbb.savings);
+      const monthlyIncome = sumMonthly(zbb.incomes), monthlyBills = sumMonthly(zbb.bills), monthlyVariable = getVariablePoolAllocationState(zbb, 1, period).poolBudget + getVariablePoolAllocationState(zbb, 2, period).poolBudget, monthlyDebt = sumMonthly(zbb.debts), monthlySavings = sumMonthly(zbb.savings);
       const thirdChequeAmount = item => { const split = item.split || [50, 50, 0]; return item.splitMode === 'dollar' ? (Number(split[2]) || 0) : (Number(item.monthly) || 0) * ((Number(split[2]) || 0) / 100); };
       const sumThird = list => (list || []).reduce((sum, item) => sum + thirdChequeAmount(item), 0);
-      const thirdChequeNet = sumThird(zbb.incomes) - sumThird(zbb.bills) - sumThird(zbb.variable) - sumThird(zbb.debts) - sumThird(zbb.savings);
+      const thirdChequeNet = sumThird(zbb.incomes) - sumThird(zbb.bills) - getVariablePoolAllocationState(zbb, 3, period).poolBudget - sumThird(zbb.debts) - sumThird(zbb.savings);
       const monthlyPanel = document.getElementById('zbb-monthly-rollup');
       if (monthlyPanel) monthlyPanel.innerHTML = `
         <div class="flex items-center justify-between mb-3"><div><h3 class="font-bold text-sm">Calendar-month roll-up</h3><p class="text-[10px] text-gray-400">Combined allocation from Paycheques 1 and 2. Paycheque 3 is shown separately below.</p></div><span class="text-[10px] text-indigo-400">Monthly view</span></div>
@@ -2301,10 +2324,13 @@
         const nextCycle = cycle === 3 ? 1 : cycle + 1;
         const nextPeriod = cycle === 3 ? nextZbbMonth(period) : period;
         const nextTemplate = state.zbbTemplates[nextPeriod] || zbb;
-        const cycleTotal = (template, group, idx) => (template[group] || []).reduce((sum,item) => { const split=item.split||[50,50,0]; const raw=Number(split[idx])||0; return sum + (item.splitMode==='dollar' ? raw : (Number(item.monthly)||0)*raw/100); },0);
+        const cycleTotal = (template, group, idx, templatePeriod = period) => {
+          if (group === 'variable') return getVariablePoolAllocationState(template, idx + 1, templatePeriod).poolBudget;
+          return (template[group] || []).reduce((sum,item) => { const split=item.split||[50,50,0]; const raw=Number(split[idx])||0; return sum + (item.splitMode==='dollar' ? raw : (Number(item.monthly)||0)*raw/100); },0);
+        };
         const groups = [['Income','incomes',false],['Fixed bills','bills',true],['Variable','variable',true],['Debt','debts',true],['Savings','savings',true]];
-        const rolling = groups.map(([label,key,expense]) => { const total=cycleTotal(zbb,key,cycle-1)+cycleTotal(nextTemplate,key,nextCycle-1); return `<div class="p-2 rounded-lg bg-gray-50 dark:bg-gray-950"><div class="text-gray-400">${label}</div><strong>${formatFinancial(total,expense)}</strong></div>`; }).join('');
-        const rollingNet = cycleTotal(zbb,'incomes',cycle-1)+cycleTotal(nextTemplate,'incomes',nextCycle-1)-['bills','variable','debts','savings'].reduce((sum,key)=>sum+cycleTotal(zbb,key,cycle-1)+cycleTotal(nextTemplate,key,nextCycle-1),0);
+        const rolling = groups.map(([label,key,expense]) => { const total=cycleTotal(zbb,key,cycle-1,period)+cycleTotal(nextTemplate,key,nextCycle-1,nextPeriod); return `<div class="p-2 rounded-lg bg-gray-50 dark:bg-gray-950"><div class="text-gray-400">${label}</div><strong>${formatFinancial(total,expense)}</strong></div>`; }).join('');
+        const rollingNet = cycleTotal(zbb,'incomes',cycle-1,period)+cycleTotal(nextTemplate,'incomes',nextCycle-1,nextPeriod)-['bills','variable','debts','savings'].reduce((sum,key)=>sum+cycleTotal(zbb,key,cycle-1,period)+cycleTotal(nextTemplate,key,nextCycle-1,nextPeriod),0);
         monthlyPanel.insertAdjacentHTML('beforeend', `<div class="mt-4 pt-3 border-t border-gray-200 dark:border-gray-800"><div class="flex flex-wrap items-center justify-between gap-2 mb-2"><div><h4 class="font-bold text-sm">Rolling two-paycheque view</h4><p class="text-[10px] text-gray-400">Paycheque ${cycle} + Paycheque ${nextCycle}${cycle===3?' in the following month':''}; independent of the calendar-month roll-up above.</p></div><strong class="text-sm accounting-num">Net ${formatFinancial(rollingNet)}</strong></div><div class="grid grid-cols-2 md:grid-cols-5 gap-2 text-xs">${rolling}</div></div>`);
       }
       let incomeSum = 0, billsSum = 0, variableSum = 0, debtSum = 0, savingsSum = 0;
@@ -2352,7 +2378,7 @@
           return;
         }
         if (sectionKey === 'variable') {
-          container.innerHTML = `<div class="grid grid-cols-[minmax(0,1fr)_125px_70px_auto] gap-2 px-3 text-[10px] uppercase tracking-wide text-gray-400"><div>Variable bucket</div><div class="text-right">Paycheque ${cycle} allocation</div><div class="text-right">Pool share</div><div></div></div>`;
+          container.innerHTML = `<div class="mb-3 rounded-xl border border-indigo-200 dark:border-indigo-900 bg-indigo-50/60 dark:bg-indigo-950/20 p-3"><div class="flex flex-wrap items-end justify-between gap-3"><div><label class="block text-[10px] font-semibold uppercase tracking-wide text-gray-500 mb-1" for="variable-pool-budget-${cycle}">Total variable pool for Paycheque ${cycle}</label><input id="variable-pool-budget-${cycle}" type="number" min="0" step="0.01" value="${variablePoolState.poolBudget.toFixed(2)}" onchange="updateVariablePoolBudget(${cycle},this.value)" class="w-40 max-w-full text-right bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm font-bold accounting-num"></div><div class="text-right text-xs"><div class="text-gray-500">Allocated to buckets</div><strong class="accounting-num">${formatFinancial(variablePoolState.allocated)}</strong><div class="text-gray-500 mt-1">Unallocated: <strong class="${variablePoolState.unallocated < -0.0001 ? 'text-rose-600' : 'text-emerald-600'}">${formatFinancial(variablePoolState.unallocated)}</strong></div></div></div><p class="text-[10px] text-gray-500 mt-2">Change the pool to change your overall budget and bottom line. Adjust bucket amounts below to redistribute the pool; reallocating alone does not change the overall budget.</p></div><div class="grid grid-cols-[minmax(0,1fr)_125px_70px_auto] gap-2 px-3 text-[10px] uppercase tracking-wide text-gray-400"><div>Variable bucket</div><div class="text-right">Paycheque ${cycle} allocation</div><div class="text-right">Pool share</div><div></div></div>`;
         }
         (itemsList || []).forEach(item => {
           const amt = calcAmt(item);
@@ -2574,7 +2600,7 @@
       const zbb = getActiveZbbTemplate();
       if (editId) {
         const list = type === 'income' ? zbb.incomes : type === 'bill' ? zbb.bills : type === 'variable' ? zbb.variable : type === 'debt' ? zbb.debts : zbb.savings;
-        const item = list.find(i => i.id === editId);
+        const item = list.find(i => String(i.id) === String(editId));
         if (item) {
           document.getElementById('zbb-item-edit-id').value = item.id;
           document.getElementById('zbb-item-name').value = item.name;
@@ -2623,15 +2649,17 @@
         startBal: parseFloat(document.getElementById('zbb-start-bal').value) || 0,
         targetBal: parseFloat(document.getElementById('zbb-target-bal').value) || 0,
         targetDate: document.getElementById('zbb-target-date').value,
-        savedBal: editId ? (getActiveZbbTemplate().savings.find(s => s.id === editId)?.savedBal || 0) : 0
+        savedBal: editId ? (getActiveZbbTemplate().savings.find(s => String(s.id) === String(editId))?.savedBal || 0) : 0
       } : {};
 
       const zbb = getActiveZbbTemplate();
       const list = type === 'income' ? zbb.incomes : type === 'bill' ? zbb.bills : type === 'variable' ? zbb.variable : type === 'debt' ? zbb.debts : zbb.savings;
       
+      captureUndo(editId ? `Edit ${type} budget item` : `Add ${type} budget item`);
       if (editId) {
-        const item = list.find(i => i.id === editId);
-        if (item) { item.name = name; item.monthly = monthly; item.splitMode = splitMode; item.split = split; Object.assign(item, extraSavingsData); }
+        const item = list.find(i => String(i.id) === String(editId));
+        if (!item) { alert('This budget item could not be found. Please close the editor and try again.'); return; }
+        item.name = name; item.monthly = monthly; item.splitMode = splitMode; item.split = split; Object.assign(item, extraSavingsData);
       } else {
         list.push({ id: Date.now().toString(), name, monthly, splitMode, split, ...extraSavingsData });
       }
@@ -2643,9 +2671,13 @@
       zbb.debts = zbb.debts || [];
       const debts = (state.accounts || []).filter(a => a.type === 'debt' && a.minPay !== null && a.minPay !== undefined && a.minPay !== '' && Number(a.minPay) > 0);
       if (!debts.length) { alert('No debt accounts have a monthly minimum payment entered. Add minimums to the debt account details first.'); return; }
+      const linkedCount = debts.filter(account => (zbb.debts || []).some(d => String(d.linkedAccountId) === String(account.id) || d.name === `${account.name} Minimum` || d.name === account.name)).length;
+      const newCount = debts.length - linkedCount;
+      if (!confirm(`Refresh ${debts.length} debt minimum(s) from Debt Account details?\n\n${newCount} budget line(s) will be added and ${linkedCount} existing line(s) will have their monthly minimum updated. Your paycheque split settings will be preserved.`)) return;
+      captureUndo('Refresh debt minimums in paycheque budget');
       let added = 0, updated = 0;
       debts.forEach(account => {
-        let item = (zbb.debts || []).find(d => d.linkedAccountId === account.id);
+        let item = (zbb.debts || []).find(d => String(d.linkedAccountId) === String(account.id));
         if (!item) item = (zbb.debts || []).find(d => d.name === `${account.name} Minimum` || d.name === account.name);
         if (item) { item.name = `${account.name} Minimum`; item.monthly = Number(account.minPay) || 0; item.linkedAccountId = account.id; updated++; }
         else { zbb.debts.push({ id: `zd_${account.id}`, name: `${account.name} Minimum`, monthly: Number(account.minPay) || 0, splitMode: 'pct', split: [50,50,0], linkedAccountId: account.id }); added++; }
@@ -2656,7 +2688,18 @@
     function deleteZbbItem(type, id) {
       const zbb = getActiveZbbTemplate();
       const listName = type === 'income' ? 'incomes' : type === 'bill' ? 'bills' : type === 'variable' ? 'variable' : type === 'debt' ? 'debts' : 'savings';
-      zbb[listName] = zbb[listName].filter(i => i.id !== id);
+      const item = (zbb[listName] || []).find(i => String(i.id) === String(id));
+      if (!item) { renderZbbPlanner(); return; }
+      if (!confirm(`Delete "${item.name}" from this paycheque budget?`)) return;
+      captureUndo(`Delete ${type} budget item`);
+      zbb[listName] = zbb[listName].filter(i => String(i.id) !== String(id));
+      if (type === 'variable' && state.zbbPoolTracking) {
+        Object.values(state.zbbPoolTracking).forEach(periodRecords => {
+          Object.values(periodRecords || {}).forEach(rec => {
+            if (rec && rec.variableAllocations) delete rec.variableAllocations[id];
+          });
+        });
+      }
       saveData(); renderZbbPlanner();
     }
 
@@ -2934,6 +2977,12 @@
       }
       if (!confirm('Delete this calendar item?')) return;
       applyCalendarItemDeletion(id, false);
+    }
+
+    function cancelRecurringDeleteChoice() {
+      const modal = document.getElementById('recurrence-delete-choice-modal');
+      if (modal) modal.classList.add('hidden');
+      window.pendingCalendarDeleteId = null;
     }
 
     function confirmRecurringDeleteChoice(deleteFuture) {
