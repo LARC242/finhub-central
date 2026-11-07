@@ -1249,12 +1249,12 @@
 
   <!-- MODAL: ADD / EDIT TRANSACTION WITH OPTIONAL DROPDOWNS -->
   <div id="transaction-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50">
-    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-lg p-6 space-y-4 shadow-2xl">
-      <div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-800 pb-3">
+    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-2xl max-h-[90vh] p-4 sm:p-5 shadow-2xl flex flex-col overflow-hidden">
+      <div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-800 pb-2 mb-2 shrink-0">
         <h3 id="tx-modal-title" class="text-lg font-bold">Log Transaction</h3>
         <button type="button" onclick="toggleSplitTxMode()" id="split-tx-toggle-btn" class="text-xs bg-indigo-600/20 text-indigo-400 px-3 py-1 rounded-lg font-semibold border border-indigo-500/30">Enable Split Transaction</button>
       </div>
-      <form id="transaction-form" onsubmit="saveTransaction(event)" class="space-y-3">
+      <form id="transaction-form" onsubmit="saveTransaction(event)" class="space-y-2 overflow-y-auto min-h-0 pr-1">
         <input type="hidden" id="tx-edit-id" value="">
         <input type="hidden" id="tx-is-split" value="false">
         
@@ -1263,12 +1263,19 @@
           <div><label class="block text-xs font-semibold text-gray-500 mb-1">Account</label><select id="tx-account" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></select></div>
         </div>
         <div><label class="block text-xs font-semibold text-gray-500 mb-1">Vendor <span class="text-rose-500">*</span></label><input type="text" id="tx-vendor" oninput="applySmartMerchantRules(this.value)" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" placeholder="e.g. Costco"></div>
-        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Description (Optional)</label><input type="text" id="tx-desc" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" placeholder="e.g. Weekly groceries"></div>
-        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Transaction Type</label><select id="tx-type" onchange="updateTransactionTypeFields()" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></select></div>
-        <div id="tx-transfer-direction-wrap" class="hidden"><label class="block text-xs font-semibold text-gray-500 mb-1">Transfer Direction</label><select id="tx-transfer-direction" onchange="updateTransactionTypeFields()" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"><option value="out_external">Transfer Out — to an external account</option><option value="in_external">Transfer In — from an external account</option><option value="internal">Internal Transfer — between FinHub accounts</option></select><p class="text-[10px] text-gray-400 mt-1">Choose Transfer In for money arriving from a bank or account that isn't tracked in FinHub. Choose Transfer Out for a transfer to another FinHub account.</p></div>
+        <div class="grid grid-cols-2 gap-3">
+          <div><label class="block text-xs font-semibold text-gray-500 mb-1">Transaction Type</label><select id="tx-type" onchange="updateTransactionTypeFields()" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></select></div>
+          <div id="tx-amount-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Total Amount ($)</label><input type="number" step="0.01" id="tx-amount" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
+        </div>
+        <details class="rounded-lg border border-gray-200 dark:border-gray-800 px-3 py-2">
+          <summary class="cursor-pointer text-xs font-semibold text-gray-500">Additional details (optional)</summary>
+          <div class="space-y-2 pt-3">
+            <div><label class="block text-xs font-semibold text-gray-500 mb-1">Description</label><input type="text" id="tx-desc" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" placeholder="e.g. Weekly groceries"></div>
+            <div><label class="block text-xs font-semibold text-gray-500 mb-1">Related Debt Account</label><select id="tx-related-debt" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"><option value="">Not linked to a debt account</option></select><p class="text-[10px] text-gray-400 mt-1">Link interest expenses or other activity to a debt account.</p></div>
+          </div>
+        </details>
+        <div id="tx-transfer-direction-wrap" class="hidden"><label class="block text-xs font-semibold text-gray-500 mb-1">Transfer Direction</label><select id="tx-transfer-direction" onchange="updateTransactionTypeFields()" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"><option value="out_external">Transfer Out — to an external account</option><option value="in_external">Transfer In — from an external account</option><option value="internal">Internal Transfer — between FinHub accounts</option></select><p class="text-[10px] text-gray-400 mt-1">Transfer In/Out are for accounts outside FinHub. Internal Transfer moves money between two FinHub asset accounts.</p></div>
         <div id="tx-transfer-destination-wrap" class="hidden"><label class="block text-xs font-semibold text-gray-500 mb-1">Transfer To Account</label><select id="tx-transfer-to" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></select></div>
-        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Related Debt Account (Optional)</label><select id="tx-related-debt" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"><option value="">Not linked to a debt account</option></select><p class="text-[10px] text-gray-400 mt-1">Use this for interest expenses or other transactions you want included in a debt account's activity.</p></div>
-
         <!-- SINGLE TRANSACTION FIELDS (OPTIONAL DROPDOWNS) -->
         <div id="single-tx-fields" class="space-y-3">
           <div class="grid grid-cols-2 gap-3">
@@ -1281,15 +1288,17 @@
               <select id="tx-subcategory" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"><option value="">-- None --</option></select>
             </div>
           </div>
-          <div><label class="block text-xs font-semibold text-gray-500 mb-1">Total Amount ($)</label><input type="number" step="0.01" id="tx-amount" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
-          <div class="border-t border-gray-200 dark:border-gray-800 pt-3 space-y-2">
+          <details class="border-t border-gray-200 dark:border-gray-800 pt-2">
+            <summary class="cursor-pointer text-xs font-semibold text-gray-500">Category automation (optional)</summary>
+            <div class="pt-2 space-y-2">
             <label class="flex items-center gap-2 text-xs font-semibold"><input type="checkbox" id="tx-save-category-rule" onchange="toggleTransactionRuleOptions()" class="accent-indigo-600"> Save this vendor-to-bucket assignment as a rule</label>
             <div id="tx-category-rule-options" class="hidden pl-5 space-y-1">
               <label class="block text-[10px] text-gray-500">Apply rule to</label>
               <select id="tx-category-rule-scope" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-1.5 text-xs"><option value="future">Future transactions only</option><option value="historical">Existing matching transactions and future ones</option></select>
               <p class="text-[10px] text-gray-400">Uses the vendor name as the matching keyword. Historical changes are previewed before they are applied.</p>
             </div>
-          </div>
+            </div>
+          </details>
         </div>
 
         <!-- SPLIT TRANSACTION ENGINE -->
@@ -1301,7 +1310,7 @@
           <div id="split-rows-container" class="space-y-2"></div>
         </div>
 
-        <div class="flex space-x-3 pt-3"><button type="button" onclick="closeTransactionModal()" class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold">Cancel</button><button type="submit" class="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold theme-bg">Save</button></div>
+        <div class="flex space-x-3 pt-3 pb-1 sticky bottom-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 mt-2"><button type="button" onclick="closeTransactionModal()" class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold">Cancel</button><button type="submit" class="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold theme-bg">Save Transaction</button></div>
       </form>
     </div>
   </div>
@@ -4720,6 +4729,7 @@
         document.getElementById('tx-subcategory').value = '';
         document.getElementById('tx-is-split').value = 'false';
         document.getElementById('single-tx-fields').classList.remove('hidden');
+        document.getElementById('tx-amount-wrap').classList.remove('hidden');
         document.getElementById('split-tx-fields').classList.add('hidden');
         document.getElementById('split-tx-toggle-btn').classList.add('hidden');
       } else {
@@ -4817,6 +4827,7 @@
       const isSplit = document.getElementById('tx-is-split').value === "true";
       document.getElementById('tx-is-split').value = isSplit ? "false" : "true";
       document.getElementById('single-tx-fields').classList.toggle('hidden', !isSplit);
+      document.getElementById('tx-amount-wrap').classList.toggle('hidden', isSplit);
       document.getElementById('split-tx-fields').classList.toggle('hidden', isSplit);
       document.getElementById('split-tx-toggle-btn').innerText = isSplit ? "Enable Split Transaction" : "Single Category Mode";
     }
