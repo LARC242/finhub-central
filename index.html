@@ -1425,6 +1425,7 @@
     state.zbbTracking = state.zbbTracking || {};
     state.zbbPoolTracking = state.zbbPoolTracking || {};
     state.statementReconciliation = state.statementReconciliation || { batches: [] };
+    state.statementReconciliation.groups = Array.isArray(state.statementReconciliation.groups) ? state.statementReconciliation.groups : [];
     state.vendorCleanupRules = Array.isArray(state.vendorCleanupRules) ? state.vendorCleanupRules : [];
     state.merchantRules = Array.isArray(state.merchantRules) ? state.merchantRules : [];
     state.appVisualTheme = ['classic','silver','neutral','colorful'].includes(state.appVisualTheme) ? state.appVisualTheme : 'classic';
@@ -2070,14 +2071,18 @@
       const currentBalance = Number(acc.balance) || 0;
       // Derive the opening balance from the current stored balance and all activity, so the final row ties to the account balance.
       let runningBalance = currentBalance - totalChanges;
-      const openingBalance = runningBalance;
+      const derivedOpeningBalance = runningBalance;
+      const openingBalance = Number.isFinite(Number(acc.openingBalance)) ? Number(acc.openingBalance) : derivedOpeningBalance;
       const balanceLabel = acc.type === 'debt' ? 'Outstanding balance' : 'Calculated balance';
+      // An unset opening balance remains a derived suggestion until the user explicitly saves one.
+      summary.className = 'grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2';
       summary.innerHTML = `
-        <div class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-3"><div class="text-[10px] uppercase font-semibold text-gray-500">Opening balance (derived)</div><div class="text-base font-bold accounting-num mt-1">${formatFinancial(openingBalance)}</div></div>
+        <div class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-3"><div class="text-[10px] uppercase font-semibold text-gray-500">Opening balance${acc.openingBalance === undefined ? ' · derived' : ' · saved'}</div><div class="flex items-center gap-2 mt-2"><span class="text-xs text-gray-500">$</span><input id="acc-opening-balance-input" type="number" step="0.01" value="${Number(openingBalance).toFixed(2)}" class="min-w-0 w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1.5 text-sm font-bold accounting-num" /></div><button onclick="saveAccountOpeningBalance()" class="mt-2 w-full px-2 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-semibold theme-bg">Save opening balance</button><div class="text-[9px] text-gray-400 mt-1">As of the start of this account's recorded activity. Saving adjusts the current balance by the same difference; it does not create a transaction.</div></div>
         <div class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-3"><div class="text-[10px] uppercase font-semibold text-gray-500">${balanceLabel}</div><div class="text-base font-bold accounting-num mt-1">${formatFinancial(currentBalance)}</div></div>
-        <div class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-3"><div class="text-[10px] uppercase font-semibold text-gray-500">Activity records</div><div class="text-base font-bold mt-1">${activity.length}</div></div>`;
+        <div class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-3"><div class="text-[10px] uppercase font-semibold text-gray-500">Activity records</div><div class="text-base font-bold mt-1">${activity.length}</div></div>
+        <div class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-3"><div class="text-[10px] uppercase font-semibold text-gray-500">Balance check</div><div class="text-base font-bold mt-1 accounting-num">${formatFinancial(openingBalance + totalChanges)}</div><div class="text-[9px] text-gray-400 mt-1">Opening balance plus recorded activity</div></div>`;
 
-      rows.innerHTML = `<tr class="bg-indigo-50/70 dark:bg-indigo-950/30"><td class="px-4 py-3 whitespace-nowrap">—</td><td class="px-4 py-3 font-semibold">Opening balance <span class="text-[10px] font-normal text-gray-500">(derived from current balance and recorded activity)</span></td><td class="px-4 py-3">Opening balance</td><td class="px-4 py-3 text-right accounting-num">—</td><td class="px-4 py-3 text-right font-bold accounting-num">${formatFinancial(runningBalance)}</td></tr>`;
+      rows.innerHTML = `<tr class="bg-indigo-50/70 dark:bg-indigo-950/30"><td class="px-4 py-3 whitespace-nowrap">—</td><td class="px-4 py-3 font-semibold">Opening balance <span class="text-[10px] font-normal text-gray-500">(${acc.openingBalance === undefined ? 'derived until saved' : 'saved opening balance'})</span></td><td class="px-4 py-3">Opening balance</td><td class="px-4 py-3 text-right accounting-num">—</td><td class="px-4 py-3 text-right font-bold accounting-num">${formatFinancial(runningBalance)}</td></tr>`;
       if (!activity.length) {
         rows.innerHTML += `<tr><td colspan="5" class="px-4 py-4 text-center text-xs text-gray-400">No transactions recorded for this account yet.</td></tr>`;
       } else {
@@ -2097,6 +2102,27 @@
         });
       }
       document.getElementById('account-detail-modal').classList.remove('hidden');
+    }
+
+    function saveAccountOpeningBalance() {
+      const acc = state.accounts.find(a => a.id === window.currentEditingAccountId);
+      const input = document.getElementById('acc-opening-balance-input');
+      if (!acc || !input) return;
+      const nextOpening = Number(input.value);
+      if (!Number.isFinite(nextOpening)) { alert('Enter a valid opening balance.'); return; }
+      const activity = getAccountActivityEntries(acc);
+      const totalChanges = activity.reduce((sum, entry) => sum + (Number(entry.change) || 0), 0);
+      const currentBalance = Number(acc.balance) || 0;
+      const previousOpening = Number.isFinite(Number(acc.openingBalance)) ? Number(acc.openingBalance) : currentBalance - totalChanges;
+      const delta = Math.round((nextOpening - previousOpening) * 100) / 100;
+      if (!confirm(`Save an opening balance of ${formatFinancial(nextOpening)} for ${acc.name}? The current account balance will change by ${formatFinancial(delta)} so existing transactions remain intact. No transaction will be created.`)) return;
+      captureUndo(`Set opening balance for ${acc.name}`);
+      acc.openingBalance = Math.round(nextOpening * 100) / 100;
+      acc.openingBalanceUpdatedAt = new Date().toISOString();
+      acc.balance = Math.round((currentBalance + delta) * 100) / 100;
+      saveData();
+      renderDashboard();
+      openAccountDetail(acc.id);
     }
 
     function closeAccountDetailModal() { document.getElementById('account-detail-modal').classList.add('hidden'); }
@@ -3160,12 +3186,15 @@
     }
 
     let pendingStatementRows = [];
+    let manualSelectedStatementIds = new Set();
+    let manualSelectedTransactionIds = new Set();
     function openReconciliationModal() {
       const sel = document.getElementById('recon-account');
       sel.innerHTML = (state.accounts||[]).filter(a=>a.type==='asset').map(a=>`<option value="${a.id}">${escapeHtml(a.name)}</option>`).join('');
       document.getElementById('recon-preview').innerHTML = '';
       document.getElementById('recon-paste-area').value = '';
       pendingStatementRows = [];
+      manualSelectedStatementIds = new Set(); manualSelectedTransactionIds = new Set();
       document.getElementById('recon-modal').classList.remove('hidden');
     }
     function closeReconciliationModal() { document.getElementById('recon-modal').classList.add('hidden'); }
@@ -3204,7 +3233,7 @@
         if(!date||!Number.isFinite(amountNum)||amountNum===0||!desc)return;
         rows.push({id:`st_${Date.now()}_${index}_${Math.random().toString(36).slice(2,7)}`,date,description:desc,amount:Math.abs(amountNum),type:(positiveExpense ? amountNum>0 : amountNum<0)?'Expense':'Income',accountId:document.getElementById('recon-account').value,status:'pending'});
       });
-      pendingStatementRows=rows; renderStatementPreview();
+      pendingStatementRows=rows; manualSelectedStatementIds = new Set(); manualSelectedTransactionIds = new Set(); renderStatementPreview();
     }
     function applyVendorCleanupRules(rawName) {
       const original=String(rawName||'').trim();
@@ -3262,22 +3291,123 @@
       changes.forEach(x=>{x.t.vendor=x.clean;});
       saveData();renderLedger();renderDashboard();alert(`Cleaned ${changes.length} existing vendor name${changes.length===1?'':'s'}.`);
     }
+    function statementDirectionForTransaction(t, accountId) {
+      if (!t) return null;
+      if (t.type === 'Transfer') {
+        if (t.accountId === accountId) return 'Expense';
+        if (t.transferToAccountId === accountId) return 'Income';
+        return null;
+      }
+      if (t.accountId !== accountId) return null;
+      if (t.type === 'Income') return 'Income';
+      if (['Expense', 'Debt Payment'].includes(t.type)) return 'Expense';
+      return null;
+    }
+    function manualMatchCandidates() {
+      const accountId = document.getElementById('recon-account')?.value;
+      const selectedRows = pendingStatementRows.filter(r => manualSelectedStatementIds.has(r.id));
+      const direction = selectedRows.length ? selectedRows[0].type : null;
+      return (state.transactions || []).filter(t => {
+        if (t.reconciled || t.statementMatchId || t.statementMatchGroupId) return false;
+        const txDirection = statementDirectionForTransaction(t, accountId);
+        if (!txDirection || (direction && txDirection !== direction)) return false;
+        return true;
+      }).sort((a,b) => String(a.date||'').localeCompare(String(b.date||'')) || String(a.vendor||a.desc||'').localeCompare(String(b.vendor||b.desc||'')));
+    }
+    function toggleManualStatementSelection(rowId, checked) {
+      const row = pendingStatementRows.find(r => r.id === rowId);
+      if (!row || row.status !== 'pending') return;
+      if (checked) {
+        const existing = pendingStatementRows.find(r => manualSelectedStatementIds.has(r.id));
+        if (existing && existing.type !== row.type) { alert('A manual match group must contain either expenses/debits or income/credits, not both.'); renderStatementPreview(); return; }
+        manualSelectedStatementIds.add(rowId);
+      } else manualSelectedStatementIds.delete(rowId);
+      // Drop ledger selections that no longer have the same direction as the selected bank rows.
+      const selected = pendingStatementRows.find(r => manualSelectedStatementIds.has(r.id));
+      if (selected) {
+        [...manualSelectedTransactionIds].forEach(id => {
+          const tx = (state.transactions||[]).find(t => t.id === id);
+          if (!tx || statementDirectionForTransaction(tx, selected.accountId) !== selected.type) manualSelectedTransactionIds.delete(id);
+        });
+      }
+      renderStatementPreview();
+    }
+    function toggleManualTransactionSelection(transactionId, checked) {
+      const accountId = document.getElementById('recon-account')?.value;
+      const selectedRows = pendingStatementRows.filter(r => manualSelectedStatementIds.has(r.id));
+      const direction = selectedRows.length ? selectedRows[0].type : null;
+      const tx = (state.transactions||[]).find(t => t.id === transactionId);
+      if (!tx) return;
+      const txDirection = statementDirectionForTransaction(tx, accountId);
+      if (checked) {
+        if (!txDirection || (direction && txDirection !== direction)) { alert('Select statement rows with the same debit/credit direction as the FinHub transactions.'); renderStatementPreview(); return; }
+        manualSelectedTransactionIds.add(transactionId);
+      } else manualSelectedTransactionIds.delete(transactionId);
+      renderStatementPreview();
+    }
+    function manualMatchTotals() {
+      const bankRows = pendingStatementRows.filter(r => manualSelectedStatementIds.has(r.id));
+      const ledgerRows = (state.transactions||[]).filter(t => manualSelectedTransactionIds.has(t.id));
+      const bankCents = bankRows.reduce((sum,r) => sum + Math.round((Number(r.amount)||0)*100),0);
+      const ledgerCents = ledgerRows.reduce((sum,t) => sum + Math.round((Number(t.amount)||0)*100),0);
+      return {bankRows,ledgerRows,bankCents,ledgerCents,differenceCents:bankCents-ledgerCents};
+    }
+    function confirmManualStatementMatch() {
+      const totals = manualMatchTotals();
+      if (!totals.bankRows.length || !totals.ledgerRows.length) { alert('Select at least one bank transaction and one FinHub transaction.'); return; }
+      const accountId = totals.bankRows[0].accountId;
+      const direction = totals.bankRows[0].type;
+      if (totals.bankRows.some(r => r.accountId !== accountId || r.type !== direction) || totals.ledgerRows.some(t => statementDirectionForTransaction(t,accountId) !== direction)) { alert('All selected transactions must belong to the same account and have the same debit/credit direction.'); return; }
+      if (totals.differenceCents !== 0) { alert(`The selected totals do not agree. Difference: ${formatFinancial(Math.abs(totals.differenceCents)/100, totals.differenceCents < 0)}.`); return; }
+      const groupId = `stmt_group_${Date.now()}_${Math.random().toString(36).slice(2,7)}`;
+      const now = new Date().toISOString();
+      captureUndo('Manually match grouped statement transactions');
+      totals.bankRows.forEach(row => { row.status='matched'; row.matchedGroupId=groupId; row.matchedTransactionIds=totals.ledgerRows.map(t=>t.id); });
+      totals.ledgerRows.forEach(tx => { tx.statementMatchGroupId=groupId; tx.reconciled=true; tx.reconciledAt=now; tx.statementMatchDescription=totals.bankRows.map(r=>r.description).join(' + '); });
+      state.statementReconciliation = state.statementReconciliation || {batches:[]};
+      state.statementReconciliation.groups = Array.isArray(state.statementReconciliation.groups) ? state.statementReconciliation.groups : [];
+      state.statementReconciliation.groups.push({id:groupId,accountId,direction,bankRows:totals.bankRows.map(r=>({id:r.id,date:r.date,description:r.description,amount:r.amount,type:r.type})),transactionIds:totals.ledgerRows.map(t=>t.id),total:totals.bankCents/100,matchedAt:now,active:true});
+      manualSelectedStatementIds = new Set(); manualSelectedTransactionIds = new Set();
+      saveData(); renderLedger(); renderStatementPreview();
+    }
+    function undoManualStatementMatch(groupId) {
+      const group = (state.statementReconciliation?.groups||[]).find(g => g.id === groupId && g.active !== false);
+      if (!group) return;
+      if (!confirm('Undo this grouped match? The original transactions will remain in place and return to unreconciled status.')) return;
+      captureUndo('Undo grouped statement match');
+      (state.transactions||[]).filter(t => t.statementMatchGroupId === groupId).forEach(t => { delete t.statementMatchGroupId; delete t.statementMatchDescription; delete t.reconciled; delete t.reconciledAt; });
+      group.active = false; group.undoneAt = new Date().toISOString();
+      pendingStatementRows.filter(r => r.matchedGroupId === groupId).forEach(r => { r.status='pending'; delete r.matchedGroupId; delete r.matchedTransactionIds; });
+      saveData(); renderLedger(); renderStatementPreview();
+    }
+
     function findStatementMatches(row) {
       const target=normalizeStatementText(applyVendorCleanupRules(row.description));
-      return (state.transactions||[]).filter(t=>!t.statementMatchId&&!t.reconciled && t.accountId===row.accountId && (t.type===row.type || (row.type==='Expense' && t.type==='Debt Payment')) && Math.abs((Number(t.amount)||0)-row.amount)<0.011)
+      return (state.transactions||[]).filter(t=>!t.statementMatchId&&!t.statementMatchGroupId&&!t.reconciled && t.accountId===row.accountId && (t.type===row.type || (row.type==='Expense' && t.type==='Debt Payment')) && Math.abs((Number(t.amount)||0)-row.amount)<0.011)
         .map(t=>{const delta=Math.abs(new Date(t.date+'T00:00:00').getTime()-new Date(row.date+'T00:00:00').getTime())/86400000;const name=normalizeStatementText(t.vendor||t.desc);const textScore=target&&name?(target.includes(name)||name.includes(target)?2:0):0;return {t,delta,score:(delta===0?4:delta<=1?2:0)+textScore};})
         .filter(x=>x.delta<=1).sort((a,b)=>b.score-a.score||a.delta-b.delta).slice(0,6).map(x=>x.t);
     }
     function renderStatementPreview() {
       const host=document.getElementById('recon-preview'); if(!host)return;
-      if(!pendingStatementRows.length){host.innerHTML='<p class="text-xs text-gray-400">No valid statement rows found. Expected Date, Description, Amount.</p>';return;}
+      const activeGroups=(state.statementReconciliation?.groups||[]).filter(g=>g.active!==false);
+      const groupsHtml=activeGroups.length?`<section class="border border-gray-200 dark:border-gray-800 rounded-xl p-3 space-y-2"><h4 class="font-bold text-sm">Saved grouped matches</h4>${activeGroups.map(g=>{const account=state.accounts.find(a=>a.id===g.accountId);return `<div class="flex flex-wrap justify-between items-center gap-2 border-t border-gray-100 dark:border-gray-800 pt-2"><div class="min-w-0"><div class="text-xs font-semibold">${escapeHtml(account?.name||'Account')} · ${g.bankRows?.length||0} bank row(s) ↔ ${g.transactionIds?.length||0} FinHub transaction(s)</div><div class="text-[10px] text-gray-400">${g.matchedAt?new Date(g.matchedAt).toLocaleString():''} · ${formatFinancial(g.total||0)}</div></div><button onclick="undoManualStatementMatch('${g.id}')" class="px-2.5 py-1.5 bg-gray-200 dark:bg-gray-800 rounded-lg text-xs">Undo group</button></div>`;}).join('')}</section>`:'';
+      if(!pendingStatementRows.length){host.innerHTML=groupsHtml||'<p class="text-xs text-gray-400">No statement rows loaded. Upload a CSV or paste statement rows to begin. Saved grouped matches will appear here.</p>';return;}
       const matches=pendingStatementRows.filter(r=>findStatementMatches(r).length).length;
-      host.innerHTML=`<div class="flex flex-wrap justify-between gap-2"><div><h4 class="font-bold text-sm">Review ${pendingStatementRows.length} statement rows</h4><p class="text-xs text-gray-400">${matches} have suggested manual transaction matches. Nothing has been added or changed yet.</p></div><button onclick="importAllUnmatchedStatementRows()" class="px-3 py-2 rounded-lg bg-indigo-600 text-white text-xs font-semibold theme-bg">Import unmatched rows only</button></div><div class="space-y-2">${pendingStatementRows.map(row=>{
-        const candidates=findStatementMatches(row);const suggested=candidates[0];
+      const totals=manualMatchTotals();
+      const candidates=manualMatchCandidates();
+      const bankRowsHtml=pendingStatementRows.filter(r=>r.status==='pending').map(row=>`<label class="flex items-start gap-2 border-b border-gray-100 dark:border-gray-800 py-2 text-xs"><input type="checkbox" class="mt-0.5 accent-indigo-600" ${manualSelectedStatementIds.has(row.id)?'checked':''} onchange="toggleManualStatementSelection('${row.id}',this.checked)"><span class="min-w-0 flex-1"><span class="block font-semibold">${escapeHtml(row.description)}</span><span class="text-[10px] text-gray-400">${row.date} · ${row.type}</span></span><strong class="accounting-num whitespace-nowrap">${formatFinancial(row.amount)}</strong></label>`).join('') || '<p class="text-xs text-gray-400 py-2">No unmatched bank rows.</p>';
+      const ledgerRowsHtml=candidates.map(t=>{const direction=statementDirectionForTransaction(t,document.getElementById('recon-account')?.value);return `<label class="flex items-start gap-2 border-b border-gray-100 dark:border-gray-800 py-2 text-xs"><input type="checkbox" class="mt-0.5 accent-indigo-600" ${manualSelectedTransactionIds.has(t.id)?'checked':''} onchange="toggleManualTransactionSelection('${t.id}',this.checked)"><span class="min-w-0 flex-1"><span class="block font-semibold">${escapeHtml(t.vendor||t.desc||'Transaction')}</span><span class="text-[10px] text-gray-400">${t.date||'No date'} · ${direction==='Expense'?'Debit':'Credit'}${t.type==='Transfer'?' · Transfer':''}</span></span><strong class="accounting-num whitespace-nowrap">${formatFinancial(t.amount)}</strong></label>`;}).join('') || '<p class="text-xs text-gray-400 py-2">No eligible unmatched FinHub transactions for this account.</p>';
+      const difference=totals.differenceCents;
+      const differenceLabel=difference===0?'$0.00':`${difference<0?'-':'+'}${formatFinancial(Math.abs(difference)/100)}`;
+      const canMatch=totals.bankRows.length>0&&totals.ledgerRows.length>0&&difference===0;
+      const manualPanel=`<section class="border border-indigo-200 dark:border-indigo-900 rounded-xl p-3 space-y-3"><div class="flex flex-wrap justify-between items-start gap-2"><div><h4 class="font-bold text-sm">Manual grouped matching</h4><p class="text-[10px] text-gray-400 mt-1">Select one or more transactions on each side. One bank row can match several FinHub entries, or several bank rows can match one FinHub entry.</p></div><span class="text-[10px] px-2 py-1 rounded-full bg-indigo-500/10 text-indigo-500">Many-to-many</span></div><div class="grid grid-cols-1 md:grid-cols-2 gap-3"><div class="border border-gray-200 dark:border-gray-800 rounded-lg p-2 min-w-0"><div class="flex justify-between items-center gap-2 mb-1"><strong class="text-xs">Bank statement (${totals.bankRows.length} selected)</strong><strong class="text-xs accounting-num">${formatFinancial(totals.bankCents/100)}</strong></div><div class="max-h-52 overflow-y-auto">${bankRowsHtml}</div></div><div class="border border-gray-200 dark:border-gray-800 rounded-lg p-2 min-w-0"><div class="flex justify-between items-center gap-2 mb-1"><strong class="text-xs">FinHub (${totals.ledgerRows.length} selected)</strong><strong class="text-xs accounting-num">${formatFinancial(totals.ledgerCents/100)}</strong></div><div class="max-h-52 overflow-y-auto">${ledgerRowsHtml}</div></div></div><div class="flex flex-wrap justify-between items-center gap-2 bg-gray-50 dark:bg-gray-950 rounded-lg p-2"><div><span class="text-[10px] text-gray-500">Remaining difference</span><div class="font-bold accounting-num ${difference===0?'text-emerald-500':'text-amber-500'}">${differenceLabel}</div></div><div class="flex gap-2"><button onclick="manualSelectedStatementIds=new Set();manualSelectedTransactionIds=new Set();renderStatementPreview()" class="px-3 py-2 rounded-lg bg-gray-200 dark:bg-gray-800 text-xs font-semibold">Clear selection</button><button onclick="confirmManualStatementMatch()" ${canMatch?'':'disabled'} class="px-3 py-2 rounded-lg text-xs font-semibold text-white ${canMatch?'bg-emerald-600':'bg-gray-400 cursor-not-allowed'}">Confirm grouped match</button></div></div><p class="text-[10px] text-gray-400">Matching requires the same account, the same debit/credit direction and totals equal to the cent. Matching does not create or change transactions or account balances.</p></section>`;
+      host.innerHTML=`<div class="flex flex-wrap justify-between gap-2"><div><h4 class="font-bold text-sm">Review ${pendingStatementRows.length} statement rows</h4><p class="text-xs text-gray-400">${matches} have suggested individual matches. Nothing has been added or changed yet.</p></div><button onclick="importAllUnmatchedStatementRows()" class="px-3 py-2 rounded-lg bg-indigo-600 text-white text-xs font-semibold theme-bg">Import unmatched rows only</button></div>${manualPanel}<div class="space-y-2">${pendingStatementRows.map(row=>{
+        const candidatesForRow=findStatementMatches(row);const suggested=candidatesForRow[0];
         const status=row.status==='matched'?'Matched':row.status==='imported'?'Imported':row.status==='skipped'?'Skipped':suggested?'Suggested match':'No match found';
-        const options=candidates.map(t=>`<option value="${t.id}" ${suggested&&t.id===suggested.id?'selected':''}>${t.date} · ${escapeHtml(t.vendor||t.desc||'Transaction')} · ${formatFinancial(t.amount)}</option>`).join('');
-        return `<div class="border border-gray-200 dark:border-gray-800 rounded-xl p-3 space-y-2"><div class="flex justify-between gap-3"><div class="min-w-0"><div class="font-semibold text-xs">${escapeHtml(row.description)}</div><div class="text-[10px] text-indigo-400">Vendor name: ${escapeHtml(row.cleanedVendorName || applyVendorCleanupRules(row.description))}</div><div class="text-[10px] text-gray-400">${row.date} · ${row.type}</div></div><strong class="text-sm accounting-num whitespace-nowrap">${formatFinancial(row.amount)}</strong></div><div class="flex flex-wrap items-center gap-2"><span class="text-[10px] ${row.status==='matched'?'text-emerald-500':'text-gray-400'}">${status}</span>${row.status==='pending'&&candidates.length?`<select id="stmt-match-${row.id}" class="flex-1 min-w-[180px] bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-1 text-xs">${options}</select><button onclick="linkStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-emerald-600 text-white rounded-lg text-xs">Match</button>`:''}${row.status==='pending'?`<button onclick="openVendorRuleModal('${row.id}')" class="px-2.5 py-1.5 bg-violet-600/15 text-violet-500 rounded-lg text-xs">Clean name / create rule</button><button onclick="importStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-indigo-600 text-white rounded-lg text-xs">Import as new</button><button onclick="skipStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-gray-200 dark:bg-gray-800 rounded-lg text-xs">Skip</button>`:row.status==='matched'?`<button onclick="unlinkStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-gray-200 dark:bg-gray-800 rounded-lg text-xs">Undo match</button>`:''}</div></div>`;
-      }).join('')}</div><div class="text-[10px] text-gray-400">Matching uses account, transaction type, amount and a date within one day. Merchant text helps rank suggestions but you confirm every match.</div>`;
+        const options=candidatesForRow.map(t=>`<option value="${t.id}" ${suggested&&t.id===suggested.id?'selected':''}>${t.date} · ${escapeHtml(t.vendor||t.desc||'Transaction')} · ${formatFinancial(t.amount)}</option>`).join('');
+        const undoButton=row.matchedGroupId?`<button onclick="undoManualStatementMatch('${row.matchedGroupId}')" class="px-2.5 py-1.5 bg-gray-200 dark:bg-gray-800 rounded-lg text-xs">Undo grouped match</button>`:`<button onclick="unlinkStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-gray-200 dark:bg-gray-800 rounded-lg text-xs">Undo match</button>`;
+        return `<div class="border border-gray-200 dark:border-gray-800 rounded-xl p-3 space-y-2"><div class="flex justify-between gap-3"><div class="min-w-0"><div class="font-semibold text-xs">${escapeHtml(row.description)}</div><div class="text-[10px] text-indigo-400">Vendor name: ${escapeHtml(row.cleanedVendorName || applyVendorCleanupRules(row.description))}</div><div class="text-[10px] text-gray-400">${row.date} · ${row.type}</div></div><strong class="text-sm accounting-num whitespace-nowrap">${formatFinancial(row.amount)}</strong></div><div class="flex flex-wrap items-center gap-2"><span class="text-[10px] ${row.status==='matched'?'text-emerald-500':'text-gray-400'}">${status}</span>${row.status==='pending'&&candidatesForRow.length?`<select id="stmt-match-${row.id}" class="flex-1 min-w-[180px] bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-1 text-xs">${options}</select><button onclick="linkStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-emerald-600 text-white rounded-lg text-xs">Match</button>`:''}${row.status==='pending'?`<button onclick="openVendorRuleModal('${row.id}')" class="px-2.5 py-1.5 bg-violet-600/15 text-violet-500 rounded-lg text-xs">Clean name / create rule</button><button onclick="importStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-indigo-600 text-white rounded-lg text-xs">Import as new</button><button onclick="skipStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-gray-200 dark:bg-gray-800 rounded-lg text-xs">Skip</button>`:row.status==='matched'?undoButton:''}</div></div>`;
+      }).join('')}</div><div class="text-[10px] text-gray-400">Individual matching uses account, transaction type, amount and a date within one day. Grouped manual matching supports different amounts and dates, but requires equal selected totals.</div>${groupsHtml}`;
     }
     function linkStatementRow(rowId) {
       const row=pendingStatementRows.find(r=>r.id===rowId); if(!row)return;
@@ -3290,6 +3420,7 @@
     }
     function unlinkStatementRow(rowId) {
       const row=pendingStatementRows.find(r=>r.id===rowId); if(!row)return;
+      if (row.matchedGroupId) { undoManualStatementMatch(row.matchedGroupId); return; }
       const transaction=state.transactions.find(t=>t.id===row.matchedTransactionId);
       if(transaction){delete transaction.statementMatchId;delete transaction.reconciled;delete transaction.reconciledAt;delete transaction.statementDescription;}
       row.status='pending';delete row.matchedTransactionId;
@@ -4439,6 +4570,7 @@
     state.zbbTracking = state.zbbTracking || {};
     state.zbbPoolTracking = state.zbbPoolTracking || {};
     state.statementReconciliation = state.statementReconciliation || { batches: [] };
+          state.statementReconciliation.groups = Array.isArray(state.statementReconciliation.groups) ? state.statementReconciliation.groups : [];
           state.vendorCleanupRules = Array.isArray(state.vendorCleanupRules) ? state.vendorCleanupRules : [];
     state.merchantRules = Array.isArray(state.merchantRules) ? state.merchantRules : [];
     state.appVisualTheme = ['classic','silver','neutral','colorful'].includes(state.appVisualTheme) ? state.appVisualTheme : 'classic';
