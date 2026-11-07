@@ -643,7 +643,14 @@
               <th class="px-2 py-2"><input type="text" id="filter-category" onkeyup="renderLedger()" placeholder="Filter..." class="w-full bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded px-2 py-1 text-xs font-normal"></th>
               <th class="px-2 py-2"><input type="text" id="filter-subcategory" onkeyup="renderLedger()" placeholder="Filter..." class="w-full bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded px-2 py-1 text-xs font-normal"></th>
               <th class="px-2 py-2"><input type="text" id="filter-account" onkeyup="renderLedger()" placeholder="Filter..." class="w-full bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded px-2 py-1 text-xs font-normal"></th>
-              <th colspan="2" class="px-2 py-2 text-right"><button onclick="clearLedgerFilters()" class="text-[10px] text-indigo-400 hover:underline">Clear Filters</button></th>
+              <th colspan="2" class="px-2 py-2 text-right">
+                <div class="flex items-center justify-end gap-2">
+                  <select id="filter-reconciliation" onchange="renderLedger()" class="max-w-[125px] bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded px-2 py-1 text-[10px] font-normal">
+                    <option value="">All statuses</option><option value="unreconciled">Unreconciled</option><option value="reconciled">Reconciled</option>
+                  </select>
+                  <button onclick="clearLedgerFilters()" class="text-[10px] text-indigo-400 hover:underline">Clear Filters</button>
+                </div>
+              </th>
             </tr>
           </thead>
           <tbody id="ledger-rows" class="divide-y divide-gray-200 dark:divide-gray-800"></tbody>
@@ -1112,8 +1119,14 @@
         <!-- SINGLE TRANSACTION FIELDS (OPTIONAL DROPDOWNS) -->
         <div id="single-tx-fields" class="space-y-3">
           <div class="grid grid-cols-2 gap-3">
-            <div><label class="block text-xs font-semibold text-gray-500 mb-1">Spending Bucket (Optional)</label><select id="tx-category" onchange="updateSubcategoryDropdown()" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"><option value="">-- None / Transfer --</option></select></div>
-            <div><label class="block text-xs font-semibold text-gray-500 mb-1">Subcategory (Optional)</label><select id="tx-subcategory" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"><option value="">-- None --</option></select></div>
+            <div>
+              <div class="flex items-center justify-between mb-1"><label class="block text-xs font-semibold text-gray-500">Spending Bucket (Optional)</label><button type="button" onclick="quickAddBucketFromTransaction()" class="text-[10px] font-semibold text-indigo-500 hover:text-indigo-400">+ Add bucket</button></div>
+              <select id="tx-category" onchange="updateSubcategoryDropdown()" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"><option value="">-- None / Transfer --</option></select>
+            </div>
+            <div>
+              <div class="flex items-center justify-between mb-1"><label class="block text-xs font-semibold text-gray-500">Subcategory (Optional)</label><button type="button" onclick="quickAddSubcategoryFromTransaction()" class="text-[10px] font-semibold text-indigo-500 hover:text-indigo-400">+ Add subcategory</button></div>
+              <select id="tx-subcategory" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"><option value="">-- None --</option></select>
+            </div>
           </div>
           <div><label class="block text-xs font-semibold text-gray-500 mb-1">Total Amount ($)</label><input type="number" step="0.01" id="tx-amount" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
         </div>
@@ -1310,6 +1323,9 @@
     }
 
     function initThemeAndBlur() {
+      state.categories = Array.isArray(state.categories) ? state.categories : [];
+      state.transactions = Array.isArray(state.transactions) ? state.transactions : [];
+      state.calendarBills = Array.isArray(state.calendarBills) ? state.calendarBills : [];
       if (!isValidHexColor(state.appAccentHex)) delete state.appAccentHex;
       if (!isValidHexColor(state.appBackgroundHex)) delete state.appBackgroundHex;
       if (state.darkMode) document.documentElement.classList.add('dark');
@@ -1552,7 +1568,7 @@
       const currentMonth = getDashboardDateRange('month');
       state.categories.forEach(bucket => {
         (bucket.subcategories || []).forEach(sub => {
-          const spent = state.transactions.filter(t => t.type === 'Expense' && t.subcategory === sub.name && t.date >= currentMonth.start && t.date <= currentMonth.end).reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
+          const spent = state.transactions.filter(t => t.type === 'Expense' && t.category !== 'Transfer' && t.subcategory === sub.name && t.date >= currentMonth.start && t.date <= currentMonth.end).reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
           const limit = Number(sub.limit) || 0;
           const pct = limit > 0 ? Math.min(100, Math.round((spent / limit) * 100)) : 0;
           const statusClass = limit > 0 && spent > limit ? 'text-rose-500 bg-rose-50 dark:bg-rose-950/40 border-rose-200' : pct > 85 ? 'text-amber-500 bg-amber-50 dark:bg-amber-950/40 border-amber-200' : 'text-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200';
@@ -2343,7 +2359,7 @@
                 <span class="accounting-num ml-1">${formatFinancial(b.amount, !isInc)}</span>
               </div>
               <div class="flex justify-between items-center mt-1 pt-1 border-t border-current/20 text-[9px]">
-                <span class="opacity-80">${isInc ? 'Income' : isDebt ? 'Debt Payment' : 'Bill'}</span>
+                <span class="opacity-80">${isInc ? 'Income' : isDebt ? 'Debt Payment' : 'Bill'}${b.paid && b.linkedTransactionId ? ' · In Expense Tracker' : ''}</span>
                 <button onclick="toggleCalendarItemPaid('${b.id}', event)" class="px-1.5 py-0.5 rounded bg-black/20 hover:bg-black/30 text-white font-semibold">
                   ${b.paid ? 'Unmark' : 'Mark Paid'}
                 </button>
@@ -2399,17 +2415,10 @@
     }
 
     function toggleCalendarItemPaid(id, e) {
-      e.stopPropagation();
+      if (e) e.stopPropagation();
       const item = state.calendarBills.find(b => b.id === id);
       if (!item) return;
-      captureUndo(`Update scheduled item "${item.desc}"`);
-      item.paid = !item.paid;
-      const acc = state.accounts.find(a => a.id === item.accountId);
-      if (acc) {
-        if (item.paid) { if (item.type === 'income') acc.balance += item.amount; else acc.balance -= item.amount; }
-        else { if (item.type === 'income') acc.balance -= item.amount; else acc.balance += item.amount; }
-      }
-      saveData(); renderCalendar(); renderLedger(); renderDashboard();
+      setCalendarBillPaid(item, !item.paid);
     }
 
     function openCalendarModal(dateStr = '') {
@@ -2443,9 +2452,17 @@
 
     function deleteCalendarItemFromModal() {
       const id = document.getElementById('cal-edit-id').value;
-      if (id && confirm("Delete this transaction from the calendar?")) {
-        state.calendarBills = state.calendarBills.filter(b => b.id !== id);
-        saveData(); closeCalendarModal(); renderCalendar(); renderLedger();
+      if (id) {
+        const bill = state.calendarBills.find(b => b.id === id);
+        if (!bill) return;
+        if (bill.paid) {
+          alert('This bill is marked paid. Unmark it first so FinHub can reverse the account balance and remove its linked Expense Tracker transaction safely.');
+          return;
+        }
+        if (confirm("Delete this transaction from the calendar?")) {
+          state.calendarBills = state.calendarBills.filter(b => b.id !== id);
+          saveData(); closeCalendarModal(); renderCalendar(); renderLedger();
+        }
       }
     }
 
@@ -2455,6 +2472,11 @@
       e.preventDefault();
       const editId = document.getElementById('cal-edit-id').value;
       const recurring = document.getElementById('cal-recurring').value;
+      const existingBill = editId ? state.calendarBills.find(b => b.id === editId) : null;
+      if (existingBill?.paid) {
+        alert('This bill is already marked paid. Unmark it first, make your changes, then mark it paid again so the Expense Tracker and account balance stay synchronized.');
+        return;
+      }
       const data = {
         id: editId || Date.now().toString(),
         date: document.getElementById('cal-date').value,
@@ -2761,7 +2783,7 @@
     }
 
     function clearLedgerFilters() {
-      ['filter-date', 'filter-desc', 'filter-vendor', 'filter-type', 'filter-category', 'filter-subcategory', 'filter-account'].forEach(id => {
+      ['filter-date', 'filter-desc', 'filter-vendor', 'filter-type', 'filter-category', 'filter-subcategory', 'filter-account', 'filter-reconciliation'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.value = '';
       });
@@ -2803,6 +2825,7 @@
       const fCat = (document.getElementById('filter-category')?.value || '').toLowerCase();
       const fSub = (document.getElementById('filter-subcategory')?.value || '').toLowerCase();
       const fAcc = (document.getElementById('filter-account')?.value || '').toLowerCase();
+      const fReconciliation = document.getElementById('filter-reconciliation')?.value || '';
 
       const tbody = document.getElementById('ledger-rows');
       tbody.innerHTML = '';
@@ -2817,6 +2840,8 @@
         if (fCat && !(t.category || '').toLowerCase().includes(fCat)) return false;
         if (fSub && !(t.subcategory || '').toLowerCase().includes(fSub)) return false;
         if (fAcc && !accName.includes(fAcc)) return false;
+        if (fReconciliation === 'unreconciled' && t.reconciled) return false;
+        if (fReconciliation === 'reconciled' && !t.reconciled) return false;
         return true;
       });
 
@@ -3012,28 +3037,86 @@
     function skipStatementRow(rowId) { const row=pendingStatementRows.find(r=>r.id===rowId);if(row){row.status='skipped';renderStatementPreview();} }
     function importAllUnmatchedStatementRows() { pendingStatementRows.filter(r=>r.status==='pending'&&!findStatementMatches(r).length).forEach(r=>importStatementRow(r.id));renderStatementPreview(); }
 
-    function markBillPaid(billId) {
-      const bill = state.calendarBills.find(b => b.id === billId);
+    function findBillPaymentTransaction(bill) {
+      if (bill.linkedTransactionId) {
+        return state.transactions.find(t => t.id === bill.linkedTransactionId) || null;
+      }
+      // Legacy bills may already have a transaction but no stored link. Only infer a link when there is exactly one strong match.
+      const expectedType = bill.type === 'income' ? 'Income' : bill.type === 'debt' ? 'Debt Payment' : 'Expense';
+      const matches = (state.transactions || []).filter(t =>
+        !t.calendarBillId &&
+        t.date === bill.date &&
+        t.accountId === bill.accountId &&
+        t.type === expectedType &&
+        Math.abs(Number(t.amount) - Number(bill.amount)) < 0.005 &&
+        String(t.vendor || t.desc || '').trim().toLowerCase() === String(bill.vendor || bill.desc || 'Scheduled bill').trim().toLowerCase()
+      );
+      return matches.length === 1 ? matches[0] : null;
+    }
+
+    function setCalendarBillPaid(bill, shouldBePaid) {
       if (!bill) return;
-      bill.paid = true;
-      const acc = state.accounts.find(a => a.id === bill.accountId);
-      if (acc) {
-        if (bill.type === 'income') acc.balance += bill.amount;
-        else acc.balance -= bill.amount;
+      if (Boolean(bill.paid) === Boolean(shouldBePaid)) return;
+      captureUndo(`${shouldBePaid ? 'Pay' : 'Unpay'} scheduled item "${bill.desc}"`);
+      const account = state.accounts.find(a => a.id === bill.accountId);
+      const existing = findBillPaymentTransaction(bill);
+
+      if (shouldBePaid) {
+        if (existing) {
+          bill.linkedTransactionId = existing.id;
+          existing.calendarBillId = bill.id;
+        } else {
+          const transactionId = `tx_bill_${bill.id}_${Date.now()}`;
+          const transaction = {
+            id: transactionId,
+            date: bill.date,
+            desc: bill.desc || '',
+            vendor: bill.vendor || bill.desc || 'Scheduled bill',
+            type: bill.type === 'income' ? 'Income' : bill.type === 'debt' ? 'Debt Payment' : 'Expense',
+            category: bill.category || '',
+            subcategory: bill.subcategory || '',
+            amount: Number(bill.amount) || 0,
+            accountId: bill.accountId,
+            calendarBillId: bill.id,
+            source: 'calendar-bill'
+          };
+          state.transactions.unshift(transaction);
+          bill.linkedTransactionId = transactionId;
+          if (account) {
+            if (bill.type === 'income') account.balance += transaction.amount;
+            else account.balance -= transaction.amount;
+          }
+        }
+        bill.paid = true;
+      } else {
+        if (existing) {
+          // Reverse the balance effect of the linked transaction, then remove it from the ledger.
+          if (account) {
+            if (existing.type === 'Income') account.balance -= Number(existing.amount) || 0;
+            else account.balance += Number(existing.amount) || 0;
+          }
+          state.transactions = state.transactions.filter(t => t.id !== existing.id);
+        } else if (account) {
+          // Legacy paid bills may have been recorded before transaction links existed.
+          // Reverse the original account adjustment; do not delete an ambiguous ledger row.
+          if (bill.type === 'income') account.balance -= Number(bill.amount) || 0;
+          else account.balance += Number(bill.amount) || 0;
+        }
+        delete bill.linkedTransactionId;
+        bill.paid = false;
       }
 
-      state.transactions.unshift({
-        id: Date.now().toString(),
-        date: bill.date,
-        desc: bill.desc || '',
-        vendor: bill.vendor || bill.desc || 'Scheduled bill',
-        type: bill.type === 'income' ? 'Income' : bill.type === 'debt' ? 'Debt Payment' : 'Expense',
-        category: bill.category || 'Living Expenses',
-        subcategory: bill.subcategory || '',
-        amount: bill.amount,
-        accountId: bill.accountId
-      });
-      saveData(); renderLedger(); renderDashboard(); renderCalendar(); renderZbbFundingTracker();
+      saveData();
+      renderLedger();
+      renderDashboard();
+      renderCalendar();
+      renderZbbFundingTracker();
+    }
+
+    function markBillPaid(billId) {
+      const bill = state.calendarBills.find(b => b.id === billId);
+      if (!bill || bill.paid) return;
+      setCalendarBillPaid(bill, true);
     }
 
     function deleteTransaction(id) {
@@ -3043,8 +3126,12 @@
         const acc = state.accounts.find(a => a.id === t.accountId);
         if (t.type === 'Transfer' && t.transferToAccountId) { const target=state.accounts.find(a=>a.id===t.transferToAccountId); if(acc) acc.balance += Number(t.amount)||0; if(target) target.balance -= Number(t.amount)||0; }
         else if (acc) { if (t.type === 'Income') acc.balance -= t.amount; else acc.balance += t.amount; }
+        if (t.calendarBillId) {
+          const linkedBill = (state.calendarBills || []).find(b => b.id === t.calendarBillId);
+          if (linkedBill) { linkedBill.paid = false; delete linkedBill.linkedTransactionId; }
+        }
         state.transactions.splice(idx, 1);
-        saveData(); renderLedger(); renderDashboard(); renderZbbFundingTracker();
+        saveData(); renderLedger(); renderDashboard(); renderCalendar(); renderZbbFundingTracker();
       }
     }
 
@@ -3173,11 +3260,40 @@
         if (subName) subcategories.push({ name: subName, limit, rollover });
       });
 
-      if (editIdx >= 0) state.categories[editIdx] = { name, subcategories };
-      else state.categories.push({ name, subcategories });
-      saveData(); closeCategoryModal(); renderSettings();
+      const duplicate = state.categories.some((c, i) => i !== editIdx && c.name.toLowerCase() === name.trim().toLowerCase());
+      if (duplicate) { alert('A spending bucket with that name already exists.'); return; }
+      if (!name.trim()) { alert('Enter a bucket name.'); return; }
+      const oldName = editIdx >= 0 ? state.categories[editIdx].name : '';
+      const updated = { name: name.trim(), subcategories };
+      if (editIdx >= 0) {
+        state.categories[editIdx] = updated;
+        if (oldName !== updated.name) {
+          (state.transactions || []).forEach(t => { if (t.category === oldName) t.category = updated.name; });
+          (state.calendarBills || []).forEach(b => { if (b.category === oldName) b.category = updated.name; });
+          (state.merchantRules || []).forEach(r => { if (r.category === oldName) r.category = updated.name; });
+          if (Array.isArray(state.variablePoolCategories)) state.variablePoolCategories = state.variablePoolCategories.map(n => n === oldName ? updated.name : n);
+          if (state.lastUsedCategory === oldName) state.lastUsedCategory = updated.name;
+        }
+      } else state.categories.push(updated);
+      saveData(); closeCategoryModal(); renderSettings(); renderLedger(); renderDashboard(); renderZbbFundingTracker();
     }
-    function deleteCategory(idx) { state.categories.splice(idx, 1); saveData(); renderSettings(); }
+    function deleteCategory(idx) {
+      const category = state.categories[idx];
+      if (!category) return;
+      const name = category.name;
+      const transactionCount = (state.transactions || []).filter(t => t.category === name).length;
+      const billCount = (state.calendarBills || []).filter(b => b.category === name).length;
+      const ruleCount = (state.merchantRules || []).filter(r => r.category === name).length;
+      if (transactionCount || billCount || ruleCount) {
+        alert(`“${name}” is currently used by ${transactionCount} transaction(s), ${billCount} scheduled bill(s), and ${ruleCount} merchant rule(s). Reassign those records before deleting this bucket so historical reporting is preserved.`);
+        return;
+      }
+      if (!confirm(`Delete the unused bucket “${name}”?`)) return;
+      state.categories.splice(idx, 1);
+      if (Array.isArray(state.variablePoolCategories)) state.variablePoolCategories = state.variablePoolCategories.filter(n => n !== name);
+      if (state.lastUsedCategory === name) delete state.lastUsedCategory;
+      saveData(); renderSettings(); renderLedger(); renderDashboard(); renderZbbFundingTracker();
+    }
 
     function updateExtraPayoff(val) {
       state.extraPayoff = parseFloat(val) || 0;
@@ -3523,8 +3639,8 @@
       const tSelect = document.getElementById('tx-type');
       tSelect.innerHTML = ''; state.transactionTypes.forEach(t => tSelect.innerHTML += `<option value="${t}">${t}</option>`);
       const cSelect = document.getElementById('tx-category');
-      cSelect.innerHTML = '<option value="">-- None / Transfer --</option>';
-      state.categories.forEach(c => cSelect.innerHTML += `<option value="${c.name}">${c.name}</option>`);
+      cSelect.innerHTML = '<option value="">-- None --</option><option value="Transfer">Transfer</option>';
+      state.categories.filter(c => c.name !== 'Transfer').forEach(c => cSelect.innerHTML += `<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`);
       const aSelect = document.getElementById('tx-account');
       aSelect.innerHTML = ''; state.accounts.forEach(a => aSelect.innerHTML += `<option value="${a.id}">${a.name}</option>`);
       updateSubcategoryDropdown();
@@ -3555,6 +3671,13 @@
         document.getElementById('transaction-form').reset();
         document.getElementById('tx-date').value = new Date().toISOString().split('T')[0];
         document.getElementById('tx-vendor').value = '';
+        if (state.lastUsedAccountId && state.accounts.some(a => a.id === state.lastUsedAccountId)) {
+          document.getElementById('tx-account').value = state.lastUsedAccountId;
+        }
+        if (state.lastUsedCategory && state.categories.some(c => c.name === state.lastUsedCategory)) {
+          document.getElementById('tx-category').value = state.lastUsedCategory;
+          updateSubcategoryDropdown();
+        }
       }
       document.getElementById('transaction-modal').classList.remove('hidden');
     }
@@ -3591,11 +3714,70 @@
     function updateSubcategoryDropdown() {
       const bucketName = document.getElementById('tx-category').value;
       const subSelect = document.getElementById('tx-subcategory');
+      const previousValue = subSelect.value;
       subSelect.innerHTML = '<option value="">-- None --</option>';
-      const bucket = state.categories.find(c => c.name === bucketName);
+      const bucket = (state.categories || []).find(c => c.name === bucketName);
       if (bucket && bucket.subcategories) {
-        bucket.subcategories.forEach(sub => subSelect.innerHTML += `<option value="${sub.name}">${sub.name}</option>`);
+        bucket.subcategories.forEach(sub => subSelect.innerHTML += `<option value="${escapeHtml(sub.name)}">${escapeHtml(sub.name)}</option>`);
       }
+      if (bucket && (bucket.subcategories || []).some(sub => sub.name === previousValue)) subSelect.value = previousValue;
+    }
+
+    function refreshTransactionBucketOptions(selectedName = '') {
+      const select = document.getElementById('tx-category');
+      if (!select) return;
+      select.innerHTML = '<option value="">-- None / Transfer --</option><option value="Transfer">Transfer</option>' +
+        (state.categories || []).filter(c => c.name !== 'Transfer').map(c => `<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`).join('');
+      select.value = selectedName;
+      updateSubcategoryDropdown();
+    }
+
+    function quickAddBucketFromTransaction() {
+      const raw = prompt('Enter the new spending bucket name:');
+      if (raw === null) return;
+      const name = raw.trim();
+      if (!name) { alert('Enter a bucket name.'); return; }
+      if (name.toLowerCase() === 'transfer') {
+        alert('Transfer is a reserved bucket and is already available in the dropdown.');
+        refreshTransactionBucketOptions('Transfer');
+        return;
+      }
+      if ((state.categories || []).some(c => c.name.toLowerCase() === name.toLowerCase())) {
+        alert('A bucket with that name already exists.');
+        refreshTransactionBucketOptions((state.categories || []).find(c => c.name.toLowerCase() === name.toLowerCase()).name);
+        return;
+      }
+      state.categories = state.categories || [];
+      state.categories.push({ name, subcategories: [] });
+      state.lastUsedCategory = name;
+      saveData();
+      refreshTransactionBucketOptions(name);
+      renderSettings();
+    }
+
+    function quickAddSubcategoryFromTransaction() {
+      const bucketName = document.getElementById('tx-category').value;
+      if (!bucketName || bucketName === 'Transfer') {
+        alert('Choose a spending bucket first. Transfer does not have subcategories.');
+        return;
+      }
+      const raw = prompt(`Enter a new subcategory for “${bucketName}”:`);
+      if (raw === null) return;
+      const name = raw.trim();
+      if (!name) { alert('Enter a subcategory name.'); return; }
+      const bucket = (state.categories || []).find(c => c.name === bucketName);
+      if (!bucket) return;
+      bucket.subcategories = bucket.subcategories || [];
+      if (bucket.subcategories.some(sub => sub.name.toLowerCase() === name.toLowerCase())) {
+        alert('That subcategory already exists in this bucket.');
+        document.getElementById('tx-subcategory').value = bucket.subcategories.find(sub => sub.name.toLowerCase() === name.toLowerCase()).name;
+        return;
+      }
+      bucket.subcategories.push({ name, limit: 0, rollover: false });
+      saveData();
+      updateSubcategoryDropdown();
+      document.getElementById('tx-subcategory').value = name;
+      renderSettings();
     }
 
     function saveTransaction(e) {
@@ -3637,6 +3819,19 @@
         const category = document.getElementById('tx-category').value;
         const subcategory = document.getElementById('tx-subcategory').value;
 
+        if (!editId) {
+          const normalize = value => String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+          const possibleDuplicate = (state.transactions || []).find(t =>
+            t.date === date && t.accountId === accountId && t.type === type &&
+            Math.abs(Number(t.amount) - amount) < 0.005 &&
+            normalize(t.vendor) === normalize(vendor)
+          );
+          if (possibleDuplicate && !confirm(`A similar transaction already exists (${possibleDuplicate.date}, ${possibleDuplicate.vendor || possibleDuplicate.desc}, ${formatFinancial(possibleDuplicate.amount)}). Add another anyway?`)) return;
+        }
+
+        state.lastUsedAccountId = accountId;
+        if (category) state.lastUsedCategory = category;
+
         if (editId) {
           const idx = state.transactions.findIndex(t => t.id === editId);
           if (idx >= 0) {
@@ -3644,6 +3839,19 @@
             const oldAcc = state.accounts.find(a => a.id === oldT.accountId);
             if (oldAcc) { if (oldT.type === 'Income') oldAcc.balance -= oldT.amount; else oldAcc.balance += oldT.amount; }
             state.transactions[idx] = { ...oldT, id: editId, date, desc, vendor, type, category, subcategory, amount, accountId };
+            if (oldT.calendarBillId) {
+              const linkedBill = (state.calendarBills || []).find(b => b.id === oldT.calendarBillId);
+              if (linkedBill) {
+                linkedBill.date = date;
+                linkedBill.desc = desc || vendor;
+                linkedBill.vendor = vendor;
+                linkedBill.type = type === 'Income' ? 'income' : type === 'Debt Payment' ? 'debt' : 'expense';
+                linkedBill.category = category;
+                linkedBill.subcategory = subcategory;
+                linkedBill.amount = amount;
+                linkedBill.accountId = accountId;
+              }
+            }
             const newAcc = state.accounts.find(a => a.id === accountId);
             if (newAcc) { if (type === 'Income') newAcc.balance += amount; else newAcc.balance -= amount; }
           }
