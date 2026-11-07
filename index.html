@@ -1090,18 +1090,22 @@
         <input type="hidden" id="zbb-item-type" value="">
         <input type="hidden" id="zbb-item-edit-id" value="">
         <div><label class="block text-xs font-semibold text-gray-500 mb-1">Description / Name</label><input type="text" id="zbb-item-name" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
-        <div id="zbb-variable-edit-note" class="hidden rounded-lg bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-900 p-3 text-xs text-gray-600 dark:text-gray-300">This edits the bucket name and its default monthly plan. To change the amount assigned to this bucket for the currently selected paycheque, use the allocation amount directly in the Variable Spending Pool section. Moving money between buckets changes the allocated/unallocated totals, but not the overall pool or paycheque bottom line.</div>
-        <div class="grid grid-cols-2 gap-3">
-          <div><label class="block text-xs font-semibold text-gray-500 mb-1">Monthly Total ($)</label><input type="number" step="0.01" id="zbb-item-monthly" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
+        <div id="zbb-variable-edit-note" class="hidden rounded-lg bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-900 p-3 text-xs text-gray-600 dark:text-gray-300">Edit the category name and the amount assigned to the currently selected paycheque. This redistributes the existing pool; it does not change the overall pool amount.</div>
+        <div id="zbb-variable-current-allocation-wrap" class="hidden">
+          <label class="block text-xs font-semibold text-gray-500 mb-1" id="zbb-variable-current-allocation-label">Paycheque allocation ($)</label>
+          <input type="number" min="0" step="0.01" id="zbb-variable-current-allocation" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm">
+        </div>
+        <div id="zbb-item-monthly-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Monthly Total ($)</label><input type="number" step="0.01" id="zbb-item-monthly" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
+        <div id="zbb-item-split-wrap" class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-semibold text-gray-500 mb-1">Split Mode</label>
             <select id="zbb-split-mode-type" onchange="toggleZbbSplitModeType()" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm">
-              <option value="pct">Percentage (%)</option>
-              <option value="dollar">Dollar Amount ($)</option>
+              <option value="pct">Percentage (%)</option><option value="dollar">Dollar Amount ($)</option>
             </select>
           </div>
+          <div class="text-[10px] text-gray-400 self-end pb-2">Used for income, bills, debt and savings lines.</div>
         </div>
-        <div class="space-y-2">
+        <div id="zbb-item-split-details" class="space-y-2">
           <label class="block text-xs font-semibold text-gray-500" id="zbb-split-label">Paycheque Splits (%)</label>
           <div class="grid grid-cols-3 gap-2">
             <div><span class="text-[10px] text-gray-400">P1</span><input type="number" step="0.01" id="zbb-split-1" value="50" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded px-2 py-1 text-xs"></div>
@@ -2252,16 +2256,21 @@
     function updateVariablePoolAllocation(cycle, itemId, rawValue) {
       const period = state.selectedZbbPeriod || '2026-11';
       const zbb = getActiveZbbTemplate();
+      const key = String(itemId);
+      const itemExists = (zbb.variable || []).some(item => String(item.id) === key);
+      if (!itemExists) { alert('This variable category could not be found. Please refresh the planner.'); renderZbbPlanner(); return; }
       const allocationState = getVariablePoolAllocationState(zbb, cycle, period);
-      const value = Math.round(Math.max(0, Number(rawValue) || 0) * 100) / 100;
-      const otherTotal = allocationState.allocated - (Number(allocationState.allocations[itemId]) || 0);
+      const parsed = Number(rawValue);
+      if (!Number.isFinite(parsed) || parsed < 0) { alert('Enter a valid allocation amount of zero or more.'); renderZbbPlanner(); return; }
+      const value = Math.round(parsed * 100) / 100;
+      const otherTotal = allocationState.allocated - (Number(allocationState.allocations[key]) || 0);
       if (otherTotal + value > allocationState.poolBudget + 0.0001) {
         alert(`That allocation would exceed the ${formatFinancial(allocationState.poolBudget)} variable pool. Reduce another category first.`);
         renderZbbPlanner();
         return;
       }
       captureUndo('Adjust variable spending allocation');
-      allocationState.rec.variableAllocations[itemId] = value;
+      allocationState.rec.variableAllocations[key] = value;
       saveData();
       renderZbbPlanner();
     }
@@ -2389,7 +2398,7 @@
           if (sectionKey === 'variable') {
             const share = variablePoolState.poolBudget > 0 ? (amt / variablePoolState.poolBudget * 100) : 0;
             const itemIdArg = encodeURIComponent(String(item.id)).replace(/'/g, '%27');
-            container.innerHTML += `<div class="grid grid-cols-[minmax(0,1fr)_125px_70px_auto] gap-2 items-center bg-gray-50 dark:bg-gray-950 p-3 rounded-xl border border-gray-200 dark:border-gray-800 text-xs"><div class="min-w-0"><div class="font-semibold truncate">${escapeHtml(item.name)}</div><div class="text-[10px] text-gray-400">Original monthly plan: ${formatFinancial(item.monthly || 0)}</div></div><input type="number" min="0" step="0.01" value="${amt.toFixed(2)}" onchange="updateVariablePoolAllocationEncoded(${cycle},'${itemIdArg}',this.value)" class="w-full text-right bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1.5 text-xs accounting-num"><div class="text-right text-gray-500 accounting-num">${share.toFixed(1)}%</div><div class="flex gap-2 justify-end"><button onclick="openZbbItemModalEncoded('variable','${itemIdArg}')" class="text-indigo-400" title="Edit variable bucket"><i class="fa-solid fa-pen"></i></button><button onclick="deleteZbbItemEncoded('variable','${itemIdArg}')" class="text-rose-500" title="Delete variable bucket"><i class="fa-solid fa-trash"></i></button></div></div>`;
+            container.insertAdjacentHTML('beforeend', `<div class="grid grid-cols-[minmax(0,1fr)_125px_70px_auto] gap-2 items-center bg-gray-50 dark:bg-gray-950 p-3 rounded-xl border border-gray-200 dark:border-gray-800 text-xs"><div class="min-w-0"><div class="font-semibold truncate">${escapeHtml(item.name)}</div><div class="text-[10px] text-gray-400">Assigned from the shared pool</div></div><input type="number" min="0" step="0.01" value="${amt.toFixed(2)}" data-zbb-allocation-input="1" data-zbb-id="${escapeHtml(String(item.id))}" aria-label="${escapeHtml(item.name)} paycheque allocation" class="w-full text-right bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1.5 text-xs accounting-num"><div class="text-right text-gray-500 accounting-num" data-zbb-share="${escapeHtml(String(item.id))}">${share.toFixed(1)}%</div><div class="flex gap-2 justify-end"><button type="button" data-zbb-action="edit-variable" data-zbb-id="${escapeHtml(String(item.id))}" class="text-indigo-400" title="Edit variable bucket"><i class="fa-solid fa-pen"></i></button><button type="button" data-zbb-action="delete-variable" data-zbb-id="${escapeHtml(String(item.id))}" class="text-rose-500" title="Delete variable bucket"><i class="fa-solid fa-trash"></i></button></div></div>`);
             return;
           }
           const itemIdArg = encodeURIComponent(String(item.id)).replace(/'/g, '%27');
@@ -2421,6 +2430,22 @@
       renderSection('zbb-income-list', zbb.incomes, 'income', 'text-emerald-600 dark:text-emerald-400');
       renderSection('zbb-bills-list', zbb.bills, 'bill', 'text-rose-600 dark:text-rose-400');
       renderSection('zbb-variable-list', zbb.variable, 'variable', 'text-amber-600 dark:text-amber-400');
+      const variableListEl = document.getElementById('zbb-variable-list');
+      if (variableListEl && !variableListEl.dataset.zbbHandlersAttached) {
+        variableListEl.dataset.zbbHandlersAttached = '1';
+        variableListEl.addEventListener('click', event => {
+          const button = event.target.closest('button[data-zbb-action]');
+          if (!button || !variableListEl.contains(button)) return;
+          const id = button.dataset.zbbId;
+          if (button.dataset.zbbAction === 'edit-variable') openZbbItemModal('variable', id);
+          if (button.dataset.zbbAction === 'delete-variable') deleteZbbItem('variable', id);
+        });
+        variableListEl.addEventListener('change', event => {
+          const input = event.target.closest('input[data-zbb-allocation-input]');
+          if (!input || !variableListEl.contains(input)) return;
+          updateVariablePoolAllocation(Number(state.selectedPayCycle || 1), input.dataset.zbbId, input.value);
+        });
+      }
       renderSection('zbb-debt-list', zbb.debts, 'debt', 'text-amber-600 dark:text-amber-400');
       renderSection('zbb-savings-list', zbb.savings, 'savings', 'text-indigo-600 dark:text-indigo-400');
 
@@ -2610,28 +2635,39 @@
     }
 
     function openZbbItemModal(type, editId = null) {
+      const modal = document.getElementById('zbb-item-modal');
+      const isVariable = type === 'variable';
+      const isEdit = editId !== null && editId !== undefined && String(editId) !== '';
       document.getElementById('zbb-item-type').value = type;
-      document.getElementById('zbb-modal-title').innerText = editId ? "Edit Budget Item" : "Add Budget Item";
+      document.getElementById('zbb-modal-title').innerText = isEdit ? (isVariable ? 'Edit Variable Bucket' : 'Edit Budget Item') : 'Add Budget Item';
       document.getElementById('zbb-sinking-fund-opts').classList.toggle('hidden', type !== 'savings');
-      const variableNote = document.getElementById('zbb-variable-edit-note');
-      if (variableNote) variableNote.classList.toggle('hidden', type !== 'variable');
+      document.getElementById('zbb-variable-edit-note').classList.toggle('hidden', !isVariable);
+      document.getElementById('zbb-item-monthly-wrap').classList.toggle('hidden', isVariable);
+      document.getElementById('zbb-item-split-wrap').classList.toggle('hidden', isVariable);
+      document.getElementById('zbb-item-split-details').classList.toggle('hidden', isVariable);
+      document.getElementById('zbb-variable-current-allocation-wrap').classList.toggle('hidden', !isVariable);
+      document.getElementById('zbb-variable-current-allocation-label').innerText = `Paycheque ${Number(state.selectedPayCycle || 1)} allocation ($)`;
 
       const zbb = getActiveZbbTemplate();
-      if (editId) {
-        const list = type === 'income' ? zbb.incomes : type === 'bill' ? zbb.bills : type === 'variable' ? zbb.variable : type === 'debt' ? zbb.debts : zbb.savings;
-        const item = list.find(i => String(i.id) === String(editId));
+      const list = type === 'income' ? zbb.incomes : type === 'bill' ? zbb.bills : type === 'variable' ? zbb.variable : type === 'debt' ? zbb.debts : zbb.savings;
+      if (isEdit) {
+        const item = (list || []).find(i => String(i.id) === String(editId));
         if (!item) { alert('This budget item could not be found in the selected paycheque template. Please refresh the planner and try again.'); return; }
         document.getElementById('zbb-item-edit-id').value = String(item.id);
-        {
-
-          document.getElementById('zbb-item-name').value = item.name;
-          document.getElementById('zbb-item-monthly').value = item.monthly;
+        document.getElementById('zbb-item-name').value = item.name || '';
+        if (isVariable) {
+          const allocationState = getVariablePoolAllocationState(zbb, Number(state.selectedPayCycle || 1), state.selectedZbbPeriod || '2026-11');
+          document.getElementById('zbb-variable-current-allocation').value = (Number(allocationState.allocations[String(item.id)]) || 0).toFixed(2);
+          document.getElementById('zbb-item-monthly').required = false;
+        } else {
+          document.getElementById('zbb-item-monthly').required = true;
+          document.getElementById('zbb-item-monthly').value = item.monthly ?? 0;
           document.getElementById('zbb-split-mode-type').value = item.splitMode || 'pct';
           toggleZbbSplitModeType();
-          const s = item.split || [50, 50, 0];
-          document.getElementById('zbb-split-1').value = s[0];
-          document.getElementById('zbb-split-2').value = s[1];
-          document.getElementById('zbb-split-3').value = s[2];
+          const split = item.split || [50, 50, 0];
+          document.getElementById('zbb-split-1').value = split[0];
+          document.getElementById('zbb-split-2').value = split[1];
+          document.getElementById('zbb-split-3').value = split[2];
           if (type === 'savings') {
             document.getElementById('zbb-start-bal').value = item.startBal || 0;
             document.getElementById('zbb-target-bal').value = item.targetBal || '';
@@ -2641,10 +2677,13 @@
       } else {
         document.getElementById('zbb-item-edit-id').value = '';
         document.getElementById('zbb-item-form').reset();
+        document.getElementById('zbb-item-type').value = type;
         document.getElementById('zbb-split-mode-type').value = 'pct';
         toggleZbbSplitModeType();
+        document.getElementById('zbb-item-monthly').required = !isVariable;
+        if (isVariable) document.getElementById('zbb-variable-current-allocation').value = '0.00';
       }
-      document.getElementById('zbb-item-modal').classList.remove('hidden');
+      modal.classList.remove('hidden');
     }
 
     function closeZbbItemModal() { document.getElementById('zbb-item-modal').classList.add('hidden'); }
@@ -2657,7 +2696,40 @@
       e.preventDefault();
       const type = document.getElementById('zbb-item-type').value;
       const editId = document.getElementById('zbb-item-edit-id').value;
-      const name = document.getElementById('zbb-item-name').value;
+      const name = document.getElementById('zbb-item-name').value.trim();
+      if (!name) { alert('Enter a name for this budget item.'); return; }
+      const zbb = getActiveZbbTemplate();
+      const list = type === 'income' ? zbb.incomes : type === 'bill' ? zbb.bills : type === 'variable' ? zbb.variable : type === 'debt' ? zbb.debts : zbb.savings;
+
+      if (type === 'variable') {
+        const cycle = Number(state.selectedPayCycle || 1);
+        const period = state.selectedZbbPeriod || '2026-11';
+        const allocationState = getVariablePoolAllocationState(zbb, cycle, period);
+        const rawAllocation = Number(document.getElementById('zbb-variable-current-allocation').value);
+        if (!Number.isFinite(rawAllocation) || rawAllocation < 0) { alert('Enter a valid allocation amount of zero or more.'); return; }
+        const allocation = Math.round(rawAllocation * 100) / 100;
+        const existingId = String(editId || '');
+        const currentItem = existingId ? list.find(item => String(item.id) === existingId) : null;
+        if (existingId && !currentItem) { alert('This variable category could not be found. Please close the editor and try again.'); return; }
+        const otherTotal = allocationState.allocated - (currentItem ? (Number(allocationState.allocations[existingId]) || 0) : 0);
+        if (otherTotal + allocation > allocationState.poolBudget + 0.0001) {
+          alert(`That allocation would exceed the ${formatFinancial(allocationState.poolBudget)} variable pool. Reduce another category first.`);
+          return;
+        }
+        captureUndo(existingId ? 'Edit variable spending bucket' : 'Add variable spending bucket');
+        let itemId;
+        if (currentItem) {
+          currentItem.name = name;
+          itemId = String(currentItem.id);
+        } else {
+          itemId = `zv_${Date.now()}_${Math.random().toString(36).slice(2,7)}`;
+          list.push({ id: itemId, name, monthly: 0, splitMode: 'dollar', split: [0,0,0] });
+        }
+        allocationState.rec.variableAllocations[String(itemId)] = allocation;
+        saveData(); closeZbbItemModal(); renderZbbPlanner();
+        return;
+      }
+
       const monthly = parseFloat(document.getElementById('zbb-item-monthly').value) || 0;
       const splitMode = document.getElementById('zbb-split-mode-type').value;
       const split = [
@@ -2665,24 +2737,19 @@
         parseFloat(document.getElementById('zbb-split-2').value) || 0,
         parseFloat(document.getElementById('zbb-split-3').value) || 0
       ];
-
       const extraSavingsData = type === 'savings' ? {
         startBal: parseFloat(document.getElementById('zbb-start-bal').value) || 0,
         targetBal: parseFloat(document.getElementById('zbb-target-bal').value) || 0,
         targetDate: document.getElementById('zbb-target-date').value,
-        savedBal: editId ? (getActiveZbbTemplate().savings.find(s => String(s.id) === String(editId))?.savedBal || 0) : 0
+        savedBal: editId ? (getActiveZbbTemplate().savings.find(item => String(item.id) === String(editId))?.savedBal || 0) : 0
       } : {};
-
-      const zbb = getActiveZbbTemplate();
-      const list = type === 'income' ? zbb.incomes : type === 'bill' ? zbb.bills : type === 'variable' ? zbb.variable : type === 'debt' ? zbb.debts : zbb.savings;
-      
       captureUndo(editId ? `Edit ${type} budget item` : `Add ${type} budget item`);
       if (editId) {
         const item = list.find(i => String(i.id) === String(editId));
         if (!item) { alert('This budget item could not be found. Please close the editor and try again.'); return; }
         item.name = name; item.monthly = monthly; item.splitMode = splitMode; item.split = split; Object.assign(item, extraSavingsData);
       } else {
-        list.push({ id: Date.now().toString(), name, monthly, splitMode, split, ...extraSavingsData });
+        list.push({ id: `zbb_${Date.now()}_${Math.random().toString(36).slice(2,7)}`, name, monthly, splitMode, split, ...extraSavingsData });
       }
       saveData(); closeZbbItemModal(); renderZbbPlanner();
     }
@@ -2709,19 +2776,26 @@
     function deleteZbbItem(type, id) {
       const zbb = getActiveZbbTemplate();
       const listName = type === 'income' ? 'incomes' : type === 'bill' ? 'bills' : type === 'variable' ? 'variable' : type === 'debt' ? 'debts' : 'savings';
-      const item = (zbb[listName] || []).find(i => String(i.id) === String(id));
-      if (!item) { renderZbbPlanner(); return; }
+      const key = String(id);
+      const list = Array.isArray(zbb[listName]) ? zbb[listName] : [];
+      const item = list.find(i => String(i.id) === key);
+      if (!item) { alert('This budget item could not be found. The planner has been refreshed.'); renderZbbPlanner(); return; }
       if (!confirm(`Delete "${item.name}" from this paycheque budget?`)) return;
       captureUndo(`Delete ${type} budget item`);
-      zbb[listName] = zbb[listName].filter(i => String(i.id) !== String(id));
-      if (type === 'variable' && state.zbbPoolTracking) {
-        Object.values(state.zbbPoolTracking).forEach(periodRecords => {
+      zbb[listName] = list.filter(i => String(i.id) !== key);
+      if (type === 'variable') {
+        // Remove the category's stored allocation from every period/cycle, not just the visible one.
+        Object.values(state.zbbPoolTracking || {}).forEach(periodRecords => {
           Object.values(periodRecords || {}).forEach(rec => {
-            if (rec && rec.variableAllocations) delete rec.variableAllocations[String(id)];
+            if (rec && rec.variableAllocations && Object.prototype.hasOwnProperty.call(rec.variableAllocations, key)) {
+              delete rec.variableAllocations[key];
+            }
           });
         });
       }
-      saveData(); renderZbbPlanner();
+      saveData();
+      closeZbbItemModal();
+      renderZbbPlanner();
     }
 
     function changeMonth(delta) {
