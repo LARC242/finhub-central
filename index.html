@@ -1265,7 +1265,7 @@
         <div><label class="block text-xs font-semibold text-gray-500 mb-1">Vendor <span class="text-rose-500">*</span></label><input type="text" id="tx-vendor" oninput="applySmartMerchantRules(this.value)" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" placeholder="e.g. Costco"></div>
         <div><label class="block text-xs font-semibold text-gray-500 mb-1">Description (Optional)</label><input type="text" id="tx-desc" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" placeholder="e.g. Weekly groceries"></div>
         <div><label class="block text-xs font-semibold text-gray-500 mb-1">Transaction Type</label><select id="tx-type" onchange="updateTransactionTypeFields()" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></select></div>
-        <div id="tx-transfer-direction-wrap" class="hidden"><label class="block text-xs font-semibold text-gray-500 mb-1">Transfer Direction</label><select id="tx-transfer-direction" onchange="updateTransactionTypeFields()" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"><option value="out">Transfer Out — to another account in FinHub</option><option value="in">Transfer In — from an external account</option></select><p class="text-[10px] text-gray-400 mt-1">Choose Transfer In for money arriving from a bank or account that isn't tracked in FinHub. Choose Transfer Out for a transfer to another FinHub account.</p></div>
+        <div id="tx-transfer-direction-wrap" class="hidden"><label class="block text-xs font-semibold text-gray-500 mb-1">Transfer Direction</label><select id="tx-transfer-direction" onchange="updateTransactionTypeFields()" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"><option value="out_external">Transfer Out — to an external account</option><option value="in_external">Transfer In — from an external account</option><option value="internal">Internal Transfer — between FinHub accounts</option></select><p class="text-[10px] text-gray-400 mt-1">Choose Transfer In for money arriving from a bank or account that isn't tracked in FinHub. Choose Transfer Out for a transfer to another FinHub account.</p></div>
         <div id="tx-transfer-destination-wrap" class="hidden"><label class="block text-xs font-semibold text-gray-500 mb-1">Transfer To Account</label><select id="tx-transfer-to" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></select></div>
         <div><label class="block text-xs font-semibold text-gray-500 mb-1">Related Debt Account (Optional)</label><select id="tx-related-debt" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"><option value="">Not linked to a debt account</option></select><p class="text-[10px] text-gray-400 mt-1">Use this for interest expenses or other transactions you want included in a debt account's activity.</p></div>
 
@@ -3376,7 +3376,8 @@
       const typeSelect = document.getElementById('bulk-type');
       typeSelect.innerHTML = '<option value="">No change</option>' +
         (state.transactionTypes || ['Expense','Income','Debt Payment']).filter(type=>type !== 'Transfer').map(type=>`<option value="${escapeHtml(type)}">${escapeHtml(type)}</option>`).join('') +
-        '<option value="__TRANSFER_IN__">Transfer (incoming / external)</option>';
+        '<option value="__TRANSFER_IN__">Transfer In — external money received</option>' +
+        '<option value="__TRANSFER_OUT__">Transfer Out — external money sent</option>';
       ['bulk-vendor','bulk-type','bulk-category','bulk-subcategory'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
       updateBulkSubcategoryOptions();
       document.getElementById('bulk-edit-modal').classList.remove('hidden');
@@ -3434,8 +3435,12 @@
           }
           if (!confirm(`${protectedRows.length} selected transaction(s) are linked to scheduled payments or internal transfers and will be skipped. Continue with the other ${bulkTypeRows.length}?`)) return;
         }
-        if (typeValue === '__TRANSFER_IN__' && bulkTypeRows.some(t => t.type !== 'Income' && !(t.type === 'Transfer' && t.externalTransferDirection === 'in'))) {
-          alert('Transfer In can only be applied to transactions currently classified as Income or already marked as an incoming external Transfer. Select only incoming credits.');
+        if (typeValue === '__TRANSFER_IN__' && bulkTypeRows.some(t => !(t.type === 'Income' || (t.type === 'Transfer' && t.externalTransferDirection === 'in')))) {
+          alert('Transfer In is for incoming credits. Select income transactions or existing external Transfer In transactions.');
+          return;
+        }
+        if (typeValue === '__TRANSFER_OUT__' && bulkTypeRows.some(t => t.type === 'Transfer' && t.transferToAccountId)) {
+          alert('Internal transfers already have a destination account and cannot be converted through bulk editing. Edit those individually.');
           return;
         }
       }
@@ -3460,8 +3465,10 @@
           ? ' The bucket will be set to Transfer and the subcategory cleared. Account balances will not be changed.'
           : (targetCategory ? ` The bucket will be set to “${targetCategory}”.` : '');
       const typeDetail = typeValue === '__TRANSFER_IN__'
-        ? ' Type will become Transfer (incoming/external). This remains a credit to the selected account and will no longer count as income.'
-        : (typeValue ? ` Type will become “${typeValue}”; account balances will be adjusted to preserve the correct effect of the transaction.` : '');
+        ? ' Type will become Transfer In (external). This remains a credit to the selected account and will no longer count as income.'
+        : typeValue === '__TRANSFER_OUT__'
+          ? ' Type will become Transfer Out (external). This remains a debit to the selected account and will no longer count as an expense.'
+          : (typeValue ? ` Type will become “${typeValue}”; account balances will be adjusted to preserve the correct effect of the transaction.` : '');
       if (!confirm(`Apply the selected changes to ${valid.length} transaction${valid.length===1?'':'s'}?${typeDetail}${confirmationDetail}`))return;
       if (typeValue) captureUndo('Bulk edit transaction types and details');
 
@@ -3469,9 +3476,17 @@
       valid.forEach(t=>{
         if(vendorValue!=='')t.vendor=vendorValue;
         const canChangeType = !!typeValue && eligibleTypeIds.has(String(t.id));
-        if (canChangeType && typeValue === '__TRANSFER_IN__') {
+        if (canChangeType && (typeValue === '__TRANSFER_IN__' || typeValue === '__TRANSFER_OUT__')) {
+          const amount = Number(t.amount) || 0;
+          const oldIsCredit = t.type === 'Income' || (t.type === 'Transfer' && t.externalTransferDirection === 'in');
+          const newDirection = typeValue === '__TRANSFER_IN__' ? 'in' : 'out';
+          const newIsCredit = newDirection === 'in';
+          if (oldIsCredit !== newIsCredit) {
+            const account = state.accounts.find(a => String(a.id) === String(t.accountId));
+            if (account) account.balance = (Number(account.balance) || 0) + (newIsCredit ? amount : -amount) - (oldIsCredit ? amount : -amount);
+          }
           t.type = 'Transfer';
-          t.externalTransferDirection = 'in';
+          t.externalTransferDirection = newDirection;
           t.category = 'Transfer';
           t.subcategory = '';
           delete t.transferToAccountId;
@@ -3484,7 +3499,7 @@
             if (account) account.balance = (Number(account.balance) || 0) + (newIsCredit ? amount : -amount) - (oldIsCredit ? amount : -amount);
           }
           t.type = typeValue;
-          if (typeValue !== 'Transfer') delete t.externalTransferDirection;
+          delete t.externalTransferDirection;
         }
         if(clearBucket) {
           t.category='';
@@ -4695,10 +4710,11 @@
     function updateTransactionTypeFields() {
       const isTransfer = document.getElementById('tx-type')?.value === 'Transfer';
       const directionSelect = document.getElementById('tx-transfer-direction');
-      const direction = directionSelect?.value || 'out';
-      const isExternalIncomingTransfer = isTransfer && direction === 'in';
+      const direction = directionSelect?.value || 'out_external';
+      const isInternalTransfer = isTransfer && direction === 'internal';
+      const isExternalIncomingTransfer = isTransfer && direction === 'in_external';
       document.getElementById('tx-transfer-direction-wrap')?.classList.toggle('hidden', !isTransfer);
-      document.getElementById('tx-transfer-destination-wrap')?.classList.toggle('hidden', !isTransfer || isExternalIncomingTransfer);
+      document.getElementById('tx-transfer-destination-wrap')?.classList.toggle('hidden', !isInternalTransfer);
       if (isTransfer) {
         document.getElementById('tx-category').value = 'Transfer';
         document.getElementById('tx-subcategory').value = '';
@@ -4751,7 +4767,7 @@
       document.getElementById('tx-category-rule-options').classList.add('hidden');
       document.getElementById('tx-category-rule-scope').value = 'future';
       document.getElementById('tx-transfer-to').value = '';
-      document.getElementById('tx-transfer-direction').value = 'out';
+      document.getElementById('tx-transfer-direction').value = 'out_external';
       document.getElementById('tx-transfer-direction-wrap').classList.add('hidden');
       document.getElementById('tx-transfer-destination-wrap').classList.add('hidden');
 
@@ -4771,7 +4787,7 @@
           document.getElementById('tx-account').value = tx.accountId;
           document.getElementById('tx-related-debt').value = tx.debtAccountId || '';
           document.getElementById('tx-transfer-to').value = tx.transferToAccountId || '';
-          document.getElementById('tx-transfer-direction').value = (tx.type === 'Transfer' && tx.externalTransferDirection === 'in' && !tx.transferToAccountId) || tx.type === 'Income' ? 'in' : 'out';
+          document.getElementById('tx-transfer-direction').value = tx.type === 'Transfer' && tx.transferToAccountId ? 'internal' : ((tx.type === 'Transfer' && tx.externalTransferDirection === 'in') || tx.type === 'Income' ? 'in_external' : 'out_external');
           updateTransactionTypeFields();
           document.getElementById('split-tx-toggle-btn').classList.add('hidden');
         }
@@ -4784,7 +4800,7 @@
         document.getElementById('tx-vendor').value = '';
         document.getElementById('tx-related-debt').value = '';
         document.getElementById('tx-transfer-to').value = '';
-        document.getElementById('tx-transfer-direction').value = 'out';
+        document.getElementById('tx-transfer-direction').value = 'out_external';
         updateTransactionTypeFields();
         if (state.lastUsedAccountId && state.accounts.some(a => a.id === state.lastUsedAccountId)) {
           document.getElementById('tx-account').value = state.lastUsedAccountId;
@@ -4907,7 +4923,7 @@
       const vendor = type === 'Transfer' ? (enteredVendor || 'Account transfer') : applyVendorCleanupRules(enteredVendor);
       const date = document.getElementById('tx-date').value;
       const transferToAccountId = document.getElementById('tx-transfer-to').value || '';
-      const transferDirection = document.getElementById('tx-transfer-direction')?.value || 'out';
+      const transferDirection = document.getElementById('tx-transfer-direction')?.value || 'out_external';
       const saveCategoryRule = document.getElementById('tx-save-category-rule').checked;
       const categoryRuleScope = document.getElementById('tx-category-rule-scope').value;
       if (!vendor) {
@@ -4930,37 +4946,41 @@
       if ((editId && state.transactions.some(t => String(t.id) === String(editId) && t.type === 'Transfer')) || type === 'Transfer') {
         const idx = state.transactions.findIndex(t => String(t.id) === String(editId));
         const oldT = idx >= 0 ? state.transactions[idx] : null;
-        const isExternalIncomingTransfer = type === 'Transfer' && oldT?.externalTransferDirection === 'in' && !transferToAccountId;
-        if (type === 'Transfer' && !isExternalIncomingTransfer && (!transferToAccountId || transferToAccountId === accountId)) { alert('Choose a destination account different from the source account.'); return; }
-        if (type === 'Transfer' && !isExternalIncomingTransfer && (state.accounts.find(a=>a.id===accountId)?.type !== 'asset' || state.accounts.find(a=>a.id===transferToAccountId)?.type !== 'asset')) { alert('Internal transfers must be between two asset accounts. Use the debt payment workflow for payments to a liability.'); return; }
-        if (type === 'Transfer' && !isExternalIncomingTransfer && amount <= 0) { alert('Enter a transfer amount greater than zero.'); return; }
+        const isExternalIncomingTransfer = type === 'Transfer' && transferDirection === 'in_external';
+        const isExternalOutgoingTransfer = type === 'Transfer' && transferDirection === 'out_external';
+        const isInternalTransfer = type === 'Transfer' && transferDirection === 'internal';
+        if (type === 'Transfer' && isInternalTransfer && (!transferToAccountId || transferToAccountId === accountId)) { alert('Choose a destination account different from the source account.'); return; }
+        if (type === 'Transfer' && isInternalTransfer && (state.accounts.find(a=>String(a.id)===String(accountId))?.type !== 'asset' || state.accounts.find(a=>String(a.id)===String(transferToAccountId))?.type !== 'asset')) { alert('Internal transfers must be between two asset accounts. Use the debt payment workflow for payments to a liability.'); return; }
+        if (type === 'Transfer' && amount <= 0) { alert('Enter a transfer amount greater than zero.'); return; }
         if (oldT && oldT.type === 'Transfer' && oldT.transferToAccountId) {
-          const oldFrom = state.accounts.find(a => a.id === oldT.accountId); const oldTo = state.accounts.find(a => a.id === oldT.transferToAccountId);
+          const oldFrom = state.accounts.find(a => String(a.id) === String(oldT.accountId)); const oldTo = state.accounts.find(a => String(a.id) === String(oldT.transferToAccountId));
           if (oldFrom) oldFrom.balance = (Number(oldFrom.balance)||0) + (Number(oldT.amount)||0);
           if (oldTo) oldTo.balance = (Number(oldTo.balance)||0) - (Number(oldT.amount)||0);
         } else if (oldT) {
-          const oldAcc = state.accounts.find(a => a.id === oldT.accountId);
+          const oldAcc = state.accounts.find(a => String(a.id) === String(oldT.accountId));
           if (oldAcc) {
             const oldWasCredit = oldT.type === 'Income' || (oldT.type === 'Transfer' && oldT.externalTransferDirection === 'in');
             oldAcc.balance = (Number(oldAcc.balance)||0) + (oldWasCredit ? -(Number(oldT.amount)||0) : (Number(oldT.amount)||0));
           }
         }
-        if (isExternalIncomingTransfer) {
-          const incomingAccount = state.accounts.find(a => a.id === accountId);
-          if (incomingAccount) incomingAccount.balance = (Number(incomingAccount.balance)||0) + amount;
-          const transferRecord = { ...(oldT||{}), id:editId || Date.now().toString(), date, desc, vendor:vendor || 'External transfer', type:'Transfer', category:'Transfer', subcategory:'', amount, accountId, externalTransferDirection:'in' };
+        if (isExternalIncomingTransfer || isExternalOutgoingTransfer) {
+          const account = state.accounts.find(a => String(a.id) === String(accountId));
+          if (account) account.balance = (Number(account.balance)||0) + (isExternalIncomingTransfer ? amount : -amount);
+          const transferRecord = { ...(oldT||{}), id:editId || Date.now().toString(), date, desc, vendor:vendor || 'External transfer', type:'Transfer', category:'Transfer', subcategory:'', amount, accountId, externalTransferDirection:isExternalIncomingTransfer ? 'in' : 'out' };
           delete transferRecord.transferToAccountId;
           if (idx >= 0) state.transactions[idx] = transferRecord; else state.transactions.unshift(transferRecord);
-        } else if (type === 'Transfer') {
-          const from = state.accounts.find(a => a.id === accountId); const to = state.accounts.find(a => a.id === transferToAccountId);
+        } else if (isInternalTransfer) {
+          const from = state.accounts.find(a => String(a.id) === String(accountId)); const to = state.accounts.find(a => String(a.id) === String(transferToAccountId));
           if (from) from.balance = (Number(from.balance)||0) - amount; if (to) to.balance = (Number(to.balance)||0) + amount;
           const transferRecord = { ...(oldT||{}), id:editId || Date.now().toString(), date, desc:desc || `Transfer to ${to?.name || 'account'}`, vendor:vendor || 'Account transfer', type:'Transfer', category:'Transfer', subcategory:'', amount, accountId, transferToAccountId };
           delete transferRecord.externalTransferDirection;
           if (idx >= 0) state.transactions[idx] = transferRecord; else state.transactions.unshift(transferRecord);
         } else if (oldT) {
-          const newAcc = state.accounts.find(a => a.id === accountId); if (newAcc) { if (type === 'Income') newAcc.balance = (Number(newAcc.balance)||0) + amount; else newAcc.balance = (Number(newAcc.balance)||0) - amount; }
+          const newAcc = state.accounts.find(a => String(a.id) === String(accountId));
+          if (newAcc) newAcc.balance = (Number(newAcc.balance)||0) + (type === 'Income' ? amount : -amount);
           state.transactions[idx] = { ...oldT, date, desc, vendor, type, category:document.getElementById('tx-category').value, subcategory:document.getElementById('tx-subcategory').value, amount, accountId, debtAccountId:document.getElementById('tx-related-debt').value || undefined };
           delete state.transactions[idx].externalTransferDirection;
+          delete state.transactions[idx].transferToAccountId;
         } else { alert('The transaction could not be found.'); return; }
       } else if (isSplit && !editId) {
         const rows = document.querySelectorAll('#split-rows-container > div');
