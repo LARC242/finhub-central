@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FinHub Central - Financial Command Center</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script>
     tailwind.config = { darkMode: 'class', theme: { extend: {} } }
@@ -17,6 +18,44 @@
     .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(156, 163, 175, 0.3); border-radius: 3px; }
     .accounting-num { font-family: 'Courier New', Courier, monospace; letter-spacing: -0.5px; }
     .blur-sensitive { filter: blur(6px); transition: filter 0.2s ease; cursor: pointer; }
+    .dashboard-block { position: relative; }
+    .dashboard-block.dragging { opacity: .45; outline: 2px dashed #818cf8; }
+    .dashboard-block.drop-target { outline: 2px solid #818cf8; }
+    .dashboard-order-controls { display:flex; gap:.35rem; align-items:center; position:absolute; top:.45rem; right:.5rem; z-index:5; }
+    .dashboard-order-controls button { border:1px solid rgba(148,163,184,.35); border-radius:.5rem; padding:.25rem .45rem; font-size:.7rem; color:#94a3b8; }
+    .spending-donut { width: min(220px, 58vw); aspect-ratio:1; border-radius:50%; margin:auto; position:relative; }
+    .spending-donut:after { content:""; position:absolute; inset:27%; background:var(--donut-hole,#fff); border-radius:50%; }
+    .dark .spending-donut:after { background:#111827; }
+    .spending-legend button { width:100%; text-align:left; }
+    @media(max-width:640px) {
+      main { min-width:0; }
+      #ledger-table-container { overflow:visible; border:0; background:transparent; box-shadow:none; }
+      #ledger-table-container table, #ledger-table-container tbody { display:block; width:100%; }
+      #ledger-table-container thead { display:block; }
+      #ledger-table-container thead tr:first-child { display:none; }
+      #ledger-table-container thead tr:nth-child(2) { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.35rem; padding:.45rem; background:transparent; border:0; }
+      #ledger-table-container thead tr:nth-child(2) th { display:block; padding:0; min-width:0; }
+      #ledger-table-container thead tr:nth-child(2) th:last-child { grid-column:1 / -1; }
+      #ledger-rows tr { display:grid; grid-template-columns:1fr 1fr; gap:.15rem .7rem; margin:0 0 .75rem; padding:.65rem; border:1px solid #374151; border-radius:.9rem; background:#fff; }
+      .dark #ledger-rows tr { background:#111827; }
+      #ledger-rows tr td { display:flex; justify-content:space-between; align-items:flex-start; gap:.5rem; padding:.25rem .1rem; min-width:0; font-size:.72rem; overflow-wrap:anywhere; }
+      #ledger-rows tr td:before { content:attr(data-label); color:#9ca3af; font-size:.64rem; flex:0 0 auto; }
+      #ledger-rows tr td:nth-child(2), #ledger-rows tr td:nth-child(3) { grid-column:1 / -1; }
+      #ledger-rows tr td:nth-child(8) { font-weight:700; }
+      #ledger-rows tr td:nth-child(9) { grid-column:1 / -1; justify-content:flex-end; }
+      #ledger-rows tr td:nth-child(9) button { min-width:2.4rem; min-height:2.4rem; border-radius:.6rem; background:rgba(99,102,241,.08); }
+      #calendar-grid > div { padding:.75rem !important; border-radius:.75rem; }
+      #calendar-grid > div > div { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:.35rem; }
+      #calendar-grid > div > div > div { margin-top:0 !important; }
+      #ledger-rows tr td[colspan] { grid-column:1 / -1; justify-content:center; }
+      #calendar-grid { grid-template-columns:1fr !important; gap:.45rem !important; }
+      #calendar-grid > div:empty { display:none; }
+      #calendar-grid > div { min-height:0 !important; }
+      #calendar-grid > div > span:first-child { display:block; font-weight:700; font-size:.8rem; margin-bottom:.25rem; }
+      #dash-asset-list > div, #dash-debt-list > div { flex-wrap:wrap; align-items:flex-start; }
+      #dash-asset-list > div > div:last-child, #dash-debt-list > div > div:last-child { width:100%; margin-left:1.4rem; flex-wrap:wrap; }
+      .dashboard-order-controls { opacity:1; }
+    }
   </style>
 </head>
 <body id="app-body" class="bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 min-h-screen flex flex-col md:flex-row transition-colors duration-200 relative">
@@ -93,11 +132,15 @@
         <div class="flex flex-wrap items-center gap-2">
           <button onclick="toggleAllCollapsibles(true)" class="px-3 py-1.5 bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 rounded-xl text-xs font-semibold transition-colors"><i class="fa-solid fa-compress mr-1"></i> Collapse All</button>
           <button onclick="toggleAllCollapsibles(false)" class="px-3 py-1.5 bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 rounded-xl text-xs font-semibold transition-colors"><i class="fa-solid fa-expand mr-1"></i> Expand All</button>
+          <button onclick="resetDashboardOrder()" class="px-3 py-1.5 bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 rounded-xl text-xs font-semibold">Reset Layout</button>
           <button onclick="togglePrivacyBlur()" class="px-3 py-1.5 bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 rounded-xl text-xs font-semibold transition-colors"><i class="fa-solid fa-lock mr-1"></i> Blur</button>
+          <button onclick="openTransferModal()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 rounded-xl text-xs font-semibold text-white"><i class="fa-solid fa-right-left mr-1"></i> Quick Transfer</button>
           <button onclick="openAccountModal()" class="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 rounded-xl text-xs font-semibold text-white transition-colors shadow-md theme-bg"><i class="fa-solid fa-plus mr-1"></i> Add Account</button>
-          <button onclick="exportData()" class="px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-semibold">Export Backup</button>
+          <button onclick="exportData()" class="px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-semibold">JSON Backup</button>
+          <button onclick="exportWorkbook()" class="px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-semibold">Excel Export</button>
+          <button onclick="exportTransactionsCSV()" class="px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-semibold">Transactions CSV</button>
           <label class="px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-semibold cursor-pointer">
-            Import Backup <input type="file" onchange="importData(event)" accept=".json,application/json" class="hidden">
+            Import Backup <input type="file" onchange="importData(event)" accept=".json,.xlsx,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" class="hidden">
           </label>
           <span id="backup-status" class="w-full text-right text-[10px] text-gray-400" aria-live="polite"></span>
         </div>
@@ -111,10 +154,12 @@
           <option value="3months">Last 3 months</option>
           <option value="6months">Last 6 months</option>
           <option value="ytd">Year to date</option>
+          <option value="custom">Custom range</option>
         </select>
+        <div id="dashboard-custom-range" class="hidden flex flex-wrap items-center gap-2"><input type="date" id="dashboard-range-start" onchange="setDashboardCustomRange()" class="text-xs bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1"><span class="text-xs text-gray-400">to</span><input type="date" id="dashboard-range-end" onchange="setDashboardCustomRange()" class="text-xs bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1"></div>
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div data-dashboard-block="summary" class="dashboard-block grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <div class="bg-white dark:bg-gray-900 p-5 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
           <div class="text-xs font-medium text-gray-500 uppercase tracking-wider">Total Cash & Assets</div>
           <div id="dash-assets" class="text-xl font-bold text-emerald-600 dark:text-emerald-400 mt-1 accounting-num blur-target">$ - </div>
@@ -139,7 +184,7 @@
       </div>
 
       <!-- NET WORTH TREND -->
-      <div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+      <div data-dashboard-block="networth" class="dashboard-block bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
         <button onclick="toggleCollapse('sec-networth-chart')" class="w-full p-5 flex justify-between items-center text-left hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
           <div class="flex items-center space-x-2">
             <i class="fa-solid fa-chart-line text-emerald-500"></i>
@@ -154,7 +199,7 @@
       </div>
 
       <!-- SPENDING BY CATEGORY -->
-      <div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+      <div data-dashboard-block="spending" class="dashboard-block bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
         <button onclick="toggleCollapse('sec-spending-chart')" class="w-full p-5 flex justify-between items-center text-left hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
           <div class="flex items-center space-x-2">
             <i class="fa-solid fa-chart-column text-amber-500"></i>
@@ -163,13 +208,13 @@
           <i id="sec-spending-chart-icon" class="fa-solid fa-chevron-down text-gray-400 transition-transform"></i>
         </button>
         <div id="sec-spending-chart-content" class="p-5 border-t border-gray-200 dark:border-gray-800">
-          <div id="spending-category-chart" class="space-y-3"></div>
+          <div class="flex flex-wrap justify-between items-center gap-2 mb-4"><label class="text-xs text-gray-500">Breakdown <select id="spending-chart-level" onchange="renderSpendingCategoryChart()" class="ml-2 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1"><option value="category">By bucket</option><option value="subcategory">By subcategory</option></select></label><span id="spending-chart-total" class="text-xs font-semibold accounting-num"></span></div><div id="spending-category-chart" class="grid grid-cols-1 md:grid-cols-2 gap-5 items-center"></div>
           <div id="spending-category-detail" class="hidden mt-5 pt-4 border-t border-gray-200 dark:border-gray-800"></div>
         </div>
       </div>
 
       <!-- OPTIONAL FINANCIAL TRENDS -->
-      <div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+      <div data-dashboard-block="trends" class="dashboard-block bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
         <button onclick="toggleCollapse('sec-extra-charts')" class="w-full p-4 flex justify-between items-center text-left hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
           <div><h3 class="font-bold text-sm text-indigo-600 dark:text-indigo-400 theme-text">Additional Financial Trends</h3><p class="text-xs text-gray-400 mt-1">Income vs. expenses and debt payoff progress.</p></div>
           <i id="sec-extra-charts-icon" class="fa-solid fa-chevron-down text-gray-400 transition-transform"></i>
@@ -181,7 +226,7 @@
       </div>
 
       <!-- ACCOUNT BALANCES & CLASSIFICATIONS -->
-      <div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+      <div data-dashboard-block="accounts" class="dashboard-block bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
           <button onclick="toggleCollapse('sec-accounts')" class="w-full p-5 flex justify-between items-center text-left border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
             <div class="flex items-center space-x-2">
               <i class="fa-solid fa-building-columns text-indigo-500 theme-text"></i>
@@ -211,8 +256,14 @@
           </div>
       </div>
 
+      <!-- UPCOMING CASH FLOW -->
+      <div data-dashboard-block="upcoming" class="dashboard-block bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+        <div class="p-5 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between gap-3"><div><h3 class="font-bold text-md"><i class="fa-solid fa-calendar-days text-indigo-500 mr-2"></i>Upcoming Bills & Paydays</h3><p class="text-xs text-gray-400 mt-1">Your next scheduled cash-flow items.</p></div><div class="dashboard-order-controls"></div></div>
+        <div id="dashboard-upcoming-list" class="p-4 space-y-2"></div>
+      </div>
+
       <!-- VARIABLE SPENDING BUDGETS -->
-      <div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+      <div data-dashboard-block="budgets" class="dashboard-block bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
         <button onclick="toggleCollapse('sec-variable-budgets')" class="w-full p-5 flex justify-between items-center text-left border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
           <div class="flex items-center space-x-2">
             <i class="fa-solid fa-sliders text-amber-500"></i>
@@ -226,7 +277,7 @@
       </div>
 
       <!-- HISTORICAL NET WORTH SNAPSHOTS -->
-      <div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+      <div data-dashboard-block="snapshots" class="dashboard-block bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
         <div class="w-full p-5 flex justify-between items-center gap-3 text-left">
           <button onclick="toggleCollapse('sec-snapshots')" class="flex-1 text-left">
             <h3 class="text-md font-bold text-indigo-600 dark:text-indigo-400 theme-text"><i class="fa-solid fa-clock-rotate-left mr-2"></i>Historical Net Worth Snapshots</h3>
@@ -499,10 +550,9 @@
         </div>
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
         <div class="bg-white dark:bg-gray-900 p-4 rounded-2xl border border-gray-200 dark:border-gray-800"><div class="text-[10px] uppercase tracking-wide text-gray-500">Total debt</div><div id="debt-total-bal" class="text-xl font-bold text-rose-600 dark:text-rose-400 accounting-num">$ - </div></div>
         <div class="bg-white dark:bg-gray-900 p-4 rounded-2xl border border-gray-200 dark:border-gray-800"><div class="text-[10px] uppercase tracking-wide text-gray-500">Known monthly minimums</div><div id="debt-monthly-minimums" class="text-xl font-bold accounting-num">$ - </div><div id="debt-minimum-note" class="text-[10px] text-gray-400">Across listed debt accounts</div></div>
-        <div class="bg-white dark:bg-gray-900 p-4 rounded-2xl border border-gray-200 dark:border-gray-800"><div class="text-[10px] uppercase tracking-wide text-gray-500">Weighted average APR</div><div id="debt-weighted-apr" class="text-xl font-bold accounting-num">—</div><div class="text-[10px] text-gray-400">Based on balances with an APR entered</div></div>
         <div class="bg-white dark:bg-gray-900 p-4 rounded-2xl border border-gray-200 dark:border-gray-800"><div class="text-[10px] uppercase tracking-wide text-gray-500">Extra monthly payoff</div><div id="debt-extra-summary" class="text-xl font-bold text-emerald-600 accounting-num">$0.00</div><div class="text-[10px] text-gray-400">In addition to minimums</div></div>
       </div>
 
@@ -626,9 +676,9 @@
           <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Move your FinHub data between your laptop, phone, or tablet using a backup file. Save the exported file somewhere both devices can access, such as Google Drive or iCloud.</p>
         </div>
         <div class="flex flex-col sm:flex-row gap-3">
-          <button onclick="exportData()" class="flex-1 px-4 py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl text-sm font-semibold text-white shadow-md theme-bg"><i class="fa-solid fa-download mr-2"></i>Export Backup</button>
+          <button onclick="exportData()" class="flex-1 px-4 py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl text-sm font-semibold text-white shadow-md theme-bg"><i class="fa-solid fa-download mr-2"></i>Export JSON Backup</button>
           <button onclick="document.getElementById('backup-import-file').click()" class="flex-1 px-4 py-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl text-sm font-semibold"><i class="fa-solid fa-upload mr-2"></i>Import Backup</button>
-          <input id="backup-import-file" type="file" accept=".json,application/json" class="hidden" onchange="importData(event)">
+          <input id="backup-import-file" type="file" accept=".json,.xlsx,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" class="hidden" onchange="importData(event)">
         </div>
         <div id="backup-status" class="w-full text-right text-[10px] text-gray-400">No exported backup recorded yet</div>
         <div class="rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 p-3 text-xs text-amber-800 dark:text-amber-200">
@@ -1159,6 +1209,9 @@
     if (state.collapsibles['sec-extra-charts'] === undefined) state.collapsibles['sec-extra-charts'] = true;
     if (state.collapsibles['sec-snapshots'] === undefined) state.collapsibles['sec-snapshots'] = true;
     state.dashboardPeriod = state.dashboardPeriod || 'month';
+    state.dashboardOrder = Array.isArray(state.dashboardOrder) ? state.dashboardOrder : ['accounts','summary','spending','upcoming','networth','trends','budgets','snapshots'];
+    state.spendingChartLevel = state.spendingChartLevel || 'category';
+    state.dashboardCustomRange = state.dashboardCustomRange || {start:'',end:''};
     state.accountOrder = state.accountOrder || { assets: [], debts: [] };
     state.accountOrder.assets = Array.isArray(state.accountOrder.assets) ? state.accountOrder.assets : [];
     state.accountOrder.debts = Array.isArray(state.accountOrder.debts) ? state.accountOrder.debts : [];
@@ -1276,6 +1329,7 @@
       const now = new Date();
       const start = new Date(now.getFullYear(), now.getMonth(), 1);
       const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      if (period === 'custom' && state.dashboardCustomRange?.start && state.dashboardCustomRange?.end) return {start:state.dashboardCustomRange.start,end:state.dashboardCustomRange.end};
       if (period === 'previous') {
         start.setMonth(start.getMonth() - 1);
         end.setFullYear(start.getFullYear(), start.getMonth() + 1, 0);
@@ -1296,8 +1350,42 @@
 
     function getTransactionsInDashboardPeriod(type) {
       const range = getDashboardDateRange();
-      return state.transactions.filter(t => t.type === type && t.date >= range.start && t.date <= range.end);
+      return state.transactions.filter(t => t.type === type && t.category !== 'Transfer' && !(t.desc || '').toLowerCase().startsWith('transfer ') && t.date >= range.start && t.date <= range.end);
     }
+
+    function renderDashboardUpcoming() {
+      const host=document.getElementById('dashboard-upcoming-list'); if(!host) return;
+      const today=new Date(); today.setHours(0,0,0,0);
+      const todayStr=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+      const items=(state.calendarBills||[]).filter(b=>!b.paid && b.date>=todayStr).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,6);
+      if(!items.length){host.innerHTML='<p class="text-xs text-gray-400">No upcoming unpaid bills or income items. Add items in the Bill & Income Calendar.</p>';return;}
+      host.innerHTML=items.map(b=>{const income=b.type==='income';const label=income?'Income':b.type==='debt'?'Debt payment':'Bill';return `<div class="flex flex-wrap items-center justify-between gap-2 p-3 rounded-xl bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 text-xs"><div class="min-w-0"><div class="font-semibold truncate">${b.desc||label}</div><div class="text-gray-400">${b.date} · ${label}</div></div><div class="font-bold accounting-num ${income?'text-emerald-500':'text-rose-500'}">${formatFinancial(b.amount,!income)}</div></div>`;}).join('');
+    }
+    function applyDashboardOrder() {
+      const section=document.getElementById('tab-dashboard'); if(!section) return;
+      const blocks=[...section.querySelectorAll('[data-dashboard-block]')];
+      const order=Array.isArray(state.dashboardOrder)?state.dashboardOrder:[];
+      blocks.sort((a,b)=>{const ai=order.indexOf(a.dataset.dashboardBlock),bi=order.indexOf(b.dataset.dashboardBlock);return (ai<0?999:ai)-(bi<0?999:bi);}).forEach(block=>section.appendChild(block));
+      blocks.forEach(block=>{
+        let controls=block.querySelector(':scope > .dashboard-order-controls');
+        if(!controls){controls=document.createElement('div');controls.className='dashboard-order-controls';block.appendChild(controls);}
+        controls.innerHTML='';
+        const up=document.createElement('button');up.type='button';up.title='Move dashboard block up';up.textContent='↑';up.addEventListener('click',()=>moveDashboardBlock(block.dataset.dashboardBlock,-1));
+        const down=document.createElement('button');down.type='button';down.title='Move dashboard block down';down.textContent='↓';down.addEventListener('click',()=>moveDashboardBlock(block.dataset.dashboardBlock,1));
+        controls.append(up,down);
+        block.draggable=true;
+        block.ondragstart=e=>{e.dataTransfer.setData('text/dashboard-block',block.dataset.dashboardBlock);block.classList.add('dragging');};
+        block.ondragend=()=>{block.classList.remove('dragging');document.querySelectorAll('.dashboard-block').forEach(x=>x.classList.remove('drop-target'));};
+        block.ondragover=e=>{e.preventDefault();block.classList.add('drop-target');};
+        block.ondragleave=()=>block.classList.remove('drop-target');
+        block.ondrop=e=>{e.preventDefault();const dragged=e.dataTransfer.getData('text/dashboard-block');if(dragged&&dragged!==block.dataset.dashboardBlock)reorderDashboardBlocks(dragged,block.dataset.dashboardBlock);};
+      });
+    }
+    function resetDashboardOrder(){state.dashboardOrder=['accounts','summary','spending','upcoming','networth','trends','budgets','snapshots'];saveData();applyDashboardOrder();}
+    function moveDashboardBlock(id,delta){const ids=[...document.querySelectorAll('#tab-dashboard [data-dashboard-block]')].map(x=>x.dataset.dashboardBlock);const i=ids.indexOf(id),j=i+delta;if(i<0||j<0||j>=ids.length)return;[ids[i],ids[j]]=[ids[j],ids[i]];state.dashboardOrder=ids;saveData();applyDashboardOrder();}
+    function reorderDashboardBlocks(from,to){const ids=[...document.querySelectorAll('#tab-dashboard [data-dashboard-block]')].map(x=>x.dataset.dashboardBlock);const i=ids.indexOf(from),j=ids.indexOf(to);if(i<0||j<0)return;ids.splice(j,0,ids.splice(i,1)[0]);state.dashboardOrder=ids;saveData();applyDashboardOrder();}
+
+    function setDashboardCustomRange(){const start=document.getElementById('dashboard-range-start')?.value||'';const end=document.getElementById('dashboard-range-end')?.value||'';if(start&&end&&start>end){alert('The start date must be before the end date.');return;}state.dashboardCustomRange={start,end};saveData();renderDashboard();}
 
     function renderDashboard() {
       updateSidebarNetWorth();
@@ -1311,6 +1399,9 @@
       const periodLabel = periodLabels[state.dashboardPeriod] || 'This month';
 
       document.getElementById('dashboard-period').value = state.dashboardPeriod || 'month';
+      const rangePanel=document.getElementById('dashboard-custom-range');if(rangePanel)rangePanel.classList.toggle('hidden',state.dashboardPeriod!=='custom');
+      if(document.getElementById('dashboard-range-start'))document.getElementById('dashboard-range-start').value=state.dashboardCustomRange?.start||'';
+      if(document.getElementById('dashboard-range-end'))document.getElementById('dashboard-range-end').value=state.dashboardCustomRange?.end||'';
       document.getElementById('dash-income-label').innerText = `Income · ${periodLabel}`;
       document.getElementById('dash-expenses-label').innerText = `Expenses · ${periodLabel}`;
       document.getElementById('dash-assets').innerText = formatFinancial(assets);
@@ -1391,6 +1482,8 @@
 
       renderNetWorthTrendChart();
       renderSpendingCategoryChart();
+      renderDashboardUpcoming();
+      applyDashboardOrder();
       renderIncomeExpenseChart();
       renderDebtProgressChart();
       renderSnapshots();
@@ -1487,38 +1580,39 @@
       const el = document.getElementById('spending-category-chart');
       const detail = document.getElementById('spending-category-detail');
       const label = document.getElementById('spending-chart-period');
+      const levelEl = document.getElementById('spending-chart-level');
+      const level = levelEl ? (levelEl.value || state.spendingChartLevel || 'category') : (state.spendingChartLevel || 'category');
+      if(levelEl) levelEl.value=level; state.spendingChartLevel = level;
       const range = getDashboardDateRange();
-      const expenses = state.transactions.filter(t => t.type === 'Expense' && t.date >= range.start && t.date <= range.end);
+      const expenses = state.transactions.filter(t => t.type === 'Expense' && t.category !== 'Transfer' && !(t.desc || '').toLowerCase().startsWith('transfer ') && t.date >= range.start && t.date <= range.end);
       const totals = {};
-      expenses.forEach(t => { const key = t.category || t.subcategory || 'Uncategorized'; totals[key] = (totals[key] || 0) + (Number(t.amount) || 0); });
-      const entries = Object.entries(totals).sort((a,b) => b[1]-a[1]).slice(0,8);
+      expenses.forEach(t => { const key = level === 'subcategory' ? (t.subcategory || 'Uncategorized') : (t.category || 'Uncategorized'); totals[key] = (totals[key] || 0) + (Number(t.amount) || 0); });
+      const entries = Object.entries(totals).sort((a,b) => b[1]-a[1]);
+      const total = entries.reduce((sum, entry) => sum + entry[1], 0);
       label.textContent = `Expense transactions · ${range.start} to ${range.end} · Select a category for details`;
-      detail.classList.add('hidden');
-      detail.innerHTML = '';
-      if (!entries.length) { el.innerHTML = '<p class="text-xs text-gray-400 py-6 text-center">No expense transactions in this period yet.</p>'; return; }
-      const max = Math.max(...entries.map(e => e[1])) || 1;
-      el.innerHTML = '';
-      entries.forEach(([name,value]) => {
-        const row = document.createElement('button');
-        row.type = 'button';
-        row.className = 'w-full text-left rounded-lg p-1 hover:bg-gray-50 dark:hover:bg-gray-800/60 focus:outline-none focus:ring-2 focus:ring-indigo-400';
-        const heading = document.createElement('div');
-        heading.className = 'flex justify-between gap-3 text-xs mb-1';
-        const nameEl = document.createElement('span'); nameEl.className = 'font-medium truncate'; nameEl.textContent = name;
-        const valueEl = document.createElement('strong'); valueEl.className = 'accounting-num'; valueEl.textContent = formatFinancial(value);
-        heading.append(nameEl,valueEl);
-        const track = document.createElement('div'); track.className = 'w-full h-2.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden';
-        const bar = document.createElement('div'); bar.className = 'h-full bg-amber-500 rounded-full'; bar.style.width = `${Math.max(2,(value/max)*100)}%`;
-        track.appendChild(bar); row.append(heading,track);
-        row.addEventListener('click', () => showCategoryTransactions(name));
-        el.appendChild(row);
+      const totalEl = document.getElementById('spending-chart-total'); if (totalEl) totalEl.textContent = `Total: ${formatFinancial(total)}`;
+      detail.classList.add('hidden'); detail.innerHTML = '';
+      if (!entries.length || total <= 0) { el.innerHTML = '<p class="text-xs text-gray-400 py-6 text-center">No expense transactions in this period yet.</p>'; return; }
+      const palette = ['#6366f1','#10b981','#f59e0b','#ec4899','#06b6d4','#8b5cf6','#f97316','#84cc16','#64748b','#d946ef'];
+      const slices = entries.map((entry,i)=>({name:entry[0],value:entry[1],color:palette[i%palette.length]}));
+      let cursor = 0; const stops = slices.map(x=>{const from=cursor; cursor += x.value/total*100; return `${x.color} ${from.toFixed(2)}% ${cursor.toFixed(2)}%`;}).join(',');
+      const donut = document.createElement('div'); donut.className='spending-donut'; donut.style.background=`conic-gradient(${stops})`; donut.setAttribute('role','img'); donut.setAttribute('aria-label','Expense distribution pie chart');
+      const legend = document.createElement('div'); legend.className='spending-legend space-y-2';
+      slices.forEach(slice=>{
+        const row=document.createElement('button'); row.type='button'; row.className='flex items-center justify-between gap-3 rounded-lg p-2 hover:bg-gray-50 dark:hover:bg-gray-800 text-xs';
+        const left=document.createElement('span'); left.className='flex items-center gap-2 min-w-0';
+        const swatch=document.createElement('span'); swatch.className='w-3 h-3 rounded-sm flex-shrink-0'; swatch.style.background=slice.color;
+        const name=document.createElement('span'); name.className='truncate'; name.textContent=slice.name; left.append(swatch,name);
+        const right=document.createElement('strong'); right.className='whitespace-nowrap accounting-num'; right.textContent=`${formatFinancial(slice.value)} · ${(slice.value/total*100).toFixed(1)}%`;
+        row.append(left,right); row.addEventListener('click',()=>showCategoryTransactions(slice.name, level)); legend.appendChild(row);
       });
+      el.innerHTML=''; const chartWrap=document.createElement('div'); chartWrap.className='flex flex-col items-center gap-2'; chartWrap.append(donut); const totalLabel=document.createElement('div'); totalLabel.className='text-xs text-gray-500'; totalLabel.textContent=`${expenses.length} expense transaction${expenses.length===1?'':'s'}`; chartWrap.append(totalLabel); el.append(chartWrap,legend);
     }
 
-    function showCategoryTransactions(category) {
+    function showCategoryTransactions(category, level = state.spendingChartLevel || 'category') {
       const detail = document.getElementById('spending-category-detail');
       const range = getDashboardDateRange();
-      const matches = state.transactions.filter(t => t.type === 'Expense' && t.date >= range.start && t.date <= range.end && (t.category || t.subcategory || 'Uncategorized') === category);
+      const matches = state.transactions.filter(t => t.type === 'Expense' && t.date >= range.start && t.date <= range.end && t.category !== 'Transfer' && (level === 'subcategory' ? (t.subcategory || 'Uncategorized') : (t.category || 'Uncategorized')) === category);
       detail.innerHTML = '';
       const title = document.createElement('div'); title.className = 'font-semibold text-sm mb-3'; title.textContent = `${category} · ${matches.length} transaction${matches.length===1?'':'s'}`;
       const close = document.createElement('button'); close.type = 'button'; close.className = 'float-right text-xs text-indigo-500 hover:underline'; close.textContent = 'Close'; close.addEventListener('click',()=>detail.classList.add('hidden'));
@@ -1541,7 +1635,7 @@
       const now = new Date();
       const months = [];
       for (let i=5; i>=0; i--) { const d = new Date(now.getFullYear(), now.getMonth()-i, 1); const ym = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; months.push({ ym, label: d.toLocaleString(undefined,{month:'short'}) }); }
-      const values = months.map(m => ({...m, income: state.transactions.filter(t=>t.type==='Income' && t.date.startsWith(m.ym)).reduce((s,t)=>s+(Number(t.amount)||0),0), expense: state.transactions.filter(t=>t.type==='Expense' && t.date.startsWith(m.ym)).reduce((s,t)=>s+(Number(t.amount)||0),0)}));
+      const values = months.map(m => ({...m, income: state.transactions.filter(t=>t.type==='Income' && t.category!=='Transfer' && t.date.startsWith(m.ym)).reduce((s,t)=>s+(Number(t.amount)||0),0), expense: state.transactions.filter(t=>t.type==='Expense' && t.category!=='Transfer' && t.date.startsWith(m.ym)).reduce((s,t)=>s+(Number(t.amount)||0),0)}));
       const max = Math.max(1,...values.flatMap(v=>[v.income,v.expense]));
       el.innerHTML = `<div class="flex gap-4 text-[10px] text-gray-500 mb-2"><span><i class="fa-solid fa-square text-indigo-500 mr-1"></i>Income</span><span><i class="fa-solid fa-square text-amber-500 mr-1"></i>Expenses</span></div>` + values.map(v=>`<div class="grid grid-cols-[42px_1fr] gap-2 items-center"><span class="text-[10px] text-gray-400">${v.label}</span><div class="space-y-1"><div class="h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden"><div class="h-full bg-indigo-500" style="width:${v.income/max*100}%"></div></div><div class="h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden"><div class="h-full bg-amber-500" style="width:${v.expense/max*100}%"></div></div></div></div>`).join('');
     }
@@ -2383,9 +2477,9 @@
         return true;
       });
 
-      const totalExpenses = matchedTxs.reduce((sum, t) => sum + (['Expense', 'Debt Payment'].includes(t.type) ? (Number(t.amount) || 0) : 0), 0);
-      const totalIncome = matchedTxs.reduce((sum, t) => sum + (t.type === 'Income' ? (Number(t.amount) || 0) : 0), 0);
-      const totalOther = matchedTxs.reduce((sum, t) => sum + (!['Expense', 'Debt Payment', 'Income'].includes(t.type) ? (Number(t.amount) || 0) : 0), 0);
+      const totalExpenses = matchedTxs.reduce((sum, t) => sum + (['Expense', 'Debt Payment'].includes(t.type) && t.category !== 'Transfer' ? (Number(t.amount) || 0) : 0), 0);
+      const totalIncome = matchedTxs.reduce((sum, t) => sum + (t.type === 'Income' && t.category !== 'Transfer' ? (Number(t.amount) || 0) : 0), 0);
+      const totalOther = matchedTxs.reduce((sum, t) => sum + ((!['Expense', 'Debt Payment', 'Income'].includes(t.type) || t.category === 'Transfer') ? (Number(t.amount) || 0) : 0), 0);
       const netTotal = totalIncome - totalExpenses;
       const expenseTotalEl = document.getElementById('ledger-total-expenses');
       const incomeTotalEl = document.getElementById('ledger-total-income');
@@ -2407,16 +2501,16 @@
           const isExp = t.type === 'Expense' || t.type === 'Debt Payment';
           tbody.innerHTML += `
             <tr class="hover:bg-gray-50 dark:hover:bg-gray-950">
-              <td class="px-4 py-3">${t.date}</td>
-              <td class="px-4 py-3">${t.vendor || 'Vendor not recorded'}</td>
-              <td class="px-4 py-3">${t.desc || '-'}</td>
-              <td class="px-4 py-3"><span class="px-2 py-0.5 rounded text-[10px] bg-gray-100 dark:bg-gray-800">${t.type}</span></td>
-              <td class="px-4 py-3">${t.category || '-'}</td>
-              <td class="px-4 py-3">${t.subcategory || '-'}</td>
-              <td class="px-4 py-3">${acc ? acc.name : '-'}</td>
-              <td class="px-4 py-3 text-right font-bold ${isExp ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'} accounting-num">${formatFinancial(t.amount, isExp)}</td>
-              <td class="px-4 py-3 text-center space-x-2">
-                <button onclick="openTransactionModal('${t.id}')" class="text-indigo-400 hover:text-indigo-300 theme-text"><i class="fa-solid fa-pen"></i></button>
+              <td data-label="Date" class="px-4 py-3">${t.date}</td>
+              <td data-label="Vendor" class="px-4 py-3">${t.vendor || 'Vendor not recorded'}</td>
+              <td data-label="Description" class="px-4 py-3">${t.desc || '-'}</td>
+              <td data-label="Type" class="px-4 py-3"><span class="px-2 py-0.5 rounded text-[10px] bg-gray-100 dark:bg-gray-800">${t.type}</span></td>
+              <td data-label="Bucket" class="px-4 py-3">${t.category || '-'}</td>
+              <td data-label="Subcategory" class="px-4 py-3">${t.subcategory || '-'}</td>
+              <td data-label="Account" class="px-4 py-3">${acc ? (t.transferToAccountId ? `${acc.name} → ${(state.accounts.find(a=>a.id===t.transferToAccountId)||{}).name||'Account'}` : acc.name) : '-'}</td>
+              <td data-label="Amount" class="px-4 py-3 text-right font-bold ${isExp ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'} accounting-num">${formatFinancial(t.amount, isExp)}</td>
+              <td data-label="Actions" class="px-4 py-3 text-center space-x-2">
+                ${t.type === 'Transfer' ? '' : `<button onclick="openTransactionModal('${t.id}')" class="text-indigo-400 hover:text-indigo-300 theme-text"><i class="fa-solid fa-pen"></i></button>`}
                 <button onclick="deleteTransaction('${t.id}')" class="text-rose-500 hover:text-rose-400"><i class="fa-solid fa-trash"></i></button>
               </td>
             </tr>
@@ -2501,10 +2595,8 @@
       if (idx >= 0) {
         const t = state.transactions[idx];
         const acc = state.accounts.find(a => a.id === t.accountId);
-        if (acc) {
-          if (t.type === 'Income') acc.balance -= t.amount;
-          else acc.balance += t.amount;
-        }
+        if (t.type === 'Transfer' && t.transferToAccountId) { const target=state.accounts.find(a=>a.id===t.transferToAccountId); if(acc) acc.balance += Number(t.amount)||0; if(target) target.balance -= Number(t.amount)||0; }
+        else if (acc) { if (t.type === 'Income') acc.balance -= t.amount; else acc.balance += t.amount; }
         state.transactions.splice(idx, 1);
         saveData(); renderLedger(); renderDashboard();
       }
@@ -2758,16 +2850,11 @@
       const totalBal = debts.reduce((s, d) => s + (Number(d.balance)||0), 0);
       const knownMinimums = debts.filter(d => Number.isFinite(Number(d.minPay)) && d.minPay !== '' && Number(d.minPay) >= 0).reduce((s,d)=>s+Number(d.minPay),0);
       const missingMinimums = debts.filter(d => d.minPay === undefined || d.minPay === null || d.minPay === '').length;
-      const aprDebts = debts.filter(d => Number.isFinite(Number(d.apr)) && d.apr !== '' && Number(d.apr) >= 0 && Number(d.balance)>0);
-      const aprWeight = aprDebts.reduce((s,d)=>s+Number(d.balance),0);
-      const weightedApr = aprWeight ? aprDebts.reduce((s,d)=>s+(Number(d.balance)*Number(d.apr)),0)/aprWeight : null;
       document.getElementById('debt-total-bal').innerText = formatFinancial(totalBal);
       const minEl = document.getElementById('debt-monthly-minimums');
       if (minEl) minEl.innerText = formatFinancial(knownMinimums);
       const note = document.getElementById('debt-minimum-note');
       if (note) note.innerText = missingMinimums ? `${missingMinimums} account(s) missing a minimum payment` : 'Across all listed debt accounts';
-      const aprEl = document.getElementById('debt-weighted-apr');
-      if (aprEl) aprEl.innerText = weightedApr === null ? 'Not available' : `${weightedApr.toFixed(2)}%`;
       const extra = Number(state.extraPayoff)||0;
       const extraEl = document.getElementById('debt-extra-summary');
       if (extraEl) extraEl.innerText = formatFinancial(extra);
@@ -2926,8 +3013,7 @@
       if (!Number.isFinite(amount) || amount <= 0) { alert('Enter a valid transfer amount.'); return; }
       captureUndo('Transfer between accounts');
       from.balance -= amount; to.balance += amount;
-      state.transactions.unshift({ id: `tr-${Date.now()}-out`, date, desc: `Transfer to ${to.name}`, type: 'Expense', category: 'Transfer', subcategory: '', amount, accountId: fromId });
-      state.transactions.unshift({ id: `tr-${Date.now()}-in`, date, desc: `Transfer from ${from.name}`, type: 'Income', category: 'Transfer', subcategory: '', amount, accountId: toId });
+      state.transactions.unshift({ id: `tr-${Date.now()}`, date, desc: `Transfer from ${from.name} to ${to.name}`, vendor: 'Account transfer', type: 'Transfer', category: 'Transfer', subcategory: '', amount, accountId: fromId, transferToAccountId: toId });
       saveData(); closeTransferModal(); renderDashboard(); renderLedger();
     }
 
@@ -3115,6 +3201,26 @@
       saveData(); closeTransactionModal(); renderLedger(); renderDashboard();
     }
 
+    function downloadBlob(blob, filename) { const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1200); }
+    function exportTransactionsCSV() {
+      const rows=[['id','date','vendor','description','type','category','subcategory','amount','account','accountId','transferToAccountId']];
+      (state.transactions||[]).forEach(t=>{const acc=state.accounts.find(a=>a.id===t.accountId);rows.push([t.id,t.date,t.vendor||'',t.desc||'',t.type,t.category||'',t.subcategory||'',t.amount,acc?.name||'',t.accountId||'',t.transferToAccountId||'']);});
+      const csv=rows.map(row=>row.map(v=>{const x=String(v??'');return /[",\n]/.test(x)?'"'+x.replace(/"/g,'""')+'"':x;}).join(',')).join('\r\n');
+      downloadBlob(new Blob([csv],{type:'text/csv;charset=utf-8'}),`finhub_transactions_${new Date().toISOString().slice(0,10)}.csv`);
+    }
+    function exportWorkbook() {
+      if(!window.XLSX){alert('Excel support could not load. Please check your internet connection or use the JSON backup and CSV export.');return;}
+      const wb=XLSX.utils.book_new();
+      const add=(name,rows)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows||[]),name);
+      add('Accounts',state.accounts); add('Transactions',state.transactions);
+      const categoryRows=[];(state.categories||[]).forEach(cat=>{const subs=cat.subcategories||[];if(!subs.length)categoryRows.push({bucket:cat.name,subcategory:'',limit:'',rollover:false});else subs.forEach(sub=>categoryRows.push({bucket:cat.name,subcategory:sub.name,limit:sub.limit??0,rollover:!!sub.rollover}));});add('Categories',categoryRows);
+      add('Calendar Bills',state.calendarBills); add('Debt Payments',state.debtPayments); add('Joint Bills',state.jointBills);
+      const budgets=[];Object.entries(state.zbbTemplates||{}).forEach(([month,z])=>['incomes','bills','variable','debts','savings'].forEach(group=>(z[group]||[]).forEach(item=>budgets.push({month,group,...item}))));add('Budget Items',budgets);
+      add('Net Worth Snapshots',state.netWorthSnapshots);
+      const stateJson=JSON.stringify(state); const chunks=stateJson.match(/[\s\S]{1,30000}/g)||['{}']; const meta=XLSX.utils.aoa_to_sheet([['FinHub full-state JSON'],...chunks.map(chunk=>[chunk])]);XLSX.utils.book_append_sheet(wb,meta,'FinHub Restore');
+      XLSX.writeFile(wb,`finhub_export_${new Date().toISOString().slice(0,10)}.xlsx`);
+    }
+
     function exportData() {
       state.lastBackupAt = new Date().toISOString();
       saveData();
@@ -3137,7 +3243,19 @@
       const reader = new FileReader();
       reader.onload = function(evt) {
         try {
-          let loaded = JSON.parse(evt.target.result);
+          let loaded;
+          if ((file.name||'').toLowerCase().endsWith('.xlsx')) {
+            if (!window.XLSX) throw new Error('Excel library unavailable');
+            const bytes=new Uint8Array(evt.target.result); const wb=XLSX.read(bytes,{type:'array'});
+            const restore=wb.Sheets['FinHub Restore']; const restoreRows=restore ? XLSX.utils.sheet_to_json(restore,{header:1,raw:false}) : []; const raw=restoreRows.slice(1).map(row=>row[0]||'').join('');
+            if (!raw) throw new Error('Workbook does not contain a FinHub restore sheet'); loaded=JSON.parse(raw);
+            const readSheet=(name)=>wb.Sheets[name] ? XLSX.utils.sheet_to_json(wb.Sheets[name],{defval:''}) : null;
+            const sheetMap={'Accounts':'accounts','Transactions':'transactions','Calendar Bills':'calendarBills','Debt Payments':'debtPayments','Joint Bills':'jointBills','Net Worth Snapshots':'netWorthSnapshots'};
+            Object.entries(sheetMap).forEach(([sheet,key])=>{const rows=readSheet(sheet);if(rows!==null)loaded[key]=rows;});
+            const categoryRows=readSheet('Categories');if(categoryRows!==null){const cats={};categoryRows.forEach(row=>{const name=String(row.bucket||'').trim();if(!name)return;cats[name]=cats[name]||{name,subcategories:[]};if(String(row.subcategory||'').trim())cats[name].subcategories.push({name:String(row.subcategory),limit:Number(row.limit)||0,rollover:row.rollover===true||String(row.rollover).toLowerCase()==='true'});});loaded.categories=Object.values(cats);}
+            const budgetRows=readSheet('Budget Items');
+            if(budgetRows!==null){const rebuilt={};budgetRows.forEach(row=>{const month=String(row.month||'');const group=String(row.group||'');if(!month||!['incomes','bills','variable','debts','savings'].includes(group))return;rebuilt[month]=rebuilt[month]||{incomes:[],bills:[],variable:[],debts:[],savings:[]};const item={...row};delete item.month;delete item.group;if(typeof item.split==='string')item.split=item.split.split(/[;,]/).map(v=>Number(v)||0);rebuilt[month][group].push(item);});loaded.zbbTemplates=rebuilt;}
+          } else loaded = JSON.parse(evt.target.result);
           // Also accept the older whole-localStorage export format if one was created previously.
           if (loaded && typeof loaded === 'object' && !Array.isArray(loaded)
               && !Array.isArray(loaded.accounts) && typeof loaded.finhub_central_v25 === 'string') {
@@ -3151,7 +3269,8 @@
             e.target.value = '';
             return;
           }
-          if (!confirm('Importing this backup will replace the data currently stored in this browser. Continue?')) {
+          const preview=`Import preview\nAccounts: ${(loaded.accounts||[]).length}\nTransactions: ${(loaded.transactions||[]).length}\nCategories: ${(loaded.categories||[]).length}\nCalendar items: ${(loaded.calendarBills||[]).length}\n\nThis will replace the data currently stored in this browser. Export a backup first if you have made recent changes. Continue?`;
+          if (!confirm(preview)) {
             e.target.value = '';
             return;
           }
@@ -3165,6 +3284,9 @@
           if (state.collapsibles['sec-extra-charts'] === undefined) state.collapsibles['sec-extra-charts'] = true;
           if (state.collapsibles['sec-snapshots'] === undefined) state.collapsibles['sec-snapshots'] = true;
           state.dashboardPeriod = state.dashboardPeriod || 'month';
+          state.dashboardOrder = Array.isArray(state.dashboardOrder) ? state.dashboardOrder : ['accounts','summary','spending','upcoming','networth','trends','budgets','snapshots'];
+          state.spendingChartLevel = state.spendingChartLevel || 'category';
+          state.dashboardCustomRange = state.dashboardCustomRange || {start:'',end:''};
           state.accountOrder = state.accountOrder || { assets: [], debts: [] };
           state.accountOrder.assets = Array.isArray(state.accountOrder.assets) ? state.accountOrder.assets : [];
           state.accountOrder.debts = Array.isArray(state.accountOrder.debts) ? state.accountOrder.debts : [];
@@ -3180,10 +3302,10 @@
           switchTab('dashboard');
           renderBackupStatus();
           alert('FinHub Central data successfully imported. A safety copy of the previous browser data was also saved locally.');
-        } catch (err) { alert('Invalid JSON file format. Your current data has not been changed.'); }
+        } catch (err) { alert('This file could not be read as a valid FinHub JSON backup or FinHub Excel export. Your current data has not been changed.'); }
         e.target.value = '';
       };
-      reader.readAsText(file);
+      if ((file.name||'').toLowerCase().endsWith('.xlsx')) reader.readAsArrayBuffer(file); else reader.readAsText(file);
     }
 
     initThemeAndBlur();
