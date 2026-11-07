@@ -620,6 +620,14 @@
         </div>
       </div>
 
+      <!-- BULK TRANSACTION ACTIONS -->
+      <div id="ledger-bulk-toolbar" class="bg-white dark:bg-gray-900 p-3 rounded-xl border border-gray-200 dark:border-gray-800 flex flex-wrap items-center gap-2 shadow-sm">
+        <span id="ledger-selected-count" class="text-xs font-semibold text-gray-500">0 selected</span>
+        <button type="button" onclick="selectAllFilteredTransactions()" class="px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-xs font-semibold">Select filtered</button>
+        <button type="button" onclick="clearLedgerSelection()" class="px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-xs font-semibold">Clear selection</button>
+        <button type="button" onclick="openBulkEditModal()" id="ledger-bulk-edit-btn" disabled class="px-3 py-2 rounded-lg bg-indigo-600 text-white text-xs font-semibold disabled:opacity-40 theme-bg">Edit selected</button>
+      </div>
+
       <!-- TABLE VIEW CONTAINER -->
       <div id="ledger-table-container" class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-sm">
         <table class="w-full text-left text-sm">
@@ -708,6 +716,12 @@
         <div id="merchant-rules-list" class="space-y-2"></div>
       </div>
 
+      <!-- VENDOR NAME CLEANUP RULES -->
+      <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-4 shadow-sm">
+        <div class="flex flex-wrap justify-between items-center gap-2 border-b border-gray-200 dark:border-gray-800 pb-3"><div><h3 class="text-md font-bold">Vendor Name Cleanup Rules</h3><p class="text-xs text-gray-400 mt-1">Turn bank descriptions such as “TIM HORTONS #0048 OTTAWA ON” into consistent vendor names.</p></div><div class="flex gap-2"><button onclick="applyVendorCleanupToExisting()" class="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 rounded-lg text-xs font-semibold">Apply to existing</button><button onclick="openVendorRuleModal()" class="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-semibold theme-bg"><i class="fa-solid fa-plus mr-1"></i>Add rule</button></div></div>
+        <div id="vendor-cleanup-rules-list" class="space-y-2"></div>
+      </div>
+
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-4 shadow-sm">
           <button onclick="toggleCollapse('sec-advanced-types')" class="w-full flex justify-between items-center text-left">
@@ -737,6 +751,33 @@
     <button onclick="openTransactionModal()" title="Quick Log Transaction" class="w-14 h-14 bg-indigo-600 hover:bg-indigo-500 text-white rounded-full shadow-2xl flex items-center justify-center text-xl transition-transform hover:scale-110 active:scale-95 theme-bg">
       <i class="fa-solid fa-plus"></i>
     </button>
+  </div>
+
+  <!-- MODAL: BULK EDIT TRANSACTIONS -->
+  <div id="bulk-edit-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50">
+    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto p-5 space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center"><div><h3 class="text-lg font-bold">Bulk Edit Transactions</h3><p id="bulk-edit-count" class="text-xs text-gray-400">Selected transactions</p></div><button onclick="closeBulkEditModal()" class="text-gray-400"><i class="fa-solid fa-xmark"></i></button></div>
+      <p class="text-xs text-gray-500">Only fields you change will be applied. Leave a field set to “No change” to preserve each transaction's current value.</p>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <label class="text-xs font-semibold text-gray-500">Vendor<input id="bulk-vendor" type="text" placeholder="No change" class="mt-1 w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm"></label>
+        <label class="text-xs font-semibold text-gray-500">Bucket<select id="bulk-category" onchange="updateBulkSubcategoryOptions()" class="mt-1 w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm"><option value="">No change</option></select></label>
+        <label class="text-xs font-semibold text-gray-500">Subcategory<select id="bulk-subcategory" class="mt-1 w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm"><option value="">No change</option></select></label>
+      </div>
+      <div class="flex flex-wrap justify-end gap-2"><button onclick="closeBulkEditModal()" class="px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg text-xs font-semibold">Cancel</button><button onclick="applyBulkEdit()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-semibold theme-bg">Apply to selected</button></div>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD VENDOR CLEANUP RULE -->
+  <div id="vendor-rule-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50">
+    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
+      <h3 class="text-lg font-bold">Add Vendor Cleanup Rule</h3>
+      <form onsubmit="saveVendorCleanupRule(event)" class="space-y-3">
+        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Bank statement text contains</label><input id="vendor-rule-match" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" placeholder="e.g. TIM HORTONS #" /></div>
+        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Clean vendor name</label><input id="vendor-rule-replacement" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" placeholder="e.g. Tim Hortons" /></div>
+        <p class="text-[10px] text-gray-400">Rules match case-insensitively and ignore punctuation/spacing differences. More specific rules should be listed before broader ones.</p>
+        <div class="flex gap-2"><button type="button" onclick="closeVendorRuleModal()" class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold">Cancel</button><button type="submit" class="flex-1 py-2 bg-indigo-600 text-white rounded-xl text-sm font-semibold theme-bg">Save Rule</button></div>
+      </form>
+    </div>
   </div>
 
   <!-- MODAL: BANK STATEMENT MATCH & RECONCILIATION -->
@@ -1225,6 +1266,7 @@
     state.zbbTracking = state.zbbTracking || {};
     state.zbbPoolTracking = state.zbbPoolTracking || {};
     state.statementReconciliation = state.statementReconciliation || { batches: [] };
+    state.vendorCleanupRules = Array.isArray(state.vendorCleanupRules) ? state.vendorCleanupRules : [];
     if (!Array.isArray(state.variablePoolCategories)) state.variablePoolCategories = (state.categories || []).filter(c => !/housing|bill|debt service/i.test(c.name)).map(c => c.name);
     // New planner and reconciliation fields are additive; existing transactions and budgets remain intact.
 
@@ -2506,6 +2548,53 @@
     }
 
     // LEDGER & SMART MERCHANT AUTO-TAGGING & RECURRING DETECTOR
+    let selectedLedgerIds = new Set();
+    function updateLedgerSelectionUI() {
+      const count = selectedLedgerIds.size;
+      const label = document.getElementById('ledger-selected-count');
+      const button = document.getElementById('ledger-bulk-edit-btn');
+      if (label) label.textContent = `${count} selected`;
+      if (button) button.disabled = count === 0;
+    }
+    function toggleLedgerTransactionSelection(id, checked) {
+      if (checked) selectedLedgerIds.add(id); else selectedLedgerIds.delete(id);
+      updateLedgerSelectionUI();
+    }
+    function selectAllFilteredTransactions() {
+      const ids = Array.from(document.querySelectorAll('.ledger-row-select')).map(el => el.dataset.id);
+      ids.forEach(id => selectedLedgerIds.add(id));
+      renderLedger();
+    }
+    function clearLedgerSelection() { selectedLedgerIds.clear(); renderLedger(); }
+    function openBulkEditModal() {
+      const ids = Array.from(selectedLedgerIds).filter(id => state.transactions.some(t => t.id === id));
+      if (!ids.length) { selectedLedgerIds.clear(); updateLedgerSelectionUI(); return; }
+      document.getElementById('bulk-edit-count').textContent = `${ids.length} transaction${ids.length===1?'':'s'} selected`;
+      const category = document.getElementById('bulk-category'); category.innerHTML = '<option value="">No change</option>' + state.categories.map(c=>`<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`).join('');
+      ['bulk-vendor','bulk-category','bulk-subcategory'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+      updateBulkSubcategoryOptions();
+      document.getElementById('bulk-edit-modal').classList.remove('hidden');
+    }
+    function closeBulkEditModal() { document.getElementById('bulk-edit-modal').classList.add('hidden'); }
+    function updateBulkSubcategoryOptions() {
+      const select=document.getElementById('bulk-subcategory'); if(!select)return;
+      const category=document.getElementById('bulk-category').value;
+      const bucket=state.categories.find(c=>c.name===category);
+      select.innerHTML='<option value="">No change</option>' + (bucket?.subcategories||[]).map(sub=>`<option value="${escapeHtml(sub.name)}">${escapeHtml(sub.name)}</option>`).join('');
+    }
+    function applyBulkEdit() {
+      const ids=Array.from(selectedLedgerIds); const changes={
+        vendor:document.getElementById('bulk-vendor').value.trim(),
+        category:document.getElementById('bulk-category').value, subcategory:document.getElementById('bulk-subcategory').value
+      };
+      if (!Object.values(changes).some(v=>v!=='')) { alert('Choose at least one field to update.'); return; }
+      const valid=ids.map(id=>state.transactions.find(t=>t.id===id)).filter(Boolean);
+      if (!valid.length)return;
+      if (!confirm(`Apply the selected changes to ${valid.length} transaction${valid.length===1?'':'s'}? Account changes do not alter account balances; use them only to correct the account assignment.`))return;
+      valid.forEach(t=>Object.entries(changes).forEach(([key,value])=>{if(value!=='')t[key]=value;}));
+      selectedLedgerIds.clear(); saveData(); closeBulkEditModal(); renderLedger(); renderDashboard(); renderZbbFundingTracker();
+      alert(`Updated ${valid.length} transactions.`);
+    }
     function setLedgerView(v) {
       state.ledgerView = v;
       document.getElementById('ledger-table-container').classList.toggle('hidden', v !== 'table');
@@ -2599,7 +2688,7 @@
           const isExp = t.type === 'Expense' || t.type === 'Debt Payment';
           tbody.innerHTML += `
             <tr class="hover:bg-gray-50 dark:hover:bg-gray-950">
-              <td data-label="Date" class="px-4 py-3">${t.date}</td>
+              <td data-label="Date" class="px-4 py-3"><div class="flex items-center gap-2"><input type="checkbox" class="ledger-row-select accent-indigo-600" data-id="${t.id}" ${selectedLedgerIds.has(t.id)?'checked':''} onchange="toggleLedgerTransactionSelection('${t.id}',this.checked)" aria-label="Select transaction ${t.date}"><span>${t.date}</span></div></td>
               <td data-label="Vendor" class="px-4 py-3">${t.vendor || 'Vendor not recorded'}</td>
               <td data-label="Description" class="px-4 py-3">${t.desc || '-'}</td>
               <td data-label="Type" class="px-4 py-3"><span class="px-2 py-0.5 rounded text-[10px] bg-gray-100 dark:bg-gray-800">${t.type}</span>${t.reconciled ? '<span class="ml-1 px-1.5 py-0.5 rounded text-[9px] bg-emerald-500/10 text-emerald-500">Reconciled</span>' : ''}</td>
@@ -2615,6 +2704,10 @@
           `;
         });
       }
+
+      // Drop stale selections for transactions that no longer exist.
+      selectedLedgerIds = new Set(Array.from(selectedLedgerIds).filter(id => state.transactions.some(t => t.id === id)));
+      updateLedgerSelectionUI();
 
       if (state.ledgerView === 'calendar') {
         const calGrid = document.getElementById('ledger-calendar-grid');
@@ -2691,8 +2784,34 @@
       });
       pendingStatementRows=rows; renderStatementPreview();
     }
+    function applyVendorCleanupRules(rawName) {
+      const original=String(rawName||'').trim();
+      const normalized=normalizeStatementText(original);
+      const rules=state.vendorCleanupRules||[];
+      const rule=rules.find(r=>{const needle=normalizeStatementText(r.match);return needle && normalized.includes(needle);});
+      return rule ? rule.replacement : original;
+    }
+    function openVendorRuleModal() { document.getElementById('vendor-rule-match').value=''; document.getElementById('vendor-rule-replacement').value=''; document.getElementById('vendor-rule-modal').classList.remove('hidden'); }
+    function closeVendorRuleModal() { document.getElementById('vendor-rule-modal').classList.add('hidden'); }
+    function saveVendorCleanupRule(e) {
+      e.preventDefault();
+      const match=document.getElementById('vendor-rule-match').value.trim();
+      const replacement=document.getElementById('vendor-rule-replacement').value.trim();
+      if(!match||!replacement)return;
+      state.vendorCleanupRules=state.vendorCleanupRules||[];
+      state.vendorCleanupRules.unshift({match,replacement});
+      saveData();closeVendorRuleModal();renderSettings();
+    }
+    function deleteVendorCleanupRule(index) { state.vendorCleanupRules.splice(index,1);saveData();renderSettings(); }
+    function applyVendorCleanupToExisting() {
+      const rows=state.transactions.filter(t=>t.vendor);
+      let changed=0;
+      rows.forEach(t=>{const clean=applyVendorCleanupRules(t.vendor);if(clean!==t.vendor){t.vendor=clean;changed++;}});
+      if(!changed){alert('No existing vendor names matched your cleanup rules.');return;}
+      saveData();renderLedger();renderDashboard();alert(`Cleaned ${changed} existing vendor name${changed===1?'':'s'}.`);
+    }
     function findStatementMatches(row) {
-      const target=normalizeStatementText(row.description);
+      const target=normalizeStatementText(applyVendorCleanupRules(row.description));
       return (state.transactions||[]).filter(t=>!t.statementMatchId&&!t.reconciled && t.accountId===row.accountId && (t.type===row.type || (row.type==='Expense' && t.type==='Debt Payment')) && Math.abs((Number(t.amount)||0)-row.amount)<0.011)
         .map(t=>{const delta=Math.abs(new Date(t.date+'T00:00:00').getTime()-new Date(row.date+'T00:00:00').getTime())/86400000;const name=normalizeStatementText(t.vendor||t.desc);const textScore=target&&name?(target.includes(name)||name.includes(target)?2:0):0;return {t,delta,score:(delta===0?4:delta<=1?2:0)+textScore};})
         .filter(x=>x.delta<=1).sort((a,b)=>b.score-a.score||a.delta-b.delta).slice(0,6).map(x=>x.t);
@@ -2705,7 +2824,7 @@
         const candidates=findStatementMatches(row);const suggested=candidates[0];
         const status=row.status==='matched'?'Matched':row.status==='imported'?'Imported':row.status==='skipped'?'Skipped':suggested?'Suggested match':'No match found';
         const options=candidates.map(t=>`<option value="${t.id}" ${suggested&&t.id===suggested.id?'selected':''}>${t.date} · ${escapeHtml(t.vendor||t.desc||'Transaction')} · ${formatFinancial(t.amount)}</option>`).join('');
-        return `<div class="border border-gray-200 dark:border-gray-800 rounded-xl p-3 space-y-2"><div class="flex justify-between gap-3"><div class="min-w-0"><div class="font-semibold text-xs">${escapeHtml(row.description)}</div><div class="text-[10px] text-gray-400">${row.date} · ${row.type}</div></div><strong class="text-sm accounting-num whitespace-nowrap">${formatFinancial(row.amount)}</strong></div><div class="flex flex-wrap items-center gap-2"><span class="text-[10px] ${row.status==='matched'?'text-emerald-500':'text-gray-400'}">${status}</span>${row.status==='pending'&&candidates.length?`<select id="stmt-match-${row.id}" class="flex-1 min-w-[180px] bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-1 text-xs">${options}</select><button onclick="linkStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-emerald-600 text-white rounded-lg text-xs">Match</button>`:''}${row.status==='pending'?`<button onclick="importStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-indigo-600 text-white rounded-lg text-xs">Import as new</button><button onclick="skipStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-gray-200 dark:bg-gray-800 rounded-lg text-xs">Skip</button>`:row.status==='matched'?`<button onclick="unlinkStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-gray-200 dark:bg-gray-800 rounded-lg text-xs">Undo match</button>`:''}</div></div>`;
+        return `<div class="border border-gray-200 dark:border-gray-800 rounded-xl p-3 space-y-2"><div class="flex justify-between gap-3"><div class="min-w-0"><div class="font-semibold text-xs">${escapeHtml(row.description)}</div><div class="text-[10px] text-indigo-400">Vendor name: ${escapeHtml(applyVendorCleanupRules(row.description))}</div><div class="text-[10px] text-gray-400">${row.date} · ${row.type}</div></div><strong class="text-sm accounting-num whitespace-nowrap">${formatFinancial(row.amount)}</strong></div><div class="flex flex-wrap items-center gap-2"><span class="text-[10px] ${row.status==='matched'?'text-emerald-500':'text-gray-400'}">${status}</span>${row.status==='pending'&&candidates.length?`<select id="stmt-match-${row.id}" class="flex-1 min-w-[180px] bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-1 text-xs">${options}</select><button onclick="linkStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-emerald-600 text-white rounded-lg text-xs">Match</button>`:''}${row.status==='pending'?`<button onclick="importStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-indigo-600 text-white rounded-lg text-xs">Import as new</button><button onclick="skipStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-gray-200 dark:bg-gray-800 rounded-lg text-xs">Skip</button>`:row.status==='matched'?`<button onclick="unlinkStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-gray-200 dark:bg-gray-800 rounded-lg text-xs">Undo match</button>`:''}</div></div>`;
       }).join('')}</div><div class="text-[10px] text-gray-400">Matching uses account, transaction type, amount and a date within one day. Merchant text helps rank suggestions but you confirm every match.</div>`;
     }
     function linkStatementRow(rowId) {
@@ -2728,7 +2847,7 @@
       const row=pendingStatementRows.find(r=>r.id===rowId);if(!row||row.status!=='pending')return;
       const account=state.accounts.find(a=>a.id===row.accountId);if(!account)return;
       const merchantRule=(state.merchantRules||[]).find(rule=>normalizeStatementText(row.description).includes(normalizeStatementText(rule.keyword)));
-      const transaction={id:`tx_stmt_${Date.now()}_${Math.random().toString(36).slice(2,7)}`,date:row.date,vendor:row.description,desc:'Imported from bank statement',type:row.type,category:merchantRule?.category||'',subcategory:merchantRule?.subcategory||'',amount:row.amount,accountId:row.accountId,statementMatchId:row.id,reconciled:true,reconciledAt:new Date().toISOString(),source:'statement-import'};
+      const transaction={id:`tx_stmt_${Date.now()}_${Math.random().toString(36).slice(2,7)}`,date:row.date,vendor:applyVendorCleanupRules(row.description),desc:'Imported from bank statement',type:row.type,category:merchantRule?.category||'',subcategory:merchantRule?.subcategory||'',amount:row.amount,accountId:row.accountId,statementMatchId:row.id,reconciled:true,reconciledAt:new Date().toISOString(),source:'statement-import'};
       state.transactions.unshift(transaction);
       if(row.type==='Expense') account.balance-=row.amount; else if(row.type==='Income') account.balance+=row.amount;
       row.status='imported';row.matchedTransactionId=transaction.id;
@@ -2790,6 +2909,15 @@
           </div>
         `;
       });
+
+      const vendorRulesList = document.getElementById('vendor-cleanup-rules-list');
+      if (vendorRulesList) {
+        vendorRulesList.innerHTML = '';
+        (state.vendorCleanupRules || []).forEach((r, idx) => {
+          vendorRulesList.innerHTML += `<div class="flex flex-wrap justify-between items-center gap-2 bg-gray-50 dark:bg-gray-950 p-2.5 rounded-xl text-xs"><div><strong>${escapeHtml(r.match)}</strong> <span class="text-gray-400">→</span> <span class="text-indigo-400 theme-text font-semibold">${escapeHtml(r.replacement)}</span></div><button onclick="deleteVendorCleanupRule(${idx})" class="text-rose-500" title="Delete cleanup rule"><i class="fa-solid fa-trash"></i></button></div>`;
+        });
+        if (!(state.vendorCleanupRules||[]).length) vendorRulesList.innerHTML='<p class="text-xs text-gray-400">No vendor cleanup rules yet. Add one when a bank statement uses an inconsistent merchant description.</p>';
+      }
 
       const catList = document.getElementById('settings-categories-list');
       catList.innerHTML = '';
@@ -3320,7 +3448,7 @@
       const accountId = document.getElementById('tx-account').value;
       const type = document.getElementById('tx-type').value;
       const desc = (document.getElementById('tx-desc').value || '').trim();
-      const vendor = (document.getElementById('tx-vendor')?.value || '').trim();
+      const vendor = applyVendorCleanupRules((document.getElementById('tx-vendor')?.value || '').trim());
       const date = document.getElementById('tx-date').value;
       if (!vendor) {
         document.getElementById('tx-vendor')?.focus();
@@ -3468,8 +3596,9 @@
     state.zbbTracking = state.zbbTracking || {};
     state.zbbPoolTracking = state.zbbPoolTracking || {};
     state.statementReconciliation = state.statementReconciliation || { batches: [] };
+          state.vendorCleanupRules = Array.isArray(state.vendorCleanupRules) ? state.vendorCleanupRules : [];
     if (!Array.isArray(state.variablePoolCategories)) state.variablePoolCategories = (state.categories || []).filter(c => !/housing|bill|debt service/i.test(c.name)).map(c => c.name);
-    // New planner and reconciliation fields are additive; existing transactions and budgets remain intact.
+    // New planner, reconciliation, and vendor cleanup fields are additive; existing transactions remain intact.
           saveData();
           initThemeAndBlur();
           applyCollapsibles();
