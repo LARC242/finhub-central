@@ -467,12 +467,13 @@
       <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-4 shadow-sm">
         <div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-800 pb-3">
           <div>
-            <h3 class="text-md font-bold text-amber-600 dark:text-amber-400"><i class="fa-solid fa-cart-shopping mr-2"></i>3. Variable Expenses</h3>
-            <p class="text-xs text-gray-400 mt-0.5">Subtotal: <strong id="zbb-sub-variable-disp" class="accounting-num">$ - </strong> | Remaining Bal: <strong id="zbb-rem-variable-disp" class="accounting-num">$ - </strong></p>
+            <h3 class="text-md font-bold text-amber-600 dark:text-amber-400"><i class="fa-solid fa-cart-shopping mr-2"></i>3. Variable Spending Pool Allocation</h3>
+            <p class="text-xs text-gray-400 mt-0.5">Total variable pool: <strong id="zbb-sub-variable-disp" class="accounting-num">$ - </strong> | Remaining after pool: <strong id="zbb-rem-variable-disp" class="accounting-num">$ - </strong></p>
           </div>
           <button onclick="openZbbItemModal('variable')" class="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold theme-bg"><i class="fa-solid fa-plus mr-1"></i> Add Variable Exp</button>
         </div>
         <div id="zbb-variable-list" class="space-y-2"></div>
+        <p class="text-[10px] text-gray-400">Allocate the fixed pool across your variable categories for this paycheque. Change one category and adjust another to stay within the overall pool. Actual spending is tracked separately in the Expense Tracker.</p>
       </div>
 
       <!-- STEP 4: DEBT PAYMENTS -->
@@ -507,15 +508,6 @@
         <div id="sinking-funds-progress-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
       </div>
 
-      <!-- SHARED VARIABLE SPENDING POOL -->
-      <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-4 shadow-sm">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-200 dark:border-gray-800 pb-3">
-          <div><h3 class="text-md font-bold"><i class="fa-solid fa-arrows-rotate mr-2 text-indigo-500"></i>Shared Variable Spending Pool</h3>
-          <p class="text-xs text-gray-400 mt-1">All variable categories share one pool. Spending in one category can be offset by underspending in another. Actuals come from Expense Tracker transactions within the selected paycheque dates.</p></div>
-          <span class="text-[10px] text-indigo-400">Carry-forward or reset each paycheque</span>
-        </div>
-        <div id="zbb-funding-tracker" class="space-y-4"></div>
-      </div>
     </section>
 
     <!-- TAB 3: RECURRING BILL & INCOME CALENDAR -->
@@ -1180,6 +1172,19 @@
           </div>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- MODAL: RECURRING CALENDAR DELETE CHOICE -->
+  <div id="recurrence-delete-choice-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-[70]">
+    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl">
+      <div class="flex items-center gap-2"><i class="fa-solid fa-repeat text-rose-500"></i><h3 class="font-bold">Delete recurring item?</h3></div>
+      <p class="text-sm text-gray-500 dark:text-gray-400">Do you want to delete this occurrence and end the recurring series from this date onward?</p>
+      <div class="flex justify-end gap-2 pt-1">
+        <button type="button" onclick="confirmRecurringDeleteChoice(false)" class="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-sm font-semibold">No</button>
+        <button type="button" onclick="confirmRecurringDeleteChoice(true)" class="px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-sm font-semibold">Yes</button>
+      </div>
+      <p class="text-[10px] text-gray-400">No = delete this occurrence only. Yes = delete this occurrence and all future unpaid occurrences. Previously paid history is preserved.</p>
     </div>
   </div>
 
@@ -2212,6 +2217,57 @@
       renderZbbPlanner();
     }
 
+    function getVariablePoolAllocationState(zbb, cycle, period) {
+      const items = Array.isArray(zbb.variable) ? zbb.variable : [];
+      const defaults = {};
+      items.forEach(item => {
+        const split = item.split || [50, 50, 0];
+        const raw = Number(split[cycle - 1]) || 0;
+        defaults[item.id] = item.splitMode === 'dollar' ? raw : (Number(item.monthly) || 0) * raw / 100;
+      });
+      const poolBudget = Object.values(defaults).reduce((sum, value) => sum + (Number(value) || 0), 0);
+      const rec = getZbbPoolRecord(period, cycle);
+      if (!rec.variableAllocations || typeof rec.variableAllocations !== 'object' || Array.isArray(rec.variableAllocations)) {
+        rec.variableAllocations = { ...defaults };
+      } else {
+        items.forEach(item => {
+          if (!Object.prototype.hasOwnProperty.call(rec.variableAllocations, item.id)) rec.variableAllocations[item.id] = defaults[item.id] || 0;
+        });
+      }
+      rec.variablePoolBudget = poolBudget;
+      const allocations = {};
+      items.forEach(item => { allocations[item.id] = Math.max(0, Number(rec.variableAllocations[item.id]) || 0); });
+      const allocated = Object.values(allocations).reduce((sum, value) => sum + value, 0);
+      return { rec, defaults, allocations, poolBudget, allocated, unallocated: poolBudget - allocated };
+    }
+
+    function updateVariablePoolAllocation(cycle, itemId, rawValue) {
+      const period = state.selectedZbbPeriod || '2026-11';
+      const zbb = getActiveZbbTemplate();
+      const allocationState = getVariablePoolAllocationState(zbb, cycle, period);
+      const value = Math.round(Math.max(0, Number(rawValue) || 0) * 100) / 100;
+      const otherTotal = allocationState.allocated - (Number(allocationState.allocations[itemId]) || 0);
+      if (otherTotal + value > allocationState.poolBudget + 0.0001) {
+        alert(`That allocation would exceed the ${formatFinancial(allocationState.poolBudget)} variable pool. Reduce another category first.`);
+        renderZbbPlanner();
+        return;
+      }
+      allocationState.rec.variableAllocations[itemId] = value;
+      captureUndo('Adjust variable spending allocation');
+      saveData();
+      renderZbbPlanner();
+    }
+
+    function resetVariablePoolAllocations(cycle) {
+      const period = state.selectedZbbPeriod || '2026-11';
+      const zbb = getActiveZbbTemplate();
+      const allocationState = getVariablePoolAllocationState(zbb, cycle, period);
+      if (!confirm('Reset this paycheque’s variable category allocations to their original budget splits?')) return;
+      allocationState.rec.variableAllocations = { ...allocationState.defaults };
+      saveData();
+      renderZbbPlanner();
+    }
+
     function renderZbbPlanner() {
       const period = state.selectedZbbPeriod || '2026-11';
       const picker = document.getElementById('zbb-period-picker');
@@ -2219,6 +2275,7 @@
 
       const zbb = getActiveZbbTemplate();
       const cycle = state.selectedPayCycle || 1;
+      const variablePoolState = getVariablePoolAllocationState(zbb, cycle, period);
       const monthlyAmount = item => {
         const split = item.split || [50, 50, 0];
         if (item.splitMode === 'dollar') return (Number(split[0]) || 0) + (Number(split[1]) || 0);
@@ -2253,6 +2310,7 @@
       let incomeSum = 0, billsSum = 0, variableSum = 0, debtSum = 0, savingsSum = 0;
 
       const calcAmt = (item) => {
+        if ((zbb.variable || []).some(v => v.id === item.id)) return Number(variablePoolState.allocations[item.id]) || 0;
         const splitArr = item.split || [50, 50, 0];
         const val = splitArr[cycle - 1] || 0;
         if (item.splitMode === 'dollar') return val;
@@ -2261,7 +2319,7 @@
 
       (zbb.incomes || []).forEach(i => incomeSum += calcAmt(i));
       (zbb.bills || []).forEach(b => billsSum += calcAmt(b));
-      (zbb.variable || []).forEach(v => variableSum += calcAmt(v));
+      variableSum = variablePoolState.poolBudget;
       (zbb.debts || []).forEach(d => debtSum += calcAmt(d));
       (zbb.savings || []).forEach(s => savingsSum += calcAmt(s));
 
@@ -2293,29 +2351,43 @@
           container.innerHTML = `<div class="grid grid-cols-[minmax(0,1.5fr)_repeat(3,minmax(62px,0.7fr))_auto] gap-2 px-3 text-[10px] uppercase tracking-wide text-gray-400"><div>Monthly bill</div><div class="text-right">Paycheque 1</div><div class="text-right">Paycheque 2</div><div class="text-right">Third cheque</div><div></div></div>${rows || '<p class="text-xs text-gray-400 py-3">No monthly bills added yet.</p>'}<p class="text-[10px] text-gray-400">Edit any bill to adjust its custom dollar or percentage allocation. Allocations are budget funding, not recorded bill payments.</p>`;
           return;
         }
+        if (sectionKey === 'variable') {
+          container.innerHTML = `<div class="grid grid-cols-[minmax(0,1fr)_125px_70px_auto] gap-2 px-3 text-[10px] uppercase tracking-wide text-gray-400"><div>Variable bucket</div><div class="text-right">Paycheque ${cycle} allocation</div><div class="text-right">Pool share</div><div></div></div>`;
+        }
         (itemsList || []).forEach(item => {
           const amt = calcAmt(item);
           const pctOfIncome = incomeSum > 0 ? ((amt / incomeSum) * 100).toFixed(1) : '0.0';
           const splitArr = item.split || [50, 50, 0];
           const splitDesc = item.splitMode === 'dollar' ? `$${splitArr[cycle-1]}` : `${splitArr[cycle-1]}%`;
-
+          if (sectionKey === 'variable') {
+            const share = variablePoolState.poolBudget > 0 ? (amt / variablePoolState.poolBudget * 100) : 0;
+            const itemIdArg = JSON.stringify(String(item.id));
+            container.innerHTML += `<div class="grid grid-cols-[minmax(0,1fr)_125px_70px_auto] gap-2 items-center bg-gray-50 dark:bg-gray-950 p-3 rounded-xl border border-gray-200 dark:border-gray-800 text-xs"><div class="min-w-0"><div class="font-semibold truncate">${escapeHtml(item.name)}</div><div class="text-[10px] text-gray-400">Original monthly plan: ${formatFinancial(item.monthly || 0)}</div></div><input type="number" min="0" step="0.01" value="${amt.toFixed(2)}" onchange="updateVariablePoolAllocation(${cycle},${itemIdArg},this.value)" class="w-full text-right bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1.5 text-xs accounting-num"><div class="text-right text-gray-500 accounting-num">${share.toFixed(1)}%</div><div class="flex gap-2 justify-end"><button onclick="openZbbItemModal('variable',${itemIdArg})" class="text-indigo-400" title="Edit variable bucket"><i class="fa-solid fa-pen"></i></button><button onclick="deleteZbbItem('variable',${itemIdArg})" class="text-rose-500" title="Delete variable bucket"><i class="fa-solid fa-trash"></i></button></div></div>`;
+            return;
+          }
           container.innerHTML += `
             <div class="flex justify-between items-center bg-gray-50 dark:bg-gray-950 p-3 rounded-xl border border-gray-200 dark:border-gray-800 text-xs">
               <div>
-                <span class="font-semibold">${item.name}</span> 
-                <span class="text-gray-400 ml-2">(Monthly: ${formatFinancial(item.monthly)} | P${cycle} Split: ${splitDesc})</span>
+                <span class="font-semibold">${escapeHtml(item.name)}</span>
+                <span class="text-gray-400 ml-2">(Monthly: ${formatFinancial(item.monthly || 0)} | P${cycle} Split: ${splitDesc})</span>
               </div>
               <div class="flex items-center space-x-3">
                 <div class="text-right">
                   <span class="font-bold ${colorClass} accounting-num">${formatFinancial(amt, sectionKey !== 'income')}</span>
                   <div class="text-[10px] text-gray-400">${pctOfIncome}% of Income</div>
                 </div>
-                <button onclick="openZbbItemModal('${sectionKey}', '${item.id}')" class="text-indigo-400 hover:text-indigo-300 theme-text"><i class="fa-solid fa-pen"></i></button>
-                <button onclick="deleteZbbItem('${sectionKey}', '${item.id}')" class="text-rose-500 hover:text-rose-400"><i class="fa-solid fa-trash"></i></button>
+                <button onclick="openZbbItemModal('${sectionKey}', ${JSON.stringify(String(item.id))})" class="text-indigo-400 hover:text-indigo-300 theme-text"><i class="fa-solid fa-pen"></i></button>
+                <button onclick="deleteZbbItem('${sectionKey}', ${JSON.stringify(String(item.id))})" class="text-rose-500 hover:text-rose-400"><i class="fa-solid fa-trash"></i></button>
               </div>
             </div>
           `;
         });
+        if (sectionKey === 'variable') {
+          const allocated = variablePoolState.allocated;
+          const unallocated = variablePoolState.poolBudget - allocated;
+          const over = unallocated < -0.0001;
+          container.insertAdjacentHTML('beforeend', `<div class="mt-3 p-3 rounded-xl border ${over ? 'border-rose-300 bg-rose-50 dark:bg-rose-950/20' : 'border-indigo-200 bg-indigo-50/60 dark:bg-indigo-950/20'}"><div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs"><div><div class="text-gray-500">Total budgeted pool</div><strong class="text-base accounting-num">${formatFinancial(variablePoolState.poolBudget)}</strong></div><div><div class="text-gray-500">Allocated to buckets</div><strong class="text-base accounting-num">${formatFinancial(allocated)}</strong></div><div><div class="text-gray-500">${over ? 'Overallocated' : 'Unallocated'}</div><strong class="text-base accounting-num ${over ? 'text-rose-600' : 'text-emerald-600'}">${formatFinancial(Math.abs(unallocated))}</strong></div></div><div class="mt-2 h-2 rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden"><div class="h-full ${over ? 'bg-rose-500' : 'bg-indigo-500'}" style="width:${Math.min(100, variablePoolState.poolBudget > 0 ? allocated / variablePoolState.poolBudget * 100 : 0)}%"></div></div><div class="flex justify-end mt-2"><button onclick="resetVariablePoolAllocations(${cycle})" class="text-[10px] text-indigo-600 dark:text-indigo-400 hover:underline">Reset to original planned splits</button></div>${over ? '<p class="text-[10px] text-rose-600 mt-2">Your saved allocations exceed the current pool. Reduce one or more buckets before continuing.</p>' : ''}</div>`);
+        }
       };
 
       renderSection('zbb-income-list', zbb.incomes, 'income', 'text-emerald-600 dark:text-emerald-400');
@@ -2855,45 +2927,56 @@
 
       const isSeriesOccurrence = !!(bill.recurring && bill.recurring !== 'none') ||
         !!bill.recurrenceGenerated || !!bill.recurrenceRootId;
+      if (isSeriesOccurrence) {
+        window.pendingCalendarDeleteId = id;
+        document.getElementById('recurrence-delete-choice-modal').classList.remove('hidden');
+        return;
+      }
+      if (!confirm('Delete this calendar item?')) return;
+      applyCalendarItemDeletion(id, false);
+    }
+
+    function confirmRecurringDeleteChoice(deleteFuture) {
+      const modal = document.getElementById('recurrence-delete-choice-modal');
+      if (modal) modal.classList.add('hidden');
+      const id = window.pendingCalendarDeleteId;
+      window.pendingCalendarDeleteId = null;
+      if (!id) return;
+      applyCalendarItemDeletion(id, !!deleteFuture);
+    }
+
+    function applyCalendarItemDeletion(id, deleteFuture) {
+      const bill = state.calendarBills.find(b => b.id === id);
+      if (!bill) return;
+      const isSeriesOccurrence = !!(bill.recurring && bill.recurring !== 'none') || !!bill.recurrenceGenerated || !!bill.recurrenceRootId;
       if (!isSeriesOccurrence) {
-        if (!confirm('Delete this calendar item?')) return;
         state.calendarBills = state.calendarBills.filter(b => b.id !== id);
       } else {
-        const choice = window.prompt(
-          'This item belongs to a recurring series. Choose how to delete it:\n\n1 = Delete this occurrence only (future dates remain)\n2 = Delete this occurrence and all future unpaid occurrences\n\nCancel = Keep the item',
-          '1'
-        );
-        if (choice === null || !['1', '2'].includes(String(choice).trim())) return;
-
         const rootId = bill.recurrenceRootId || bill.id;
-        const root = state.calendarBills.find(b => b.id === rootId && !b.recurrenceGenerated) ||
-          state.calendarBills.find(b => b.id === rootId);
+        const root = state.calendarBills.find(b => b.id === rootId && !b.recurrenceGenerated) || state.calendarBills.find(b => b.id === rootId);
         const occurrenceDate = bill.date;
         if (root) {
           root.recurrenceRootId = root.id;
           root.recurrenceAnchorDate = root.recurrenceAnchorDate || root.date;
           root.recurrenceSkipDates = Array.isArray(root.recurrenceSkipDates) ? root.recurrenceSkipDates : [];
-
-          if (String(choice).trim() === '1') {
-            // Keep the series metadata/root intact so the recurrence generator
-            // can continue, but suppress the selected anchor/occurrence date.
-            if (!root.recurrenceSkipDates.includes(occurrenceDate)) root.recurrenceSkipDates.push(occurrenceDate);
-            if (bill.id === root.id) root.recurrenceOccurrenceDeleted = true;
-            else state.calendarBills = state.calendarBills.filter(b => b.id !== id);
-          } else {
-            // End the series before this occurrence and remove this and later
-            // unpaid generated entries. Paid history is deliberately retained.
+          if (deleteFuture) {
+            // End the series at the selected date. Keep the root as hidden series metadata.
             root.recurrenceEndDate = occurrenceDate;
             if (bill.id === root.id) root.recurrenceOccurrenceDeleted = true;
             state.calendarBills = state.calendarBills.filter(b => {
-              if (b.id === root.id) return true; // retain series metadata
+              if (b.id === root.id) return true;
               if (b.recurrenceRootId !== rootId || !b.recurrenceGenerated) return true;
               if (b.date < occurrenceDate || b.paid) return true;
               return false;
             });
+            if (bill.id !== root.id) state.calendarBills = state.calendarBills.filter(b => b.id !== id || b.paid);
+          } else {
+            // Delete only this date; preserve the root/series and skip this date permanently.
+            if (!root.recurrenceSkipDates.includes(occurrenceDate)) root.recurrenceSkipDates.push(occurrenceDate);
+            if (bill.id === root.id) root.recurrenceOccurrenceDeleted = true;
+            else state.calendarBills = state.calendarBills.filter(b => b.id !== id);
           }
         } else {
-          // Defensive fallback for malformed legacy series records.
           state.calendarBills = state.calendarBills.filter(b => b.id !== id);
         }
       }
