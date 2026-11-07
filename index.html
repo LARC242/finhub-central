@@ -833,7 +833,7 @@
 
   <!-- MODAL: ACCOUNT TRANSACTIONS DRAWER & SAFE DELETE -->
   <div id="account-detail-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50">
-    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-2xl p-6 space-y-4 shadow-2xl">
+    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col p-6 space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-800 pb-3">
         <h3 id="acc-detail-title" class="text-lg font-bold">Account Transactions & Settings</h3>
         <button onclick="closeAccountDetailModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-lg"></i></button>
@@ -849,10 +849,11 @@
           <button onclick="confirmDeleteAccountFromModal()" class="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-semibold"><i class="fa-solid fa-trash mr-1"></i> Delete Account</button>
         </div>
       </div>
-      <div class="overflow-x-auto max-h-72 custom-scrollbar">
-        <table class="w-full text-left text-sm">
-          <thead class="bg-gray-50 dark:bg-gray-950 text-xs text-gray-500 uppercase">
-            <tr><th class="px-4 py-2">Date</th><th class="px-4 py-2">Description</th><th class="px-4 py-2">Type</th><th class="px-4 py-2 text-right">Amount</th></tr>
+      <div id="acc-detail-balance-summary" class="grid grid-cols-1 sm:grid-cols-3 gap-2"></div>
+      <div class="overflow-auto flex-1 min-h-0 custom-scrollbar border border-gray-200 dark:border-gray-800 rounded-xl">
+        <table class="w-full text-left text-sm min-w-[760px]">
+          <thead class="bg-gray-50 dark:bg-gray-950 text-xs text-gray-500 uppercase sticky top-0 z-10">
+            <tr><th class="px-4 py-2">Date</th><th class="px-4 py-2">Description</th><th class="px-4 py-2">Type</th><th class="px-4 py-2 text-right">Change</th><th class="px-4 py-2 text-right">Running Balance</th></tr>
           </thead>
           <tbody id="acc-detail-rows" class="divide-y divide-gray-200 dark:divide-gray-800"></tbody>
         </table>
@@ -1895,6 +1896,45 @@
       if (acc) setAccountIncluded(id, !!acc.hidden);
     }
 
+    function getAccountActivityEntries(acc) {
+      const transactions = state.transactions || [];
+      const debtPayments = new Map((state.debtPayments || []).map(p => [p.id, p]));
+      const bills = new Map((state.calendarBills || []).map(b => [b.id, b]));
+      const entries = [];
+
+      if (acc.type === 'asset') {
+        transactions.forEach(t => {
+          if (t.accountId === acc.id) {
+            const amount = Number(t.amount) || 0;
+            let change = t.type === 'Income' ? amount : -amount;
+            let type = t.type || 'Transaction';
+            if (t.type === 'Transfer' && t.transferToAccountId) type = 'Transfer Out';
+            entries.push({ id: t.id, date: t.date || '', description: t.vendor || t.desc || 'Transaction', detail: t.desc && t.vendor && t.desc !== t.vendor ? t.desc : '', type, change, reconciled: !!t.reconciled });
+          } else if (t.type === 'Transfer' && t.transferToAccountId === acc.id) {
+            const amount = Number(t.amount) || 0;
+            const source = state.accounts.find(a => a.id === t.accountId);
+            entries.push({ id: `${t.id}_incoming`, date: t.date || '', description: t.vendor || 'Account transfer', detail: t.desc || (source ? `Transfer from ${source.name}` : 'Transfer received'), type: 'Transfer In', change: amount, reconciled: !!t.reconciled });
+          }
+        });
+      } else {
+        transactions.forEach(t => {
+          const payment = t.debtPaymentId ? debtPayments.get(t.debtPaymentId) : null;
+          const bill = t.calendarBillId ? bills.get(t.calendarBillId) : null;
+          const linkedBillDebt = bill && bill.type === 'debt' ? resolveDebtAccountForBill(bill) : null;
+          const related = t.debtAccountId === acc.id || payment?.accountId === acc.id || linkedBillDebt?.id === acc.id;
+          if (!related) return;
+          let principal = 0;
+          if (t.type === 'Debt Payment') {
+            principal = Number(t.debtPrincipalAmount ?? payment?.principalAmount ?? bill?.principalAmount ?? t.amount) || 0;
+          }
+          const isInterest = (Number(t.debtInterestAmount) || 0) > 0 || /interest/i.test(`${t.category || ''} ${t.subcategory || ''} ${t.desc || ''} ${t.vendor || ''}`);
+          const type = t.type === 'Debt Payment' ? (principal > 0 ? 'Principal + interest payment' : 'Interest-only payment') : (isInterest ? 'Interest expense' : (t.type || 'Related transaction'));
+          entries.push({ id: t.id, date: t.date || '', description: t.vendor || t.desc || 'Transaction', detail: t.desc && t.vendor && t.desc !== t.vendor ? t.desc : '', type, change: -principal, amount: Number(t.amount) || 0, principal, reconciled: !!t.reconciled });
+        });
+      }
+      return entries.sort((a, b) => String(a.date).localeCompare(String(b.date)) || String(a.id).localeCompare(String(b.id)));
+    }
+
     function openAccountDetail(accId) {
       const acc = state.accounts.find(a => a.id === accId);
       if (!acc) return;
@@ -1904,23 +1944,39 @@
       const assetEditButton = document.getElementById('acc-detail-edit-asset');
       if (debtEditButton) debtEditButton.classList.toggle('hidden', acc.type !== 'debt');
       if (assetEditButton) assetEditButton.classList.toggle('hidden', acc.type !== 'asset');
+
       const rows = document.getElementById('acc-detail-rows');
+      const summary = document.getElementById('acc-detail-balance-summary');
       rows.innerHTML = '';
-      const matched = state.transactions.filter(t => t.accountId === accId);
-      if (matched.length === 0) {
-        rows.innerHTML = `<tr><td colspan="4" class="px-4 py-4 text-center text-xs text-gray-400">No transactions recorded for this account yet.</td></tr>`;
+      const activity = getAccountActivityEntries(acc);
+      const totalChanges = activity.reduce((sum, entry) => sum + (Number(entry.change) || 0), 0);
+      const currentBalance = Number(acc.balance) || 0;
+      // Derive the opening balance from the current stored balance and all activity, so the final row ties to the account balance.
+      let runningBalance = currentBalance - totalChanges;
+      const openingBalance = runningBalance;
+      const balanceLabel = acc.type === 'debt' ? 'Outstanding balance' : 'Calculated balance';
+      summary.innerHTML = `
+        <div class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-3"><div class="text-[10px] uppercase font-semibold text-gray-500">Opening balance (derived)</div><div class="text-base font-bold accounting-num mt-1">${formatFinancial(openingBalance)}</div></div>
+        <div class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-3"><div class="text-[10px] uppercase font-semibold text-gray-500">${balanceLabel}</div><div class="text-base font-bold accounting-num mt-1">${formatFinancial(currentBalance)}</div></div>
+        <div class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-3"><div class="text-[10px] uppercase font-semibold text-gray-500">Activity records</div><div class="text-base font-bold mt-1">${activity.length}</div></div>`;
+
+      rows.innerHTML = `<tr class="bg-indigo-50/70 dark:bg-indigo-950/30"><td class="px-4 py-3 whitespace-nowrap">—</td><td class="px-4 py-3 font-semibold">Opening balance <span class="text-[10px] font-normal text-gray-500">(derived from current balance and recorded activity)</span></td><td class="px-4 py-3">Opening balance</td><td class="px-4 py-3 text-right accounting-num">—</td><td class="px-4 py-3 text-right font-bold accounting-num">${formatFinancial(runningBalance)}</td></tr>`;
+      if (!activity.length) {
+        rows.innerHTML += `<tr><td colspan="5" class="px-4 py-4 text-center text-xs text-gray-400">No transactions recorded for this account yet.</td></tr>`;
       } else {
-        matched.forEach(t => {
-          const isExp = t.type === 'Expense' || t.type === 'Debt Payment';
+        activity.forEach(entry => {
+          runningBalance += Number(entry.change) || 0;
+          const negative = entry.change < 0;
+          const favorableDebtReduction = acc.type === 'debt' && negative;
+          const changeText = entry.change === 0 ? '—' : formatFinancial(Math.abs(entry.change), negative);
           rows.innerHTML += `
             <tr class="hover:bg-gray-50 dark:hover:bg-gray-950">
-              <td class="px-4 py-3">${t.date}</td>
-              <td class="px-4 py-3">${t.vendor || 'Vendor not recorded'}</td>
-              <td class="px-4 py-3">${t.desc || '-'}</td>
-              <td class="px-4 py-3"><span class="px-2 py-0.5 rounded text-[10px] bg-gray-100 dark:bg-gray-800">${t.type}</span>${t.reconciled ? '<span class="ml-1 px-1.5 py-0.5 rounded text-[9px] bg-emerald-500/10 text-emerald-500">Reconciled</span>' : ''}</td>
-              <td class="px-4 py-3 text-right font-bold ${isExp ? 'text-rose-600' : 'text-emerald-600'} accounting-num">${formatFinancial(t.amount, isExp)}</td>
-            </tr>
-          `;
+              <td class="px-4 py-3 whitespace-nowrap">${entry.date || '—'}</td>
+              <td class="px-4 py-3">${entry.description || 'Transaction'}${entry.detail ? `<div class="text-[10px] text-gray-400 mt-0.5">${entry.detail}</div>` : ''}</td>
+              <td class="px-4 py-3"><span class="px-2 py-0.5 rounded text-[10px] bg-gray-100 dark:bg-gray-800">${entry.type}</span>${entry.reconciled ? '<span class="ml-1 px-1.5 py-0.5 rounded text-[9px] bg-emerald-500/10 text-emerald-500">Reconciled</span>' : ''}</td>
+              <td class="px-4 py-3 text-right font-semibold ${favorableDebtReduction || (!negative && entry.change > 0) ? 'text-emerald-600' : negative ? 'text-rose-600' : 'text-gray-400'} accounting-num">${changeText}</td>
+              <td class="px-4 py-3 text-right font-bold accounting-num">${formatFinancial(runningBalance)}</td>
+            </tr>`;
         });
       }
       document.getElementById('account-detail-modal').classList.remove('hidden');
