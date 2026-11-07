@@ -1265,6 +1265,7 @@
         <div><label class="block text-xs font-semibold text-gray-500 mb-1">Vendor <span class="text-rose-500">*</span></label><input type="text" id="tx-vendor" oninput="applySmartMerchantRules(this.value)" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" placeholder="e.g. Costco"></div>
         <div><label class="block text-xs font-semibold text-gray-500 mb-1">Description (Optional)</label><input type="text" id="tx-desc" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" placeholder="e.g. Weekly groceries"></div>
         <div><label class="block text-xs font-semibold text-gray-500 mb-1">Transaction Type</label><select id="tx-type" onchange="updateTransactionTypeFields()" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></select></div>
+        <div id="tx-transfer-direction-wrap" class="hidden"><label class="block text-xs font-semibold text-gray-500 mb-1">Transfer Direction</label><select id="tx-transfer-direction" onchange="updateTransactionTypeFields()" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"><option value="out">Transfer Out — to another account in FinHub</option><option value="in">Transfer In — from an external account</option></select><p class="text-[10px] text-gray-400 mt-1">Choose Transfer In for money arriving from a bank or account that isn't tracked in FinHub. Choose Transfer Out for a transfer to another FinHub account.</p></div>
         <div id="tx-transfer-destination-wrap" class="hidden"><label class="block text-xs font-semibold text-gray-500 mb-1">Transfer To Account</label><select id="tx-transfer-to" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></select></div>
         <div><label class="block text-xs font-semibold text-gray-500 mb-1">Related Debt Account (Optional)</label><select id="tx-related-debt" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"><option value="">Not linked to a debt account</option></select><p class="text-[10px] text-gray-400 mt-1">Use this for interest expenses or other transactions you want included in a debt account's activity.</p></div>
 
@@ -3418,14 +3419,23 @@
       if (!hasChanges) { alert('Choose at least one field to update.'); return; }
       const valid=ids.map(id=>state.transactions.find(t=>String(t.id)===String(id))).filter(Boolean);
       if (!valid.length)return;
+      let bulkTypeRows = valid;
       if (typeValue) {
-        const protectedRows = valid.filter(t => t.calendarBillId || t.debtPaymentId || t.transferToAccountId || t.debtAccountId);
+        // A debtAccountId by itself is only an activity association (for example, an interest expense),
+        // not proof that the transaction is a linked debt payment. Protect only records whose
+        // payment/transfer workflow actually owns their balance effects.
+        const protectedRows = valid.filter(t => t.calendarBillId || t.debtPaymentId || t.transferToAccountId);
         if (protectedRows.length) {
-          alert(`Type cannot be bulk-edited for ${protectedRows.length} selected transaction(s) because they are linked to a scheduled payment, debt account, or internal transfer. Edit those records through their linked workflow instead.`);
-          return;
+          const protectedIds = new Set(protectedRows.map(t => String(t.id)));
+          bulkTypeRows = valid.filter(t => !protectedIds.has(String(t.id)));
+          if (!bulkTypeRows.length) {
+            alert(`None of the ${valid.length} selected transactions can have their type changed because they are linked to scheduled payments or internal transfers. Edit those through their linked workflow instead.`);
+            return;
+          }
+          if (!confirm(`${protectedRows.length} selected transaction(s) are linked to scheduled payments or internal transfers and will be skipped. Continue with the other ${bulkTypeRows.length}?`)) return;
         }
-        if (typeValue === '__TRANSFER_IN__' && valid.some(t => t.type !== 'Income' && !(t.type === 'Transfer' && t.externalTransferDirection === 'in'))) {
-          alert('Incoming external Transfer can only be applied to transactions currently classified as Income or already marked as an incoming external Transfer. This preserves the account balance direction.');
+        if (typeValue === '__TRANSFER_IN__' && bulkTypeRows.some(t => t.type !== 'Income' && !(t.type === 'Transfer' && t.externalTransferDirection === 'in'))) {
+          alert('Transfer In can only be applied to transactions currently classified as Income or already marked as an incoming external Transfer. Select only incoming credits.');
           return;
         }
       }
@@ -3455,15 +3465,17 @@
       if (!confirm(`Apply the selected changes to ${valid.length} transaction${valid.length===1?'':'s'}?${typeDetail}${confirmationDetail}`))return;
       if (typeValue) captureUndo('Bulk edit transaction types and details');
 
+      const eligibleTypeIds = new Set((typeValue ? bulkTypeRows : valid).map(t => String(t.id)));
       valid.forEach(t=>{
         if(vendorValue!=='')t.vendor=vendorValue;
-        if (typeValue === '__TRANSFER_IN__') {
+        const canChangeType = !!typeValue && eligibleTypeIds.has(String(t.id));
+        if (canChangeType && typeValue === '__TRANSFER_IN__') {
           t.type = 'Transfer';
           t.externalTransferDirection = 'in';
           t.category = 'Transfer';
           t.subcategory = '';
           delete t.transferToAccountId;
-        } else if (typeValue) {
+        } else if (canChangeType && typeValue) {
           const amount = Number(t.amount) || 0;
           const oldIsCredit = t.type === 'Income' || (t.type === 'Transfer' && t.externalTransferDirection === 'in');
           const newIsCredit = typeValue === 'Income';
@@ -3499,7 +3511,7 @@
       renderLedger();
       renderDashboard();
       renderZbbFundingTracker();
-      alert(`Updated ${valid.length} transactions.`);
+      alert(`Updated ${rowsToUpdate.length} transaction${rowsToUpdate.length===1?'':'s'}${rowsToUpdate.length < valid.length ? `; skipped ${valid.length-rowsToUpdate.length} protected transaction${valid.length-rowsToUpdate.length===1?'':'s'}` : ''}.`);
     }
     function setLedgerView(v) {
       state.ledgerView = v;
@@ -4682,9 +4694,10 @@
 
     function updateTransactionTypeFields() {
       const isTransfer = document.getElementById('tx-type')?.value === 'Transfer';
-      const editId = document.getElementById('tx-edit-id')?.value;
-      const editingRecord = editId ? state.transactions.find(t => String(t.id) === String(editId)) : null;
-      const isExternalIncomingTransfer = !!(isTransfer && editingRecord?.externalTransferDirection === 'in' && !editingRecord.transferToAccountId);
+      const directionSelect = document.getElementById('tx-transfer-direction');
+      const direction = directionSelect?.value || 'out';
+      const isExternalIncomingTransfer = isTransfer && direction === 'in';
+      document.getElementById('tx-transfer-direction-wrap')?.classList.toggle('hidden', !isTransfer);
       document.getElementById('tx-transfer-destination-wrap')?.classList.toggle('hidden', !isTransfer || isExternalIncomingTransfer);
       if (isTransfer) {
         document.getElementById('tx-category').value = 'Transfer';
@@ -4738,6 +4751,8 @@
       document.getElementById('tx-category-rule-options').classList.add('hidden');
       document.getElementById('tx-category-rule-scope').value = 'future';
       document.getElementById('tx-transfer-to').value = '';
+      document.getElementById('tx-transfer-direction').value = 'out';
+      document.getElementById('tx-transfer-direction-wrap').classList.add('hidden');
       document.getElementById('tx-transfer-destination-wrap').classList.add('hidden');
 
       if (editId) {
@@ -4756,6 +4771,7 @@
           document.getElementById('tx-account').value = tx.accountId;
           document.getElementById('tx-related-debt').value = tx.debtAccountId || '';
           document.getElementById('tx-transfer-to').value = tx.transferToAccountId || '';
+          document.getElementById('tx-transfer-direction').value = (tx.type === 'Transfer' && tx.externalTransferDirection === 'in' && !tx.transferToAccountId) || tx.type === 'Income' ? 'in' : 'out';
           updateTransactionTypeFields();
           document.getElementById('split-tx-toggle-btn').classList.add('hidden');
         }
@@ -4768,6 +4784,7 @@
         document.getElementById('tx-vendor').value = '';
         document.getElementById('tx-related-debt').value = '';
         document.getElementById('tx-transfer-to').value = '';
+        document.getElementById('tx-transfer-direction').value = 'out';
         updateTransactionTypeFields();
         if (state.lastUsedAccountId && state.accounts.some(a => a.id === state.lastUsedAccountId)) {
           document.getElementById('tx-account').value = state.lastUsedAccountId;
@@ -4890,6 +4907,7 @@
       const vendor = type === 'Transfer' ? (enteredVendor || 'Account transfer') : applyVendorCleanupRules(enteredVendor);
       const date = document.getElementById('tx-date').value;
       const transferToAccountId = document.getElementById('tx-transfer-to').value || '';
+      const transferDirection = document.getElementById('tx-transfer-direction')?.value || 'out';
       const saveCategoryRule = document.getElementById('tx-save-category-rule').checked;
       const categoryRuleScope = document.getElementById('tx-category-rule-scope').value;
       if (!vendor) {
