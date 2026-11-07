@@ -615,8 +615,11 @@
           <i id="sec-debt-upcoming-icon" class="fa-solid fa-chevron-down text-gray-400 transition-transform"></i>
         </button>
         <div id="sec-debt-upcoming-content" class="p-6 space-y-3">
-          <div class="flex justify-between items-center text-xs text-gray-400 border-b border-gray-200 dark:border-gray-800 pb-2">
-            <span>These are debt-type items from the main calendar. Choose the funding account used when marking one paid.</span>
+          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 text-xs text-gray-400 border-b border-gray-200 dark:border-gray-800 pb-2">
+            <div class="flex flex-wrap items-center gap-2">
+              <label for="debt-upcoming-filter" class="text-gray-500 font-medium">Filter Month:</label>
+              <input type="month" id="debt-upcoming-filter" onchange="renderDebtUpcomingBills()" class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-1 text-xs font-semibold">
+            </div>
             <div class="flex items-center space-x-2">
               <span>Funding Account:</span>
               <select id="debt-fund-account" class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded px-2 py-1 text-xs"></select>
@@ -879,8 +882,12 @@
         </div>
 
         <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-4 shadow-sm">
-          <h3 class="text-md font-bold">Spending Buckets & Subcategories</h3>
+          <div class="flex flex-wrap items-center justify-between gap-2"><div><h3 class="text-md font-bold">Expense Buckets & Subcategories</h3><p class="text-[10px] text-gray-400 mt-1">Used for spending, budgets and expense reporting.</p></div><button type="button" onclick="openCategoryModal()" class="px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-semibold theme-bg"><i class="fa-solid fa-plus mr-1"></i>Add Expense Bucket</button></div>
           <div id="settings-categories-list" class="space-y-3"></div>
+        </div>
+        <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-4 shadow-sm">
+          <div class="flex flex-wrap items-center justify-between gap-2"><div><h3 class="text-md font-bold">Income Buckets & Subcategories</h3><p class="text-[10px] text-gray-400 mt-1">Used to classify money received. Kept separate from expense buckets.</p></div><button type="button" onclick="openIncomeCategoryModal()" class="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-semibold"><i class="fa-solid fa-plus mr-1"></i>Add Income Bucket</button></div>
+          <div id="settings-income-categories-list" class="space-y-3"></div>
         </div>
       </div>
     </section>
@@ -901,7 +908,7 @@
       <p class="text-xs text-gray-500">Only fields you change will be applied. Leave a field set to “No change” to preserve each transaction's current value.</p>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <label class="text-xs font-semibold text-gray-500">Vendor<input id="bulk-vendor" type="text" placeholder="No change" class="mt-1 w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm"></label>
-        <label class="text-xs font-semibold text-gray-500">Type<select id="bulk-type" class="mt-1 w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm"><option value="">No change</option></select></label>
+        <label class="text-xs font-semibold text-gray-500">Type<select id="bulk-type" onchange="updateBulkCategoryOptions()" class="mt-1 w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm"><option value="">No change</option></select></label>
         <label class="text-xs font-semibold text-gray-500">Bucket<select id="bulk-category" onchange="updateBulkSubcategoryOptions()" class="mt-1 w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm"><option value="">No change</option></select></label>
         <label class="text-xs font-semibold text-gray-500">Subcategory<select id="bulk-subcategory" class="mt-1 w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm"><option value="">No change</option></select></label>
       </div>
@@ -1047,6 +1054,21 @@
           <button type="button" onclick="closeCategoryModal()" class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold">Cancel</button>
           <button type="submit" class="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold theme-bg">Save Bucket</button>
         </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD/EDIT INCOME BUCKET -->
+  <div id="income-category-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50">
+    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-lg p-6 space-y-4 shadow-2xl">
+      <h3 class="text-lg font-bold">Manage Income Bucket & Subcategories</h3>
+      <form id="income-category-form" onsubmit="saveIncomeCategory(event)" class="space-y-3">
+        <input type="hidden" id="income-cat-edit-index" value="-1">
+        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Income Bucket Name</label><input type="text" id="income-cat-name" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" placeholder="e.g. Employment Income"></div>
+        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Subcategories (optional, one per line)</label><textarea id="income-cat-subs" rows="4" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-2 text-xs font-mono" placeholder="Regular Pay
+Overtime
+Bonus"></textarea></div>
+        <div class="flex space-x-3 pt-3"><button type="button" onclick="closeIncomeCategoryModal()" class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold">Cancel</button><button type="submit" class="flex-1 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-sm font-semibold">Save Income Bucket</button></div>
       </form>
     </div>
   </div>
@@ -1280,7 +1302,7 @@
         <div id="single-tx-fields" class="space-y-3">
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <div class="flex items-center justify-between mb-1"><label class="block text-xs font-semibold text-gray-500">Spending Bucket (Optional)</label><button type="button" onclick="quickAddBucketFromTransaction()" class="text-[10px] font-semibold text-indigo-500 hover:text-indigo-400">+ Add bucket</button></div>
+              <div class="flex items-center justify-between mb-1"><label id="tx-category-label" class="block text-xs font-semibold text-gray-500">Expense Bucket (Optional)</label><button id="tx-add-bucket-btn" type="button" onclick="quickAddBucketFromTransaction()" class="text-[10px] font-semibold text-indigo-500 hover:text-indigo-400">+ Add bucket</button></div>
               <select id="tx-category" onchange="updateSubcategoryDropdown()" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"><option value="">-- None / Transfer --</option></select>
             </div>
             <div>
@@ -1476,6 +1498,14 @@
     state.statementReconciliation.groups = Array.isArray(state.statementReconciliation.groups) ? state.statementReconciliation.groups : [];
     state.vendorCleanupRules = Array.isArray(state.vendorCleanupRules) ? state.vendorCleanupRules : [];
     state.merchantRules = Array.isArray(state.merchantRules) ? state.merchantRules : [];
+    // Income buckets are stored separately from expense buckets. Preserve any legacy
+    // category labels already used by Income transactions during this additive migration.
+    if (!Array.isArray(state.incomeCategories)) {
+      const legacyIncomeNames = [...new Set((state.transactions || []).filter(t => t.type === 'Income' && t.category && t.category !== 'Transfer').map(t => String(t.category).trim()).filter(Boolean))];
+      const starterIncomeNames = ['Employment Income', 'Government Benefits', 'Interest & Investment Income', 'Reimbursements', 'Other Income'];
+      state.incomeCategories = [...new Set([...starterIncomeNames, ...legacyIncomeNames])].map(name => ({ name, subcategories: [] }));
+    }
+    state.incomeCategories = state.incomeCategories.filter(c => c && c.name && c.name !== 'Transfer');
     state.appVisualTheme = ['classic','silver','neutral','colorful'].includes(state.appVisualTheme) ? state.appVisualTheme : 'classic';
     if (!Array.isArray(state.variablePoolCategories)) state.variablePoolCategories = (state.categories || []).filter(c => !/housing|bill|debt service/i.test(c.name)).map(c => c.name);
     // New planner and reconciliation fields are additive; existing transactions and budgets remain intact.
@@ -3392,11 +3422,23 @@
       document.getElementById('bulk-edit-modal').classList.remove('hidden');
     }
     function closeBulkEditModal() { document.getElementById('bulk-edit-modal').classList.add('hidden'); }
+    function updateBulkCategoryOptions() {
+      const type = document.getElementById('bulk-type')?.value;
+      const select = document.getElementById('bulk-category');
+      if (!select) return;
+      const current = select.value;
+      const buckets = type === 'Income' ? (state.incomeCategories || []) : (state.categories || []);
+      select.innerHTML = '<option value="">No change</option><option value="__CLEAR__">Clear bucket</option>' + (type === 'Income' ? '' : '<option value="Transfer">Transfer</option>') +
+        buckets.filter(c => c.name !== 'Transfer').map(c => `<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`).join('');
+      if ([...select.options].some(o => o.value === current)) select.value = current;
+      updateBulkSubcategoryOptions();
+    }
+
     function updateBulkSubcategoryOptions() {
       const select=document.getElementById('bulk-subcategory');
       if(!select)return;
       const categoryValue=document.getElementById('bulk-category').value;
-      const buckets=state.categories || [];
+      const buckets=document.getElementById('bulk-type')?.value === 'Income' ? (state.incomeCategories || []) : (state.categories || []);
       let options='<option value="">No change</option>';
 
       if (categoryValue === '__CLEAR__') {
@@ -3521,12 +3563,16 @@
           if(targetSubcategory) {
             t.subcategory=targetSubcategory;
           } else {
-            const targetBucket=(state.categories || []).find(c=>c.name===targetCategory);
+            const targetBuckets = t.type === 'Income' ? (state.incomeCategories || []) : (state.categories || []);
+            const targetBucket=targetBuckets.find(c=>c.name===targetCategory);
             const stillValid=(targetBucket?.subcategories || []).some(sub=>sub.name===t.subcategory);
             if(!stillValid)t.subcategory='';
           }
         } else if(targetSubcategory) {
           t.subcategory=targetSubcategory;
+        } else if (canChangeType && typeValue && typeValue !== '__TRANSFER_IN__' && typeValue !== '__TRANSFER_OUT__') {
+          const targetBuckets = t.type === 'Income' ? (state.incomeCategories || []) : (state.categories || []);
+          if (!targetBuckets.some(c => c.name === t.category)) { t.category = ''; t.subcategory = ''; }
         }
       });
       selectedLedgerIds.clear();
@@ -3654,7 +3700,7 @@
 
       const prepList = document.getElementById('prepopulated-bills-list');
       prepList.innerHTML = '';
-      const filteredBills = state.calendarBills.filter(b => !b.recurrenceOccurrenceDeleted && !b.paid && b.date.startsWith(filterYM));
+      const filteredBills = state.calendarBills.filter(b => !b.recurrenceOccurrenceDeleted && !b.paid && String(b.date || '').startsWith(filterYM)).sort((a,b) => String(a.date || '').localeCompare(String(b.date || '')));
       if (filteredBills.length === 0) {
         prepList.innerHTML = `<div class="text-xs text-gray-400 py-2">No unpaid upcoming items for ${filterYM}.</div>`;
       } else {
@@ -4181,7 +4227,48 @@
           </div>
         `;
       });
+      const incomeCatList = document.getElementById('settings-income-categories-list');
+      if (incomeCatList) {
+        incomeCatList.innerHTML = '';
+        (state.incomeCategories || []).forEach((cat, idx) => {
+          const subsHtml = (cat.subcategories || []).map(sub => `<div class="text-[11px] text-gray-500 pl-4 py-0.5 border-l-2 border-emerald-500 my-1">${escapeHtml(sub.name)}</div>`).join('');
+          incomeCatList.innerHTML += `<div class="bg-gray-50 dark:bg-gray-950 p-4 rounded-xl border border-gray-200 dark:border-gray-800 space-y-2"><div class="flex justify-between items-center"><strong class="text-sm text-emerald-600 dark:text-emerald-400">${escapeHtml(cat.name)}</strong><div class="space-x-2"><button onclick="openIncomeCategoryModal(${idx})" class="text-emerald-500 text-xs" title="Edit income bucket"><i class="fa-solid fa-pen"></i></button><button onclick="deleteIncomeCategory(${idx})" class="text-rose-500 text-xs" title="Delete income bucket"><i class="fa-solid fa-trash"></i></button></div></div><div>${subsHtml || '<div class="text-[11px] text-gray-400 pl-4">No subcategories defined</div>'}</div></div>`;
+        });
+      }
       syncCustomColorControls();
+    }
+
+    function openIncomeCategoryModal(editIdx = -1) {
+      const bucket = editIdx >= 0 ? (state.incomeCategories || [])[editIdx] : null;
+      document.getElementById('income-cat-edit-index').value = editIdx;
+      document.getElementById('income-cat-name').value = bucket?.name || '';
+      document.getElementById('income-cat-subs').value = (bucket?.subcategories || []).map(sub => sub.name).join('\n');
+      document.getElementById('income-category-modal').classList.remove('hidden');
+    }
+    function closeIncomeCategoryModal() { document.getElementById('income-category-modal').classList.add('hidden'); }
+    function saveIncomeCategory(e) {
+      e.preventDefault();
+      state.incomeCategories = state.incomeCategories || [];
+      const idx = Number(document.getElementById('income-cat-edit-index').value);
+      const name = document.getElementById('income-cat-name').value.trim();
+      const subcategories = document.getElementById('income-cat-subs').value.split('\n').map(v => v.trim()).filter(Boolean).map(name => ({name}));
+      if (!name || name.toLowerCase() === 'transfer') { alert('Enter a valid income bucket name. Transfer is reserved.'); return; }
+      if (state.incomeCategories.some((c, i) => i !== idx && c.name.toLowerCase() === name.toLowerCase())) { alert('An income bucket with that name already exists.'); return; }
+      const oldName = idx >= 0 ? state.incomeCategories[idx]?.name : '';
+      const updated = {name, subcategories};
+      if (idx >= 0) {
+        state.incomeCategories[idx] = updated;
+        if (oldName !== name) (state.transactions || []).forEach(t => { if (t.type === 'Income' && t.category === oldName) t.category = name; });
+      } else state.incomeCategories.push(updated);
+      saveData(); closeIncomeCategoryModal(); renderSettings(); renderLedger(); renderDashboard();
+    }
+    function deleteIncomeCategory(idx) {
+      const bucket = (state.incomeCategories || [])[idx]; if (!bucket) return;
+      const count = (state.transactions || []).filter(t => t.type === 'Income' && t.category === bucket.name).length;
+      if (count) { alert(`“${bucket.name}” is used by ${count} income transaction(s). Reassign those transactions before deleting it.`); return; }
+      if (!confirm(`Delete the unused income bucket “${bucket.name}”?`)) return;
+      state.incomeCategories.splice(idx, 1); if (state.lastUsedIncomeCategory === bucket.name) delete state.lastUsedIncomeCategory;
+      saveData(); renderSettings(); renderLedger(); renderDashboard();
     }
 
     function openTypeModal() { document.getElementById('type-modal').classList.remove('hidden'); }
@@ -4230,6 +4317,7 @@
     function deleteMerchantRule(idx) { captureUndo('Delete categorization rule'); state.merchantRules.splice(idx, 1); saveData(); renderSettings(); }
 
     function applySmartMerchantRules(desc) {
+      if (document.getElementById('tx-type')?.value !== 'Expense') return;
       const d = desc.toLowerCase();
       const rule = (state.merchantRules || []).find(r => d.includes(r.keyword));
       if (rule) {
@@ -4278,7 +4366,7 @@
       if (editIdx >= 0) {
         state.categories[editIdx] = updated;
         if (oldName !== updated.name) {
-          (state.transactions || []).forEach(t => { if (t.category === oldName) t.category = updated.name; });
+          (state.transactions || []).forEach(t => { if (t.type !== 'Income' && t.category === oldName) t.category = updated.name; });
           (state.calendarBills || []).forEach(b => { if (b.category === oldName) b.category = updated.name; });
           (state.merchantRules || []).forEach(r => { if (r.category === oldName) r.category = updated.name; });
           if (Array.isArray(state.variablePoolCategories)) state.variablePoolCategories = state.variablePoolCategories.map(n => n === oldName ? updated.name : n);
@@ -4291,7 +4379,7 @@
       const category = state.categories[idx];
       if (!category) return;
       const name = category.name;
-      const transactionCount = (state.transactions || []).filter(t => t.category === name).length;
+      const transactionCount = (state.transactions || []).filter(t => t.type !== 'Income' && t.category === name).length;
       const billCount = (state.calendarBills || []).filter(b => b.category === name).length;
       const ruleCount = (state.merchantRules || []).filter(r => r.category === name).length;
       if (transactionCount || billCount || ruleCount) {
@@ -4339,13 +4427,17 @@
     function renderDebtUpcomingBills() {
       const container = document.getElementById('debt-upcoming-bills-list');
       const fundSelect = document.getElementById('debt-fund-account');
-      container.innerHTML = ''; fundSelect.innerHTML = '';
+      container.innerHTML = ''; const previousFundAccount = fundSelect.value; fundSelect.innerHTML = '';
       state.accounts.filter(a => a.type === 'asset').forEach(a => {
         fundSelect.innerHTML += `<option value="${a.id}">${a.name} (${formatFinancial(a.balance)})</option>`;
       });
-      const upcomingDebts = state.calendarBills.filter(b => !b.recurrenceOccurrenceDeleted && b.type === 'debt' && !b.paid);
+      if (previousFundAccount && state.accounts.some(a => a.id === previousFundAccount && a.type === 'asset')) fundSelect.value = previousFundAccount;
+      const monthPicker = document.getElementById('debt-upcoming-filter');
+      if (monthPicker && !monthPicker.value) { const now = new Date(); monthPicker.value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`; }
+      const filterYM = monthPicker?.value || '';
+      const upcomingDebts = state.calendarBills.filter(b => !b.recurrenceOccurrenceDeleted && b.type === 'debt' && !b.paid && (!filterYM || String(b.date || '').startsWith(filterYM))).sort((a,b) => String(a.date || '').localeCompare(String(b.date || '')));
       if (upcomingDebts.length === 0) {
-        container.innerHTML = '<div class="text-xs text-gray-400 py-1">No upcoming unpaid debt minimum bills scheduled.</div>';
+        container.innerHTML = `<div class="text-xs text-gray-400 py-1">No unpaid debt minimums scheduled for ${filterYM || 'the selected period'}.</div>`;
         return;
       }
       upcomingDebts.forEach(d => {
@@ -4725,6 +4817,10 @@
       document.getElementById('tx-transfer-direction-wrap')?.classList.toggle('hidden', !isTransfer);
       document.getElementById('tx-transfer-destination-wrap')?.classList.toggle('hidden', !isInternalTransfer);
       if (isTransfer) {
+        refreshTransactionBucketOptions('Transfer');
+        document.getElementById('tx-category-label').textContent = 'Transfer';
+        document.getElementById('tx-add-bucket-btn').classList.add('hidden');
+        const ruleCheckbox = document.getElementById('tx-save-category-rule'); if (ruleCheckbox) { ruleCheckbox.checked = false; ruleCheckbox.disabled = true; }
         document.getElementById('tx-category').value = 'Transfer';
         document.getElementById('tx-subcategory').value = '';
         document.getElementById('tx-is-split').value = 'false';
@@ -4733,7 +4829,15 @@
         document.getElementById('split-tx-fields').classList.add('hidden');
         document.getElementById('split-tx-toggle-btn').classList.add('hidden');
       } else {
-        if (document.getElementById('tx-category').value === 'Transfer') document.getElementById('tx-category').value = '';
+        const selected = document.getElementById('tx-category').value;
+        const isIncome = document.getElementById('tx-type').value === 'Income';
+        const available = isIncome ? (state.incomeCategories || []) : (state.categories || []);
+        const keepSelected = selected !== 'Transfer' && available.some(c => c.name === selected) ? selected : '';
+        refreshTransactionBucketOptions(keepSelected);
+        document.getElementById('tx-category-label').textContent = isIncome ? 'Income Bucket (Optional)' : 'Expense Bucket (Optional)';
+        document.getElementById('tx-add-bucket-btn').classList.remove('hidden');
+        const ruleCheckbox = document.getElementById('tx-save-category-rule');
+        if (ruleCheckbox) { ruleCheckbox.disabled = isIncome; if (!isIncome) ruleCheckbox.disabled = false; if (isIncome) { ruleCheckbox.checked = false; document.getElementById('tx-category-rule-options')?.classList.add('hidden'); } }
         if (!document.getElementById('tx-edit-id').value) document.getElementById('split-tx-toggle-btn').classList.remove('hidden');
       }
     }
@@ -4748,7 +4852,7 @@
       if (existing) Object.assign(existing, {keyword, category, subcategory:subcategory || ''});
       else state.merchantRules.unshift({keyword, category, subcategory:subcategory || ''});
       if (scope === 'historical') {
-        const matches = (state.transactions || []).filter(t => normalizeStatementText(t.vendor || '').includes(normalizeStatementText(keyword)));
+        const matches = (state.transactions || []).filter(t => t.type === 'Expense' && normalizeStatementText(t.vendor || '').includes(normalizeStatementText(keyword)));
         const count = matches.length;
         if (count && confirm(`This rule matches ${count} existing transaction${count===1?'':'s'}. Apply the bucket and subcategory to those transactions too?`)) {
           matches.forEach(t => { t.category = category; t.subcategory = subcategory || ''; if (t.calendarBillId) { const bill = (state.calendarBills || []).find(b => b.id === t.calendarBillId); if (bill) { bill.category = category; bill.subcategory = subcategory || ''; } } });
@@ -4759,9 +4863,7 @@
     function openTransactionModal(editId = null) {
       const tSelect = document.getElementById('tx-type');
       tSelect.innerHTML = ''; state.transactionTypes.forEach(t => tSelect.innerHTML += `<option value="${t}">${t}</option>`);
-      const cSelect = document.getElementById('tx-category');
-      cSelect.innerHTML = '<option value="">-- None --</option><option value="Transfer">Transfer</option>';
-      state.categories.filter(c => c.name !== 'Transfer').forEach(c => cSelect.innerHTML += `<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`);
+      refreshTransactionBucketOptions('');
       const aSelect = document.getElementById('tx-account');
       aSelect.innerHTML = ''; state.accounts.forEach(a => aSelect.innerHTML += `<option value="${a.id}">${escapeHtml(a.name)}</option>`);
       const transferSelect = document.getElementById('tx-transfer-to');
@@ -4790,6 +4892,7 @@
           document.getElementById('tx-desc').value = tx.desc || '';
           document.getElementById('tx-vendor').value = tx.vendor || '';
           document.getElementById('tx-type').value = tx.type;
+          refreshTransactionBucketOptions(tx.category || '');
           document.getElementById('tx-category').value = tx.category || '';
           updateSubcategoryDropdown();
           document.getElementById('tx-subcategory').value = tx.subcategory || '';
@@ -4815,8 +4918,9 @@
         if (state.lastUsedAccountId && state.accounts.some(a => a.id === state.lastUsedAccountId)) {
           document.getElementById('tx-account').value = state.lastUsedAccountId;
         }
-        if (state.lastUsedCategory && state.categories.some(c => c.name === state.lastUsedCategory)) {
-          document.getElementById('tx-category').value = state.lastUsedCategory;
+        const lastBucket = document.getElementById('tx-type').value === 'Income' ? state.lastUsedIncomeCategory : state.lastUsedCategory;
+        if (lastBucket && getTransactionBuckets().some(c => c.name === lastBucket)) {
+          document.getElementById('tx-category').value = lastBucket;
           updateSubcategoryDropdown();
         }
       }
@@ -4835,7 +4939,7 @@
     function addSplitTxRow() {
       const container = document.getElementById('split-rows-container');
       let catOpts = '<option value="">-- None --</option>';
-      state.categories.forEach(c => {
+      getTransactionBuckets().forEach(c => {
         (c.subcategories || []).forEach(s => {
           catOpts += `<option value="${c.name}::${s.name}">${c.name} - ${s.name}</option>`;
         });
@@ -4853,48 +4957,45 @@
 
     function closeTransactionModal() { document.getElementById('transaction-modal').classList.add('hidden'); }
     
+    function getTransactionBuckets() {
+      const type = document.getElementById('tx-type')?.value;
+      return type === 'Income' ? (state.incomeCategories || []) : (state.categories || []);
+    }
+
     function updateSubcategoryDropdown() {
       const bucketName = document.getElementById('tx-category').value;
       const subSelect = document.getElementById('tx-subcategory');
       const previousValue = subSelect.value;
       subSelect.innerHTML = '<option value="">-- None --</option>';
-      const bucket = (state.categories || []).find(c => c.name === bucketName);
-      if (bucket && bucket.subcategories) {
-        bucket.subcategories.forEach(sub => subSelect.innerHTML += `<option value="${escapeHtml(sub.name)}">${escapeHtml(sub.name)}</option>`);
-      }
+      const bucket = getTransactionBuckets().find(c => c.name === bucketName);
+      if (bucket && bucket.subcategories) bucket.subcategories.forEach(sub => subSelect.innerHTML += `<option value="${escapeHtml(sub.name)}">${escapeHtml(sub.name)}</option>`);
       if (bucket && (bucket.subcategories || []).some(sub => sub.name === previousValue)) subSelect.value = previousValue;
     }
 
     function refreshTransactionBucketOptions(selectedName = '') {
       const select = document.getElementById('tx-category');
       if (!select) return;
-      select.innerHTML = '<option value="">-- None / Transfer --</option><option value="Transfer">Transfer</option>' +
-        (state.categories || []).filter(c => c.name !== 'Transfer').map(c => `<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`).join('');
+      const type = document.getElementById('tx-type')?.value;
+      const buckets = type === 'Income' ? (state.incomeCategories || []) : (state.categories || []);
+      const transferOption = type === 'Transfer' ? '<option value="Transfer">Transfer</option>' : '';
+      select.innerHTML = '<option value="">-- None --</option>' + transferOption + buckets.filter(c => c.name !== 'Transfer').map(c => `<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`).join('');
       select.value = selectedName;
       updateSubcategoryDropdown();
     }
 
     function quickAddBucketFromTransaction() {
-      const raw = prompt('Enter the new spending bucket name:');
+      const isIncome = document.getElementById('tx-type')?.value === 'Income';
+      const collection = isIncome ? (state.incomeCategories || (state.incomeCategories = [])) : (state.categories || (state.categories = []));
+      const raw = prompt(`Enter the new ${isIncome ? 'income' : 'expense'} bucket name:`);
       if (raw === null) return;
       const name = raw.trim();
       if (!name) { alert('Enter a bucket name.'); return; }
-      if (name.toLowerCase() === 'transfer') {
-        alert('Transfer is a reserved bucket and is already available in the dropdown.');
-        refreshTransactionBucketOptions('Transfer');
-        return;
-      }
-      if ((state.categories || []).some(c => c.name.toLowerCase() === name.toLowerCase())) {
-        alert('A bucket with that name already exists.');
-        refreshTransactionBucketOptions((state.categories || []).find(c => c.name.toLowerCase() === name.toLowerCase()).name);
-        return;
-      }
-      state.categories = state.categories || [];
-      state.categories.push({ name, subcategories: [] });
-      state.lastUsedCategory = name;
-      saveData();
-      refreshTransactionBucketOptions(name);
-      renderSettings();
+      if (name.toLowerCase() === 'transfer') { alert('Transfer is reserved and cannot be used as an income or expense bucket.'); return; }
+      const existing = collection.find(c => c.name.toLowerCase() === name.toLowerCase());
+      if (existing) { alert('A bucket with that name already exists.'); refreshTransactionBucketOptions(existing.name); return; }
+      collection.push({ name, subcategories: [] });
+      if (isIncome) state.lastUsedIncomeCategory = name; else state.lastUsedCategory = name;
+      saveData(); refreshTransactionBucketOptions(name); renderSettings();
     }
 
     function quickAddSubcategoryFromTransaction() {
@@ -4907,7 +5008,7 @@
       if (raw === null) return;
       const name = raw.trim();
       if (!name) { alert('Enter a subcategory name.'); return; }
-      const bucket = (state.categories || []).find(c => c.name === bucketName);
+      const bucket = getTransactionBuckets().find(c => c.name === bucketName);
       if (!bucket) return;
       bucket.subcategories = bucket.subcategories || [];
       if (bucket.subcategories.some(sub => sub.name.toLowerCase() === name.toLowerCase())) {
@@ -5027,7 +5128,7 @@
         }
 
         state.lastUsedAccountId = accountId;
-        if (category) state.lastUsedCategory = category;
+        if (category) { if (type === 'Income') state.lastUsedIncomeCategory = category; else state.lastUsedCategory = category; }
 
         if (editId) {
           const idx = state.transactions.findIndex(t => t.id === editId);
