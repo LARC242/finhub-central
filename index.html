@@ -901,6 +901,7 @@
       <p class="text-xs text-gray-500">Only fields you change will be applied. Leave a field set to “No change” to preserve each transaction's current value.</p>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <label class="text-xs font-semibold text-gray-500">Vendor<input id="bulk-vendor" type="text" placeholder="No change" class="mt-1 w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm"></label>
+        <label class="text-xs font-semibold text-gray-500">Type<select id="bulk-type" class="mt-1 w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm"><option value="">No change</option></select></label>
         <label class="text-xs font-semibold text-gray-500">Bucket<select id="bulk-category" onchange="updateBulkSubcategoryOptions()" class="mt-1 w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm"><option value="">No change</option></select></label>
         <label class="text-xs font-semibold text-gray-500">Subcategory<select id="bulk-subcategory" class="mt-1 w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm"><option value="">No change</option></select></label>
       </div>
@@ -2076,8 +2077,9 @@
         transactions.forEach(t => {
           if (t.accountId === acc.id) {
             const amount = Number(t.amount) || 0;
-            let change = t.type === 'Income' ? amount : -amount;
-            let type = t.type || 'Transaction';
+            const isExternalTransferIn = t.type === 'Transfer' && t.externalTransferDirection === 'in' && !t.transferToAccountId;
+            let change = (t.type === 'Income' || isExternalTransferIn) ? amount : -amount;
+            let type = isExternalTransferIn ? 'Transfer In' : (t.type || 'Transaction');
             if (t.type === 'Transfer' && t.transferToAccountId) type = 'Transfer Out';
             entries.push({ id: t.id, date: t.date || '', description: t.vendor || t.desc || 'Transaction', detail: t.desc && t.vendor && t.desc !== t.vendor ? t.desc : '', type, change, reconciled: !!t.reconciled });
           } else if (t.type === 'Transfer' && t.transferToAccountId === acc.id) {
@@ -3364,13 +3366,17 @@
     }
     function clearLedgerSelection() { selectedLedgerIds.clear(); renderLedger(); }
     function openBulkEditModal() {
-      const ids = Array.from(selectedLedgerIds).filter(id => state.transactions.some(t => t.id === id));
+      const ids = Array.from(selectedLedgerIds).filter(id => state.transactions.some(t => String(t.id) === String(id)));
       if (!ids.length) { selectedLedgerIds.clear(); updateLedgerSelectionUI(); return; }
       document.getElementById('bulk-edit-count').textContent = `${ids.length} transaction${ids.length===1?'':'s'} selected`;
       const category = document.getElementById('bulk-category');
-      category.innerHTML = '<option value="">No change</option><option value="__CLEAR__">Clear bucket</option><option value="Transfer">Transfer (internal movement)</option>' +
+      category.innerHTML = '<option value="">No change</option><option value="__CLEAR__">Clear bucket</option><option value="Transfer">Transfer</option>' +
         (state.categories || []).filter(c=>c.name !== 'Transfer').map(c=>`<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`).join('');
-      ['bulk-vendor','bulk-category','bulk-subcategory'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+      const typeSelect = document.getElementById('bulk-type');
+      typeSelect.innerHTML = '<option value="">No change</option>' +
+        (state.transactionTypes || ['Expense','Income','Debt Payment']).filter(type=>type !== 'Transfer').map(type=>`<option value="${escapeHtml(type)}">${escapeHtml(type)}</option>`).join('') +
+        '<option value="__TRANSFER_IN__">Transfer (incoming / external)</option>';
+      ['bulk-vendor','bulk-type','bulk-category','bulk-subcategory'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
       updateBulkSubcategoryOptions();
       document.getElementById('bulk-edit-modal').classList.remove('hidden');
     }
@@ -3405,12 +3411,24 @@
     function applyBulkEdit() {
       const ids=Array.from(selectedLedgerIds);
       const vendorValue=document.getElementById('bulk-vendor').value.trim();
+      const typeValue=document.getElementById('bulk-type').value;
       const categoryValue=document.getElementById('bulk-category').value;
       const subcategoryValue=document.getElementById('bulk-subcategory').value;
-      const hasChanges=vendorValue!=='' || categoryValue!=='' || subcategoryValue!=='';
+      const hasChanges=vendorValue!=='' || typeValue!=='' || categoryValue!=='' || subcategoryValue!=='';
       if (!hasChanges) { alert('Choose at least one field to update.'); return; }
-      const valid=ids.map(id=>state.transactions.find(t=>t.id===id)).filter(Boolean);
+      const valid=ids.map(id=>state.transactions.find(t=>String(t.id)===String(id))).filter(Boolean);
       if (!valid.length)return;
+      if (typeValue) {
+        const protectedRows = valid.filter(t => t.calendarBillId || t.debtPaymentId || t.transferToAccountId || t.debtAccountId);
+        if (protectedRows.length) {
+          alert(`Type cannot be bulk-edited for ${protectedRows.length} selected transaction(s) because they are linked to a scheduled payment, debt account, or internal transfer. Edit those records through their linked workflow instead.`);
+          return;
+        }
+        if (typeValue === '__TRANSFER_IN__' && valid.some(t => t.type !== 'Income' && !(t.type === 'Transfer' && t.externalTransferDirection === 'in'))) {
+          alert('Incoming external Transfer can only be applied to transactions currently classified as Income or already marked as an incoming external Transfer. This preserves the account balance direction.');
+          return;
+        }
+      }
 
       let pairedCategory='', pairedSubcategory='';
       if (subcategoryValue.startsWith('__PAIR__')) {
@@ -3431,10 +3449,31 @@
         : targetCategory === 'Transfer'
           ? ' The bucket will be set to Transfer and the subcategory cleared. Account balances will not be changed.'
           : (targetCategory ? ` The bucket will be set to “${targetCategory}”.` : '');
-      if (!confirm(`Apply the selected changes to ${valid.length} transaction${valid.length===1?'':'s'}?${confirmationDetail}`))return;
+      const typeDetail = typeValue === '__TRANSFER_IN__'
+        ? ' Type will become Transfer (incoming/external). This remains a credit to the selected account and will no longer count as income.'
+        : (typeValue ? ` Type will become “${typeValue}”; account balances will be adjusted to preserve the correct effect of the transaction.` : '');
+      if (!confirm(`Apply the selected changes to ${valid.length} transaction${valid.length===1?'':'s'}?${typeDetail}${confirmationDetail}`))return;
+      if (typeValue) captureUndo('Bulk edit transaction types and details');
 
       valid.forEach(t=>{
         if(vendorValue!=='')t.vendor=vendorValue;
+        if (typeValue === '__TRANSFER_IN__') {
+          t.type = 'Transfer';
+          t.externalTransferDirection = 'in';
+          t.category = 'Transfer';
+          t.subcategory = '';
+          delete t.transferToAccountId;
+        } else if (typeValue) {
+          const amount = Number(t.amount) || 0;
+          const oldIsCredit = t.type === 'Income' || (t.type === 'Transfer' && t.externalTransferDirection === 'in');
+          const newIsCredit = typeValue === 'Income';
+          if (oldIsCredit !== newIsCredit) {
+            const account = state.accounts.find(a => String(a.id) === String(t.accountId));
+            if (account) account.balance = (Number(account.balance) || 0) + (newIsCredit ? amount : -amount) - (oldIsCredit ? amount : -amount);
+          }
+          t.type = typeValue;
+          if (typeValue !== 'Transfer') delete t.externalTransferDirection;
+        }
         if(clearBucket) {
           t.category='';
           t.subcategory='';
@@ -3800,6 +3839,7 @@
     function statementDirectionForTransaction(t, accountId) {
       if (!t) return null;
       if (t.type === 'Transfer') {
+        if (t.externalTransferDirection === 'in' && !t.transferToAccountId && t.accountId === accountId) return 'Income';
         if (t.accountId === accountId) return 'Expense';
         if (t.transferToAccountId === accountId) return 'Income';
         return null;
@@ -4028,7 +4068,7 @@
         const t = state.transactions[idx];
         const acc = state.accounts.find(a => a.id === t.accountId);
         if (t.type === 'Transfer' && t.transferToAccountId) { const target=state.accounts.find(a=>a.id===t.transferToAccountId); if(acc) acc.balance += Number(t.amount)||0; if(target) target.balance -= Number(t.amount)||0; }
-        else if (acc) { if (t.type === 'Income') acc.balance -= t.amount; else acc.balance += t.amount; }
+        else if (acc) { if (t.type === 'Income' || (t.type === 'Transfer' && t.externalTransferDirection === 'in')) acc.balance -= Number(t.amount)||0; else acc.balance += Number(t.amount)||0; }
         if (t.debtPaymentId) {
           const debtPayment = (state.debtPayments || []).find(p => p.id === t.debtPaymentId);
           if (debtPayment) {
@@ -4642,7 +4682,10 @@
 
     function updateTransactionTypeFields() {
       const isTransfer = document.getElementById('tx-type')?.value === 'Transfer';
-      document.getElementById('tx-transfer-destination-wrap')?.classList.toggle('hidden', !isTransfer);
+      const editId = document.getElementById('tx-edit-id')?.value;
+      const editingRecord = editId ? state.transactions.find(t => String(t.id) === String(editId)) : null;
+      const isExternalIncomingTransfer = !!(isTransfer && editingRecord?.externalTransferDirection === 'in' && !editingRecord.transferToAccountId);
+      document.getElementById('tx-transfer-destination-wrap')?.classList.toggle('hidden', !isTransfer || isExternalIncomingTransfer);
       if (isTransfer) {
         document.getElementById('tx-category').value = 'Transfer';
         document.getElementById('tx-subcategory').value = '';
@@ -4866,27 +4909,40 @@
         alert('This transaction is linked to a scheduled bill or debt payment. Its transaction type cannot be changed here because that would break the payment linkage. You can still edit its other fields.');
         return;
       }
-      if ((editId && state.transactions.some(t => t.id === editId && t.type === 'Transfer')) || type === 'Transfer') {
-        const idx = state.transactions.findIndex(t => t.id === editId);
+      if ((editId && state.transactions.some(t => String(t.id) === String(editId) && t.type === 'Transfer')) || type === 'Transfer') {
+        const idx = state.transactions.findIndex(t => String(t.id) === String(editId));
         const oldT = idx >= 0 ? state.transactions[idx] : null;
-        if (type === 'Transfer' && (!transferToAccountId || transferToAccountId === accountId)) { alert('Choose a destination account different from the source account.'); return; }
-        if (type === 'Transfer' && (state.accounts.find(a=>a.id===accountId)?.type !== 'asset' || state.accounts.find(a=>a.id===transferToAccountId)?.type !== 'asset')) { alert('Transfers must be between two asset accounts. Use the debt payment workflow for payments to a liability.'); return; }
-        if (type === 'Transfer' && amount <= 0) { alert('Enter a transfer amount greater than zero.'); return; }
+        const isExternalIncomingTransfer = type === 'Transfer' && oldT?.externalTransferDirection === 'in' && !transferToAccountId;
+        if (type === 'Transfer' && !isExternalIncomingTransfer && (!transferToAccountId || transferToAccountId === accountId)) { alert('Choose a destination account different from the source account.'); return; }
+        if (type === 'Transfer' && !isExternalIncomingTransfer && (state.accounts.find(a=>a.id===accountId)?.type !== 'asset' || state.accounts.find(a=>a.id===transferToAccountId)?.type !== 'asset')) { alert('Internal transfers must be between two asset accounts. Use the debt payment workflow for payments to a liability.'); return; }
+        if (type === 'Transfer' && !isExternalIncomingTransfer && amount <= 0) { alert('Enter a transfer amount greater than zero.'); return; }
         if (oldT && oldT.type === 'Transfer' && oldT.transferToAccountId) {
           const oldFrom = state.accounts.find(a => a.id === oldT.accountId); const oldTo = state.accounts.find(a => a.id === oldT.transferToAccountId);
           if (oldFrom) oldFrom.balance = (Number(oldFrom.balance)||0) + (Number(oldT.amount)||0);
           if (oldTo) oldTo.balance = (Number(oldTo.balance)||0) - (Number(oldT.amount)||0);
         } else if (oldT) {
-          const oldAcc = state.accounts.find(a => a.id === oldT.accountId); if (oldAcc) { if (oldT.type === 'Income') oldAcc.balance = (Number(oldAcc.balance)||0) - (Number(oldT.amount)||0); else oldAcc.balance = (Number(oldAcc.balance)||0) + (Number(oldT.amount)||0); }
+          const oldAcc = state.accounts.find(a => a.id === oldT.accountId);
+          if (oldAcc) {
+            const oldWasCredit = oldT.type === 'Income' || (oldT.type === 'Transfer' && oldT.externalTransferDirection === 'in');
+            oldAcc.balance = (Number(oldAcc.balance)||0) + (oldWasCredit ? -(Number(oldT.amount)||0) : (Number(oldT.amount)||0));
+          }
         }
-        if (type === 'Transfer') {
+        if (isExternalIncomingTransfer) {
+          const incomingAccount = state.accounts.find(a => a.id === accountId);
+          if (incomingAccount) incomingAccount.balance = (Number(incomingAccount.balance)||0) + amount;
+          const transferRecord = { ...(oldT||{}), id:editId || Date.now().toString(), date, desc, vendor:vendor || 'External transfer', type:'Transfer', category:'Transfer', subcategory:'', amount, accountId, externalTransferDirection:'in' };
+          delete transferRecord.transferToAccountId;
+          if (idx >= 0) state.transactions[idx] = transferRecord; else state.transactions.unshift(transferRecord);
+        } else if (type === 'Transfer') {
           const from = state.accounts.find(a => a.id === accountId); const to = state.accounts.find(a => a.id === transferToAccountId);
           if (from) from.balance = (Number(from.balance)||0) - amount; if (to) to.balance = (Number(to.balance)||0) + amount;
           const transferRecord = { ...(oldT||{}), id:editId || Date.now().toString(), date, desc:desc || `Transfer to ${to?.name || 'account'}`, vendor:vendor || 'Account transfer', type:'Transfer', category:'Transfer', subcategory:'', amount, accountId, transferToAccountId };
+          delete transferRecord.externalTransferDirection;
           if (idx >= 0) state.transactions[idx] = transferRecord; else state.transactions.unshift(transferRecord);
         } else if (oldT) {
           const newAcc = state.accounts.find(a => a.id === accountId); if (newAcc) { if (type === 'Income') newAcc.balance = (Number(newAcc.balance)||0) + amount; else newAcc.balance = (Number(newAcc.balance)||0) - amount; }
           state.transactions[idx] = { ...oldT, date, desc, vendor, type, category:document.getElementById('tx-category').value, subcategory:document.getElementById('tx-subcategory').value, amount, accountId, debtAccountId:document.getElementById('tx-related-debt').value || undefined };
+          delete state.transactions[idx].externalTransferDirection;
         } else { alert('The transaction could not be found.'); return; }
       } else if (isSplit && !editId) {
         const rows = document.querySelectorAll('#split-rows-container > div');
