@@ -27,6 +27,42 @@
     .spending-donut:after { content:""; position:absolute; inset:27%; background:var(--donut-hole,#fff); border-radius:50%; }
     .dark .spending-donut:after { background:#111827; }
     .spending-legend button { width:100%; text-align:left; }
+
+    /* Collapsible navigation rail */
+    #finhub-sidebar { width:16rem; transition:width .2s ease, height .2s ease; }
+    body.sidebar-collapsed #finhub-sidebar { width:5rem; }
+    body.sidebar-collapsed #finhub-sidebar .sidebar-brand-copy,
+    body.sidebar-collapsed #finhub-sidebar .sidebar-nav-label,
+    body.sidebar-collapsed #finhub-sidebar #sidebar-summary { display:none !important; }
+    body.sidebar-collapsed #finhub-sidebar .sidebar-brand-row { justify-content:center; }
+    body.sidebar-collapsed #finhub-sidebar .sidebar-brand-actions { flex-direction:column; }
+    body.sidebar-collapsed #finhub-sidebar nav { padding-left:.55rem; padding-right:.55rem; }
+    body.sidebar-collapsed #finhub-sidebar .nav-btn { justify-content:center; padding-left:.5rem; padding-right:.5rem; }
+    body.sidebar-collapsed #finhub-sidebar .nav-btn > i { width:auto; font-size:1rem; }
+    @media(max-width:767px) {
+      #finhub-sidebar { width:100%; }
+      body.sidebar-collapsed #finhub-sidebar { width:100%; height:4.25rem; overflow:hidden; }
+      body.sidebar-collapsed #finhub-sidebar > div:first-child { height:4.25rem; }
+      body.sidebar-collapsed #finhub-sidebar nav,
+      body.sidebar-collapsed #finhub-sidebar #sidebar-summary { display:none !important; }
+      body.sidebar-collapsed #finhub-sidebar .sidebar-brand-copy { display:block !important; }
+      body.sidebar-collapsed #finhub-sidebar .sidebar-brand-row { justify-content:flex-start; }
+      body.sidebar-collapsed #finhub-sidebar .sidebar-brand-actions { flex-direction:row; }
+    }
+    /* Compact, horizontally scrollable multi-select filters */
+    .ledger-filter-strip { display:flex; align-items:center; gap:.45rem; overflow-x:auto; overflow-y:hidden; white-space:nowrap; padding:.7rem; scrollbar-width:thin; }
+    .ledger-filter-button { flex:0 0 auto; display:inline-flex; align-items:center; gap:.4rem; padding:.45rem .65rem; border:1px solid rgba(148,163,184,.35); border-radius:.65rem; background:rgba(148,163,184,.08); font-size:.7rem; font-weight:600; }
+    .ledger-filter-button.has-selection { border-color:#818cf8; background:rgba(99,102,241,.12); }
+    #ledger-filter-popover { position:fixed; z-index:100; width:min(19rem,calc(100vw - 1.5rem)); max-height:min(26rem,calc(100vh - 2rem)); overflow:hidden; border:1px solid rgba(148,163,184,.4); border-radius:.9rem; background:#fff; color:#111827; box-shadow:0 18px 45px rgba(0,0,0,.22); }
+    .dark #ledger-filter-popover { background:#111827; color:#f3f4f6; border-color:#374151; }
+    #ledger-filter-options { max-height:17rem; overflow-y:auto; overscroll-behavior:contain; }
+    #ledger-filter-popover input[type="search"] { color:inherit; }
+    @media(max-width:640px) {
+      #ledger-table-container { overflow-x:auto !important; }
+      #ledger-table-container table { min-width:980px; }
+      #ledger-table-container thead tr:nth-child(2) { display:none !important; }
+    }
+
     @media(max-width:640px) {
       main { min-width:0; }
       #ledger-table-container { overflow:visible; border:0; background:transparent; box-shadow:none; }
@@ -143,48 +179,49 @@
   </div>
 
   <!-- Sidebar Nav -->
-  <aside class="w-full md:w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex-shrink-0 flex flex-col justify-between">
+  <aside id="finhub-sidebar" class="finhub-sidebar w-full md:w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex-shrink-0 flex flex-col justify-between">
     <div>
-      <div class="p-5 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
-        <div class="flex items-center space-x-3">
+      <div class="p-5 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between gap-2">
+        <div class="sidebar-brand-row flex items-center space-x-3 min-w-0">
           <div id="brand-logo" class="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-indigo-500/30">F</div>
-          <div>
+          <div class="sidebar-brand-copy min-w-0">
             <h1 class="font-bold text-lg leading-none tracking-wide">FinHub Central</h1>
             <span class="text-xs text-indigo-500 dark:text-indigo-400 font-medium">Financial OS</span>
           </div>
         </div>
-        <div class="flex items-center space-x-1">
+        <div class="sidebar-brand-actions flex items-center space-x-1">
+          <button onclick="toggleSidebar()" title="Collapse or expand sidebar" aria-label="Collapse or expand sidebar" class="p-2 text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-lg"><i id="sidebar-collapse-icon" class="sidebar-collapse-label fa-solid fa-angles-left"></i></button>
           <button onclick="togglePrivacyBlur()" title="Toggle Blur Privacy" class="p-2 text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-lg"><i id="privacy-icon" class="fa-solid fa-eye"></i></button>
           <button onclick="toggleTheme()" title="Toggle Light/Dark Mode" class="p-2 text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-lg"><i id="theme-icon" class="fa-solid fa-moon"></i></button>
         </div>
       </div>
 
       <nav class="p-3 space-y-1 text-sm font-medium">
-        <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl transition-colors bg-indigo-600 text-white shadow-md shadow-indigo-600/20">
-          <i class="fa-solid fa-chart-pie w-5"></i><span>Dashboard</span>
+        <button onclick="switchTab('dashboard')" id="nav-dashboard" title="Dashboard" class="nav-btn w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl transition-colors bg-indigo-600 text-white shadow-md shadow-indigo-600/20">
+          <i class="fa-solid fa-chart-pie w-5"></i><span class="sidebar-nav-label">Dashboard</span>
         </button>
-        <button onclick="switchTab('biweekly')" id="nav-biweekly" class="nav-btn w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-          <i class="fa-solid fa-scale-balanced w-5"></i><span>Paycheque ZBB Planner</span>
+        <button onclick="switchTab('biweekly')" id="nav-biweekly" title="Paycheque ZBB Planner" class="nav-btn w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+          <i class="fa-solid fa-scale-balanced w-5"></i><span class="sidebar-nav-label">Paycheque ZBB Planner</span>
         </button>
-        <button onclick="switchTab('calendar')" id="nav-calendar" class="nav-btn w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-          <i class="fa-solid fa-calendar-days w-5"></i><span>Bill & Income Calendar</span>
+        <button onclick="switchTab('calendar')" id="nav-calendar" title="Bill & Income Calendar" class="nav-btn w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+          <i class="fa-solid fa-calendar-days w-5"></i><span class="sidebar-nav-label">Bill & Income Calendar</span>
         </button>
-        <button onclick="switchTab('joint')" id="nav-joint" class="nav-btn w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-          <i class="fa-solid fa-people-arrows w-5"></i><span>Joint Household Bills</span>
+        <button onclick="switchTab('joint')" id="nav-joint" title="Joint Household Bills" class="nav-btn w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+          <i class="fa-solid fa-people-arrows w-5"></i><span class="sidebar-nav-label">Joint Household Bills</span>
         </button>
-        <button onclick="switchTab('debt')" id="nav-debt" class="nav-btn w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-          <i class="fa-solid fa-arrow-trend-down w-5"></i><span>Debt Payoff & Schedule</span>
+        <button onclick="switchTab('debt')" id="nav-debt" title="Debt Payoff & Schedule" class="nav-btn w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+          <i class="fa-solid fa-arrow-trend-down w-5"></i><span class="sidebar-nav-label">Debt Payoff & Schedule</span>
         </button>
-        <button onclick="switchTab('ledger')" id="nav-ledger" class="nav-btn w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-          <i class="fa-solid fa-receipt w-5"></i><span>Expense Tracker & Bills</span>
+        <button onclick="switchTab('ledger')" id="nav-ledger" title="Expense Tracker & Bills" class="nav-btn w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+          <i class="fa-solid fa-receipt w-5"></i><span class="sidebar-nav-label">Expense Tracker & Bills</span>
         </button>
-        <button onclick="switchTab('settings')" id="nav-settings" class="nav-btn w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-          <i class="fa-solid fa-gear w-5"></i><span>Categories & Settings</span>
+        <button onclick="switchTab('settings')" id="nav-settings" title="Categories & Settings" class="nav-btn w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+          <i class="fa-solid fa-gear w-5"></i><span class="sidebar-nav-label">Categories & Settings</span>
         </button>
       </nav>
     </div>
 
-    <div class="p-4 border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50 m-3 rounded-2xl border">
+    <div id="sidebar-summary" class="p-4 border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50 m-3 rounded-2xl border">
       <div class="text-xs text-gray-500 font-medium uppercase tracking-wider">Live Net Worth</div>
       <div id="sidebar-networth" class="text-lg font-bold text-emerald-600 dark:text-emerald-400 mt-1 accounting-num blur-target">$ - </div>
       <div class="flex justify-between text-xs text-gray-500 mt-2">
@@ -711,6 +748,21 @@
         <button type="button" onclick="openBulkEditModal()" id="ledger-bulk-edit-btn" disabled class="px-3 py-2 rounded-lg bg-indigo-600 text-white text-xs font-semibold disabled:opacity-40 theme-bg">Edit selected</button>
       </div>
 
+      <!-- SEARCHABLE MULTI-SELECT FILTERS -->
+      <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
+        <div class="flex items-center justify-between px-3 pt-3 gap-2">
+          <div class="text-xs font-semibold text-gray-500"><i class="fa-solid fa-filter mr-1"></i> Filter transactions</div>
+          <button onclick="clearLedgerFilters()" class="text-[10px] text-indigo-500 hover:underline flex-shrink-0">Clear all</button>
+        </div>
+        <div id="ledger-filter-strip" class="ledger-filter-strip custom-scrollbar"></div>
+      </div>
+      <div id="ledger-filter-popover" class="hidden" role="dialog" aria-label="Transaction filter">
+        <div class="p-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between gap-2"><strong id="ledger-filter-title" class="text-xs">Filter</strong><button onclick="closeLedgerFilter()" class="text-gray-400 hover:text-gray-700 dark:hover:text-white" aria-label="Close filter"><i class="fa-solid fa-xmark"></i></button></div>
+        <div class="p-3"><input id="ledger-filter-search" type="search" placeholder="Search transactions or narrow options..." oninput="updateLedgerFilterSearch(this.value)" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-xs"></div>
+        <div id="ledger-filter-options" class="px-3 pb-2"></div>
+        <div class="p-3 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center"><button onclick="clearActiveLedgerFilter()" class="text-[10px] text-gray-500 hover:underline">Clear this filter</button><button onclick="closeLedgerFilter()" class="px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-semibold theme-bg">Done</button></div>
+      </div>
+
       <!-- TABLE VIEW CONTAINER -->
       <div id="ledger-table-container" class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-sm">
         <table class="w-full text-left text-sm">
@@ -718,23 +770,7 @@
             <tr>
               <th class="px-4 py-3">Date</th><th class="px-4 py-3">Vendor</th><th class="px-4 py-3">Description</th><th class="px-4 py-3">Type</th><th class="px-4 py-3">Bucket</th><th class="px-4 py-3">Subcategory</th><th class="px-4 py-3">Account</th><th class="px-4 py-3 text-right">Amount</th><th class="px-4 py-3 text-center">Actions</th>
             </tr>
-            <tr class="bg-gray-100 dark:bg-gray-900/80 border-t border-gray-200 dark:border-gray-800">
-              <th class="px-2 py-2"><input type="text" id="filter-date" onkeyup="renderLedger()" placeholder="Filter..." class="w-full bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded px-2 py-1 text-xs font-normal"></th>
-              <th class="px-2 py-2"><input type="text" id="filter-vendor" onkeyup="renderLedger()" placeholder="Filter..." class="w-full bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded px-2 py-1 text-xs font-normal"></th>
-              <th class="px-2 py-2"><input type="text" id="filter-desc" onkeyup="renderLedger()" placeholder="Filter..." class="w-full bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded px-2 py-1 text-xs font-normal"></th>
-              <th class="px-2 py-2"><input type="text" id="filter-type" onkeyup="renderLedger()" placeholder="Filter..." class="w-full bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded px-2 py-1 text-xs font-normal"></th>
-              <th class="px-2 py-2"><input type="text" id="filter-category" onkeyup="renderLedger()" placeholder="Filter..." class="w-full bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded px-2 py-1 text-xs font-normal"></th>
-              <th class="px-2 py-2"><input type="text" id="filter-subcategory" onkeyup="renderLedger()" placeholder="Filter..." class="w-full bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded px-2 py-1 text-xs font-normal"></th>
-              <th class="px-2 py-2"><input type="text" id="filter-account" onkeyup="renderLedger()" placeholder="Filter..." class="w-full bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded px-2 py-1 text-xs font-normal"></th>
-              <th colspan="2" class="px-2 py-2 text-right">
-                <div class="flex items-center justify-end gap-2">
-                  <select id="filter-reconciliation" onchange="renderLedger()" class="max-w-[125px] bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded px-2 py-1 text-[10px] font-normal">
-                    <option value="">All statuses</option><option value="unreconciled">Unreconciled</option><option value="reconciled">Reconciled</option>
-                  </select>
-                  <button onclick="clearLedgerFilters()" class="text-[10px] text-indigo-400 hover:underline">Clear Filters</button>
-                </div>
-              </th>
-            </tr>
+            <tr id="ledger-legacy-filter-row" class="hidden"><th colspan="9"></th></tr>
           </thead>
           <tbody id="ledger-rows" class="divide-y divide-gray-200 dark:divide-gray-800"></tbody>
         </table>
@@ -1477,6 +1513,21 @@
       saveData();
     }
     function toggleTheme() { state.darkMode = !state.darkMode; initThemeAndBlur(); saveData(); }
+
+    function applySidebarState() {
+      const collapsed = localStorage.getItem('finhub_sidebar_collapsed') === 'true';
+      document.body.classList.toggle('sidebar-collapsed', collapsed);
+      const icon = document.getElementById('sidebar-collapse-icon');
+      if (icon) icon.className = `sidebar-collapse-label fa-solid ${collapsed ? 'fa-angles-right' : 'fa-angles-left'}`;
+    }
+    function toggleSidebar() {
+      const collapsed = !document.body.classList.contains('sidebar-collapsed');
+      document.body.classList.toggle('sidebar-collapsed', collapsed);
+      localStorage.setItem('finhub_sidebar_collapsed', String(collapsed));
+      const icon = document.getElementById('sidebar-collapse-icon');
+      if (icon) icon.className = `sidebar-collapse-label fa-solid ${collapsed ? 'fa-angles-right' : 'fa-angles-left'}`;
+    }
+
     function togglePrivacyBlur() { state.privacyBlur = !state.privacyBlur; applyPrivacyBlurState(); saveData(); }
     function applyPrivacyBlurState() {
       const targets = document.querySelectorAll('.blur-target');
@@ -2562,7 +2613,94 @@
       renderCalendar();
     }
 
+    // Recurring calendar items are stored as a series anchor plus concrete dated
+    // occurrences. Generated occurrences are ordinary calendar items, so the
+    // existing Mark Paid / linked transaction workflow continues to apply.
+    function calendarDateParts(dateStr) {
+      const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(dateStr || ''));
+      return m ? { year: Number(m[1]), month: Number(m[2]) - 1, day: Number(m[3]) } : null;
+    }
+    function calendarDateString(date) {
+      return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+    }
+    function recurringOccurrenceDate(anchorParts, frequency, index) {
+      if (!anchorParts || index < 1) return null;
+      if (frequency === 'weekly' || frequency === 'biweekly') {
+        const d = new Date(anchorParts.year, anchorParts.month, anchorParts.day);
+        d.setDate(d.getDate() + index * (frequency === 'weekly' ? 7 : 14));
+        return calendarDateString(d);
+      }
+      if (frequency === 'monthly') {
+        const monthIndex = anchorParts.month + index;
+        const year = anchorParts.year + Math.floor(monthIndex / 12);
+        const month = ((monthIndex % 12) + 12) % 12;
+        const day = Math.min(anchorParts.day, new Date(year, month + 1, 0).getDate());
+        return calendarDateString(new Date(year, month, day));
+      }
+      if (frequency === 'yearly') {
+        const year = anchorParts.year + index;
+        const day = Math.min(anchorParts.day, new Date(year, anchorParts.month + 1, 0).getDate());
+        return calendarDateString(new Date(year, anchorParts.month, day));
+      }
+      return null;
+    }
+    function ensureRecurringCalendarOccurrences() {
+      if (!Array.isArray(state.calendarBills)) state.calendarBills = [];
+      const today = new Date();
+      const lookback = new Date(today.getFullYear(), today.getMonth() - 12, today.getDate());
+      const futureFromToday = new Date(today.getFullYear(), today.getMonth() + 24, today.getDate());
+      const viewedYear = Number(state.currentYear) || today.getFullYear();
+      const viewedMonth = Number.isInteger(state.currentMonth) ? state.currentMonth : today.getMonth();
+      const futureFromView = new Date(viewedYear, viewedMonth + 24, 1);
+      const horizon = futureFromView > futureFromToday ? futureFromView : futureFromToday;
+      const horizonStr = calendarDateString(horizon);
+      let added = 0;
+      const roots = state.calendarBills.filter(b => b && b.recurring && b.recurring !== 'none' && !b.recurrenceGenerated && calendarDateParts(b.date));
+      roots.forEach(root => {
+        if (!root.recurrenceRootId) root.recurrenceRootId = root.id;
+        if (!root.recurrenceAnchorDate) root.recurrenceAnchorDate = root.date;
+        const anchor = calendarDateParts(root.recurrenceAnchorDate);
+        if (!anchor) return;
+        // Find the first occurrence at or after the rolling lookback window. The
+        // original anchor itself remains the series' first occurrence.
+        let index = 1;
+        let date = recurringOccurrenceDate(anchor, root.recurring, index);
+        while (date && date < calendarDateString(lookback) && index < 500) {
+          index++;
+          date = recurringOccurrenceDate(anchor, root.recurring, index);
+        }
+        while (date && date <= horizonStr && index < 500) {
+          const exists = state.calendarBills.some(b =>
+            b && b.recurrenceRootId === root.id && b.recurrenceSlotDate === date
+          );
+          if (!exists) {
+            const occurrence = {
+              ...root,
+              id: `${root.id}_rec_${date.replace(/-/g, '')}`,
+              date,
+              paid: false,
+              linkedTransactionId: undefined,
+              recurrenceRootId: root.id,
+              recurrenceAnchorDate: root.recurrenceAnchorDate,
+              recurrenceSlotDate: date,
+              recurrenceGenerated: true
+            };
+            // A generated occurrence must never inherit a paid/linked state from
+            // the series anchor.
+            delete occurrence.linkedTransactionId;
+            state.calendarBills.push(occurrence);
+            added++;
+          }
+          index++;
+          date = recurringOccurrenceDate(anchor, root.recurring, index);
+        }
+      });
+      if (added) saveData();
+      return added;
+    }
+
     function renderCalendar() {
+      ensureRecurringCalendarOccurrences();
       const year = state.currentYear || 2026;
       const month = state.currentMonth !== undefined ? state.currentMonth : 10;
       document.getElementById('calendar-month-title').innerText = `${monthNames[month]} ${year}`;
@@ -2750,6 +2888,23 @@
         paid: false,
         ...(document.getElementById('cal-type').value === 'debt' ? { debtAccountId: document.getElementById('cal-debt-account').value || '', principalAmount: document.getElementById('cal-principal-amount').value === '' ? ((state.accounts.find(a => a.id === document.getElementById('cal-debt-account').value)?.paymentMethod === 'interest-only') ? 0 : (parseFloat(document.getElementById('cal-amount').value) || 0)) : Math.max(0, parseFloat(document.getElementById('cal-principal-amount').value) || 0) } : {})
       };
+      if (!editId && recurring !== 'none') {
+        data.recurrenceRootId = data.id;
+        data.recurrenceAnchorDate = data.date;
+        data.recurrenceGenerated = false;
+      } else if (existingBill && !existingBill.recurrenceGenerated && recurring !== 'none') {
+        data.recurrenceRootId = existingBill.recurrenceRootId || existingBill.id;
+        data.recurrenceAnchorDate = data.date;
+        data.recurrenceGenerated = false;
+      } else if (existingBill?.recurrenceGenerated) {
+        // Editing one generated date changes only that occurrence, not the whole series.
+        data.recurrenceRootId = existingBill.recurrenceRootId;
+        data.recurrenceAnchorDate = existingBill.recurrenceAnchorDate;
+        data.recurrenceSlotDate = existingBill.recurrenceSlotDate;
+        data.recurrenceGenerated = true;
+        data.recurring = 'none';
+      }
+
       if (data.type === 'debt' && !data.debtAccountId && state.accounts.some(a => a.type === 'debt')) {
         alert('Select the credit or debt account this scheduled payment will reduce.');
         return;
@@ -2761,7 +2916,9 @@
       } else {
         state.calendarBills.push(data);
       }
-      saveData(); closeCalendarModal(); renderCalendar(); renderLedger();
+      saveData();
+      ensureRecurringCalendarOccurrences();
+      closeCalendarModal(); renderCalendar(); renderLedger();
     }
 
     // JOINT HOUSEHOLD BILLS
@@ -3049,13 +3206,103 @@
       renderLedger();
     }
 
+    const LEDGER_FILTERS = [
+      ['date','Date'],['vendor','Vendor'],['desc','Description'],['type','Type'],
+      ['category','Bucket'],['subcategory','Subcategory'],['account','Account'],['amount','Amount'],['reconciliation','Status']
+    ];
+    let ledgerFilterSelections = {};
+    let ledgerFilterSearchTerms = {};
+    let activeLedgerFilter = null;
+    function ledgerFilterValue(t, key) {
+      const acc = state.accounts.find(a => a.id === t.accountId);
+      if (key === 'date') return t.date || '';
+      if (key === 'vendor') return t.vendor || '(No vendor)';
+      if (key === 'desc') return t.desc || '(No description)';
+      if (key === 'type') return t.type || '';
+      if (key === 'category') return t.category || '(Uncategorized)';
+      if (key === 'subcategory') return t.subcategory || '(No subcategory)';
+      if (key === 'account') return acc ? acc.name : '(No account)';
+      if (key === 'amount') return (Number(t.amount) || 0).toFixed(2);
+      if (key === 'reconciliation') return t.reconciled ? 'Reconciled' : 'Unreconciled';
+      return '';
+    }
+    function renderLedgerFilterStrip() {
+      const strip = document.getElementById('ledger-filter-strip');
+      if (!strip) return;
+      strip.innerHTML = LEDGER_FILTERS.map(([key,label]) => {
+        const count = (ledgerFilterSelections[key] || []).length + ((ledgerFilterSearchTerms[key] || '').length ? 1 : 0);
+        return `<button type="button" class="ledger-filter-button ${count ? 'has-selection' : ''}" onclick="openLedgerFilter('${key}',this)">${escapeHtml(label)}${count ? `<span class="rounded-full bg-indigo-600 text-white px-1.5 py-0.5 text-[9px]">${count}</span>` : ''}<i class="fa-solid fa-chevron-down text-[9px] text-gray-400"></i></button>`;
+      }).join('');
+    }
+    function openLedgerFilter(key, button) {
+      if (activeLedgerFilter === key && !document.getElementById('ledger-filter-popover').classList.contains('hidden')) { closeLedgerFilter(); return; }
+      activeLedgerFilter = key;
+      const pop = document.getElementById('ledger-filter-popover');
+      const title = LEDGER_FILTERS.find(x=>x[0]===key)?.[1] || 'Filter';
+      document.getElementById('ledger-filter-title').textContent = `${title} filter`;
+      document.getElementById('ledger-filter-search').value = ledgerFilterSearchTerms[key] || '';
+      const rect = button.getBoundingClientRect();
+      pop.classList.remove('hidden');
+      const width = Math.min(304, window.innerWidth - 24);
+      const left = Math.max(12, Math.min(rect.left, window.innerWidth - width - 12));
+      const estimatedHeight = Math.min(430, window.innerHeight - 24);
+      pop.style.width = `${width}px`;
+      pop.style.left = `${left}px`;
+      pop.style.top = `${Math.max(12, Math.min(rect.bottom + 6, window.innerHeight - estimatedHeight - 12))}px`;
+      renderLedgerFilterOptions();
+      document.getElementById('ledger-filter-search').focus();
+    }
+    function closeLedgerFilter() {
+      document.getElementById('ledger-filter-popover')?.classList.add('hidden');
+      activeLedgerFilter = null;
+    }
+    function renderLedgerFilterOptions() {
+      if (!activeLedgerFilter) return;
+      const key = activeLedgerFilter;
+      const query = (document.getElementById('ledger-filter-search')?.value || '').trim().toLowerCase();
+      const values = [...new Set((state.transactions || []).map(t => ledgerFilterValue(t,key)))].filter(Boolean).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true,sensitivity:'base'}));
+      const filtered = values.filter(v => v.toLowerCase().includes(query));
+      const selected = new Set(ledgerFilterSelections[key] || []);
+      const options = filtered.map(value => `<label class="flex items-center gap-2 py-1.5 text-xs cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 rounded px-1"><input type="checkbox" ${selected.has(value)?'checked':''} onchange="toggleLedgerFilterValue('${key}',this.value,this.checked)" value="${escapeHtml(value)}" class="accent-indigo-600"><span class="min-w-0 break-words">${escapeHtml(value)}</span></label>`).join('');
+      document.getElementById('ledger-filter-options').innerHTML = options || '<div class="py-4 text-center text-xs text-gray-400">No matching options.</div>';
+    }
+    function updateLedgerFilterSearch(value) {
+      if (!activeLedgerFilter) return;
+      ledgerFilterSearchTerms[activeLedgerFilter] = String(value || '').trim().toLowerCase();
+      renderLedgerFilterStrip();
+      renderLedger();
+      renderLedgerFilterOptions();
+    }
+    function toggleLedgerFilterValue(key, value, checked) {
+      const set = new Set(ledgerFilterSelections[key] || []);
+      if (checked) set.add(value); else set.delete(value);
+      ledgerFilterSelections[key] = [...set];
+      renderLedgerFilterStrip();
+      renderLedger();
+      // Keep the open panel and its search text intact while updating its checkboxes.
+      renderLedgerFilterOptions();
+    }
+    function clearActiveLedgerFilter() {
+      if (!activeLedgerFilter) return;
+      ledgerFilterSelections[activeLedgerFilter] = [];
+      ledgerFilterSearchTerms[activeLedgerFilter] = '';
+      const search = document.getElementById('ledger-filter-search'); if (search) search.value = '';
+      renderLedgerFilterStrip(); renderLedger(); renderLedgerFilterOptions();
+    }
     function clearLedgerFilters() {
-      ['filter-date', 'filter-desc', 'filter-vendor', 'filter-type', 'filter-category', 'filter-subcategory', 'filter-account', 'filter-reconciliation'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.value = '';
-      });
+      ledgerFilterSelections = {};
+      ledgerFilterSearchTerms = {};
+      if (document.getElementById('ledger-filter-search')) document.getElementById('ledger-filter-search').value = '';
+      renderLedgerFilterStrip();
       renderLedger();
     }
+    document.addEventListener('click', (event) => {
+      const pop = document.getElementById('ledger-filter-popover');
+      if (!pop || pop.classList.contains('hidden')) return;
+      if (pop.contains(event.target) || event.target.closest('.ledger-filter-button')) return;
+      closeLedgerFilter();
+    });
+    window.addEventListener('resize', closeLedgerFilter);
 
     function renderLedger() {
       const filterInput = document.getElementById('upcoming-bills-filter');
@@ -3085,30 +3332,24 @@
         });
       }
 
-      const fDate = (document.getElementById('filter-date')?.value || '').toLowerCase();
-      const fDesc = (document.getElementById('filter-desc')?.value || '').toLowerCase();
-      const fVendor = (document.getElementById('filter-vendor')?.value || '').toLowerCase();
-      const fType = (document.getElementById('filter-type')?.value || '').toLowerCase();
-      const fCat = (document.getElementById('filter-category')?.value || '').toLowerCase();
-      const fSub = (document.getElementById('filter-subcategory')?.value || '').toLowerCase();
-      const fAcc = (document.getElementById('filter-account')?.value || '').toLowerCase();
-      const fReconciliation = document.getElementById('filter-reconciliation')?.value || '';
-
+      renderLedgerFilterStrip();
       const tbody = document.getElementById('ledger-rows');
       tbody.innerHTML = '';
 
       const matchedTxs = state.transactions.filter(t => {
         const acc = state.accounts.find(a => a.id === t.accountId);
         const accName = acc ? acc.name.toLowerCase() : '';
-        if (fDate && !t.date.toLowerCase().includes(fDate)) return false;
-        if (fDesc && !(t.desc || '').toLowerCase().includes(fDesc)) return false;
-        if (fVendor && !(t.vendor || '').toLowerCase().includes(fVendor)) return false;
-        if (fType && !t.type.toLowerCase().includes(fType)) return false;
-        if (fCat && !(t.category || '').toLowerCase().includes(fCat)) return false;
-        if (fSub && !(t.subcategory || '').toLowerCase().includes(fSub)) return false;
-        if (fAcc && !accName.includes(fAcc)) return false;
-        if (fReconciliation === 'unreconciled' && t.reconciled) return false;
-        if (fReconciliation === 'reconciled' && !t.reconciled) return false;
+        for (const [filterKey] of LEDGER_FILTERS) {
+          const value = ledgerFilterValue(t, filterKey);
+          const selected = ledgerFilterSelections[filterKey] || [];
+          if (selected.length && !selected.includes(value)) return false;
+          const searchTerm = ledgerFilterSearchTerms[filterKey] || '';
+          if (searchTerm) {
+            const normalizedValue = String(value).toLowerCase().replace(/[,$]/g, '').replace(/[()]/g, '');
+            const normalizedTerm = searchTerm.toLowerCase().replace(/[,$]/g, '').replace(/[()]/g, '');
+            if (!normalizedValue.includes(normalizedTerm)) return false;
+          }
+        }
         return true;
       });
 
@@ -4580,6 +4821,7 @@
     // New planner, reconciliation, and vendor cleanup fields are additive; existing transactions remain intact.
           saveData();
           initThemeAndBlur();
+          ensureRecurringCalendarOccurrences();
           applyCollapsibles();
           switchTab('dashboard');
           renderBackupStatus();
@@ -4591,6 +4833,9 @@
     }
 
     initThemeAndBlur();
+    ensureRecurringCalendarOccurrences();
+    applySidebarState();
+    renderLedgerFilterStrip();
     applyCollapsibles();
     switchTab('dashboard');
     renderBackupStatus();
