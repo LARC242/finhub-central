@@ -1090,6 +1090,7 @@
         <input type="hidden" id="zbb-item-type" value="">
         <input type="hidden" id="zbb-item-edit-id" value="">
         <div><label class="block text-xs font-semibold text-gray-500 mb-1">Description / Name</label><input type="text" id="zbb-item-name" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
+        <div id="zbb-variable-edit-note" class="hidden rounded-lg bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-900 p-3 text-xs text-gray-600 dark:text-gray-300">This edits the bucket name and its default monthly plan. To change the amount assigned to this bucket for the currently selected paycheque, use the allocation amount directly in the Variable Spending Pool section. Moving money between buckets changes the allocated/unallocated totals, but not the overall pool or paycheque bottom line.</div>
         <div class="grid grid-cols-2 gap-3">
           <div><label class="block text-xs font-semibold text-gray-500 mb-1">Monthly Total ($)</label><input type="number" step="0.01" id="zbb-item-monthly" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
           <div>
@@ -2259,8 +2260,8 @@
         renderZbbPlanner();
         return;
       }
-      allocationState.rec.variableAllocations[itemId] = value;
       captureUndo('Adjust variable spending allocation');
+      allocationState.rec.variableAllocations[itemId] = value;
       saveData();
       renderZbbPlanner();
     }
@@ -2387,10 +2388,11 @@
           const splitDesc = item.splitMode === 'dollar' ? `$${splitArr[cycle-1]}` : `${splitArr[cycle-1]}%`;
           if (sectionKey === 'variable') {
             const share = variablePoolState.poolBudget > 0 ? (amt / variablePoolState.poolBudget * 100) : 0;
-            const itemIdArg = JSON.stringify(String(item.id));
-            container.innerHTML += `<div class="grid grid-cols-[minmax(0,1fr)_125px_70px_auto] gap-2 items-center bg-gray-50 dark:bg-gray-950 p-3 rounded-xl border border-gray-200 dark:border-gray-800 text-xs"><div class="min-w-0"><div class="font-semibold truncate">${escapeHtml(item.name)}</div><div class="text-[10px] text-gray-400">Original monthly plan: ${formatFinancial(item.monthly || 0)}</div></div><input type="number" min="0" step="0.01" value="${amt.toFixed(2)}" onchange="updateVariablePoolAllocation(${cycle},${itemIdArg},this.value)" class="w-full text-right bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1.5 text-xs accounting-num"><div class="text-right text-gray-500 accounting-num">${share.toFixed(1)}%</div><div class="flex gap-2 justify-end"><button onclick="openZbbItemModal('variable',${itemIdArg})" class="text-indigo-400" title="Edit variable bucket"><i class="fa-solid fa-pen"></i></button><button onclick="deleteZbbItem('variable',${itemIdArg})" class="text-rose-500" title="Delete variable bucket"><i class="fa-solid fa-trash"></i></button></div></div>`;
+            const itemIdArg = encodeURIComponent(String(item.id)).replace(/'/g, '%27');
+            container.innerHTML += `<div class="grid grid-cols-[minmax(0,1fr)_125px_70px_auto] gap-2 items-center bg-gray-50 dark:bg-gray-950 p-3 rounded-xl border border-gray-200 dark:border-gray-800 text-xs"><div class="min-w-0"><div class="font-semibold truncate">${escapeHtml(item.name)}</div><div class="text-[10px] text-gray-400">Original monthly plan: ${formatFinancial(item.monthly || 0)}</div></div><input type="number" min="0" step="0.01" value="${amt.toFixed(2)}" onchange="updateVariablePoolAllocationEncoded(${cycle},'${itemIdArg}',this.value)" class="w-full text-right bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1.5 text-xs accounting-num"><div class="text-right text-gray-500 accounting-num">${share.toFixed(1)}%</div><div class="flex gap-2 justify-end"><button onclick="openZbbItemModalEncoded('variable','${itemIdArg}')" class="text-indigo-400" title="Edit variable bucket"><i class="fa-solid fa-pen"></i></button><button onclick="deleteZbbItemEncoded('variable','${itemIdArg}')" class="text-rose-500" title="Delete variable bucket"><i class="fa-solid fa-trash"></i></button></div></div>`;
             return;
           }
+          const itemIdArg = encodeURIComponent(String(item.id)).replace(/'/g, '%27');
           container.innerHTML += `
             <div class="flex justify-between items-center bg-gray-50 dark:bg-gray-950 p-3 rounded-xl border border-gray-200 dark:border-gray-800 text-xs">
               <div>
@@ -2402,8 +2404,8 @@
                   <span class="font-bold ${colorClass} accounting-num">${formatFinancial(amt, sectionKey !== 'income')}</span>
                   <div class="text-[10px] text-gray-400">${pctOfIncome}% of Income</div>
                 </div>
-                <button onclick="openZbbItemModal('${sectionKey}', ${JSON.stringify(String(item.id))})" class="text-indigo-400 hover:text-indigo-300 theme-text"><i class="fa-solid fa-pen"></i></button>
-                <button onclick="deleteZbbItem('${sectionKey}', ${JSON.stringify(String(item.id))})" class="text-rose-500 hover:text-rose-400"><i class="fa-solid fa-trash"></i></button>
+                <button onclick="openZbbItemModalEncoded('${sectionKey}','${itemIdArg}')" class="text-indigo-400 hover:text-indigo-300 theme-text"><i class="fa-solid fa-pen"></i></button>
+                <button onclick="deleteZbbItemEncoded('${sectionKey}','${itemIdArg}')" class="text-rose-500 hover:text-rose-400"><i class="fa-solid fa-trash"></i></button>
               </div>
             </div>
           `;
@@ -2592,17 +2594,36 @@
         <p class="text-[10px] text-gray-400">Actual spending is pulled from Expense Tracker entries dated within the selected range. Transfers, income and debt-payment transactions are not included. Set the dates to match your actual pay cycle before relying on the remaining balance.</p>`;
     }
 
+    // IDs are URL-encoded before being placed in inline HTML attributes. This avoids
+    // quote characters breaking onclick/onchange handlers and silently disabling controls.
+    function decodeZbbItemId(encodedId) {
+      try { return decodeURIComponent(String(encodedId)); } catch (e) { return String(encodedId); }
+    }
+    function openZbbItemModalEncoded(type, encodedId) {
+      openZbbItemModal(type, decodeZbbItemId(encodedId));
+    }
+    function deleteZbbItemEncoded(type, encodedId) {
+      deleteZbbItem(type, decodeZbbItemId(encodedId));
+    }
+    function updateVariablePoolAllocationEncoded(cycle, encodedId, rawValue) {
+      updateVariablePoolAllocation(cycle, decodeZbbItemId(encodedId), rawValue);
+    }
+
     function openZbbItemModal(type, editId = null) {
       document.getElementById('zbb-item-type').value = type;
       document.getElementById('zbb-modal-title').innerText = editId ? "Edit Budget Item" : "Add Budget Item";
       document.getElementById('zbb-sinking-fund-opts').classList.toggle('hidden', type !== 'savings');
+      const variableNote = document.getElementById('zbb-variable-edit-note');
+      if (variableNote) variableNote.classList.toggle('hidden', type !== 'variable');
 
       const zbb = getActiveZbbTemplate();
       if (editId) {
         const list = type === 'income' ? zbb.incomes : type === 'bill' ? zbb.bills : type === 'variable' ? zbb.variable : type === 'debt' ? zbb.debts : zbb.savings;
         const item = list.find(i => String(i.id) === String(editId));
-        if (item) {
-          document.getElementById('zbb-item-edit-id').value = item.id;
+        if (!item) { alert('This budget item could not be found in the selected paycheque template. Please refresh the planner and try again.'); return; }
+        document.getElementById('zbb-item-edit-id').value = String(item.id);
+        {
+
           document.getElementById('zbb-item-name').value = item.name;
           document.getElementById('zbb-item-monthly').value = item.monthly;
           document.getElementById('zbb-split-mode-type').value = item.splitMode || 'pct';
@@ -2696,7 +2717,7 @@
       if (type === 'variable' && state.zbbPoolTracking) {
         Object.values(state.zbbPoolTracking).forEach(periodRecords => {
           Object.values(periodRecords || {}).forEach(rec => {
-            if (rec && rec.variableAllocations) delete rec.variableAllocations[id];
+            if (rec && rec.variableAllocations) delete rec.variableAllocations[String(id)];
           });
         });
       }
