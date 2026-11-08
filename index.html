@@ -3936,8 +3936,31 @@ Bonus"></textarea></div>
         for (const [filterKey] of LEDGER_FILTERS) {
           const value = ledgerFilterValue(t, filterKey);
           const selected = ledgerFilterSelections[filterKey] || [];
-          if (selected.length && !selected.includes(value)) return false;
           const searchTerm = ledgerFilterSearchTerms[filterKey] || '';
+
+          // An internal transfer belongs to both its source and destination
+          // accounts for filtering, even though it is stored as one transaction.
+          if (filterKey === 'account') {
+            const sourceAccount = state.accounts.find(a => String(a.id) === String(t.accountId));
+            const destinationAccount = t.transferToAccountId
+              ? state.accounts.find(a => String(a.id) === String(t.transferToAccountId))
+              : null;
+            const accountNames = [
+              sourceAccount ? String(sourceAccount.name) : '(No account)',
+              ...(destinationAccount ? [String(destinationAccount.name)] : [])
+            ];
+            if (selected.length && !accountNames.some(name => selected.includes(name))) return false;
+            if (searchTerm) {
+              const normalizedTerm = searchTerm.toLowerCase().replace(/[,$]/g, '').replace(/[()]/g, '');
+              const matchesAccount = accountNames.some(name =>
+                name.toLowerCase().replace(/[,$]/g, '').replace(/[()]/g, '').includes(normalizedTerm)
+              );
+              if (!matchesAccount) return false;
+            }
+            continue;
+          }
+
+          if (selected.length && !selected.includes(value)) return false;
           if (searchTerm) {
             const normalizedValue = String(value).toLowerCase().replace(/[,$]/g, '').replace(/[()]/g, '');
             const normalizedTerm = searchTerm.toLowerCase().replace(/[,$]/g, '').replace(/[()]/g, '');
