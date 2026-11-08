@@ -816,8 +816,27 @@
           <input id="backup-import-file" type="file" accept=".json,.xlsx,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" class="hidden" onchange="importData(event)">
         </div>
         <div id="backup-status" class="w-full text-right text-[10px] text-gray-400">No exported backup recorded yet</div>
+        <div class="rounded-xl bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-900 p-3 space-y-2">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <strong class="text-xs text-indigo-800 dark:text-indigo-200">Backup reminder schedule</strong>
+            <span class="text-[10px] text-indigo-600 dark:text-indigo-300">Every 7 days</span>
+          </div>
+          <p class="text-[11px] text-indigo-700 dark:text-indigo-300">FinHub checks when the last JSON export was initiated and reminds you when a backup is due. The browser cannot silently save a backup file on a schedule, so use Export JSON Backup when reminded.</p>
+          <div class="flex flex-wrap gap-2">
+            <button onclick="exportData()" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-semibold theme-bg">Export backup now</button>
+            <button onclick="snoozeBackupReminder(7)" class="px-3 py-1.5 rounded-lg bg-white dark:bg-gray-900 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 text-[11px] font-semibold">Remind me in 7 days</button>
+          </div>
+        </div>
+        <div class="rounded-xl bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 p-3 space-y-2">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <strong class="text-xs">On-device safety copy</strong>
+            <button id="restore-safety-copy-btn" onclick="restoreLocalSafetyCopy()" class="hidden px-3 py-1.5 rounded-lg bg-gray-200 dark:bg-gray-800 text-[11px] font-semibold hover:bg-gray-300 dark:hover:bg-gray-700">Preview & restore safety copy</button>
+          </div>
+          <p id="local-safety-copy-status" class="text-[10px] text-gray-500">No local safety copy has been created yet.</p>
+          <p class="text-[10px] text-gray-400">A safety copy is stored in this browser before major deletions and imports. It is not a substitute for a downloaded JSON backup and will not follow you to another device.</p>
+        </div>
         <div class="rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 p-3 text-xs text-amber-800 dark:text-amber-200">
-          <strong>Important:</strong> Importing replaces the data currently on this device; it does not merge two sets of changes. Export after making updates, and import that latest backup on the other device. Keep a separate backup before importing.
+          <strong>Important:</strong> Importing replaces the data currently on this device; it does not merge two sets of changes. FinHub validates the file and shows a preview first. A local safety copy is created before replacement when browser storage allows it.
         </div>
       </div>
 
@@ -1598,18 +1617,100 @@ Bonus"></textarea></div>
 
     function saveData() { localStorage.setItem('finhub_central_v25', JSON.stringify(state)); }
 
+    const BACKUP_REMINDER_DAYS = 7;
+    const BACKUP_REMINDER_SNOOZE_KEY = 'finhub_backup_reminder_snooze_until';
+    const LOCAL_SAFETY_COPY_KEY = 'finhub_central_safety_copy';
+
+    function getBackupAgeDays() {
+      if (!state.lastBackupAt) return null;
+      const time = new Date(state.lastBackupAt).getTime();
+      if (!Number.isFinite(time)) return null;
+      return Math.max(0, Math.floor((Date.now() - time) / 86400000));
+    }
+
     function renderBackupStatus() {
-      const el = document.getElementById('backup-status');
-      if (!el) return;
-      if (!state.lastBackupAt) {
-        el.innerText = 'No exported backup recorded yet';
-        el.className = 'w-full text-right text-[10px] text-amber-500';
+      const ageDays = getBackupAgeDays();
+      const statuses = document.querySelectorAll('[id="backup-status"]');
+      let message = 'No JSON backup export has been initiated yet · Backup recommended';
+      let className = 'w-full text-right text-[10px] text-amber-500';
+      if (ageDays !== null) {
+        const date = new Date(state.lastBackupAt);
+        const due = ageDays >= BACKUP_REMINDER_DAYS;
+        message = `Last JSON export initiated: ${date.toLocaleDateString()} ${date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })} · ${ageDays} day(s) ago${due ? ' · Backup due' : ''}`;
+        className = `w-full text-right text-[10px] ${due ? 'text-amber-500' : 'text-gray-400'}`;
+      }
+      statuses.forEach(el => {
+        el.textContent = message;
+        el.className = className;
+      });
+      renderLocalSafetyCopyStatus();
+    }
+
+    function checkBackupReminder() {
+      const banner = document.getElementById('backup-reminder-banner');
+      const message = document.getElementById('backup-reminder-message');
+      if (!banner || !message) return;
+      const snoozeUntil = Number(localStorage.getItem(BACKUP_REMINDER_SNOOZE_KEY) || 0);
+      const ageDays = getBackupAgeDays();
+      const due = ageDays === null || ageDays >= BACKUP_REMINDER_DAYS;
+      if (!due || Date.now() < snoozeUntil) {
+        banner.classList.add('hidden');
         return;
       }
-      const date = new Date(state.lastBackupAt);
-      const ageDays = Math.floor((Date.now() - date.getTime()) / 86400000);
-      el.innerText = `Last exported backup: ${date.toLocaleDateString()} ${date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}${ageDays > 30 ? ' · Backup recommended' : ''}`;
-      el.className = `w-full text-right text-[10px] ${ageDays > 30 ? 'text-amber-500' : 'text-gray-400'}`;
+      message.textContent = ageDays === null
+        ? 'No JSON backup export has been recorded on this browser yet. Export a backup to protect your FinHub data.'
+        : `Your last JSON export was initiated ${ageDays} days ago. Export a fresh backup to protect recent changes.`;
+      banner.classList.remove('hidden');
+    }
+
+    function snoozeBackupReminder(days = 7) {
+      const snoozeUntil = Date.now() + Math.max(1, Number(days) || 7) * 86400000;
+      localStorage.setItem(BACKUP_REMINDER_SNOOZE_KEY, String(snoozeUntil));
+      checkBackupReminder();
+    }
+
+    function dismissBackupReminder() {
+      localStorage.setItem(BACKUP_REMINDER_SNOOZE_KEY, String(Date.now() + 86400000));
+      checkBackupReminder();
+    }
+
+    function createLocalSafetyCopy(reason = 'Before major change') {
+      try {
+        const snapshot = {
+          version: 1,
+          createdAt: new Date().toISOString(),
+          reason: String(reason || 'Before major change'),
+          state: JSON.parse(JSON.stringify(state))
+        };
+        localStorage.setItem(LOCAL_SAFETY_COPY_KEY, JSON.stringify(snapshot));
+        renderLocalSafetyCopyStatus();
+        return true;
+      } catch (error) {
+        console.warn('Could not create FinHub local safety copy:', error);
+        return false;
+      }
+    }
+
+    function renderLocalSafetyCopyStatus() {
+      const status = document.getElementById('local-safety-copy-status');
+      const button = document.getElementById('restore-safety-copy-btn');
+      if (!status || !button) return;
+      try {
+        const raw = localStorage.getItem(LOCAL_SAFETY_COPY_KEY);
+        if (!raw) {
+          status.textContent = 'No local safety copy has been created yet.';
+          button.classList.add('hidden');
+          return;
+        }
+        const copy = JSON.parse(raw);
+        if (!copy || !copy.state) throw new Error('Safety copy is incomplete.');
+        const date = new Date(copy.createdAt);
+        status.textContent = `Available · ${copy.reason || 'Safety copy'} · ${Number.isFinite(date.getTime()) ? date.toLocaleString() : 'date unavailable'}`;
+        button.classList.remove('hidden');
+      } catch (error) {
+        status.textContent = 'A local safety copy exists but could not be read.';
+        button.classList.add('hidden');
+      }
     }
 
     function initThemeAndBlur() {
@@ -2340,6 +2441,10 @@ Bonus"></textarea></div>
       const acc = state.accounts.find(a => a.id === id);
       if (!acc) return;
       if (!confirm(`Are you sure you want to delete account "${acc.name}"?`)) return;
+      if (!createLocalSafetyCopy(`Before deleting account "${acc.name}"`)) {
+        alert('FinHub could not create a local safety copy. Export a JSON backup before deleting this account.');
+        return;
+      }
       captureUndo(`Delete account "${acc.name}"`);
       state.accounts = state.accounts.filter(a => a.id !== id);
       saveData(); closeAccountDetailModal(); renderDashboard();
@@ -3247,6 +3352,10 @@ Bonus"></textarea></div>
     function applyCalendarItemDeletion(id, deleteFuture) {
       const bill = state.calendarBills.find(b => b.id === id);
       if (!bill) return;
+      if (!createLocalSafetyCopy(`Before deleting calendar item "${bill.desc || 'calendar item'}"`)) {
+        alert('FinHub could not create a local safety copy. Export a JSON backup before deleting this calendar item.');
+        return;
+      }
       captureUndo(`${deleteFuture ? 'Delete future occurrences of' : 'Delete'} "${bill.desc || 'calendar item'}"`);
       const isSeriesOccurrence = !!(bill.recurring && bill.recurring !== 'none') || !!bill.recurrenceGenerated || !!bill.recurrenceRootId;
       if (!isSeriesOccurrence) {
@@ -3547,6 +3656,10 @@ Bonus"></textarea></div>
       ].filter(Boolean);
       const warning = details.length ? `\n\nAlso: ${details.join('; ')}.` : '';
       if (!confirm(`Permanently delete ${rows.length} selected transaction${rows.length === 1 ? '' : 's'}? Account balances will be adjusted to reverse their effects.${warning}\n\nThis cannot be undone unless you use FinHub Undo.`)) return;
+      if (!createLocalSafetyCopy(`Before bulk deleting ${rows.length} transactions`)) {
+        alert('FinHub could not create a local safety copy. Export a JSON backup before deleting these transactions.');
+        return;
+      }
       captureUndo('Bulk delete transactions');
       const deletedIds = new Set(ids.map(String));
       let deleted = 0;
@@ -5112,6 +5225,10 @@ Bonus"></textarea></div>
       const idx = state.transactions.findIndex(t => t.id === id);
       if (idx >= 0) {
         const t = state.transactions[idx];
+        if (!createLocalSafetyCopy(`Before deleting transaction "${t.vendor || t.desc || t.id}"`)) {
+          alert('FinHub could not create a local safety copy. Export a JSON backup before deleting this transaction.');
+          return;
+        }
         captureUndo(`Delete transaction "${t.vendor || t.desc || t.id}"`);
         const acc = state.accounts.find(a => a.id === t.accountId);
         if (t.type === 'Transfer' && t.transferToAccountId) { const target=state.accounts.find(a=>a.id===t.transferToAccountId); if(acc) acc.balance += Number(t.amount)||0; if(target) target.balance -= Number(t.amount)||0; }
@@ -6188,8 +6305,9 @@ Bonus"></textarea></div>
       const backupDate = new Date();
       state.lastBackupAt = backupDate.toISOString();
       saveData();
-      renderBackupStatus();
-      // Export the app's structured state, not every unrelated key in browser localStorage.
+      localStorage.removeItem(BACKUP_REMINDER_SNOOZE_KEY);
+      // The browser confirms the export was requested, but it cannot confirm
+      // where the user saved the downloaded file.
       const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -6199,88 +6317,278 @@ Bonus"></textarea></div>
       a.click();
       a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
+      renderBackupStatus();
+      checkBackupReminder();
+    }
+
+    let pendingBackupImport = null;
+
+    function validateFinHubBackupData(data) {
+      const required = ['accounts', 'transactions', 'calendarBills', 'categories'];
+      if (!data || typeof data !== 'object' || Array.isArray(data)) {
+        return { valid: false, error: 'The selected file is not a FinHub data object.', warnings: [] };
+      }
+      const missing = required.filter(key => !Array.isArray(data[key]));
+      if (missing.length) {
+        return { valid: false, error: `Missing required FinHub sections: ${missing.join(', ')}.`, warnings: [] };
+      }
+      const optionalArrays = ['debtPayments', 'jointBills', 'netWorthSnapshots', 'incomeCategories', 'transactionTypes'];
+      const malformedOptional = optionalArrays.filter(key => data[key] !== undefined && !Array.isArray(data[key]));
+      if (malformedOptional.length) {
+        return { valid: false, error: `These sections should be lists but are not: ${malformedOptional.join(', ')}.`, warnings: [] };
+      }
+
+      const warnings = [];
+      const accountIds = new Set();
+      for (let i = 0; i < data.accounts.length; i++) {
+        const account = data.accounts[i];
+        if (!account || typeof account !== 'object' || Array.isArray(account) || account.id === undefined || account.id === null || String(account.id).trim() === '') {
+          return { valid: false, error: `Account record ${i + 1} is missing a valid ID.`, warnings };
+        }
+        const id = String(account.id);
+        if (accountIds.has(id)) return { valid: false, error: `Duplicate account ID detected: ${id}.`, warnings };
+        accountIds.add(id);
+        if (!Number.isFinite(Number(account.balance))) warnings.push(`Account "${account.name || id}" has a non-numeric balance.`);
+      }
+
+      const transactionIds = new Set();
+      let missingTransactionIds = 0;
+      let orphanTransactions = 0;
+      for (let i = 0; i < data.transactions.length; i++) {
+        const transaction = data.transactions[i];
+        if (!transaction || typeof transaction !== 'object' || Array.isArray(transaction)) {
+          return { valid: false, error: `Transaction record ${i + 1} is not a valid object.`, warnings };
+        }
+        if (transaction.id === undefined || transaction.id === null || String(transaction.id).trim() === '') {
+          missingTransactionIds++;
+        } else {
+          const id = String(transaction.id);
+          if (transactionIds.has(id)) return { valid: false, error: `Duplicate transaction ID detected: ${id}.`, warnings };
+          transactionIds.add(id);
+        }
+        if (transaction.amount === undefined || transaction.amount === null || !Number.isFinite(Number(transaction.amount))) {
+          return { valid: false, error: `Transaction record ${i + 1} has an invalid amount.`, warnings };
+        }
+        if (transaction.accountId !== undefined && transaction.accountId !== null && !accountIds.has(String(transaction.accountId))) orphanTransactions++;
+      }
+      if (missingTransactionIds) warnings.push(`${missingTransactionIds} transaction(s) do not have an ID. They may be harder to edit or reconcile.`);
+      if (orphanTransactions) warnings.push(`${orphanTransactions} transaction(s) refer to accounts not present in this backup.`);
+      if (data.calendarBills.some(item => !item || typeof item !== 'object' || Array.isArray(item))) {
+        return { valid: false, error: 'One or more calendar items are not valid records.', warnings };
+      }
+      if (data.categories.some(item => !item || typeof item !== 'object' || Array.isArray(item) || !String(item.name || '').trim())) {
+        return { valid: false, error: 'One or more category records are missing a name.', warnings };
+      }
+      return { valid: true, error: '', warnings };
+    }
+
+    function getBackupPreviewCounts(data) {
+      const subcategoryCount = (data.categories || []).reduce((sum, category) => sum + (Array.isArray(category.subcategories) ? category.subcategories.length : 0), 0);
+      return [
+        ['Accounts', (data.accounts || []).length],
+        ['Transactions', (data.transactions || []).length],
+        ['Categories', (data.categories || []).length],
+        ['Subcategories', subcategoryCount],
+        ['Calendar items', (data.calendarBills || []).length],
+        ['Debt payments', (data.debtPayments || []).length],
+        ['Joint bills', (data.jointBills || []).length],
+        ['Net worth snapshots', (data.netWorthSnapshots || []).length],
+        ['Budget periods', Object.keys(data.zbbTemplates || {}).length]
+      ];
+    }
+
+    function showBackupImportPreview(data, filename, sourceType = 'file') {
+      const validation = validateFinHubBackupData(data);
+      if (!validation.valid) {
+        alert(`Backup validation failed. Your current FinHub data has not been changed.\n\n${validation.error}`);
+        return false;
+      }
+      pendingBackupImport = { data, filename: String(filename || 'FinHub backup'), sourceType };
+      const modal = document.getElementById('backup-import-preview-modal');
+      document.getElementById('backup-preview-filename').textContent = `${filename || 'FinHub backup'} · ${sourceType === 'safety' ? 'Local safety copy' : 'Selected backup file'}`;
+      document.getElementById('backup-preview-counts').innerHTML = getBackupPreviewCounts(data).map(([label, count]) =>
+        `<div class="rounded-xl bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 p-3"><div class="text-[10px] text-gray-500">${escapeHtml(label)}</div><div class="text-lg font-bold accounting-num">${Number(count).toLocaleString()}</div></div>`
+      ).join('');
+      const warningBox = document.getElementById('backup-preview-warning-box');
+      if (validation.warnings.length) {
+        warningBox.innerHTML = `<strong>Review these notes before restoring:</strong><ul class="list-disc pl-4 mt-1 space-y-1">${validation.warnings.map(warning => `<li>${escapeHtml(warning)}</li>`).join('')}</ul>`;
+        warningBox.classList.remove('hidden');
+      } else {
+        warningBox.textContent = '';
+        warningBox.classList.add('hidden');
+      }
+      const confirmButton = modal.querySelector('button[onclick="confirmBackupImport()"]');
+      confirmButton.textContent = sourceType === 'safety' ? 'Restore safety copy' : 'Replace FinHub data';
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      return true;
+    }
+
+    function cancelBackupImportPreview() {
+      pendingBackupImport = null;
+      const modal = document.getElementById('backup-import-preview-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      const picker = document.getElementById('backup-import-file');
+      if (picker) picker.value = '';
+    }
+
+    function restoreLocalSafetyCopy() {
+      try {
+        const raw = localStorage.getItem(LOCAL_SAFETY_COPY_KEY);
+        if (!raw) { alert('No local safety copy is available in this browser.'); return; }
+        const stored = JSON.parse(raw);
+        const data = stored && stored.state ? stored.state : null;
+        if (!data) throw new Error('The local safety copy is incomplete.');
+        showBackupImportPreview(data, stored.reason || 'Local safety copy', 'safety');
+      } catch (error) {
+        alert('The local safety copy could not be read. Your current FinHub data has not been changed.');
+      }
+    }
+
+    function confirmBackupImport() {
+      if (!pendingBackupImport) return;
+      const pending = pendingBackupImport;
+      const validation = validateFinHubBackupData(pending.data);
+      if (!validation.valid) {
+        alert(`Backup validation failed. Your current FinHub data has not been changed.\n\n${validation.error}`);
+        cancelBackupImportPreview();
+        return;
+      }
+      if (!createLocalSafetyCopy(`Before restoring ${pending.filename}`)) {
+        alert('FinHub could not create a local safety copy, likely because browser storage is full. Export a JSON backup manually before importing; no data was changed.');
+        return;
+      }
+      captureStatementUndo(pending.sourceType === 'safety' ? 'Restore local safety copy' : 'Import FinHub backup');
+      state = pending.data;
+      state.collapsibles = state.collapsibles || {};
+      if (state.collapsibles['sec-networth-chart'] === undefined) state.collapsibles['sec-networth-chart'] = true;
+      if (state.collapsibles['sec-spending-chart'] === undefined) state.collapsibles['sec-spending-chart'] = true;
+      if (state.collapsibles['sec-extra-charts'] === undefined) state.collapsibles['sec-extra-charts'] = true;
+      if (state.collapsibles['sec-snapshots'] === undefined) state.collapsibles['sec-snapshots'] = true;
+      state.dashboardPeriod = state.dashboardPeriod || 'month';
+      state.dashboardOrder = Array.isArray(state.dashboardOrder) ? state.dashboardOrder : ['accounts','summary','spending','upcoming','networth','trends','budgets','snapshots'];
+      state.spendingChartLevel = state.spendingChartLevel || 'category';
+      state.dashboardCustomRange = state.dashboardCustomRange || { start: '', end: '' };
+      state.accountOrder = state.accountOrder || { assets: [], debts: [] };
+      state.accountOrder.assets = Array.isArray(state.accountOrder.assets) ? state.accountOrder.assets : [];
+      state.accountOrder.debts = Array.isArray(state.accountOrder.debts) ? state.accountOrder.debts : [];
+      if (state.showHiddenAccounts === undefined) state.showHiddenAccounts = true;
+      if (state.collapsibles['sec-advanced-types'] === undefined) state.collapsibles['sec-advanced-types'] = true;
+      state.lastBackupAt = state.lastBackupAt || null;
+      state.zbbTracking = state.zbbTracking || {};
+      state.zbbPoolTracking = state.zbbPoolTracking || {};
+      state.statementReconciliation = state.statementReconciliation || { batches: [] };
+      state.statementReconciliation.groups = Array.isArray(state.statementReconciliation.groups) ? state.statementReconciliation.groups : [];
+      state.vendorCleanupRules = Array.isArray(state.vendorCleanupRules) ? state.vendorCleanupRules : [];
+      state.merchantRules = Array.isArray(state.merchantRules) ? state.merchantRules : [];
+      state.appVisualTheme = ['classic','silver','neutral','colorful'].includes(state.appVisualTheme) ? state.appVisualTheme : 'classic';
+      if (!isValidHexColor(state.appAccentHex)) delete state.appAccentHex;
+      if (!isValidHexColor(state.appBackgroundHex)) delete state.appBackgroundHex;
+      if (!Array.isArray(state.variablePoolCategories)) state.variablePoolCategories = (state.categories || []).filter(c => !/housing|bill|debt service/i.test(c.name)).map(c => c.name);
+      pendingStatementRows = [];
+      saveData();
+      initThemeAndBlur();
+      ensureRecurringCalendarOccurrences();
+      applyCollapsibles();
+      switchTab('dashboard');
+      renderBackupStatus();
+      checkBackupReminder();
+      renderLocalSafetyCopyStatus();
+      cancelBackupImportPreview();
+      alert(pending.sourceType === 'safety'
+        ? 'Local safety copy restored. Your previous data was saved as a new local safety copy.'
+        : 'FinHub backup imported successfully. Your previous data was saved as a local safety copy.');
     }
 
     function importData(e) {
       const file = e.target.files && e.target.files[0];
       if (!file) return;
+      if (file.size > 50 * 1024 * 1024) {
+        alert('This backup is larger than 50 MB. FinHub cancelled the import to avoid an unstable restore.');
+        e.target.value = '';
+        return;
+      }
       const reader = new FileReader();
       reader.onload = function(evt) {
         try {
           let loaded;
-          if ((file.name||'').toLowerCase().endsWith('.xlsx')) {
+          if ((file.name || '').toLowerCase().endsWith('.xlsx')) {
             if (!window.XLSX) throw new Error('Excel library unavailable');
-            const bytes=new Uint8Array(evt.target.result); const wb=XLSX.read(bytes,{type:'array'});
-            const restore=wb.Sheets['FinHub Restore']; const restoreRows=restore ? XLSX.utils.sheet_to_json(restore,{header:1,raw:false}) : []; const raw=restoreRows.slice(1).map(row=>row[0]||'').join('');
-            if (!raw) throw new Error('Workbook does not contain a FinHub restore sheet'); loaded=JSON.parse(raw);
-            const readSheet=(name)=>wb.Sheets[name] ? XLSX.utils.sheet_to_json(wb.Sheets[name],{defval:''}) : null;
-            const sheetMap={'Accounts':'accounts','Transactions':'transactions','Calendar Bills':'calendarBills','Debt Payments':'debtPayments','Joint Bills':'jointBills','Net Worth Snapshots':'netWorthSnapshots'};
-            Object.entries(sheetMap).forEach(([sheet,key])=>{const rows=readSheet(sheet);if(rows!==null)loaded[key]=rows;});
-            const categoryRows=readSheet('Categories');if(categoryRows!==null){const cats={};categoryRows.forEach(row=>{const name=String(row.bucket||'').trim();if(!name)return;cats[name]=cats[name]||{name,subcategories:[]};if(String(row.subcategory||'').trim())cats[name].subcategories.push({name:String(row.subcategory),limit:Number(row.limit)||0,rollover:row.rollover===true||String(row.rollover).toLowerCase()==='true'});});loaded.categories=Object.values(cats);}
-            const budgetRows=readSheet('Budget Items');
-            if(budgetRows!==null){const rebuilt={};budgetRows.forEach(row=>{const month=String(row.month||'');const group=String(row.group||'');if(!month||!['incomes','bills','variable','debts','savings'].includes(group))return;rebuilt[month]=rebuilt[month]||{incomes:[],bills:[],variable:[],debts:[],savings:[]};const item={...row};delete item.month;delete item.group;if(typeof item.split==='string')item.split=item.split.split(/[;,]/).map(v=>Number(v)||0);rebuilt[month][group].push(item);});loaded.zbbTemplates=rebuilt;}
-          } else loaded = JSON.parse(evt.target.result);
-          // Also accept the older whole-localStorage export format if one was created previously.
+            const bytes = new Uint8Array(evt.target.result);
+            const wb = XLSX.read(bytes, { type: 'array' });
+            const restore = wb.Sheets['FinHub Restore'];
+            const restoreRows = restore ? XLSX.utils.sheet_to_json(restore, { header: 1, raw: false }) : [];
+            const raw = restoreRows.slice(1).map(row => row[0] || '').join('');
+            if (!raw) throw new Error('Workbook does not contain a FinHub restore sheet');
+            loaded = JSON.parse(raw);
+            const readSheet = name => wb.Sheets[name] ? XLSX.utils.sheet_to_json(wb.Sheets[name], { defval: '' }) : null;
+            const sheetMap = {
+              'Accounts': 'accounts',
+              'Transactions': 'transactions',
+              'Calendar Bills': 'calendarBills',
+              'Debt Payments': 'debtPayments',
+              'Joint Bills': 'jointBills',
+              'Net Worth Snapshots': 'netWorthSnapshots'
+            };
+            Object.entries(sheetMap).forEach(([sheet, key]) => {
+              const rows = readSheet(sheet);
+              if (rows !== null) loaded[key] = rows;
+            });
+            const categoryRows = readSheet('Categories');
+            if (categoryRows !== null) {
+              const categories = {};
+              categoryRows.forEach(row => {
+                const name = String(row.bucket || '').trim();
+                if (!name) return;
+                categories[name] = categories[name] || { name, subcategories: [] };
+                if (String(row.subcategory || '').trim()) categories[name].subcategories.push({
+                  name: String(row.subcategory),
+                  limit: Number(row.limit) || 0,
+                  rollover: row.rollover === true || String(row.rollover).toLowerCase() === 'true'
+                });
+              });
+              loaded.categories = Object.values(categories);
+            }
+            const budgetRows = readSheet('Budget Items');
+            if (budgetRows !== null) {
+              const rebuilt = {};
+              budgetRows.forEach(row => {
+                const month = String(row.month || '');
+                const group = String(row.group || '');
+                if (!month || !['incomes','bills','variable','debts','savings'].includes(group)) return;
+                rebuilt[month] = rebuilt[month] || { incomes: [], bills: [], variable: [], debts: [], savings: [] };
+                const item = { ...row };
+                delete item.month;
+                delete item.group;
+                if (typeof item.split === 'string') item.split = item.split.split(/[;,]/).map(value => Number(value) || 0);
+                rebuilt[month][group].push(item);
+              });
+              loaded.zbbTemplates = rebuilt;
+            }
+          } else {
+            loaded = JSON.parse(evt.target.result);
+          }
+
+          // Accept the older whole-localStorage export format too.
           if (loaded && typeof loaded === 'object' && !Array.isArray(loaded)
               && !Array.isArray(loaded.accounts) && typeof loaded.finhub_central_v25 === 'string') {
             loaded = JSON.parse(loaded.finhub_central_v25);
           }
-          const requiredArrays = ['accounts', 'transactions', 'calendarBills', 'categories'];
-          const valid = loaded && typeof loaded === 'object' && !Array.isArray(loaded)
-            && requiredArrays.every(key => Array.isArray(loaded[key]));
-          if (!valid) {
-            alert('This file does not look like a valid FinHub backup. Your current data has not been changed.');
+          const validation = validateFinHubBackupData(loaded);
+          if (!validation.valid) {
+            alert(`This file is not a valid FinHub backup. Your current data has not been changed.\n\n${validation.error}`);
             e.target.value = '';
             return;
           }
-          const preview=`Import preview\nAccounts: ${(loaded.accounts||[]).length}\nTransactions: ${(loaded.transactions||[]).length}\nCategories: ${(loaded.categories||[]).length}\nCalendar items: ${(loaded.calendarBills||[]).length}\n\nThis will replace the data currently stored in this browser. Export a backup first if you have made recent changes. Continue?`;
-          if (!confirm(preview)) {
-            e.target.value = '';
-            return;
-          }
-          // Keep a recoverable copy of the current browser data before replacing it.
-          try { localStorage.setItem('finhub_central_preimport_backup', JSON.stringify(state)); }
-          catch (backupErr) { alert('A safety copy could not be created because browser storage is full. Export a backup first; import cancelled.'); e.target.value = ''; return; }
-          captureStatementUndo('Import FinHub backup');
-          state = loaded;
-          state.collapsibles = state.collapsibles || {};
-          if (state.collapsibles['sec-networth-chart'] === undefined) state.collapsibles['sec-networth-chart'] = true;
-          if (state.collapsibles['sec-spending-chart'] === undefined) state.collapsibles['sec-spending-chart'] = true;
-          if (state.collapsibles['sec-extra-charts'] === undefined) state.collapsibles['sec-extra-charts'] = true;
-          if (state.collapsibles['sec-snapshots'] === undefined) state.collapsibles['sec-snapshots'] = true;
-          state.dashboardPeriod = state.dashboardPeriod || 'month';
-          state.dashboardOrder = Array.isArray(state.dashboardOrder) ? state.dashboardOrder : ['accounts','summary','spending','upcoming','networth','trends','budgets','snapshots'];
-          state.spendingChartLevel = state.spendingChartLevel || 'category';
-          state.dashboardCustomRange = state.dashboardCustomRange || {start:'',end:''};
-          state.accountOrder = state.accountOrder || { assets: [], debts: [] };
-          state.accountOrder.assets = Array.isArray(state.accountOrder.assets) ? state.accountOrder.assets : [];
-          state.accountOrder.debts = Array.isArray(state.accountOrder.debts) ? state.accountOrder.debts : [];
-          if (state.showHiddenAccounts === undefined) state.showHiddenAccounts = true;
-          if (state.collapsibles['sec-advanced-types'] === undefined) state.collapsibles['sec-advanced-types'] = true;
-          state.lastBackupAt = state.lastBackupAt || null;
-          state.zbbTracking = state.zbbTracking || {};
-    state.zbbTracking = state.zbbTracking || {};
-    state.zbbPoolTracking = state.zbbPoolTracking || {};
-    state.statementReconciliation = state.statementReconciliation || { batches: [] };
-          state.statementReconciliation.groups = Array.isArray(state.statementReconciliation.groups) ? state.statementReconciliation.groups : [];
-          state.vendorCleanupRules = Array.isArray(state.vendorCleanupRules) ? state.vendorCleanupRules : [];
-    state.merchantRules = Array.isArray(state.merchantRules) ? state.merchantRules : [];
-    state.appVisualTheme = ['classic','silver','neutral','colorful'].includes(state.appVisualTheme) ? state.appVisualTheme : 'classic';
-          if (!isValidHexColor(state.appAccentHex)) delete state.appAccentHex;
-          if (!isValidHexColor(state.appBackgroundHex)) delete state.appBackgroundHex;
-    if (!Array.isArray(state.variablePoolCategories)) state.variablePoolCategories = (state.categories || []).filter(c => !/housing|bill|debt service/i.test(c.name)).map(c => c.name);
-    // New planner, reconciliation, and vendor cleanup fields are additive; existing transactions remain intact.
-          saveData();
-          initThemeAndBlur();
-          ensureRecurringCalendarOccurrences();
-          applyCollapsibles();
-          switchTab('dashboard');
-          renderBackupStatus();
-          alert('FinHub Central data successfully imported. A safety copy of the previous browser data was also saved locally.');
-        } catch (err) { alert('This file could not be read as a valid FinHub JSON backup or FinHub Excel export. Your current data has not been changed.'); }
+          showBackupImportPreview(loaded, file.name || 'FinHub backup', 'file');
+        } catch (error) {
+          alert(`This file could not be read as a valid FinHub JSON backup or FinHub Excel export. Your current data has not been changed.\n\n${error.message || ''}`);
+        }
         e.target.value = '';
       };
-      if ((file.name||'').toLowerCase().endsWith('.xlsx')) reader.readAsArrayBuffer(file); else reader.readAsText(file);
+      if ((file.name || '').toLowerCase().endsWith('.xlsx')) reader.readAsArrayBuffer(file);
+      else reader.readAsText(file);
     }
 
     initThemeAndBlur();
@@ -6290,6 +6598,47 @@ Bonus"></textarea></div>
     applyCollapsibles();
     switchTab('dashboard');
     renderBackupStatus();
+    checkBackupReminder();
+    renderLocalSafetyCopyStatus();
+    setInterval(checkBackupReminder, 60 * 60 * 1000);
   </script>
+  <div id="backup-import-preview-modal" class="hidden fixed inset-0 z-[110] bg-black/70 items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="backup-preview-title">
+    <div class="w-full max-w-xl bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-2xl overflow-hidden">
+      <div class="p-5 border-b border-gray-200 dark:border-gray-800 flex items-start justify-between gap-3">
+        <div>
+          <h2 id="backup-preview-title" class="text-lg font-bold">Review backup before restoring</h2>
+          <p id="backup-preview-filename" class="text-[11px] text-gray-500 mt-1 break-all"></p>
+        </div>
+        <button onclick="cancelBackupImportPreview()" class="text-gray-400 hover:text-gray-800 dark:hover:text-white" aria-label="Close preview"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="p-5 space-y-4">
+        <div id="backup-preview-counts" class="grid grid-cols-2 sm:grid-cols-3 gap-2"></div>
+        <div id="backup-preview-warning-box" class="hidden rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 p-3 text-[11px] text-amber-800 dark:text-amber-200"></div>
+        <div class="rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900 p-3 text-[11px] text-rose-800 dark:text-rose-200">
+          <strong>This replaces the FinHub data currently in this browser.</strong> It does not merge records. FinHub will create a local safety copy of the current data before replacing it.
+        </div>
+      </div>
+      <div class="p-4 border-t border-gray-200 dark:border-gray-800 flex flex-wrap justify-end gap-2">
+        <button onclick="cancelBackupImportPreview()" class="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-xs font-semibold">Cancel</button>
+        <button onclick="confirmBackupImport()" class="px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold">Replace FinHub data</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="backup-reminder-banner" class="hidden fixed bottom-4 right-4 z-[95] w-[min(92vw,390px)] rounded-2xl bg-white dark:bg-gray-900 border border-amber-300 dark:border-amber-800 shadow-2xl p-4">
+    <div class="flex items-start gap-3">
+      <div class="mt-0.5 text-amber-500"><i class="fa-solid fa-shield-halved text-lg"></i></div>
+      <div class="min-w-0 flex-1">
+        <div class="text-sm font-bold">FinHub backup reminder</div>
+        <p id="backup-reminder-message" class="text-[11px] text-gray-500 mt-1">It's time to export a fresh JSON backup.</p>
+        <div class="flex flex-wrap gap-2 mt-3">
+          <button onclick="exportData()" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-semibold theme-bg">Export JSON backup</button>
+          <button onclick="snoozeBackupReminder(7)" class="px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-[11px] font-semibold">Remind me in 7 days</button>
+          <button onclick="dismissBackupReminder()" class="px-2 py-1.5 text-[11px] text-gray-500">Dismiss</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>
