@@ -59,12 +59,12 @@
     #ledger-filter-popover input[type="search"] { color:inherit; }
     /* Expense Tracker remains a true table and scrolls horizontally on narrow screens. */
     #ledger-table-container { max-width:100%; overflow-x:auto !important; overflow-y:visible; -webkit-overflow-scrolling:touch; }
-    #ledger-table-container table { min-width:1250px; width:100%; }
+    #ledger-table-container table { min-width:1400px; width:100%; }
     #ledger-table-container th, #ledger-table-container td { white-space:nowrap; }
     @media(max-width:640px) {
       main { min-width:0; }
       #ledger-table-container { overflow-x:auto !important; border-radius:.9rem; }
-      #ledger-table-container table { min-width:1250px; display:table; }
+      #ledger-table-container table { min-width:1400px; display:table; }
       #ledger-table-container thead { display:table-header-group; }
       #ledger-table-container tbody { display:table-row-group; }
       #ledger-table-container tr { display:table-row; }
@@ -757,9 +757,9 @@
         <table class="w-full text-left text-sm">
           <thead class="bg-gray-50 dark:bg-gray-950 text-xs uppercase border-b border-gray-200 dark:border-gray-800 text-gray-500">
             <tr>
-              <th class="px-4 py-3">Date</th><th class="px-4 py-3">Vendor</th><th class="px-4 py-3">Description</th><th class="px-4 py-3">Type</th><th class="px-4 py-3">Bucket</th><th class="px-4 py-3">Subcategory</th><th class="px-4 py-3">Account</th><th class="px-4 py-3 text-right">Amount</th><th class="px-4 py-3 text-center">Actions</th>
+              <th class="px-4 py-3">Date</th><th class="px-4 py-3">Vendor</th><th class="px-4 py-3">Description</th><th class="px-4 py-3">Type</th><th class="px-4 py-3">Bucket</th><th class="px-4 py-3">Subcategory</th><th class="px-4 py-3">Account</th><th class="px-4 py-3 text-right">Amount</th><th class="px-4 py-3 text-right">Running Balance</th><th class="px-4 py-3 text-center">Actions</th>
             </tr>
-            <tr id="ledger-legacy-filter-row" class="hidden"><th colspan="9"></th></tr>
+            <tr id="ledger-legacy-filter-row" class="hidden"><th colspan="10"></th></tr>
           </thead>
           <tbody id="ledger-rows" class="divide-y divide-gray-200 dark:divide-gray-800"></tbody>
         </table>
@@ -773,6 +773,17 @@
           <div><div class="text-xs text-gray-500">Net (income less expenses)</div><div id="ledger-total-net" class="font-bold accounting-num">$0.00</div></div>
         </div>
         <p class="text-[10px] text-gray-400 mt-2">Totals update automatically using the filters above and include only the matching transactions.</p>
+      </div>
+
+      <!-- ACCOUNT BALANCE CHECK -->
+      <div id="ledger-balance-check" class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-4 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+          <div>
+            <h3 class="text-sm font-bold">Account balance check</h3>
+            <p class="text-[10px] text-gray-400 mt-1">Compare the FinHub calculated balance with the actual balance from your latest statement. This uses the same saved statement balance shown on the Dashboard.</p>
+          </div>
+          <div id="ledger-balance-check-content" class="w-full sm:max-w-3xl"></div>
+        </div>
       </div>
 
       <!-- CALENDAR VIEW CONTAINER -->
@@ -924,7 +935,7 @@
   </div>
 
   <!-- MODAL: ADD VENDOR CLEANUP RULE -->
-  <div id="vendor-rule-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50">
+  <div id="vendor-rule-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50" style="z-index: 70;">
     <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
       <h3 class="text-lg font-bold">Add Vendor Cleanup Rule</h3>
       <form onsubmit="saveVendorCleanupRule(event)" class="space-y-3">
@@ -1919,7 +1930,7 @@ Bonus"></textarea></div>
         acc.actualBalance = Math.round(amount * 100) / 100;
         acc.actualBalanceUpdatedAt = new Date().toISOString();
       }
-      saveData(); renderDashboard();
+      saveData(); renderDashboard(); renderLedgerBalanceCheck();
     }
 
     function markAccountReconciled(id) {
@@ -2130,6 +2141,21 @@ Bonus"></textarea></div>
       if (acc) setAccountIncluded(id, !!acc.hidden);
     }
 
+    function accountHasSavedOpeningBalance(account) {
+      return !!account &&
+        account.openingBalance !== undefined &&
+        account.openingBalance !== null &&
+        String(account.openingBalance).trim() !== '' &&
+        Number.isFinite(Number(account.openingBalance));
+    }
+
+    function getAccountOpeningBalance(account, totalChanges) {
+      const currentBalance = Number(account?.balance) || 0;
+      return accountHasSavedOpeningBalance(account)
+        ? Number(account.openingBalance)
+        : currentBalance - (Number(totalChanges) || 0);
+    }
+
     function getAccountActivityEntries(acc) {
       const transactions = state.transactions || [];
       const debtPayments = new Map((state.debtPayments || []).map(p => [p.id, p]));
@@ -2187,19 +2213,20 @@ Bonus"></textarea></div>
       const totalChanges = activity.reduce((sum, entry) => sum + (Number(entry.change) || 0), 0);
       const currentBalance = Number(acc.balance) || 0;
       // Derive the opening balance from the current stored balance and all activity, so the final row ties to the account balance.
+      const hasSavedOpeningBalance = accountHasSavedOpeningBalance(acc);
       let runningBalance = currentBalance - totalChanges;
       const derivedOpeningBalance = runningBalance;
-      const openingBalance = Number.isFinite(Number(acc.openingBalance)) ? Number(acc.openingBalance) : derivedOpeningBalance;
+      const openingBalance = hasSavedOpeningBalance ? Number(acc.openingBalance) : derivedOpeningBalance;
       const balanceLabel = acc.type === 'debt' ? 'Outstanding balance' : 'Calculated balance';
       // An unset opening balance remains a derived suggestion until the user explicitly saves one.
       summary.className = 'grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2';
       summary.innerHTML = `
-        <div class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-3"><div class="text-[10px] uppercase font-semibold text-gray-500">Opening balance${acc.openingBalance === undefined ? ' · derived' : ' · saved'}</div><div class="flex items-center gap-2 mt-2"><span class="text-xs text-gray-500">$</span><input id="acc-opening-balance-input" type="number" step="0.01" value="${Number(openingBalance).toFixed(2)}" class="min-w-0 w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1.5 text-sm font-bold accounting-num" /></div><button onclick="saveAccountOpeningBalance()" class="mt-2 w-full px-2 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-semibold theme-bg">Save opening balance</button><div class="text-[9px] text-gray-400 mt-1">As of the start of this account's recorded activity. Saving adjusts the current balance by the same difference; it does not create a transaction.</div></div>
+        <div class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-3"><div class="text-[10px] uppercase font-semibold text-gray-500">Opening balance${hasSavedOpeningBalance ? ' · saved' : ' · derived'}</div><div class="flex items-center gap-2 mt-2"><span class="text-xs text-gray-500">$</span><input id="acc-opening-balance-input" type="number" step="0.01" value="${Number(openingBalance).toFixed(2)}" class="min-w-0 w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1.5 text-sm font-bold accounting-num" /></div><button onclick="saveAccountOpeningBalance()" class="mt-2 w-full px-2 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-semibold theme-bg">Save opening balance</button><div class="text-[9px] text-gray-400 mt-1">As of the start of this account's recorded activity. Saving adjusts the current balance by the same difference; it does not create a transaction.</div></div>
         <div class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-3"><div class="text-[10px] uppercase font-semibold text-gray-500">${balanceLabel}</div><div class="text-base font-bold accounting-num mt-1">${formatFinancial(currentBalance)}</div></div>
         <div class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-3"><div class="text-[10px] uppercase font-semibold text-gray-500">Activity records</div><div class="text-base font-bold mt-1">${activity.length}</div></div>
         <div class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-3"><div class="text-[10px] uppercase font-semibold text-gray-500">Balance check</div><div class="text-base font-bold mt-1 accounting-num">${formatFinancial(openingBalance + totalChanges)}</div><div class="text-[9px] text-gray-400 mt-1">Opening balance plus recorded activity</div></div>`;
 
-      rows.innerHTML = `<tr class="bg-indigo-50/70 dark:bg-indigo-950/30"><td class="px-4 py-3 whitespace-nowrap">—</td><td class="px-4 py-3 font-semibold">Opening balance <span class="text-[10px] font-normal text-gray-500">(${acc.openingBalance === undefined ? 'derived until saved' : 'saved opening balance'})</span></td><td class="px-4 py-3">Opening balance</td><td class="px-4 py-3 text-right accounting-num">—</td><td class="px-4 py-3 text-right font-bold accounting-num">${formatFinancial(runningBalance)}</td></tr>`;
+      rows.innerHTML = `<tr class="bg-indigo-50/70 dark:bg-indigo-950/30"><td class="px-4 py-3 whitespace-nowrap">—</td><td class="px-4 py-3 font-semibold">Opening balance <span class="text-[10px] font-normal text-gray-500">(${hasSavedOpeningBalance ? 'saved opening balance' : 'derived until saved'})</span></td><td class="px-4 py-3">Opening balance</td><td class="px-4 py-3 text-right accounting-num">—</td><td class="px-4 py-3 text-right font-bold accounting-num">${formatFinancial(runningBalance)}</td></tr>`;
       if (!activity.length) {
         rows.innerHTML += `<tr><td colspan="5" class="px-4 py-4 text-center text-xs text-gray-400">No transactions recorded for this account yet.</td></tr>`;
       } else {
@@ -2230,7 +2257,7 @@ Bonus"></textarea></div>
       const activity = getAccountActivityEntries(acc);
       const totalChanges = activity.reduce((sum, entry) => sum + (Number(entry.change) || 0), 0);
       const currentBalance = Number(acc.balance) || 0;
-      const previousOpening = Number.isFinite(Number(acc.openingBalance)) ? Number(acc.openingBalance) : currentBalance - totalChanges;
+      const previousOpening = getAccountOpeningBalance(acc, totalChanges);
       const delta = Math.round((nextOpening - previousOpening) * 100) / 100;
       if (!confirm(`Save an opening balance of ${formatFinancial(nextOpening)} for ${acc.name}? The current account balance will change by ${formatFinancial(delta)} so existing transactions remain intact. No transaction will be created.`)) return;
       captureUndo(`Set opening balance for ${acc.name}`);
@@ -3905,6 +3932,120 @@ Bonus"></textarea></div>
     });
     window.addEventListener('resize', closeLedgerFilter);
 
+    let ledgerBalanceAccountId = null;
+
+    // Build balances from each account's opening balance plus its complete,
+    // chronologically sorted activity. This is intentionally independent of
+    // the current Expense Tracker filters so a filtered row keeps its true balance.
+    function buildLedgerRunningBalanceMap() {
+      const byTransaction = new Map();
+      (state.accounts || []).forEach(account => {
+        const activity = getAccountActivityEntries(account);
+        const totalChanges = activity.reduce((sum, entry) => sum + (Number(entry.change) || 0), 0);
+        const currentBalance = Number(account.balance) || 0;
+        const openingBalance = getAccountOpeningBalance(account, totalChanges);
+        let runningBalance = Math.round(openingBalance * 100) / 100;
+
+        activity.forEach(entry => {
+          runningBalance = Math.round((runningBalance + (Number(entry.change) || 0)) * 100) / 100;
+          const entryId = String(entry.id ?? '');
+          const isIncomingTransferSide = entryId.endsWith('_incoming');
+          const transactionId = isIncomingTransferSide
+            ? entryId.slice(0, -'_incoming'.length)
+            : entryId;
+          if (!transactionId) return;
+          const balances = byTransaction.get(transactionId) || {};
+          balances[String(account.id)] = runningBalance;
+          byTransaction.set(transactionId, balances);
+        });
+      });
+      return byTransaction;
+    }
+
+    function renderLedgerRunningBalanceCell(transaction, runningBalances) {
+      const balances = runningBalances.get(String(transaction.id)) || {};
+      const orderedAccountIds = [];
+      if (transaction.accountId && Object.prototype.hasOwnProperty.call(balances, String(transaction.accountId))) {
+        orderedAccountIds.push(String(transaction.accountId));
+      }
+      if (transaction.transferToAccountId && Object.prototype.hasOwnProperty.call(balances, String(transaction.transferToAccountId))) {
+        orderedAccountIds.push(String(transaction.transferToAccountId));
+      }
+      Object.keys(balances).forEach(id => {
+        if (!orderedAccountIds.includes(id)) orderedAccountIds.push(id);
+      });
+
+      const entries = orderedAccountIds.map(id => {
+        const account = (state.accounts || []).find(a => String(a.id) === id);
+        if (!account) return '';
+        return { name: account.name || 'Account', balance: balances[id] };
+      }).filter(Boolean);
+
+      if (!entries.length) return '<td data-label="Running Balance" class="px-4 py-3 text-right text-gray-400">—</td>';
+      if (entries.length === 1) {
+        return `<td data-label="Running Balance" class="px-4 py-3 text-right font-bold accounting-num">${formatFinancial(entries[0].balance)}</td>`;
+      }
+      return `<td data-label="Running Balance" class="px-4 py-3 text-right"><div class="inline-flex flex-col items-end gap-1">${entries.map(entry => `<div class="flex items-center justify-end gap-2"><span class="text-[9px] text-gray-400">${escapeHtml(entry.name)}</span><strong class="text-xs accounting-num">${formatFinancial(entry.balance)}</strong></div>`).join('')}</div></td>`;
+    }
+
+    function setLedgerBalanceAccount(accountId) {
+      ledgerBalanceAccountId = String(accountId || '');
+      renderLedgerBalanceCheck();
+    }
+
+    function renderLedgerBalanceCheck() {
+      const host = document.getElementById('ledger-balance-check-content');
+      if (!host) return;
+      const accounts = state.accounts || [];
+      if (!accounts.length) {
+        host.innerHTML = '<p class="text-xs text-gray-400">Add an account to see its balance check.</p>';
+        return;
+      }
+      if (!ledgerBalanceAccountId || !accounts.some(a => String(a.id) === String(ledgerBalanceAccountId))) {
+        const defaultAccount = accounts.find(a => a.type === 'asset') || accounts[0];
+        ledgerBalanceAccountId = String(defaultAccount.id);
+      }
+      const account = accounts.find(a => String(a.id) === String(ledgerBalanceAccountId));
+      if (!account) return;
+
+      const currentBalance = Number(account.balance) || 0;
+      const hasActualBalance = account.actualBalance !== undefined && account.actualBalance !== null && account.actualBalance !== '';
+      const actualBalance = hasActualBalance ? Number(account.actualBalance) : null;
+      const variance = hasActualBalance && Number.isFinite(actualBalance)
+        ? Math.round((actualBalance - currentBalance) * 100) / 100
+        : null;
+      const isBalanced = variance !== null && Math.abs(variance) < 0.005;
+      const options = accounts.map(a => {
+        const excludedLabel = a.hidden ? ' (Excluded from totals)' : '';
+        return `<option value="${escapeHtml(a.id)}" ${String(a.id) === String(account.id) ? 'selected' : ''}>${escapeHtml(a.name || 'Unnamed account')}${excludedLabel}</option>`;
+      }).join('');
+      const updatedLabel = account.actualBalanceUpdatedAt
+        ? `Last entered ${escapeHtml(String(account.actualBalanceUpdatedAt).slice(0, 10))}`
+        : 'No statement balance entered yet';
+
+      host.innerHTML = `
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <label class="text-[10px] text-gray-500">Account
+            <select id="ledger-balance-account-select" onchange="setLedgerBalanceAccount(this.value)" class="mt-1 w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-2 text-xs font-semibold">
+              ${options}
+            </select>
+          </label>
+          <div class="text-[10px] text-gray-500">FinHub calculated balance
+            <div class="mt-1 text-base font-bold accounting-num">${formatFinancial(currentBalance)}</div>
+          </div>
+          <label class="text-[10px] text-gray-500">Actual statement balance
+            <input type="number" step="0.01" value="${hasActualBalance ? Number(actualBalance).toFixed(2) : ''}" placeholder="Enter statement balance" onchange="saveAccountActualBalance('${escapeHtml(account.id)}', this.value)" class="mt-1 w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-2 text-xs font-semibold accounting-num">
+          </label>
+        </div>
+        <div class="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs">
+          <span class="text-gray-500">${updatedLabel}</span>
+          <span class="font-semibold">Variance (statement − FinHub):
+            <strong class="ml-1 accounting-num ${variance === null ? 'text-gray-400' : isBalanced ? 'text-emerald-500' : 'text-amber-500'}">${variance === null ? '—' : formatFinancial(variance)}</strong>
+            ${variance === null ? '' : `<span class="ml-1 text-[10px] font-normal ${isBalanced ? 'text-emerald-500' : 'text-amber-500'}">${isBalanced ? 'Balanced' : 'Difference to review'}</span>`}
+          </span>
+        </div>`;
+    }
+
     function renderLedger() {
       const filterInput = document.getElementById('upcoming-bills-filter');
       if (!filterInput.value) {
@@ -3934,6 +4075,8 @@ Bonus"></textarea></div>
       }
 
       renderLedgerFilterStrip();
+      renderLedgerBalanceCheck();
+      const runningBalances = buildLedgerRunningBalanceMap();
       const tbody = document.getElementById('ledger-rows');
       tbody.innerHTML = '';
 
@@ -3971,7 +4114,7 @@ Bonus"></textarea></div>
       }
 
       if (matchedTxs.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" class="px-6 py-6 text-center text-xs text-gray-400">No matching transactions found.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="10" class="px-6 py-6 text-center text-xs text-gray-400">No matching transactions found.</td></tr>`;
       } else {
         matchedTxs.forEach(t => {
           const acc = state.accounts.find(a => a.id === t.accountId);
@@ -3989,6 +4132,7 @@ Bonus"></textarea></div>
               <td data-label="Subcategory" class="px-4 py-3">${t.subcategory || '-'}</td>
               <td data-label="Account" class="px-4 py-3">${acc ? (t.transferToAccountId ? `${acc.name} → ${(state.accounts.find(a=>a.id===t.transferToAccountId)||{}).name||'Account'}` : acc.name) : '-'}</td>
               <td data-label="Amount" class="px-4 py-3 text-right font-bold ${isOutflow ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'} accounting-num">${formatFinancial(t.amount, isOutflow)}</td>
+              ${renderLedgerRunningBalanceCell(t, runningBalances)}
               <td data-label="Actions" class="px-4 py-3 text-center space-x-2">
                 <button title="Edit transaction" onclick="openTransactionModal('${t.id}')" class="text-indigo-400 hover:text-indigo-300 theme-text"><i class="fa-solid fa-pen"></i></button>
                 <button onclick="deleteTransaction('${t.id}')" class="text-rose-500 hover:text-rose-400"><i class="fa-solid fa-trash"></i></button>
@@ -4139,7 +4283,7 @@ Bonus"></textarea></div>
       if (!account || !endDate) return null;
       const txs = (state.transactions || []).filter(t => statementTransactionDeltaForAccount(t, accountId) !== 0);
       const allActivity = txs.reduce((sum,t) => sum + statementTransactionDeltaForAccount(t,accountId), 0);
-      const opening = Number.isFinite(Number(account.openingBalance)) ? Number(account.openingBalance) : (Number(account.balance) || 0) - allActivity;
+      const opening = getAccountOpeningBalance(account, allActivity);
       const throughDate = txs.filter(t => String(statementTransactionDateForAccount(t,accountId) || '') <= endDate).reduce((sum,t) => sum + statementTransactionDeltaForAccount(t,accountId), 0);
       return Math.round((opening + throughDate) * 100) / 100;
     }
