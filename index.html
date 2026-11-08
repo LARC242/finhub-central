@@ -1494,7 +1494,7 @@ Bonus"></textarea></div>
     <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-2xl max-h-[90vh] p-4 sm:p-5 shadow-2xl flex flex-col overflow-hidden">
       <div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-800 pb-2 mb-2 shrink-0">
         <h3 id="tx-modal-title" class="text-lg font-bold">Log Transaction</h3>
-        <button type="button" onclick="toggleSplitTxMode()" id="split-tx-toggle-btn" class="text-xs bg-indigo-600/20 text-indigo-400 px-3 py-1 rounded-lg font-semibold border border-indigo-500/30">Enable Split Transaction</button>
+        <div class="flex items-center gap-2"><button type="button" id="tx-reverse-btn" onclick="createTransactionReversalFromForm()" class="hidden text-xs bg-amber-600/15 text-amber-500 px-3 py-1 rounded-lg font-semibold border border-amber-500/30">Reverse transaction</button><button type="button" onclick="toggleSplitTxMode()" id="split-tx-toggle-btn" class="text-xs bg-indigo-600/20 text-indigo-400 px-3 py-1 rounded-lg font-semibold border border-indigo-500/30">Enable Split Transaction</button></div>
       </div>
       <form id="transaction-form" onsubmit="saveTransaction(event)" class="space-y-2 overflow-y-auto min-h-0 pr-1">
         <input type="hidden" id="tx-edit-id" value="">
@@ -1792,12 +1792,95 @@ Bonus"></textarea></div>
       const account = state.accounts.find(a => String(a.id) === String(transaction.accountId));
       if (account) account.balance = Math.round(((Number(account.balance) || 0) + transactionBalanceDeltaForAccount(transaction, account) * multiplier) * 100) / 100;
     }
+    function getTransactionReversedAmount(transactionId) {
+      return (state.transactions || []).filter(t => String(t.reversalOfTransactionId || '') === String(transactionId))
+        .reduce((sum, t) => sum + Math.abs(Number(t.amount) || 0), 0);
+    }
+    function createTransactionReversal(originalId, requestedAmount = null) {
+      const original = (state.transactions || []).find(t => String(t.id) === String(originalId));
+      if (!original) { alert('The original transaction could not be found.'); return false; }
+      if (original.reversalOfTransactionId || original.isReversal) { alert('A reversal cannot itself be reversed. Delete or correct the reversal record instead.'); return false; }
+      if (['Transfer'].includes(original.type) && !original.transferToAccountId) {
+        if (original.externalTransferDirection) { alert('This external transfer has no tracked counterpart to reverse automatically. Record the return as a separate external transfer.'); return false; }
+      }
+      const originalAmount = Math.abs(Number(original.amount) || 0);
+      const alreadyReversed = getTransactionReversedAmount(original.id);
+      const remaining = Math.max(0, Math.round((originalAmount - alreadyReversed) * 100) / 100);
+      if (remaining <= 0.009) { alert('This transaction has already been fully reversed.'); return false; }
+      const entered = requestedAmount == null ? prompt(`Enter the reversal amount. Remaining reversible amount: $${remaining.toFixed(2)}`, remaining.toFixed(2)) : requestedAmount;
+      if (entered == null) return false;
+      const amount = Math.round((Number(String(entered).replace(/[$,]/g,'')) || 0) * 100) / 100;
+      if (!(amount > 0) || amount - remaining > 0.009) { alert(`Enter an amount greater than $0 and no more than $${remaining.toFixed(2)}.`); return false; }
+      const ratio = amount / originalAmount;
+      const date = prompt('Reversal date (YYYY-MM-DD):', new Date().toISOString().slice(0,10));
+      if (date == null) return false;
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) { alert('Enter the date as YYYY-MM-DD.'); return false; }
+      const vendor = original.vendor || original.desc || 'Transaction reversal';
+      const base = {
+        id: `tx_rev_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,
+        date, vendor, desc: `Reversal of ${original.desc || original.vendor || original.type}`,
+        amount, accountId: original.accountId, source: 'manual-reversal',
+        reversalOfTransactionId: original.id, isReversal: true,
+        reversalOriginalType: original.type, reversalOriginalCategory: original.category || '',
+        reversalOriginalSubcategory: original.subcategory || '',
+        reversalOriginalVendor: vendor,
+        // Preserve provenance so reversals work identically for imported and manually entered rows.
+        reversalOriginalSource: original.source || '',
+        reversalOriginalImportBatchId: original.importBatchId || original.statementBatchId || '',
+        reversalOriginalStatementMatchId: original.statementMatchId || original.statementMatchGroupId || ''
+      };
+      if (original.type === 'Transfer') {
+        Object.assign(base, { type:'Transfer', category:'Transfer', subcategory:'', accountId:original.transferToAccountId, transferToAccountId:original.accountId });
+      } else if (original.type === 'Debt Payment') {
+        const principal = Math.round((Number(original.debtPrincipalAmount ?? original.principalAmount ?? amount) * ratio) * 100) / 100;
+        const interest = Math.round((amount - principal) * 100) / 100;
+        Object.assign(base, { type:'Debt Payment Reversal', category:'Debt Payment', subcategory:original.subcategory || original.paymentType || 'Line of Credit Payment', paymentType:original.paymentType || original.subcategory, debtAccountId:original.debtAccountId || (state.debtPayments || []).find(p=>String(p.transactionId)===String(original.id))?.accountId, debtPrincipalAmount:principal, debtInterestAmount:interest });
+        if (!base.debtAccountId) { alert('The original debt payment is missing its linked debt account.'); return false; }
+      } else if (original.type === 'Debt Payment Reversal') {
+        const principal = Math.round((Number(original.debtPrincipalAmount) || 0) * ratio * 100) / 100;
+        const debt = state.accounts.find(a=>String(a.id)===String(original.debtAccountId) && a.type==='debt');
+        const funding = state.accounts.find(a=>String(a.id)===String(original.accountId));
+        if (!debt || !funding) { alert('The original debt reversal is missing its linked accounts.'); return false; }
+        Object.assign(base, { type:'Debt Payment', category:'Debt Payment', subcategory:original.subcategory || 'Line of Credit Payment', debtAccountId:original.debtAccountId, debtPrincipalAmount:principal, debtInterestAmount:Math.round((amount-principal)*100)/100 });
+      } else {
+        Object.assign(base, { type:original.type, category:original.category || '', subcategory:original.subcategory || '' });
+        // Negative amounts reverse the original cash and reporting effect for ordinary income/expense entries.
+        base.amount = (Number(original.amount) < 0 ? amount : -amount);
+        if (original.type === 'Interest Charge') base.debtAccountId = original.debtAccountId || original.accountId;
+      }
+      captureUndo('Record transaction reversal');
+      state.transactions.unshift(base);
+      if (base.type === 'Debt Payment Reversal') {
+        applyTransactionBalanceEffect(base, 1);
+      } else if (original.type === 'Debt Payment Reversal') {
+        // Undo a previous debt-payment reversal: reduce cash and restore the liability reduction.
+        const funding = state.accounts.find(a=>String(a.id)===String(original.accountId));
+        const debt = state.accounts.find(a=>String(a.id)===String(original.debtAccountId));
+        if (funding) funding.balance = Math.round(((Number(funding.balance)||0)-amount)*100)/100;
+        if (debt) debt.balance = Math.round(((Number(debt.balance)||0)-Number(base.debtPrincipalAmount||0))*100)/100;
+      } else if (base.type === 'Debt Payment') {
+        const funding = state.accounts.find(a=>String(a.id)===String(base.accountId));
+        const debt = state.accounts.find(a=>String(a.id)===String(base.debtAccountId));
+        if (funding) funding.balance = Math.round(((Number(funding.balance)||0)-amount)*100)/100;
+        if (debt) debt.balance = Math.round(((Number(debt.balance)||0)-Number(base.debtPrincipalAmount||0))*100)/100;
+      } else {
+        applyTransactionBalanceEffect(base, 1);
+      }
+      saveData(); renderLedger(); renderDashboard(); renderZbbFundingTracker(); renderSinkingBucketManager();
+      return true;
+    }
+    function createTransactionReversalFromForm() {
+      const id = document.getElementById('tx-edit-id')?.value;
+      if (!id) return;
+      if (createTransactionReversal(id)) closeTransactionModal();
+    }
+
     function getExpenseReportingComponents(transaction) {
       if (!transaction) return [];
       const signedAmount = Number(transaction.amount) || 0;
       const amount = Math.max(0, signedAmount);
       if (transaction.type === 'Expense' && signedAmount !== 0) return [{ transaction, category: transaction.category || 'Uncategorized', subcategory: transaction.subcategory || 'Uncategorized', amount: signedAmount, component: signedAmount < 0 ? 'Refund' : 'Expense' }];
-      if (transaction.type === 'Interest Charge' && amount > 0) return [{ transaction, category: 'Debt Service', subcategory: 'Interest Expense', amount, component: 'Interest charge' }];
+      if (transaction.type === 'Interest Charge' && signedAmount !== 0) return [{ transaction, category: 'Debt Service', subcategory: 'Interest Expense', amount: signedAmount, component: signedAmount < 0 ? 'Interest charge reversal' : 'Interest charge' }];
       if (transaction.type === 'Debt Payment') {
         const interest = Math.max(0, Math.min(amount, Number(transaction.debtInterestAmount) || 0));
         if (interest > 0) return [{ transaction, category: 'Debt Service', subcategory: 'Interest Expense', amount: interest, component: 'Interest portion' }];
@@ -8200,6 +8283,8 @@ Bonus"></textarea></div>
       if (editId) {
         const tx = state.transactions.find(t => String(t.id) === String(editId));
         if (tx) {
+          const reverseBtn = document.getElementById('tx-reverse-btn');
+          if (reverseBtn) { const remaining=Math.max(0,Math.abs(Number(tx.amount)||0)-getTransactionReversedAmount(tx.id)); const canReverse=!(tx.reversalOfTransactionId || tx.isReversal); reverseBtn.classList.toggle('hidden', !canReverse); reverseBtn.disabled=!canReverse || remaining<=0.009; reverseBtn.textContent=remaining<=0.009?'Fully reversed':'Reverse transaction'; reverseBtn.title=remaining>0?`Remaining reversible amount: $${remaining.toFixed(2)}${tx.source && tx.source !== 'manual-entry' ? ' · Imported transaction' : ''}`:'This transaction has been fully reversed.'; }
           document.getElementById("tx-modal-title").innerText = "Edit Transaction";
           updateTransactionEntryMetadata(tx, false);
           document.getElementById('tx-edit-id').value = tx.id;
@@ -8219,6 +8304,7 @@ Bonus"></textarea></div>
           document.getElementById('split-tx-toggle-btn').classList.add('hidden');
         }
       } else {
+        document.getElementById('tx-reverse-btn')?.classList.add('hidden');
         document.getElementById('split-tx-toggle-btn').classList.remove('hidden');
         document.getElementById("tx-modal-title").innerText = "Log Transaction";
         updateTransactionEntryMetadata(null, true);
