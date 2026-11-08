@@ -539,9 +539,25 @@
       <!-- SINKING FUNDS PROGRESS TRACKER -->
       <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-4 shadow-sm">
         <div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-800 pb-3">
-          <h3 class="text-md font-bold text-indigo-600 dark:text-indigo-400 theme-text"><i class="fa-solid fa-bullseye mr-2"></i>Sinking Funds Goal Progress & Target Date Tracker</h3>
+          <h3 class="text-md font-bold text-indigo-600 dark:text-indigo-400 theme-text"><i class="fa-solid fa-bullseye mr-2"></i>Savings Goal Progress & Target Date Tracker</h3>
         </div>
         <div id="sinking-funds-progress-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+      </div>
+
+      <!-- VIRTUAL SINKING-FUND BUCKET LEDGER -->
+      <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-4 shadow-sm">
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 dark:border-gray-800 pb-3">
+          <div>
+            <h3 class="text-md font-bold text-indigo-600 dark:text-indigo-400 theme-text"><i class="fa-solid fa-layer-group mr-2"></i>Sinking Funds Bucket Manager</h3>
+            <p class="text-xs text-gray-400 mt-1">Keep one real bank balance, with separate virtual balances for Pets, Holidays/Gifts, Car Maintenance, Disney+, and Kids.</p>
+          </div>
+          <button type="button" onclick="openSinkingBucketModal()" class="px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold theme-bg"><i class="fa-solid fa-plus mr-1"></i> Add Bucket</button>
+        </div>
+        <div class="rounded-xl border border-indigo-200 dark:border-indigo-900 bg-indigo-50/60 dark:bg-indigo-950/20 p-3 text-[11px] text-gray-600 dark:text-gray-300">
+          <strong class="block mb-1">How bucket balances work</strong>
+          Your real account balance is still controlled by the Accounts and Expense Tracker sections. Deposits, transfers, and spending must be recorded there first. Then use <strong>Allocate</strong> or <strong>Release</strong> below to update the virtual breakdown. These bucket actions do not create bank transactions or change account balances. The unallocated amount automatically reconciles the buckets to the real account balance.
+        </div>
+        <div id="sinking-bucket-manager" class="space-y-4"></div>
       </div>
 
       <details class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
@@ -1398,6 +1414,41 @@ Bonus"></textarea></div>
     </div>
   </div>
 
+  <!-- MODAL: ADD / EDIT VIRTUAL SINKING-FUND BUCKET -->
+  <div id="sinking-bucket-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-[80]">
+    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
+      <h3 id="sinking-bucket-modal-title" class="text-lg font-bold">Add Sinking-Fund Bucket</h3>
+      <form id="sinking-bucket-form" onsubmit="saveSinkingBucket(event)" class="space-y-3">
+        <input type="hidden" id="sinking-bucket-edit-id" value="">
+        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Bucket Name</label><input id="sinking-bucket-name" type="text" required maxlength="80" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" placeholder="e.g. Pets"></div>
+        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Real Savings Account</label><select id="sinking-bucket-account" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></select></div>
+        <div class="grid grid-cols-2 gap-3">
+          <div><label class="block text-xs font-semibold text-gray-500 mb-1">Savings Target ($)</label><input id="sinking-bucket-target" type="number" min="0" step="0.01" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" placeholder="Optional"></div>
+          <div><label class="block text-xs font-semibold text-gray-500 mb-1">Target Date</label><input id="sinking-bucket-target-date" type="date" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
+        </div>
+        <p id="sinking-bucket-edit-note" class="hidden text-[10px] text-amber-600 dark:text-amber-400">A bucket with a balance or activity history cannot be moved to another real account. Release its balance and create a new bucket under the other account instead.</p>
+        <div class="flex gap-2 pt-2"><button type="button" onclick="closeSinkingBucketModal()" class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold">Cancel</button><button type="submit" class="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold theme-bg">Save Bucket</button></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: VIRTUAL BUCKET ACTIVITY -->
+  <div id="sinking-bucket-activity-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-[80]">
+    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
+      <h3 id="sinking-bucket-activity-title" class="text-lg font-bold">Update Bucket</h3>
+      <form id="sinking-bucket-activity-form" onsubmit="saveSinkingBucketActivity(event)" class="space-y-3">
+        <input type="hidden" id="sinking-bucket-activity-id" value="">
+        <input type="hidden" id="sinking-bucket-activity-type" value="allocate">
+        <div id="sinking-bucket-activity-context" class="rounded-lg bg-gray-50 dark:bg-gray-950 p-3 text-xs text-gray-500"></div>
+        <div id="sinking-bucket-transfer-destination-wrap" class="hidden"><label class="block text-xs font-semibold text-gray-500 mb-1">Move To Bucket</label><select id="sinking-bucket-transfer-destination" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></select></div>
+        <div><label id="sinking-bucket-activity-amount-label" class="block text-xs font-semibold text-gray-500 mb-1">Amount ($)</label><input id="sinking-bucket-activity-amount" type="number" min="0.01" step="0.01" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
+        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Date</label><input id="sinking-bucket-activity-date" type="date" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
+        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Note (optional)</label><input id="sinking-bucket-activity-note" type="text" maxlength="120" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" placeholder="e.g. Christmas contribution"></div>
+        <div class="flex gap-2 pt-2"><button type="button" onclick="closeSinkingBucketActivityModal()" class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold">Cancel</button><button type="submit" class="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold theme-bg">Save Activity</button></div>
+      </form>
+    </div>
+  </div>
+
   <!-- MODAL: ADD / EDIT TRANSACTION WITH OPTIONAL DROPDOWNS -->
   <div id="transaction-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50">
     <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-2xl max-h-[90vh] p-4 sm:p-5 shadow-2xl flex flex-col overflow-hidden">
@@ -1732,7 +1783,9 @@ Bonus"></textarea></div>
     });
     state.appVisualTheme = ['classic','silver','neutral','colorful'].includes(state.appVisualTheme) ? state.appVisualTheme : 'classic';
     if (!Array.isArray(state.variablePoolCategories)) state.variablePoolCategories = (state.categories || []).filter(c => !/housing|bill|debt service/i.test(c.name)).map(c => c.name);
-    // New planner and reconciliation fields are additive; existing transactions and budgets remain intact.
+    // New planner, reconciliation, and sinking-fund fields are additive; existing transactions and budgets remain intact.
+    initializeSinkingFundLedger();
+    saveData(); // Persist the one-time bucket migration before the next browser refresh.
 
     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
@@ -2391,21 +2444,90 @@ Bonus"></textarea></div>
     function showCategoryTransactions(category, level = state.spendingChartLevel || 'category') {
       const detail = document.getElementById('spending-category-detail');
       const range = getDashboardDateRange();
-      const matches = state.transactions.filter(t => t.type === 'Expense' && t.date >= range.start && t.date <= range.end && t.category !== 'Transfer' && (level === 'subcategory' ? (t.subcategory || 'Uncategorized') : (t.category || 'Uncategorized')) === category);
+      // Match the chart's transaction types so the drill-down agrees with its totals.
+      const matches = state.transactions.filter(t => ['Expense', 'Interest Charge'].includes(t.type) && t.date >= range.start && t.date <= range.end && t.category !== 'Transfer' && !(t.desc || '').toLowerCase().startsWith('transfer ') && (level === 'subcategory' ? (t.subcategory || 'Uncategorized') : (t.category || 'Uncategorized')) === category);
       detail.innerHTML = '';
-      const title = document.createElement('div'); title.className = 'font-semibold text-sm mb-3'; title.textContent = `${category} · ${matches.length} transaction${matches.length===1?'':'s'}`;
-      const close = document.createElement('button'); close.type = 'button'; close.className = 'float-right text-xs text-indigo-500 hover:underline'; close.textContent = 'Close'; close.addEventListener('click',()=>detail.classList.add('hidden'));
-      title.appendChild(close); detail.appendChild(title);
-      if (!matches.length) { const empty=document.createElement('p'); empty.className='text-xs text-gray-400'; empty.textContent='No transactions found.'; detail.appendChild(empty); }
-      matches.sort((a,b)=>b.date.localeCompare(a.date)).forEach(t=>{
-        const row=document.createElement('div'); row.className='flex justify-between gap-3 py-2 border-t border-gray-100 dark:border-gray-800 text-xs';
-        const desc=document.createElement('div'); desc.className='min-w-0';
-        const main=document.createElement('div'); main.className='font-medium truncate'; main.textContent=t.desc || 'Expense';
-        const date=document.createElement('div'); date.className='text-gray-400'; date.textContent=t.date;
-        desc.append(main,date);
-        const amount=document.createElement('strong'); amount.className='accounting-num whitespace-nowrap'; amount.textContent=formatFinancial(t.amount,true);
-        row.append(desc,amount); detail.appendChild(row);
-      });
+
+      const title = document.createElement('div');
+      title.className = 'flex flex-wrap items-center justify-between gap-2 font-semibold text-sm mb-3';
+      const titleText = document.createElement('span');
+      titleText.textContent = `${category} · ${matches.length} transaction${matches.length===1?'':'s'}`;
+      const close = document.createElement('button');
+      close.type = 'button';
+      close.className = 'text-xs text-indigo-500 hover:underline';
+      close.textContent = 'Close';
+      close.addEventListener('click',()=>detail.classList.add('hidden'));
+      title.append(titleText, close);
+      detail.appendChild(title);
+
+      const hint = document.createElement('p');
+      hint.className = 'text-[10px] text-gray-400 mb-3';
+      hint.textContent = 'Transactions are grouped by vendor. Select “Open transaction” to review or edit the original record.';
+      detail.appendChild(hint);
+
+      if (!matches.length) {
+        const empty=document.createElement('p');
+        empty.className='text-xs text-gray-400';
+        empty.textContent='No transactions found.';
+        detail.appendChild(empty);
+      } else {
+        const vendorGroups = new Map();
+        matches.forEach(t => {
+          const vendor = String(t.vendor || 'Vendor not recorded').trim() || 'Vendor not recorded';
+          if (!vendorGroups.has(vendor)) vendorGroups.set(vendor, []);
+          vendorGroups.get(vendor).push(t);
+        });
+        const sortedVendors = Array.from(vendorGroups.entries()).sort((a,b)=>a[0].localeCompare(b[0], undefined, { sensitivity: 'base' }));
+        sortedVendors.forEach(([vendor, transactions]) => {
+          transactions.sort((a,b)=>String(b.date || '').localeCompare(String(a.date || '')));
+          const vendorTotal = transactions.reduce((sum,t)=>sum+(Number(t.amount)||0),0);
+          const group = document.createElement('section');
+          group.className = 'rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden mb-3';
+
+          const vendorHeader = document.createElement('div');
+          vendorHeader.className = 'flex flex-wrap justify-between items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-gray-950';
+          const vendorName = document.createElement('strong');
+          vendorName.className = 'text-xs font-semibold';
+          vendorName.textContent = `${vendor} · ${transactions.length} transaction${transactions.length===1?'':'s'}`;
+          const vendorAmount = document.createElement('strong');
+          vendorAmount.className = 'text-xs accounting-num whitespace-nowrap';
+          vendorAmount.textContent = formatFinancial(vendorTotal, true);
+          vendorHeader.append(vendorName, vendorAmount);
+          group.appendChild(vendorHeader);
+
+          transactions.forEach(t => {
+            const row = document.createElement('div');
+            row.className = 'flex flex-wrap justify-between items-center gap-3 px-3 py-2 border-t border-gray-100 dark:border-gray-800 text-xs';
+            const description = document.createElement('div');
+            description.className = 'min-w-0 flex-1';
+            const date = document.createElement('div');
+            date.className = 'text-gray-400';
+            date.textContent = t.date || 'Date not recorded';
+            const memo = document.createElement('div');
+            memo.className = 'font-medium break-words';
+            memo.textContent = t.desc || (t.type === 'Interest Charge' ? 'Interest charge' : 'Expense');
+            description.append(date, memo);
+
+            const actions = document.createElement('div');
+            actions.className = 'flex items-center gap-3';
+            const amount = document.createElement('strong');
+            amount.className = 'accounting-num whitespace-nowrap';
+            amount.textContent = formatFinancial(t.amount, true);
+            const open = document.createElement('button');
+            open.type = 'button';
+            open.className = 'text-indigo-500 hover:text-indigo-400 font-semibold whitespace-nowrap';
+            open.textContent = 'Open transaction';
+            open.addEventListener('click', () => {
+              if (t.type === 'Interest Charge') openInterestChargeModal(String(t.id));
+              else openTransactionModal(String(t.id));
+            });
+            actions.append(amount, open);
+            row.append(description, actions);
+            group.appendChild(row);
+          });
+          detail.appendChild(group);
+        });
+      }
       detail.classList.remove('hidden');
     }
 
@@ -2794,6 +2916,324 @@ Bonus"></textarea></div>
       renderZbbPlanner();
     }
 
+    // Virtual Sinking Funds ledger. Bucket activity changes allocations only; actual bank
+    // transactions remain in the normal account and Expense Tracker workflows.
+    function sinkingBucketId() { return `sfb_${Date.now()}_${Math.random().toString(36).slice(2,7)}`; }
+    function sinkingBucketLedger() {
+      if (!state.sinkingFundLedger || typeof state.sinkingFundLedger !== 'object') state.sinkingFundLedger = { version: 1, buckets: [] };
+      if (!Array.isArray(state.sinkingFundLedger.buckets)) state.sinkingFundLedger.buckets = [];
+      return state.sinkingFundLedger;
+    }
+    function normaliseSavingsLabel(value) { return String(value || '').toLowerCase().replace(/[^a-z0-9]/g, ''); }
+    function findSinkingGoalForBucket(name, savingsItems) {
+      const key = normaliseSavingsLabel(name);
+      const aliases = {
+        pets: ['pets','pet'],
+        holidaysgifts: ['holidaysgifts','holidaygifts','gifts','holidays'],
+        carmaintenance: ['carmaintenance','carmaint','carmain'],
+        disney: ['disney','disneyplus'],
+        kids: ['kids','kid']
+      };
+      const matches = aliases[key] || [key];
+      return (savingsItems || []).find(item => matches.includes(normaliseSavingsLabel(item.name)) || matches.some(alias => alias && normaliseSavingsLabel(item.name).includes(alias))) || null;
+    }
+    function findSinkingGoalBucketByName(name, buckets) {
+      const key = normaliseSavingsLabel(name);
+      const aliases = [
+        { bucket: 'Pets', keys: ['pets','pet'] },
+        { bucket: 'Holidays / Gifts', keys: ['holidaysgifts','holidaygifts','gifts','holidays'] },
+        { bucket: 'Car Maintenance', keys: ['carmaintenance','carmaint','carmain'] },
+        { bucket: 'Disney+', keys: ['disney','disneyplus'] },
+        { bucket: 'Kids', keys: ['kids','kid'] }
+      ];
+      const match = aliases.find(item => item.keys.includes(key) || item.keys.some(alias => alias && key.includes(alias)));
+      return match ? (buckets || []).find(bucket => normaliseSavingsLabel(bucket.name) === normaliseSavingsLabel(match.bucket)) || null : null;
+    }
+    function findSavingsAccountByLabel(label) {
+      const wanted = normaliseSavingsLabel(label);
+      return (state.accounts || []).find(account => account.type === 'asset' && !account.archived && normaliseSavingsLabel(account.name).includes(wanted)) || null;
+    }
+    function initializeSinkingFundLedger() {
+      const ledger = sinkingBucketLedger();
+      const allSavings = Object.values(state.zbbTemplates || {}).flatMap(template => Array.isArray(template?.savings) ? template.savings : []);
+      const preferredTemplate = state.zbbTemplates?.[state.selectedZbbPeriod] || Object.values(state.zbbTemplates || {}).slice(-1)[0] || {};
+      const preferredSavings = Array.isArray(preferredTemplate.savings) ? preferredTemplate.savings : [];
+
+      // Connect Tuition and Emergency Buffer budget goals to their dedicated real accounts.
+      (state.zbbTemplates ? Object.values(state.zbbTemplates) : []).forEach(template => {
+        (template.savings || []).forEach(item => {
+          if (item.linkedAccountId && state.accounts.some(account => String(account.id) === String(item.linkedAccountId) && account.type === 'asset')) return;
+          const name = normaliseSavingsLabel(item.name);
+          let account = null;
+          if (name.includes('tuition')) account = findSavingsAccountByLabel('tuition');
+          else if (name.includes('emergency')) account = (state.accounts || []).find(a => a.type === 'asset' && !a.archived && /emergency|buffer/i.test(a.name || '')) || null;
+          if (account) item.linkedAccountId = String(account.id);
+        });
+      });
+
+      if (ledger.migrationVersion >= 1 || ledger.buckets.length > 0) {
+        ledger.migrationVersion = 1;
+        // Ensure every month-specific version of the same savings goal follows the same bucket.
+        (state.zbbTemplates ? Object.values(state.zbbTemplates) : []).forEach(template => {
+          (template.savings || []).forEach(item => {
+            const existing = ledger.buckets.find(bucket => String(bucket.linkedZbbItemId || '') === String(item.id)) || findSinkingGoalBucketByName(item.name, ledger.buckets);
+            if (existing) item.linkedBucketId = existing.id;
+          });
+        });
+        return;
+      }
+
+      const parentAccount = (state.accounts || []).find(account => account.type === 'asset' && !account.archived && /sinking\s*fund/i.test(account.name || '')) || null;
+      const starterBuckets = [
+        { name: 'Pets', key: 'pets' },
+        { name: 'Holidays / Gifts', key: 'holidaysgifts' },
+        { name: 'Car Maintenance', key: 'carmaintenance' },
+        { name: 'Disney+', key: 'disney' },
+        { name: 'Kids', key: 'kids' }
+      ];
+      const usedItems = new Set();
+      const mapped = starterBuckets.map(spec => {
+        const goal = findSinkingGoalForBucket(spec.key, preferredSavings) || findSinkingGoalForBucket(spec.key, allSavings);
+        if (goal) usedItems.add(String(goal.id));
+        return { ...spec, goal, opening: goal ? Math.max(0, (Number(goal.startBal) || 0) + (Number(goal.savedBal) || 0)) : 0 };
+      });
+      const proposedOpeningTotal = mapped.reduce((sum, bucket) => sum + bucket.opening, 0);
+      const actualBalance = parentAccount ? Number(parentAccount.balance) || 0 : 0;
+      // Only carry old goal balances into the new virtual ledger when they fit inside the
+      // real Sinking Funds account. Otherwise leave the real balance unallocated for review.
+      const canMigrateOpeningBalances = !!parentAccount && proposedOpeningTotal <= actualBalance + 0.005;
+
+      mapped.forEach(spec => {
+        const bucket = {
+          id: sinkingBucketId(),
+          name: spec.name,
+          accountId: parentAccount ? String(parentAccount.id) : '',
+          balance: canMigrateOpeningBalances ? spec.opening : 0,
+          targetBal: spec.goal ? Math.max(0, Number(spec.goal.targetBal) || 0) : 0,
+          targetDate: spec.goal?.targetDate || '',
+          linkedZbbItemId: spec.goal ? String(spec.goal.id) : '',
+          history: canMigrateOpeningBalances && spec.opening > 0 ? [{ id: sinkingBucketId(), date: new Date().toISOString().slice(0,10), type: 'opening', amount: spec.opening, note: 'Migrated from existing savings goal balance' }] : []
+        };
+        ledger.buckets.push(bucket);
+        if (spec.goal) spec.goal.linkedBucketId = bucket.id;
+      });
+      // Link the matching category names in all saved monthly templates, not just the active month.
+      (state.zbbTemplates ? Object.values(state.zbbTemplates) : []).forEach(template => {
+        (template.savings || []).forEach(item => {
+          const linked = findSinkingGoalBucketByName(item.name, ledger.buckets);
+          if (linked) item.linkedBucketId = linked.id;
+        });
+      });
+      ledger.migrationVersion = 1;
+      ledger.openingBalancesMigrated = canMigrateOpeningBalances;
+      ledger.migratedAt = new Date().toISOString();
+      ledger.migrationNote = !parentAccount ? 'No Sinking Funds asset account was found. Assign each bucket to its real account.' : (!canMigrateOpeningBalances ? 'Existing goal balances were not carried into buckets because their combined total exceeded the real Sinking Funds account balance. Review and allocate the account balance manually.' : 'Existing savings-goal balances were carried into the five Sinking Funds buckets; any remaining account cash stays unallocated.');
+    }
+    function getSinkingBucketById(id) {
+      return sinkingBucketLedger().buckets.find(bucket => String(bucket.id) === String(id)) || null;
+    }
+    function getSinkingBucketAccount(bucket) {
+      return (state.accounts || []).find(account => String(account.id) === String(bucket?.accountId) && account.type === 'asset') || null;
+    }
+    function getSinkingBucketTotal(accountId) {
+      return sinkingBucketLedger().buckets.filter(bucket => String(bucket.accountId) === String(accountId)).reduce((sum, bucket) => sum + (Number(bucket.balance) || 0), 0);
+    }
+    function getSinkingBucketUnallocated(accountId) {
+      const account = (state.accounts || []).find(item => String(item.id) === String(accountId) && item.type === 'asset');
+      if (!account) return 0;
+      return (Number(account.balance) || 0) - getSinkingBucketTotal(accountId);
+    }
+    function openSinkingBucketModal(bucketId = '') {
+      const form = document.getElementById('sinking-bucket-form');
+      form.reset();
+      const accountSelect = document.getElementById('sinking-bucket-account');
+      const assets = (state.accounts || []).filter(account => account.type === 'asset' && !account.archived);
+      accountSelect.innerHTML = '<option value="">Choose a real savings account</option>' + assets.map(account => `<option value="${escapeHtml(String(account.id))}">${escapeHtml(account.name)}</option>`).join('');
+      const bucket = bucketId ? getSinkingBucketById(bucketId) : null;
+      if (bucketId && !bucket) { alert('That bucket could not be found. Refresh the planner and try again.'); return; }
+      document.getElementById('sinking-bucket-edit-id').value = bucket?.id || '';
+      document.getElementById('sinking-bucket-modal-title').textContent = bucket ? 'Edit Sinking-Fund Bucket' : 'Add Sinking-Fund Bucket';
+      document.getElementById('sinking-bucket-name').value = bucket?.name || '';
+      document.getElementById('sinking-bucket-account').value = bucket?.accountId || '';
+      document.getElementById('sinking-bucket-target').value = bucket?.targetBal || '';
+      document.getElementById('sinking-bucket-target-date').value = bucket?.targetDate || '';
+      document.getElementById('sinking-bucket-edit-note').classList.toggle('hidden', !bucket || (!(Number(bucket.balance) > 0) && !(bucket.history || []).length));
+      if (bucket && ((Number(bucket.balance) > 0) || (bucket.history || []).length)) accountSelect.disabled = true;
+      else accountSelect.disabled = false;
+      document.getElementById('sinking-bucket-modal').classList.remove('hidden');
+    }
+    function closeSinkingBucketModal() { document.getElementById('sinking-bucket-modal').classList.add('hidden'); }
+    function saveSinkingBucket(event) {
+      event.preventDefault();
+      const id = document.getElementById('sinking-bucket-edit-id').value;
+      const name = document.getElementById('sinking-bucket-name').value.trim();
+      const accountId = document.getElementById('sinking-bucket-account').value;
+      const targetBal = Math.max(0, Number(document.getElementById('sinking-bucket-target').value) || 0);
+      const targetDate = document.getElementById('sinking-bucket-target-date').value || '';
+      const account = (state.accounts || []).find(item => String(item.id) === String(accountId) && item.type === 'asset' && !item.archived);
+      if (!name || !account) { alert('Enter a bucket name and choose an active asset account.'); return; }
+      const existingName = sinkingBucketLedger().buckets.find(bucket => String(bucket.id) !== String(id) && String(bucket.accountId) === String(accountId) && normaliseSavingsLabel(bucket.name) === normaliseSavingsLabel(name));
+      if (existingName) { alert('That account already has a bucket with this name.'); return; }
+      captureUndo(id ? 'Edit sinking-fund bucket' : 'Add sinking-fund bucket');
+      if (id) {
+        const bucket = getSinkingBucketById(id);
+        if (!bucket) return;
+        if ((Number(bucket.balance) > 0 || (bucket.history || []).length) && String(bucket.accountId) !== String(accountId)) {
+          alert('This bucket has a balance or activity history and cannot be moved to another account.'); return;
+        }
+        bucket.name = name; bucket.accountId = String(accountId); bucket.targetBal = targetBal; bucket.targetDate = targetDate;
+      } else {
+        sinkingBucketLedger().buckets.push({ id: sinkingBucketId(), name, accountId: String(accountId), balance: 0, targetBal, targetDate, linkedZbbItemId: '', history: [] });
+      }
+      saveData(); closeSinkingBucketModal(); renderZbbPlanner();
+    }
+    function openSinkingBucketActivityModal(bucketId, action) {
+      const bucket = getSinkingBucketById(bucketId);
+      if (!bucket) { alert('That bucket could not be found.'); return; }
+      const account = getSinkingBucketAccount(bucket);
+      if (!account) { alert('Assign this bucket to an active savings account before recording activity.'); return; }
+      if (!['allocate','release','transfer'].includes(action)) return;
+      const destinationWrap = document.getElementById('sinking-bucket-transfer-destination-wrap');
+      const destination = document.getElementById('sinking-bucket-transfer-destination');
+      const destinationBuckets = sinkingBucketLedger().buckets.filter(item => String(item.accountId) === String(bucket.accountId) && String(item.id) !== String(bucket.id));
+      destination.innerHTML = destinationBuckets.map(item => `<option value="${escapeHtml(String(item.id))}">${escapeHtml(item.name)} · ${formatFinancial(item.balance)}</option>`).join('');
+      destinationWrap.classList.toggle('hidden', action !== 'transfer');
+      if (action === 'transfer' && !destinationBuckets.length) { alert('Add another bucket under this same account before moving money between buckets.'); return; }
+      const labels = { allocate: 'Allocate Unassigned Cash', release: 'Release Bucket Balance', transfer: 'Move Between Buckets' };
+      const instructions = {
+        allocate: `Real account: ${account.name} · Available unallocated cash: ${formatFinancial(getSinkingBucketUnallocated(bucket.accountId))}. This assigns cash already reflected in the bank account.`,
+        release: `This moves money out of ${bucket.name} and back to the account's unallocated amount. Use it after recording any real bank withdrawal in the Expense Tracker.`,
+        transfer: `Move an allocation from ${bucket.name} to another bucket in ${account.name}. The real account balance will not change.`
+      };
+      document.getElementById('sinking-bucket-activity-id').value = bucket.id;
+      document.getElementById('sinking-bucket-activity-type').value = action;
+      document.getElementById('sinking-bucket-activity-title').textContent = labels[action];
+      document.getElementById('sinking-bucket-activity-context').textContent = instructions[action];
+      document.getElementById('sinking-bucket-activity-amount-label').textContent = action === 'allocate' ? 'Amount to allocate ($)' : action === 'release' ? 'Amount to release ($)' : 'Amount to move ($)';
+      document.getElementById('sinking-bucket-activity-form').reset();
+      document.getElementById('sinking-bucket-activity-id').value = bucket.id;
+      document.getElementById('sinking-bucket-activity-type').value = action;
+      document.getElementById('sinking-bucket-activity-date').value = new Date().toISOString().slice(0,10);
+      destinationWrap.classList.toggle('hidden', action !== 'transfer');
+      document.getElementById('sinking-bucket-activity-modal').classList.remove('hidden');
+    }
+    function closeSinkingBucketActivityModal() { document.getElementById('sinking-bucket-activity-modal').classList.add('hidden'); }
+    function saveSinkingBucketActivity(event) {
+      event.preventDefault();
+      const bucket = getSinkingBucketById(document.getElementById('sinking-bucket-activity-id').value);
+      const action = document.getElementById('sinking-bucket-activity-type').value;
+      const amount = Math.round((Number(document.getElementById('sinking-bucket-activity-amount').value) || 0) * 100) / 100;
+      const date = document.getElementById('sinking-bucket-activity-date').value;
+      const note = document.getElementById('sinking-bucket-activity-note').value.trim();
+      if (!bucket || !date || !(amount > 0)) { alert('Choose a valid date and enter an amount greater than zero.'); return; }
+      const account = getSinkingBucketAccount(bucket);
+      if (!account) { alert('The selected bucket is not linked to an active asset account.'); return; }
+      const cents = value => Math.round((Number(value) || 0) * 100);
+      const amountCents = cents(amount);
+      const balanceCents = cents(bucket.balance);
+      const availableCents = cents(getSinkingBucketUnallocated(bucket.accountId));
+      let destinationBucket = null;
+      if (action === 'allocate' && amountCents > availableCents) { alert(`Only ${formatFinancial(Math.max(0, availableCents / 100))} is currently unallocated in ${account.name}. Record the real deposit or transfer first, or choose a smaller allocation.`); return; }
+      if ((action === 'release' || action === 'transfer') && amountCents > balanceCents) { alert(`The ${bucket.name} bucket only has ${formatFinancial(bucket.balance)} available.`); return; }
+      if (action === 'transfer') {
+        destinationBucket = getSinkingBucketById(document.getElementById('sinking-bucket-transfer-destination').value);
+        if (!destinationBucket || String(destinationBucket.accountId) !== String(bucket.accountId) || destinationBucket.id === bucket.id) { alert('Choose another bucket under the same real account.'); return; }
+      }
+      captureUndo(action === 'allocate' ? 'Allocate sinking-fund cash' : action === 'release' ? 'Release sinking-fund allocation' : 'Move sinking-fund allocation');
+      const entry = (type, value, extra = {}) => ({ id: sinkingBucketId(), date, type, amount: value, note, ...extra });
+      if (action === 'allocate') {
+        bucket.balance = Math.round((Number(bucket.balance || 0) + amount) * 100) / 100;
+        bucket.history = bucket.history || [];
+        bucket.history.unshift(entry('allocation', amount, { note: note || 'Allocated existing unassigned cash' }));
+      } else if (action === 'release') {
+        bucket.balance = Math.round((Number(bucket.balance || 0) - amount) * 100) / 100;
+        bucket.history = bucket.history || [];
+        bucket.history.unshift(entry('release', amount, { note: note || 'Released to account unallocated cash' }));
+      } else {
+        bucket.balance = Math.round((Number(bucket.balance || 0) - amount) * 100) / 100;
+        destinationBucket.balance = Math.round((Number(destinationBucket.balance || 0) + amount) * 100) / 100;
+        const transferId = sinkingBucketId();
+        bucket.history = bucket.history || []; destinationBucket.history = destinationBucket.history || [];
+        bucket.history.unshift(entry('transfer-out', amount, { transferId, otherBucketName: destinationBucket.name, note: note || `Moved to ${destinationBucket.name}` }));
+        destinationBucket.history.unshift(entry('transfer-in', amount, { transferId, otherBucketName: bucket.name, note: note || `Moved from ${bucket.name}` }));
+      }
+      // Keep old savings-goal balances as historical planning inputs; the tracker reads
+      // the bucket balance through linkedBucketId instead of incrementing these fields.
+      saveData(); closeSinkingBucketActivityModal(); renderZbbPlanner();
+    }
+    function deleteSinkingBucket(bucketId) {
+      const bucket = getSinkingBucketById(bucketId);
+      if (!bucket) return;
+      if (Math.abs(Number(bucket.balance) || 0) > 0.005 || (bucket.history || []).length) {
+        alert('This bucket has a balance or activity history. Release its balance and keep it for history, or edit its name.');
+        return;
+      }
+      if (!confirm(`Delete the empty bucket "${bucket.name}"?`)) return;
+      captureUndo('Delete empty sinking-fund bucket');
+      const ledger = sinkingBucketLedger();
+      ledger.buckets = ledger.buckets.filter(item => String(item.id) !== String(bucket.id));
+      (state.zbbTemplates ? Object.values(state.zbbTemplates) : []).forEach(template => (template.savings || []).forEach(item => { if (String(item.linkedBucketId || '') === String(bucket.id)) delete item.linkedBucketId; }));
+      saveData(); renderZbbPlanner();
+    }
+    function renderSinkingBucketManager() {
+      const host = document.getElementById('sinking-bucket-manager');
+      if (!host) return;
+      const ledger = sinkingBucketLedger();
+      const activeAccounts = (state.accounts || []).filter(account => account.type === 'asset' && !account.archived);
+      const bucketsByAccount = new Map();
+      ledger.buckets.forEach(bucket => {
+        const key = String(bucket.accountId || '');
+        if (!bucketsByAccount.has(key)) bucketsByAccount.set(key, []);
+        bucketsByAccount.get(key).push(bucket);
+      });
+      const accountCards = [];
+      bucketsByAccount.forEach((buckets, accountId) => {
+        const account = activeAccounts.find(item => String(item.id) === accountId);
+        const accountBalance = account ? Number(account.balance) || 0 : 0;
+        const total = buckets.reduce((sum, bucket) => sum + (Number(bucket.balance) || 0), 0);
+        const unallocated = account ? accountBalance - total : 0;
+        const accountTitle = account ? escapeHtml(account.name) : 'Needs an account assignment';
+        const accountNameLabel = account ? `Actual bank balance · ${formatFinancial(accountBalance)}` : 'Choose a real savings account for each bucket';
+        const bucketRows = buckets.map(bucket => {
+          const balance = Number(bucket.balance) || 0;
+          const target = Number(bucket.targetBal) || 0;
+          const pct = target > 0 ? Math.min(100, Math.max(0, balance / target * 100)) : 0;
+          const history = (bucket.history || []).slice(0,3).map(item => {
+            const label = item.type === 'opening' ? 'Opening allocation' : item.type === 'allocation' ? 'Allocated' : item.type === 'release' ? 'Released' : item.type === 'transfer-in' ? `Moved in${item.otherBucketName ? ` · ${escapeHtml(item.otherBucketName)}` : ''}` : item.type === 'transfer-out' ? `Moved out${item.otherBucketName ? ` · ${escapeHtml(item.otherBucketName)}` : ''}` : 'Activity';
+            return `<div class="flex justify-between gap-2 text-[10px] text-gray-400"><span class="truncate">${escapeHtml(item.date || '')} · ${label}${item.note ? ` · ${escapeHtml(item.note)}` : ''}</span><span class="shrink-0 accounting-num">${formatFinancial(item.amount)}</span></div>`;
+          }).join('');
+          return `<div class="rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950 p-3 space-y-2">
+            <div class="flex items-start justify-between gap-3"><div class="min-w-0"><div class="font-semibold text-sm">${escapeHtml(bucket.name)}</div><div class="text-[10px] text-gray-400">${target > 0 ? `${pct.toFixed(0)}% of ${formatFinancial(target)} target` : 'No target set'}${bucket.targetDate ? ` · Due ${escapeHtml(bucket.targetDate)}` : ''}</div></div><div class="text-right"><div class="font-bold text-base accounting-num">${formatFinancial(balance)}</div><div class="text-[9px] text-gray-400">Allocated</div></div></div>
+            ${target > 0 ? `<div class="h-1.5 rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden"><div class="h-full bg-indigo-600 theme-bg" style="width:${pct}%"></div></div>` : ''}
+            <div class="flex flex-wrap gap-1.5"><button type="button" onclick="openSinkingBucketActivityModal('${escapeHtml(String(bucket.id))}','allocate')" class="px-2 py-1 rounded-md bg-emerald-600/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-semibold">Allocate</button><button type="button" onclick="openSinkingBucketActivityModal('${escapeHtml(String(bucket.id))}','release')" class="px-2 py-1 rounded-md bg-amber-600/10 text-amber-600 dark:text-amber-400 text-[10px] font-semibold">Release</button><button type="button" onclick="openSinkingBucketActivityModal('${escapeHtml(String(bucket.id))}','transfer')" class="px-2 py-1 rounded-md bg-indigo-600/10 text-indigo-600 dark:text-indigo-400 text-[10px] font-semibold">Move</button><button type="button" onclick="openSinkingBucketModal('${escapeHtml(String(bucket.id))}')" class="px-2 py-1 rounded-md bg-gray-200 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-[10px] font-semibold">Edit</button>${balance <= 0.005 && !(bucket.history || []).length ? `<button type="button" onclick="deleteSinkingBucket('${escapeHtml(String(bucket.id))}')" class="px-2 py-1 rounded-md bg-rose-600/10 text-rose-600 text-[10px] font-semibold">Delete</button>` : ''}</div>
+            ${history ? `<div class="pt-1 border-t border-gray-200 dark:border-gray-800 space-y-1">${history}</div>` : '<div class="text-[10px] text-gray-400">No bucket activity recorded yet.</div>'}
+          </div>`;
+        }).join('');
+        const varianceClass = unallocated < -0.005 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400';
+        const varianceLabel = unallocated < -0.005 ? 'Overallocated' : 'Unallocated cash';
+        accountCards.push(`<section class="rounded-xl border border-gray-200 dark:border-gray-800 p-3 space-y-3">
+          <div class="flex flex-wrap justify-between gap-2"><div><div class="font-bold text-sm">${accountTitle}</div><div class="text-[10px] text-gray-400">${accountNameLabel}</div></div><div class="text-right text-xs"><div class="text-gray-400">Total bucket balances</div><strong class="accounting-num">${formatFinancial(total)}</strong></div></div>
+          ${account ? `<div class="grid grid-cols-2 gap-2 text-xs"><div class="rounded-lg bg-gray-50 dark:bg-gray-950 p-2"><div class="text-gray-400">Real account balance</div><strong class="accounting-num">${formatFinancial(accountBalance)}</strong></div><div class="rounded-lg bg-gray-50 dark:bg-gray-950 p-2"><div class="text-gray-400">${varianceLabel}</div><strong class="accounting-num ${varianceClass}">${formatFinancial(Math.abs(unallocated))}${unallocated < -0.005 ? ' · over' : ''}</strong></div></div>` : ''}
+          ${bucketRows ? `<div class="grid grid-cols-1 md:grid-cols-2 gap-2">${bucketRows}</div>` : '<p class="text-xs text-gray-400">No buckets yet.</p>'}
+        </section>`);
+      });
+      const dedicatedGoals = [];
+      const seenAccountIds = new Set();
+      const activeSavingsGoals = (getActiveZbbTemplate().savings || []);
+      activeSavingsGoals.forEach(goal => {
+        if (!goal.linkedAccountId || goal.linkedBucketId) return;
+        const account = activeAccounts.find(item => String(item.id) === String(goal.linkedAccountId));
+        if (!account || seenAccountIds.has(String(account.id))) return;
+        seenAccountIds.add(String(account.id));
+        const balance = Number(account.balance) || 0;
+        const target = Number(goal.targetBal) || 0;
+        const pct = target > 0 ? Math.min(100, Math.max(0, balance / target * 100)) : 0;
+        dedicatedGoals.push(`<div class="rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950 p-3"><div class="flex justify-between gap-3"><div><div class="font-semibold text-sm">${escapeHtml(account.name)}</div><div class="text-[10px] text-gray-400">Dedicated savings account · ${escapeHtml(goal.name)}</div></div><strong class="text-base accounting-num">${formatFinancial(balance)}</strong></div>${target > 0 ? `<div class="mt-2 h-1.5 rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden"><div class="h-full bg-indigo-600 theme-bg" style="width:${pct}%"></div></div><div class="mt-1 flex justify-between text-[10px] text-gray-400"><span>${pct.toFixed(0)}% of ${formatFinancial(target)}</span><span>${goal.targetDate ? `Target ${escapeHtml(goal.targetDate)}` : 'No target date'}</span></div>` : '<div class="mt-1 text-[10px] text-gray-400">Set an optional target in the Savings budget line.</div>'}</div>`);
+      });
+      const unassigned = ledger.buckets.filter(bucket => !getSinkingBucketAccount(bucket));
+      host.innerHTML = `${ledger.migrationNote ? `<div class="rounded-lg border border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950/20 p-3 text-[11px] text-amber-800 dark:text-amber-200">${escapeHtml(ledger.migrationNote)}</div>` : ''}${accountCards.join('') || '<p class="text-xs text-gray-400">No virtual buckets are set up yet. Add a bucket and attach it to a real savings account.</p>'}${dedicatedGoals.length ? `<div class="pt-2 border-t border-gray-200 dark:border-gray-800 space-y-2"><div class="text-xs font-bold text-gray-500 uppercase tracking-wide">Other Dedicated Savings Accounts</div><div class="grid grid-cols-1 md:grid-cols-2 gap-2">${dedicatedGoals.join('')}</div></div>` : ''}${unassigned.length ? '<p class="text-[10px] text-amber-600 dark:text-amber-400">One or more buckets need an active savings account assigned. Edit each affected bucket to choose an account.</p>' : ''}`;
+    }
+
     function renderZbbPlanner() {
       const period = state.selectedZbbPeriod || '2026-11';
       const picker = document.getElementById('zbb-period-picker');
@@ -2960,10 +3400,12 @@ Bonus"></textarea></div>
       const sfGrid = document.getElementById('sinking-funds-progress-grid');
       sfGrid.innerHTML = '';
       (zbb.savings || []).forEach(sf => {
+        const linkedBucket = sf.linkedBucketId ? getSinkingBucketById(sf.linkedBucketId) : sinkingBucketLedger().buckets.find(bucket => String(bucket.linkedZbbItemId || '') === String(sf.id));
+        const linkedAccount = sf.linkedAccountId ? (state.accounts || []).find(account => String(account.id) === String(sf.linkedAccountId) && account.type === 'asset') : null;
         const start = sf.startBal || 0;
         const contrib = sf.savedBal || 0;
-        const totalSaved = start + contrib;
-        const target = sf.targetBal || 0;
+        const totalSaved = linkedBucket ? (Number(linkedBucket.balance) || 0) : linkedAccount ? (Number(linkedAccount.balance) || 0) : start + contrib;
+        const target = sf.targetBal || (linkedBucket ? linkedBucket.targetBal : 0) || 0;
         const pct = target > 0 ? Math.min(100, Math.round((totalSaved / target) * 100)) : 0;
         const remainingAmt = Math.max(0, target - totalSaved);
         const perPaycheque = (sf.monthly || 0) / 2;
@@ -2990,6 +3432,7 @@ Bonus"></textarea></div>
         `;
       });
       renderZbbFundingTracker();
+      renderSinkingBucketManager();
     }
 
     function getZbbTrackingRecord(itemId) {
@@ -3243,6 +3686,10 @@ Bonus"></textarea></div>
         const item = list.find(i => String(i.id) === String(editId));
         if (!item) { alert('This budget item could not be found. Please close the editor and try again.'); return; }
         item.name = name; item.monthly = monthly; item.splitMode = splitMode; item.split = split; Object.assign(item, extraSavingsData);
+        if (type === 'savings') {
+          const linkedBucket = item.linkedBucketId ? getSinkingBucketById(item.linkedBucketId) : sinkingBucketLedger().buckets.find(bucket => String(bucket.linkedZbbItemId || '') === String(item.id));
+          if (linkedBucket) { linkedBucket.targetBal = Number(extraSavingsData.targetBal) || 0; linkedBucket.targetDate = extraSavingsData.targetDate || ''; }
+        }
       } else {
         list.push({ id: `zbb_${Date.now()}_${Math.random().toString(36).slice(2,7)}`, name, monthly, splitMode, split, ...extraSavingsData });
       }
@@ -6804,7 +7251,7 @@ Bonus"></textarea></div>
       captureUndo('Transfer between accounts');
       from.balance -= amount; to.balance += amount;
       state.transactions.unshift({ id: `tr-${Date.now()}`, date, desc: `Transfer from ${from.name} to ${to.name}`, vendor: 'Account transfer', type: 'Transfer', category: 'Transfer', subcategory: '', amount, accountId: fromId, transferToAccountId: toId });
-      saveData(); closeTransferModal(); renderDashboard(); renderLedger();
+      saveData(); closeTransferModal(); renderDashboard(); renderLedger(); renderSinkingBucketManager();
     }
 
     function openAccountModal() {
@@ -6841,12 +7288,12 @@ Bonus"></textarea></div>
         if (!existing || existing.type !== 'asset') return;
         captureUndo(`Edit Account "${existing.name}"`);
         Object.assign(existing, accountData);
-        saveData(); closeAccountModal(); closeAccountDetailModal(); renderDashboard(); renderLedger();
+        saveData(); closeAccountModal(); closeAccountDetailModal(); renderDashboard(); renderLedger(); renderSinkingBucketManager();
       } else {
         const newAcc = { id: Date.now().toString(), ...accountData, hidden: false, archived: false };
         captureUndo(`Add Account "${newAcc.name}"`);
         state.accounts.push(newAcc);
-        saveData(); closeAccountModal(); renderDashboard(); renderLedger();
+        saveData(); closeAccountModal(); renderDashboard(); renderLedger(); renderSinkingBucketManager();
       }
     }
 
@@ -6939,7 +7386,7 @@ Bonus"></textarea></div>
       document.getElementById('tx-transfer-destination-wrap').classList.add('hidden');
 
       if (editId) {
-        const tx = state.transactions.find(t => t.id === editId);
+        const tx = state.transactions.find(t => String(t.id) === String(editId));
         if (tx) {
           document.getElementById('tx-modal-title').innerText = "Edit Transaction";
           document.getElementById('tx-edit-id').value = tx.id;
@@ -7108,7 +7555,7 @@ Bonus"></textarea></div>
         document.getElementById('tx-category').focus();
         return;
       }
-      const editingRecord = editId ? state.transactions.find(t => t.id === editId) : null;
+      const editingRecord = editId ? state.transactions.find(t => String(t.id) === String(editId)) : null;
       if (editingRecord && (editingRecord.calendarBillId || editingRecord.debtPaymentId) && editingRecord.type !== type) {
         alert('This transaction is linked to a scheduled bill or debt payment. Its transaction type cannot be changed here because that would break the payment linkage. You can still edit its other fields.');
         return;
@@ -7194,7 +7641,7 @@ Bonus"></textarea></div>
         if (category) { if (type === 'Income') state.lastUsedIncomeCategory = category; else state.lastUsedCategory = category; }
 
         if (editId) {
-          const idx = state.transactions.findIndex(t => t.id === editId);
+          const idx = state.transactions.findIndex(t => String(t.id) === String(editId));
           if (idx >= 0) {
             const oldT = state.transactions[idx];
             const linkedBeforeEdit = oldT.calendarBillId ? (state.calendarBills || []).find(b => b.id === oldT.calendarBillId) : null;
@@ -7240,7 +7687,7 @@ Bonus"></textarea></div>
         const ruleSubcategory = document.getElementById('tx-subcategory').value;
         if (ruleCategory && ruleCategory !== 'Transfer') saveTransactionCategoryRule(vendor, ruleCategory, ruleSubcategory, categoryRuleScope);
       }
-      saveData(); closeTransactionModal(); renderLedger(); renderDashboard(); renderZbbFundingTracker();
+      saveData(); closeTransactionModal(); renderLedger(); renderDashboard(); renderZbbFundingTracker(); renderSinkingBucketManager();
     }
 
     function downloadBlob(blob, filename) { const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1200); }
@@ -7453,6 +7900,7 @@ Bonus"></textarea></div>
       if (!isValidHexColor(state.appAccentHex)) delete state.appAccentHex;
       if (!isValidHexColor(state.appBackgroundHex)) delete state.appBackgroundHex;
       if (!Array.isArray(state.variablePoolCategories)) state.variablePoolCategories = (state.categories || []).filter(c => !/housing|bill|debt service/i.test(c.name)).map(c => c.name);
+      initializeSinkingFundLedger();
       pendingStatementRows = [];
       saveData();
       initThemeAndBlur();
