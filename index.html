@@ -1470,8 +1470,16 @@ Bonus"></textarea></div>
           <div><label class="block text-xs font-semibold text-gray-500 mb-1">Date</label><input type="date" id="tx-date" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
           <div><label id="tx-account-label" class="block text-xs font-semibold text-gray-500 mb-1">Account</label><select id="tx-account" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></select></div>
         </div>
-        <p class="text-[10px] text-gray-400 -mt-2">Card purchase: choose the credit-card account and record an Expense. Paying the card from chequing is a separate Debt Payment. Merchant refund: enter a negative Expense in the original purchase category so it offsets spending instead of inflating Income.</p>
-        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Vendor <span class="text-rose-500">*</span></label><input type="text" id="tx-vendor" oninput="applySmartMerchantRules(this.value)" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" placeholder="e.g. Costco"></div>
+        <div class="grid grid-cols-2 gap-2 rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50/70 dark:bg-gray-950/60 p-2.5">
+          <div><div class="text-[9px] uppercase tracking-wide text-gray-400 font-semibold">Entry source</div><div id="tx-entry-source" class="text-xs font-semibold mt-0.5">Manual entry</div></div>
+          <div><div class="text-[9px] uppercase tracking-wide text-gray-400 font-semibold">Statement match</div><div id="tx-statement-status" class="text-xs font-semibold mt-0.5">Not matched</div></div>
+          <p class="col-span-2 text-[10px] text-gray-400">Source records how the transaction entered FinHub. A statement match only confirms it was matched to a bank or card statement; it does not approve the vendor, category or description.</p>
+        </div>
+        <p class="text-[10px] text-gray-400">Card purchase: choose the credit-card account and record an Expense. Paying the card from chequing is a separate Debt Payment. Merchant refund: enter a negative Expense in the original purchase category so it offsets spending instead of inflating Income.</p>
+        <div>
+          <div class="flex items-center justify-between mb-1"><label class="block text-xs font-semibold text-gray-500">Vendor <span class="text-rose-500">*</span></label><div class="flex gap-2"><button type="button" onclick="applySavedVendorCleanupToForm()" class="text-[10px] font-semibold text-indigo-500 hover:text-indigo-400">Apply saved cleanup</button><button type="button" onclick="openVendorRuleModalFromTransaction()" class="text-[10px] font-semibold text-indigo-500 hover:text-indigo-400">Create cleanup rule</button></div></div>
+          <input type="text" id="tx-vendor" oninput="applySmartMerchantRules(this.value)" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" placeholder="e.g. Costco">
+        </div>
         <div class="grid grid-cols-2 gap-3">
           <div><label class="block text-xs font-semibold text-gray-500 mb-1">Transaction Type</label><select id="tx-type" onchange="updateTransactionTypeFields()" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></select></div>
           <div id="tx-amount-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Total Amount ($)</label><input type="number" step="0.01" id="tx-amount" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
@@ -2821,11 +2829,11 @@ Bonus"></textarea></div>
             let type = isExternalTransferIn ? 'Transfer In' : (t.type || 'Transaction');
             if (t.type === 'Transfer' && t.transferToAccountId) type = 'Transfer Out';
             if (t.type === 'Expense' && amount < 0) type = 'Refund / credit';
-            entries.push({ id: t.id, date: t.type==='Transfer' && t.transferToAccountId ? (statementTransactionDateForAccount(t,acc.id) || t.date || '') : (t.date || ''), description: t.vendor || t.desc || 'Transaction', detail: t.desc && t.vendor && t.desc !== t.vendor ? t.desc : '', type, change, reconciled: t.type==='Transfer' && t.transferToAccountId ? statementTransactionReconciledForAccount(t,acc.id) : !!t.reconciled });
+            entries.push({ id: t.id, date: t.type==='Transfer' && t.transferToAccountId ? (statementTransactionDateForAccount(t,acc.id) || t.date || '') : (t.date || ''), description: t.vendor || t.desc || 'Transaction', detail: t.desc && t.vendor && t.desc !== t.vendor ? t.desc : '', type, change, reconciled: (t.type==='Transfer' && t.transferToAccountId ? statementTransactionReconciledForAccount(t,acc.id) : !!t.reconciled) && !t.statementMatchNeedsReview, matchNeedsReview: !!t.statementMatchNeedsReview });
           } else if (t.type === 'Transfer' && t.transferToAccountId === acc.id) {
             const amount = Number(t.amount) || 0;
             const source = state.accounts.find(a => a.id === t.accountId);
-            entries.push({ id: `${t.id}_incoming`, date: statementTransactionDateForAccount(t,acc.id) || t.date || '', description: t.vendor || 'Account transfer', detail: t.desc || (source ? `Transfer from ${source.name}` : 'Transfer received'), type: 'Transfer In', change: amount, reconciled: statementTransactionReconciledForAccount(t,acc.id) });
+            entries.push({ id: `${t.id}_incoming`, date: statementTransactionDateForAccount(t,acc.id) || t.date || '', description: t.vendor || 'Account transfer', detail: t.desc || (source ? `Transfer from ${source.name}` : 'Transfer received'), type: 'Transfer In', change: amount, reconciled: statementTransactionReconciledForAccount(t,acc.id) && !t.statementMatchNeedsReview, matchNeedsReview: !!t.statementMatchNeedsReview });
           }
         });
       } else {
@@ -2855,7 +2863,7 @@ Bonus"></textarea></div>
           else if (postedDirectlyToDebtAccount && t.type === 'Expense') type = 'Credit / debt purchase';
           else if (postedDirectlyToDebtAccount && t.type === 'Income') type = 'Refund / credit';
           else if (isInterest) type = 'Interest expense';
-          entries.push({ id: t.id, date: t.date || '', description: t.vendor || t.desc || 'Transaction', detail: t.desc && t.vendor && t.desc !== t.vendor ? t.desc : '', type, change, amount: Number(t.amount) || 0, principal, reconciled: !!t.reconciled });
+          entries.push({ id: t.id, date: t.date || '', description: t.vendor || t.desc || 'Transaction', detail: t.desc && t.vendor && t.desc !== t.vendor ? t.desc : '', type, change, amount: Number(t.amount) || 0, principal, reconciled: !!t.reconciled && !t.statementMatchNeedsReview, matchNeedsReview: !!t.statementMatchNeedsReview });
         });
       }
       return entries.sort((a, b) => String(a.date).localeCompare(String(b.date)) || String(a.id).localeCompare(String(b.id)));
@@ -2910,7 +2918,7 @@ Bonus"></textarea></div>
             <tr class="hover:bg-gray-50 dark:hover:bg-gray-950">
               <td class="px-4 py-3 whitespace-nowrap">${entry.date || '—'}</td>
               <td class="px-4 py-3">${entry.description || 'Transaction'}${entry.detail ? `<div class="text-[10px] text-gray-400 mt-0.5">${entry.detail}</div>` : ''}</td>
-              <td class="px-4 py-3"><span class="px-2 py-0.5 rounded text-[10px] bg-gray-100 dark:bg-gray-800">${entry.type}</span>${entry.reconciled ? '<span class="ml-1 px-1.5 py-0.5 rounded text-[9px] bg-emerald-500/10 text-emerald-500">Reconciled</span>' : ''}</td>
+              <td class="px-4 py-3"><span class="px-2 py-0.5 rounded text-[10px] bg-gray-100 dark:bg-gray-800">${entry.type}</span>${entry.matchNeedsReview ? '<span class="ml-1 px-1.5 py-0.5 rounded text-[9px] bg-amber-500/10 text-amber-600">Match needs review</span>' : entry.reconciled ? '<span class="ml-1 px-1.5 py-0.5 rounded text-[9px] bg-emerald-500/10 text-emerald-500">Statement matched</span>' : ''}</td>
               <td class="px-4 py-3 text-right font-semibold ${favorableDebtReduction || (!negative && entry.change > 0) ? 'text-emerald-600' : negative ? 'text-rose-600' : 'text-gray-400'} accounting-num">${changeText}</td>
               <td class="px-4 py-3 text-right font-bold accounting-num">${formatFinancial(runningBalance)}</td>
             </tr>`;
@@ -4691,6 +4699,7 @@ Bonus"></textarea></div>
       });
     }
     function setTransferReconciledAccounts(tx, accountIds) {
+      delete tx.statementMatchNeedsReview;
       tx.reconciledAccountIds = [...new Set((accountIds || []).filter(Boolean).map(String))];
       tx.reconciled = tx.reconciledAccountIds.length > 0;
     }
@@ -4740,7 +4749,7 @@ Bonus"></textarea></div>
               const date = candidate.date || 'No date';
               const description = candidate.vendor || candidate.desc || candidate.statementDescription || 'Incoming transaction';
               const account = state.accounts.find(a => String(a.id) === String(candidate.accountId))?.name || 'Destination account';
-              const reconciled = candidate.reconciled || candidate.statementMatchId || candidate.statementMatchGroupId ? ' · Reconciled' : '';
+              const reconciled = candidate.statementMatchNeedsReview ? ' · Match needs review' : (candidate.reconciled || candidate.statementMatchId || candidate.statementMatchGroupId ? ' · Statement matched' : '');
               return `${index + 1}. ${date} · ${description} · ${account} · ${formatFinancial(candidate.amount)}${reconciled}`;
             });
             const choice = prompt(`More than one possible destination transaction was found for:\n${sourceLabel}\n\nChoose the matching transaction by entering its number:\n\n${options.join('\n')}\n\nEnter 1-${options.length}, or choose Cancel to stop without making changes.`);
@@ -4902,7 +4911,7 @@ Bonus"></textarea></div>
 
     const LEDGER_FILTERS = [
       ['date','Date'],['vendor','Vendor'],['desc','Description'],['type','Type'],
-      ['category','Bucket'],['subcategory','Subcategory'],['account','Account'],['transferRoute','Transfer Account'],['amount','Amount'],['reconciliation','Status']
+      ['category','Bucket'],['subcategory','Subcategory'],['account','Account'],['transferRoute','Transfer Account'],['amount','Amount'],['source','Source'],['reconciliation','Statement match']
     ];
     let ledgerFilterSelections = {};
     let ledgerFilterSearchTerms = {};
@@ -4922,7 +4931,8 @@ Bonus"></textarea></div>
         return `${acc ? acc.name : '(No account)'} → ${destination ? destination.name : '(Unknown account)'}`;
       }
       if (key === 'amount') return (Number(t.amount) || 0).toFixed(2);
-      if (key === 'reconciliation') return t.reconciled ? 'Reconciled' : 'Unreconciled';
+      if (key === 'source') return transactionSourceLabel(t, false);
+      if (key === 'reconciliation') return transactionStatementMatchLabel(t, false);
       return '';
     }
     function renderLedgerFilterStrip() {
@@ -5250,7 +5260,7 @@ Bonus"></textarea></div>
               <td data-label="Date" class="px-4 py-3"><div class="flex items-center gap-2"><input type="checkbox" class="ledger-row-select accent-indigo-600" data-id="${t.id}" ${selectedLedgerIds.has(t.id)?'checked':''} onchange="toggleLedgerTransactionSelection('${t.id}',this.checked)" aria-label="Select transaction ${t.date}"><span>${t.date}</span></div></td>
               <td data-label="Vendor" class="px-4 py-3">${t.vendor || 'Vendor not recorded'}</td>
               <td data-label="Description" class="px-4 py-3">${t.desc || '-'}</td>
-              <td data-label="Type" class="px-4 py-3"><span class="px-2 py-0.5 rounded text-[10px] bg-gray-100 dark:bg-gray-800">${t.type === 'Transfer' ? 'Internal Transfer' : t.type}</span>${t.reconciled ? '<span class="ml-1 px-1.5 py-0.5 rounded text-[9px] bg-emerald-500/10 text-emerald-500">Reconciled</span>' : ''}</td>
+              <td data-label="Type" class="px-4 py-3"><span class="px-2 py-0.5 rounded text-[10px] bg-gray-100 dark:bg-gray-800">${t.type === 'Transfer' ? 'Internal Transfer' : t.type}</span><div class="mt-1 flex flex-wrap gap-1"><span class="px-1.5 py-0.5 rounded text-[9px] bg-indigo-500/10 text-indigo-500">${escapeHtml(transactionSourceShortLabel(t))}</span>${transactionStatementStatusBadge(t)}</div></td>
               <td data-label="Bucket" class="px-4 py-3">${t.category || '-'}</td>
               <td data-label="Subcategory" class="px-4 py-3">${t.subcategory || '-'}</td>
               <td data-label="Account" class="px-4 py-3">${acc ? (t.transferToAccountId ? `${acc.name} → ${(state.accounts.find(a=>a.id===t.transferToAccountId)||{}).name||'Account'}` : acc.name) : '-'}</td>
@@ -5469,10 +5479,10 @@ Bonus"></textarea></div>
       const add=(accountId,direction,t)=>{if(!accountId||!direction)return;const key=statementMatchKey(accountId,direction,t.amount);if(!index.has(key))index.set(key,[]);index.get(key).push(t);};
       (state.transactions||[]).forEach(t=>{
         if(t.type==='Transfer'){
-          if(t.externalTransferDirection==='in'&&!t.transferToAccountId){if(!statementTransactionReconciledForAccount(t,t.accountId))add(t.accountId,'Income',t);}
-          else if(t.accountId&&!statementTransactionReconciledForAccount(t,t.accountId))add(t.accountId,'Expense',t);
-          if(t.transferToAccountId&&!statementTransactionReconciledForAccount(t,t.transferToAccountId))add(t.transferToAccountId,'Income',t);
-        } else if(!statementTransactionReconciledForAccount(t,t.accountId)) {
+          if(t.externalTransferDirection==='in'&&!t.transferToAccountId){if(!statementTransactionReconciledForAccount(t,t.accountId)||t.statementMatchNeedsReview)add(t.accountId,'Income',t);}
+          else if(t.accountId&&(!statementTransactionReconciledForAccount(t,t.accountId)||t.statementMatchNeedsReview))add(t.accountId,'Expense',t);
+          if(t.transferToAccountId&&(!statementTransactionReconciledForAccount(t,t.transferToAccountId)||t.statementMatchNeedsReview))add(t.transferToAccountId,'Income',t);
+        } else if(!statementTransactionReconciledForAccount(t,t.accountId)||t.statementMatchNeedsReview) {
           if(t.type==='Income') add(t.accountId,'Income',t);
           else if(t.type==='Expense'||t.type==='Debt Payment') add(t.accountId,'Expense',t);
         }
@@ -5488,7 +5498,7 @@ Bonus"></textarea></div>
         index.get(key).push(t);
       };
       (state.transactions||[]).forEach(t=>{
-        if(!(t.reconciled||t.source==='statement-import'||t.statementMatchId||t.statementMatchGroupId))return;
+        if(t.statementMatchNeedsReview || !(t.reconciled||t.source==='statement-import'||t.statementMatchId||t.statementMatchGroupId))return;
         if(t.type==='Transfer'){
           if(t.externalTransferDirection==='in'&&!t.transferToAccountId) { if(statementTransactionReconciledForAccount(t,t.accountId)) add(t.accountId,'Income',t); }
           else if(t.accountId && statementTransactionReconciledForAccount(t,t.accountId)) {
@@ -5528,7 +5538,7 @@ Bonus"></textarea></div>
       strong.forEach(({row,transaction})=>{
         if(!transaction||usage.get(transaction.id)!==1)return;
         if(transaction.type==='Transfer' && transaction.transferToAccountId) addTransferStatementMatch(transaction,row.accountId,row);
-        else { transaction.statementMatchId=row.id;transaction.reconciled=true;transaction.reconciledAt=new Date().toISOString();transaction.statementDescription=row.description; }
+        else { transaction.statementMatchId=row.id;transaction.reconciled=true;transaction.reconciledAt=new Date().toISOString();transaction.statementDescription=row.description;delete transaction.statementMatchNeedsReview; }
         row.status='matched';row.matchedTransactionId=transaction.id;matched++;
       });
       return matched;
@@ -5611,14 +5621,44 @@ Bonus"></textarea></div>
       if(host&&autoMatched){const note=document.createElement('p');note.className='text-[10px] text-emerald-500';note.textContent=`Automatically matched ${autoMatched} clear one-to-one transaction(s). The remaining rows are ready for manual matching or import.`;host.prepend(note);}
       if(host&&duplicateCount){const note=document.createElement('p');note.className='text-[10px] text-amber-500';note.textContent=`Flagged ${duplicateCount} possible duplicate row(s), including any repeated rows within this upload. Review them before importing.`;host.prepend(note);}
     }
-        function applyVendorCleanupRules(rawName) {
+        let vendorRuleTransactionContext = false;
+
+    function applyVendorCleanupRules(rawName) {
       const original=String(rawName||'').trim();
       const normalized=normalizeStatementText(original);
       const rules=state.vendorCleanupRules||[];
       const rule=rules.find(r=>{const needle=normalizeStatementText(r.match);return needle && normalized.includes(needle);});
       return rule ? rule.replacement : original;
     }
+    function applySavedVendorCleanupToForm() {
+      const input = document.getElementById('tx-vendor');
+      if (!input) return;
+      const before = input.value.trim();
+      const after = applyVendorCleanupRules(before);
+      input.value = after;
+      applySmartMerchantRules(after);
+      if (before === after) alert('No saved vendor cleanup rule matched this name. You can create a new rule here.');
+    }
+
+    function openVendorRuleModalFromTransaction() {
+      const vendor = (document.getElementById('tx-vendor')?.value || '').trim();
+      if (!vendor) { alert('Enter a vendor name first.'); document.getElementById('tx-vendor')?.focus(); return; }
+      const editId = document.getElementById('tx-edit-id')?.value || '';
+      const tx = editId ? (state.transactions || []).find(t => String(t.id) === String(editId)) : null;
+      const matchText = tx?.statementDescription || vendor;
+      document.getElementById('vendor-rule-match').value = matchText;
+      document.getElementById('vendor-rule-replacement').value = vendor;
+      document.getElementById('vendor-rule-row-id').value = '';
+      document.getElementById('vendor-rule-edit-index').value = '-1';
+      document.getElementById('vendor-rule-scope').value = 'future';
+      vendorRuleTransactionContext = true;
+      document.querySelector('#vendor-rule-modal h3').textContent = 'Create Vendor Cleanup Rule';
+      document.getElementById('vendor-rule-modal').classList.remove('hidden');
+    }
+
     function openVendorRuleModal(rowId = '', ruleIndex = -1) {
+      vendorRuleTransactionContext = false;
+      document.querySelector('#vendor-rule-modal h3').textContent = 'Add Vendor Cleanup Rule';
       const row = rowId ? pendingStatementRows.find(r => r.id === rowId) : null;
       const editingRule = ruleIndex >= 0 ? (state.vendorCleanupRules || [])[ruleIndex] : null;
       document.getElementById('vendor-rule-match').value = editingRule ? editingRule.match : (row ? row.description : '');
@@ -5628,7 +5668,7 @@ Bonus"></textarea></div>
       document.getElementById('vendor-rule-scope').value = 'future';
       document.getElementById('vendor-rule-modal').classList.remove('hidden');
     }
-    function closeVendorRuleModal() { document.getElementById('vendor-rule-modal').classList.add('hidden'); }
+    function closeVendorRuleModal() { document.getElementById('vendor-rule-modal').classList.add('hidden'); vendorRuleTransactionContext = false; }
     function saveVendorCleanupRule(e) {
       e.preventDefault();
       const match=document.getElementById('vendor-rule-match').value.trim();
@@ -5655,6 +5695,7 @@ Bonus"></textarea></div>
       }
       const row=rowId ? pendingStatementRows.find(r=>r.id===rowId) : null;
       if(row) row.cleanedVendorName=replacement;
+      if(vendorRuleTransactionContext) { const input=document.getElementById('tx-vendor'); if(input) { input.value=replacement; applySmartMerchantRules(replacement); } }
       persistStatementBatch();closeVendorRuleModal();renderSettings();renderLedger();renderStatementPreview();
     }
     function deleteVendorCleanupRule(index) { captureUndo('Delete vendor cleanup rule'); state.vendorCleanupRules.splice(index,1);saveData();renderSettings(); }
@@ -5777,6 +5818,7 @@ Bonus"></textarea></div>
       captureStatementUndo('Manually match grouped statement transactions');
       totals.bankRows.forEach(row => { row.status='matched'; row.matchedGroupId=groupId; row.matchedTransactionIds=totals.ledgerRows.map(t=>t.id); });
       totals.ledgerRows.forEach(tx => {
+        delete tx.statementMatchNeedsReview;
         if(tx.type==='Transfer' && tx.transferToAccountId) {
           tx.transferStatementMatches=Array.isArray(tx.transferStatementMatches)?tx.transferStatementMatches:[];
           tx.transferStatementMatches.push({accountId:String(accountId),rowId:null,groupId,date:totals.bankRows[0]?.date||'',description:totals.bankRows.map(r=>r.description).join(' + '),direction,reconciledAt:now});
@@ -5917,7 +5959,7 @@ Bonus"></textarea></div>
       const transaction=state.transactions.find(t=>t.id===selected); if(!transaction)return;
       captureStatementUndo('Match statement transaction');
       if(transaction.type==='Transfer' && transaction.transferToAccountId) addTransferStatementMatch(transaction,row.accountId,row);
-      else { transaction.statementMatchId=row.id; transaction.reconciled=true; transaction.reconciledAt=new Date().toISOString(); transaction.statementDescription=row.description; }
+      else { transaction.statementMatchId=row.id; transaction.reconciled=true; transaction.reconciledAt=new Date().toISOString(); transaction.statementDescription=row.description; delete transaction.statementMatchNeedsReview; }
       row.status='matched'; row.matchedTransactionId=transaction.id;
       state.statementReconciliation=state.statementReconciliation||{batches:[]};
       persistStatementBatch(); renderLedger(); renderStatementPreview();
@@ -7628,6 +7670,71 @@ Bonus"></textarea></div>
       }
     }
 
+    function transactionSourceLabel(tx, isNew = false) {
+      if (isNew) return 'Manual entry';
+      const source = String(tx?.source || '').toLowerCase();
+      const labels = {
+        'manual-entry': 'Manual entry',
+        'statement-import': 'Bank statement import',
+        'debt-payment-log': 'Debt payment workflow',
+        'debt-interest-charge': 'Interest charge workflow',
+        'calendar-bill': 'Bill calendar'
+      };
+      if (labels[source]) return labels[source];
+      if (!source && normalizeStatementText(tx?.desc || '') === 'importedfrombankstatement') return 'Bank statement import';
+      if (tx?.debtPaymentId) return 'Debt payment workflow';
+      if (tx?.calendarBillId) return 'Bill calendar';
+      if (tx?.type === 'Interest Charge') return 'Interest charge workflow';
+      return 'Not recorded (older transaction)';
+    }
+
+    function transactionSourceShortLabel(tx) {
+      const label = transactionSourceLabel(tx, false);
+      if (label === 'Bank statement import') return 'Bank import';
+      if (label === 'Manual entry') return 'Manual';
+      if (label === 'Not recorded (older transaction)') return 'Legacy source';
+      if (label === 'Debt payment workflow') return 'Debt workflow';
+      if (label === 'Interest charge workflow') return 'Interest workflow';
+      if (label === 'Bill calendar') return 'Calendar';
+      return label;
+    }
+
+    function transactionStatementMatchLabel(tx, isNew = false) {
+      if (isNew) return 'Not matched';
+      if (tx?.statementMatchNeedsReview) return 'Match needs review';
+      return (tx?.reconciled || tx?.statementMatchId || tx?.statementMatchGroupId || (Array.isArray(tx?.reconciledAccountIds) && tx.reconciledAccountIds.length))
+        ? 'Statement matched' : 'Not matched';
+    }
+
+    function transactionStatementStatusBadge(tx) {
+      const status = transactionStatementMatchLabel(tx, false);
+      if (status === 'Statement matched') return '<span class="px-1.5 py-0.5 rounded text-[9px] bg-emerald-500/10 text-emerald-500">Statement matched</span>';
+      if (status === 'Match needs review') return '<span class="px-1.5 py-0.5 rounded text-[9px] bg-amber-500/10 text-amber-600">Match needs review</span>';
+      return '';
+    }
+
+    function updateTransactionEntryMetadata(tx = null, isNew = false) {
+      const source = document.getElementById('tx-entry-source');
+      const match = document.getElementById('tx-statement-status');
+      if (source) source.textContent = transactionSourceLabel(tx, isNew);
+      if (match) {
+        match.textContent = transactionStatementMatchLabel(tx, isNew);
+        match.className = `text-xs font-semibold mt-0.5 ${tx?.statementMatchNeedsReview ? 'text-amber-500' : (tx?.reconciled || tx?.statementMatchId || tx?.statementMatchGroupId) ? 'text-emerald-500' : 'text-gray-500'}`;
+      }
+    }
+
+    function transactionNeedsStatementReview(tx, next) {
+      const hadMatch = !!(tx && (tx.reconciled || tx.statementMatchId || tx.statementMatchGroupId || (Array.isArray(tx.reconciledAccountIds) && tx.reconciledAccountIds.length)));
+      if (!hadMatch) return !!tx?.statementMatchNeedsReview;
+      const changed = ['date', 'amount', 'accountId', 'type'].some(key => String(tx[key] ?? '') !== String(next[key] ?? ''));
+      return !!tx.statementMatchNeedsReview || changed;
+    }
+
+    function transactionDescriptionForForm(tx) {
+      const description = String(tx?.desc || '');
+      return normalizeStatementText(description) === 'importedfrombankstatement' ? '' : description;
+    }
+
     function openTransactionModal(editId = null) {
       const tSelect = document.getElementById('tx-type');
       tSelect.innerHTML = ''; state.transactionTypes.forEach(t => tSelect.innerHTML += `<option value="${t}">${t === 'Transfer' ? 'Internal Transfer' : t}</option>`);
@@ -7653,10 +7760,11 @@ Bonus"></textarea></div>
       if (editId) {
         const tx = state.transactions.find(t => String(t.id) === String(editId));
         if (tx) {
-          document.getElementById('tx-modal-title').innerText = "Edit Transaction";
+          document.getElementById("tx-modal-title").innerText = "Edit Transaction";
+          updateTransactionEntryMetadata(tx, false);
           document.getElementById('tx-edit-id').value = tx.id;
           document.getElementById('tx-date').value = tx.date;
-          document.getElementById('tx-desc').value = tx.desc || '';
+          document.getElementById('tx-desc').value = transactionDescriptionForForm(tx);
           document.getElementById('tx-vendor').value = tx.vendor || '';
           document.getElementById('tx-type').value = tx.type;
           refreshTransactionBucketOptions(tx.category || '');
@@ -7672,7 +7780,8 @@ Bonus"></textarea></div>
         }
       } else {
         document.getElementById('split-tx-toggle-btn').classList.remove('hidden');
-        document.getElementById('tx-modal-title').innerText = "Log Transaction";
+        document.getElementById("tx-modal-title").innerText = "Log Transaction";
+        updateTransactionEntryMetadata(null, true);
         document.getElementById('tx-edit-id').value = '';
         document.getElementById('transaction-form').reset();
         document.getElementById('tx-date').value = new Date().toISOString().split('T')[0];
@@ -7842,11 +7951,13 @@ Bonus"></textarea></div>
           const to = state.accounts.find(a => String(a.id) === String(transferToAccountId));
           if (from) from.balance = (Number(from.balance)||0) - amount;
           if (to) to.balance = (Number(to.balance)||0) + amount;
-          const transferRecord = { ...(oldT||{}), id:editId || Date.now().toString(), date, desc:desc || `Transfer to ${to?.name || 'account'}`, vendor:vendor || 'Account transfer', type:'Transfer', category:'Transfer', subcategory:'', amount, accountId, transferToAccountId };
+          const transferRecord = { ...(oldT||{}), id:editId || Date.now().toString(), date, desc:desc || `Transfer to ${to?.name || 'account'}`, vendor:vendor || 'Account transfer', type:'Transfer', category:'Transfer', subcategory:'', amount, accountId, transferToAccountId, source: oldT ? oldT.source : 'manual-entry' };
+          if (oldT && transactionNeedsStatementReview(oldT, transferRecord)) transferRecord.statementMatchNeedsReview = true;
           delete transferRecord.externalTransferDirection;
           if (idx >= 0) state.transactions[idx] = transferRecord; else state.transactions.unshift(transferRecord);
         } else if (oldT) {
           const updated = { ...oldT, date, desc, vendor, type, category:document.getElementById('tx-category').value, subcategory:document.getElementById('tx-subcategory').value, amount, accountId, debtAccountId:document.getElementById('tx-related-debt').value || undefined };
+          if (transactionNeedsStatementReview(oldT, updated)) updated.statementMatchNeedsReview = true;
           delete updated.externalTransferDirection;
           delete updated.transferToAccountId;
           state.transactions[idx] = updated;
@@ -7862,7 +7973,7 @@ Bonus"></textarea></div>
           if (amt > 0) {
             const splitTransaction = {
               id: Date.now().toString() + Math.random(),
-              date, desc, vendor, type,
+              date, desc, vendor, type, source: 'manual-entry',
               category: catSub[0] || '',
               subcategory: catSub[1] || '',
               amount: amt, accountId
@@ -7905,8 +8016,9 @@ Bonus"></textarea></div>
             if (oldDebtAccount) oldDebtAccount.balance = (Number(oldDebtAccount.balance) || 0) + (Number(oldT.debtPrincipalAmount ?? oldT.amount) || 0);
             if (loggedDebtAccount) loggedDebtAccount.balance = (Number(loggedDebtAccount.balance) || 0) + (Number(oldT.debtPrincipalAmount ?? linkedDebtPayment.principalAmount ?? oldT.amount) || 0);
             applyTransactionBalanceEffect(oldT, -1);
-            state.transactions[idx] = { ...oldT, id: editId, date, desc, vendor, type, category, subcategory, amount, accountId, ...(oldT.debtPaymentId || oldT.calendarBillId ? {} : { debtAccountId: relatedDebtAccountId || undefined }) };
-            const updatedT = state.transactions[idx];
+            const updatedT = { ...oldT, id: editId, date, desc, vendor, type, category, subcategory, amount, accountId, ...(oldT.debtPaymentId || oldT.calendarBillId ? {} : { debtAccountId: relatedDebtAccountId || undefined }) };
+            if (transactionNeedsStatementReview(oldT, updatedT)) updatedT.statementMatchNeedsReview = true;
+            state.transactions[idx] = updatedT;
             if (oldT.calendarBillId) {
               const linkedBill = (state.calendarBills || []).find(b => b.id === oldT.calendarBillId);
               if (linkedBill) {
@@ -7928,7 +8040,7 @@ Bonus"></textarea></div>
             applyTransactionBalanceEffect(updatedT, 1);
           }
         } else {
-          const newTransaction = { id: Date.now().toString(), date, desc, vendor, type, category, subcategory, amount, accountId, ...(relatedDebtAccountId ? { debtAccountId: relatedDebtAccountId } : {}) };
+          const newTransaction = { id: Date.now().toString(), date, desc, vendor, type, category, subcategory, amount, accountId, source: 'manual-entry', ...(relatedDebtAccountId ? { debtAccountId: relatedDebtAccountId } : {}) };
           state.transactions.unshift(newTransaction);
           applyTransactionBalanceEffect(newTransaction, 1);
         }
