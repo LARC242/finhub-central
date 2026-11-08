@@ -1727,7 +1727,7 @@ Bonus"></textarea></div>
       { name: 'Interest Charge', subcategories: ['Interest Expense'] }
     ];
     function displayFinHubTransactionType(type) {
-      return ['Debt', 'Debt Payment', 'Interest Charge'].includes(type) ? 'Debt' : (type || '');
+      return ['Debt', 'Debt Payment', 'Debt Payment Reversal', 'Interest Charge'].includes(type) ? 'Debt' : (type || '');
     }
     function internalTransactionType(type, category) {
       if (type !== 'Debt') return type;
@@ -1757,15 +1757,31 @@ Bonus"></textarea></div>
       if (transaction.type === 'Interest Charge') {
         return account.type === 'debt' && String(transaction.debtAccountId || transaction.accountId) === String(account.id) ? amount : 0;
       }
+      if (transaction.type === 'Debt Payment Reversal') {
+        if (account.type === 'debt' && String(transaction.debtAccountId || '') === String(account.id)) return Math.max(0, Number(transaction.debtPrincipalAmount) || 0);
+        if (account.type === 'asset' && String(transaction.accountId) === String(account.id)) return amount;
+        return 0;
+      }
       if (String(transaction.accountId) !== String(account.id)) return 0;
       if (transaction.type === 'Income') return account.type === 'debt' ? -amount : amount;
       if (transaction.type === 'Expense') return account.type === 'debt' ? amount : -amount;
       if (transaction.type === 'Debt Payment') return account.type === 'debt' ? 0 : -amount;
+      if (transaction.type === 'Debt Payment Reversal') {
+        if (account.type === 'debt' && String(transaction.debtAccountId || '') === String(account.id)) return Math.max(0, Number(transaction.debtPrincipalAmount) || 0);
+        if (account.type === 'asset') return amount;
+      }
       return 0;
     }
     function applyTransactionBalanceEffect(transaction, multiplier = 1) {
       if (!transaction) return;
       const amount = Number(transaction.amount) || 0;
+      if (transaction.type === 'Debt Payment Reversal') {
+        const funding = state.accounts.find(a => String(a.id) === String(transaction.accountId));
+        const debt = state.accounts.find(a => String(a.id) === String(transaction.debtAccountId) && a.type === 'debt');
+        if (funding) funding.balance = Math.round(((Number(funding.balance) || 0) + amount * multiplier) * 100) / 100;
+        if (debt) debt.balance = Math.round(((Number(debt.balance) || 0) + (Number(transaction.debtPrincipalAmount) || 0) * multiplier) * 100) / 100;
+        return;
+      }
       if (transaction.type === 'Transfer' && transaction.transferToAccountId) {
         const from = state.accounts.find(a => String(a.id) === String(transaction.accountId));
         const to = state.accounts.find(a => String(a.id) === String(transaction.transferToAccountId));
@@ -1785,6 +1801,10 @@ Bonus"></textarea></div>
       if (transaction.type === 'Debt Payment') {
         const interest = Math.max(0, Math.min(amount, Number(transaction.debtInterestAmount) || 0));
         if (interest > 0) return [{ transaction, category: 'Debt Service', subcategory: 'Interest Expense', amount: interest, component: 'Interest portion' }];
+      }
+      if (transaction.type === 'Debt Payment Reversal') {
+        const interest = Math.max(0, Math.min(amount, Number(transaction.debtInterestAmount) || 0));
+        if (interest > 0) return [{ transaction, category: 'Debt Service', subcategory: 'Interest Expense', amount: -interest, component: 'Returned payment interest reversal' }];
       }
       return [];
     }
@@ -5811,8 +5831,15 @@ Bonus"></textarea></div>
       const subcategoryName = String(row.subcategory || '').trim();
       if (!categoryName && subcategoryName) return { error: 'Choose a Category before assigning a Subcategory.', created: false };
       if (!categoryName) return { error: '', created: false };
-      const bucket = findStatementImportCategory(row.importType, categoryName);
-      if (!bucket) return { error: `Category "${categoryName}" does not exist in FinHub ${row.importType} categories. Use an existing category name or add the category in Categories & Settings first.`, created: false };
+      let bucket = findStatementImportCategory(row.importType, categoryName);
+      if (!bucket) {
+        if (!register) { row.pendingCategoryCreation = true; row.pendingSubcategoryCreation = !!subcategoryName; return { error: '', created: false }; }
+        const collection = row.importType === 'Income' ? (state.incomeCategories = state.incomeCategories || []) : (state.categories = state.categories || []);
+        bucket = { name: categoryName, subcategories: [] };
+        collection.push(bucket);
+        row.pendingCategoryCreation = false;
+        row.categoryAddedToCategories = true;
+      }
       row.category = bucket.name;
       bucket.subcategories = Array.isArray(bucket.subcategories) ? bucket.subcategories : [];
       if (!subcategoryName) return { error: '', created: false };
@@ -5841,13 +5868,14 @@ Bonus"></textarea></div>
       const requestedCategory = explicit.category || rule?.category || '';
       const requestedSubcategory = explicit.subcategory || rule?.subcategory || '';
       row.importType = internalTransactionType(requestedType, requestedCategory);
+      if (row.importType === 'Debt Payment' && row.type === 'Income') row.importType = 'Debt Payment Reversal';
       row.category = requestedCategory || (row.importType === 'Expense' ? (merchantRule?.category || '') : '');
       row.subcategory = requestedSubcategory || (row.importType === 'Expense' ? (merchantRule?.subcategory || '') : '');
       const rawDebtAccount = explicit.debtAccount || '';
       const debtAccount = rawDebtAccount ? resolveStatementAccount(rawDebtAccount, 'debt') : null;
       row.debtAccountId = debtAccount?.id || rule?.debtAccountId || '';
       row.paymentType = explicit.paymentType || rule?.paymentType || (DEBT_PAYMENT_CLASSIFICATIONS.includes(requestedSubcategory) ? requestedSubcategory : (DEBT_PAYMENT_CLASSIFICATIONS.includes(rule?.subcategory) ? rule.subcategory : ''));
-      if (row.importType === 'Debt Payment') {
+      if (row.importType === 'Debt Payment' || row.importType === 'Debt Payment Reversal') {
         row.category = 'Debt Payment';
         if (!row.paymentType) {
           const debt = (state.accounts || []).find(a => String(a.id) === String(row.debtAccountId));
@@ -5874,9 +5902,11 @@ Bonus"></textarea></div>
         row.principalAmount = row.amount; row.interestAmount = 0;
       }
       row.importValidationError = '';
-      if (row.importType === 'Debt Payment') {
+      if (row.importType === 'Debt Payment' || row.importType === 'Debt Payment Reversal') {
+        const isReversal = row.importType === 'Debt Payment Reversal';
         const debt = (state.accounts || []).find(a => String(a.id) === String(row.debtAccountId) && a.type === 'debt');
-        if (row.type !== 'Expense') row.importValidationError = 'Debt Payment must be a debit / money-out row from the selected funding account.';
+        if (isReversal && row.type !== 'Income') row.importValidationError = 'A debt payment reversal must be a credit / money-in row.';
+        else if (!isReversal && row.type !== 'Expense') row.importValidationError = 'Debt Payment must be a debit / money-out row from the selected funding account.';
         else if (!debt) row.importValidationError = rawDebtAccount ? `Debt account "${rawDebtAccount}" was not found. Use the exact FinHub account name.` : 'Choose a Debt Account column or create an import rule with a debt account.';
         else if (row.principalAmount === null || row.interestAmount === null) row.importValidationError = 'Add Principal and Interest columns, or set an interest-only / principal-only split in an import rule.';
         else if (row.principalAmount < 0 || row.interestAmount < 0 || Math.abs((row.principalAmount + row.interestAmount) - row.amount) > 0.01) row.importValidationError = 'Principal plus Interest must equal the payment Amount.';
@@ -5888,8 +5918,10 @@ Bonus"></textarea></div>
         // A credit row is an incoming transfer from outside the currently tracked accounts
         // (for example, a now-closed account) and is recorded as an external transfer in.
         if (row.type === 'Expense') {
-          if (!resolveStatementAccount(row.transferToAccountId, 'asset')) row.importValidationError = 'Choose a valid Transfer To Account for this outgoing transfer.';
-          else if (String(row.transferToAccountId) === String(row.accountId)) row.importValidationError = 'Transfer destination must be different from the statement account.';
+          const destination = resolveStatementAccount(row.transferToAccountId, 'asset');
+          if (destination && String(destination.id) === String(row.accountId)) row.importValidationError = 'Transfer destination must be different from the statement account.';
+          else if (!destination) row.externalTransferDirection = 'out';
+          else delete row.externalTransferDirection;
         } else if (row.type !== 'Income') {
           row.importValidationError = 'A transfer must be a debit / money-out or credit / money-in statement row.';
         }
@@ -6220,8 +6252,8 @@ Bonus"></textarea></div>
         const undoButton=row.matchedGroupId?`<button onclick="undoManualStatementMatch('${row.matchedGroupId}')" class="px-2.5 py-1.5 bg-gray-200 dark:bg-gray-800 rounded-lg text-xs">Undo grouped match</button>`:`<button onclick="unlinkStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-gray-200 dark:bg-gray-800 rounded-lg text-xs">Undo match</button>`;
         const importSummary = [displayFinHubTransactionType(row.importType || row.type), row.vendor || row.cleanedVendorName || applyVendorCleanupRules(row.description), row.category, row.subcategory, row.debtAccountId ? state.accounts.find(a=>String(a.id)===String(row.debtAccountId))?.name : ''].filter(Boolean).join(' · ');
         const importWarning = row.importValidationError ? `<div class="rounded-lg bg-amber-500/10 border border-amber-500/20 p-2 text-[10px] text-amber-600">${escapeHtml(row.importValidationError)}</div>` : '';
-        const subcategoryNotice = row.pendingSubcategoryCreation ? `<div class="text-[10px] text-indigo-500">New subcategory: <strong>${escapeHtml(row.subcategory)}</strong> will be added under ${escapeHtml(row.category)} when imported.</div>` : row.subcategoryAddedToCategories ? `<div class="text-[10px] text-emerald-500">Added ${escapeHtml(row.subcategory)} to ${escapeHtml(row.category)}.</div>` : '';
-        const splitLine = row.importType==='Debt Payment' && row.principalAmount!==null && row.interestAmount!==null ? `<div class="text-[10px] text-gray-400">Principal ${formatFinancial(row.principalAmount)} · Interest ${formatFinancial(row.interestAmount)}${row.paymentType?' · '+escapeHtml(row.paymentType):''}</div>` : '';
+        const subcategoryNotice = row.pendingCategoryCreation ? `<div class="text-[10px] text-indigo-500">New category: <strong>${escapeHtml(row.category)}</strong>${row.subcategory?` and subcategory <strong>${escapeHtml(row.subcategory)}</strong>`:''} will be added when imported.</div>` : row.pendingSubcategoryCreation ? `<div class="text-[10px] text-indigo-500">New subcategory: <strong>${escapeHtml(row.subcategory)}</strong> will be added under ${escapeHtml(row.category)} when imported.</div>` : row.categoryAddedToCategories ? `<div class="text-[10px] text-emerald-500">Added category ${escapeHtml(row.category)} to Categories & Settings.</div>` : row.subcategoryAddedToCategories ? `<div class="text-[10px] text-emerald-500">Added ${escapeHtml(row.subcategory)} to ${escapeHtml(row.category)}.</div>` : '';
+        const splitLine = ['Debt Payment','Debt Payment Reversal'].includes(row.importType) && row.principalAmount!==null && row.interestAmount!==null ? `<div class="text-[10px] text-gray-400">${row.importType==='Debt Payment Reversal'?'Reversal · ':''}Principal ${formatFinancial(row.principalAmount)} · Interest ${formatFinancial(row.interestAmount)}${row.paymentType?' · '+escapeHtml(row.paymentType):''}</div>` : row.importType==='Transfer' && row.type==='Expense' && !row.transferToAccountId ? `<div class="text-[10px] text-indigo-500">External / untracked outgoing transfer — no destination account will be updated.</div>` : '';
         return `<div class="border border-gray-200 dark:border-gray-800 rounded-xl p-3 space-y-2"><div class="flex justify-between gap-3"><div class="min-w-0"><div class="font-semibold text-xs">${escapeHtml(row.description)}</div><div class="text-[10px] text-indigo-400">Vendor: ${escapeHtml(row.vendor || row.cleanedVendorName || applyVendorCleanupRules(row.description))}</div><div class="text-[10px] text-gray-400">${row.date} · Statement direction: ${row.type==='Expense'?'Debit / money out':'Credit / money in'}</div><div class="text-[10px] text-gray-500 mt-0.5">FinHub import: ${escapeHtml(importSummary)}</div>${subcategoryNotice}${splitLine}</div><strong class="text-sm accounting-num whitespace-nowrap">${formatFinancial(row.amount)}</strong></div>${importWarning}<div class="flex flex-wrap items-center gap-2"><span class="text-[10px] ${row.status==='matched'?'text-emerald-500':row.status==='duplicate'?'text-amber-500':'text-gray-400'}">${status}</span>${row.status==='pending'&&candidatesForRow.length?`<select id="stmt-match-${row.id}" class="flex-1 min-w-[180px] bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-1 text-xs">${options}</select><button onclick="linkStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-emerald-600 text-white rounded-lg text-xs">Match</button>`:''}${row.status==='pending'?`${crossCandidates.length?`<select id="stmt-transfer-match-${row.id}" class="min-w-[180px] bg-gray-50 dark:bg-gray-950 border border-indigo-300 dark:border-indigo-800 rounded-lg px-2 py-1 text-xs">${crossOptions}</select><button onclick="matchStatementRowAsInternalTransfer('${row.id}',document.getElementById('stmt-transfer-match-${row.id}').value)" class="px-2.5 py-1.5 bg-indigo-600 text-white rounded-lg text-xs">Match as Internal Transfer</button>`:''}<button onclick="openVendorRuleModal('${row.id}')" class="px-2.5 py-1.5 bg-violet-600/15 text-violet-500 rounded-lg text-xs">Clean vendor</button><button onclick="openImportRuleModal('${row.id}')" class="px-2.5 py-1.5 bg-violet-600/15 text-violet-500 rounded-lg text-xs">Save import rule</button><button onclick="importStatementRow('${row.id}')" ${row.importValidationError?'disabled title="Fix the import details before importing"':''} class="px-2.5 py-1.5 bg-indigo-600 text-white rounded-lg text-xs disabled:opacity-40">Import as new</button><button onclick="skipStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-gray-200 dark:bg-gray-800 rounded-lg text-xs">Skip</button>`:row.status==='duplicate'?`<span class="text-[10px] text-amber-500">${row.duplicateOfRowId?'Duplicates another row in this upload':`Looks like: ${escapeHtml((state.transactions||[]).find(t=>t.id===row.duplicateTransactionId)?.vendor||'an existing transaction')}`}</span><button onclick="allowStatementDuplicate('${row.id}')" class="px-2.5 py-1.5 bg-amber-500/15 text-amber-600 rounded-lg text-xs">Import anyway</button><button onclick="skipStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-gray-200 dark:bg-gray-800 rounded-lg text-xs">Skip</button>`:row.status==='matched'?undoButton:''}</div></div>`;
       }).join('')}</div><div class="flex flex-wrap items-center justify-between gap-2 text-xs text-gray-500"><span>Showing ${pageStart+1}–${Math.min(pageStart+statementPreviewPageSize,pendingStatementRows.length)} of ${pendingStatementRows.length} statement rows · Page ${statementPreviewPage+1} of ${totalPages}</span><div class="flex gap-2"><button onclick="changeStatementPreviewPage(-1)" ${statementPreviewPage===0?'disabled':''} class="px-3 py-1.5 rounded-lg bg-gray-200 dark:bg-gray-800 disabled:opacity-40">Previous</button><button onclick="changeStatementPreviewPage(1)" ${statementPreviewPage>=totalPages-1?'disabled':''} class="px-3 py-1.5 rounded-lg bg-gray-200 dark:bg-gray-800 disabled:opacity-40">Next</button></div></div><div class="text-[10px] text-gray-400">Individual matching uses account, transaction type, amount and a date within one day. Grouped manual matching supports different amounts and dates, but requires equal selected totals.</div>${groupsHtml}`;
       renderStatementBalanceCheck();
@@ -6298,16 +6330,17 @@ Bonus"></textarea></div>
       const funding = (state.accounts || []).find(a => String(a.id) === String(row.accountId) && a.type === 'asset' && !a.archived);
       if (!funding) return 'Choose an active asset account as the statement account.';
       if (row.importValidationError) return row.importValidationError;
-      if (row.importType === 'Debt Payment') {
+      if (row.importType === 'Debt Payment' || row.importType === 'Debt Payment Reversal') {
         const debt = (state.accounts || []).find(a => String(a.id) === String(row.debtAccountId) && a.type === 'debt' && !a.archived);
         if (!debt) return 'The selected debt account is missing or archived.';
-        if (row.type !== 'Expense') return 'A debt payment must be a debit / money-out transaction.';
+        if (row.importType === 'Debt Payment' && row.type !== 'Expense') return 'A debt payment must be a debit / money-out transaction.';
+        if (row.importType === 'Debt Payment Reversal' && row.type !== 'Income') return 'A debt payment reversal must be a credit / money-in transaction.';
         if (Math.abs((Number(row.principalAmount) || 0) + (Number(row.interestAmount) || 0) - Number(row.amount)) > 0.01) return 'Principal plus Interest must equal the payment Amount.';
       }
       if (row.importType === 'Transfer') {
         if (row.type === 'Expense') {
           const destination = (state.accounts || []).find(a => String(a.id) === String(row.transferToAccountId) && a.type === 'asset' && !a.archived);
-          if (!destination || String(destination.id) === String(row.accountId)) return 'Choose a different active asset account as Transfer To Account.';
+          if (destination && String(destination.id) === String(row.accountId)) return 'Choose a different asset account as Transfer To Account.';
         } else if (row.type !== 'Income') {
           return 'A transfer must be a debit / money-out or credit / money-in statement row.';
         }
@@ -6331,7 +6364,12 @@ Bonus"></textarea></div>
         statementMatchId: row.id, reconciled: true, reconciledAt: now, statementDescription: row.description, source: 'statement-import'
       };
       if (importType === 'Interest Charge') throw new Error('Interest Charges must be entered through Debt → Record Interest Charge; they are not cash transactions from an asset statement.');
-      if (importType === 'Debt Payment') {
+      if (importType === 'Debt Payment Reversal') {
+        const debt = (state.accounts || []).find(a => String(a.id) === String(row.debtAccountId) && a.type === 'debt');
+        const principal = Math.round((Number(row.principalAmount) || 0) * 100) / 100;
+        const interest = Math.round((Number(row.interestAmount) || 0) * 100) / 100;
+        Object.assign(base, { category: 'Debt Payment', subcategory: row.paymentType || inferDebtPaymentClassification(debt), paymentType: row.paymentType || inferDebtPaymentClassification(debt), debtAccountId: debt.id, debtPrincipalAmount: principal, debtInterestAmount: interest, workflowSource: 'statement-import-debt-payment-reversal' });
+      } else if (importType === 'Debt Payment') {
         const debt = (state.accounts || []).find(a => String(a.id) === String(row.debtAccountId) && a.type === 'debt');
         const paymentId = `dp_stmt_${Date.now()}_${Math.random().toString(36).slice(2,7)}`;
         const principal = Math.round((Number(row.principalAmount) || 0) * 100) / 100;
@@ -6353,8 +6391,11 @@ Bonus"></textarea></div>
           // Do not invent a paired transaction or count this as income.
           base.externalTransferDirection = 'in';
           base.reconciledAccountIds = [String(row.accountId)];
-        } else {
+        } else if (row.transferToAccountId && resolveStatementAccount(row.transferToAccountId, 'asset')) {
           base.transferToAccountId = row.transferToAccountId;
+          base.reconciledAccountIds = [String(row.accountId)];
+        } else {
+          base.externalTransferDirection = 'out';
           base.reconciledAccountIds = [String(row.accountId)];
         }
       } else {
