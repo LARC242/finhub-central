@@ -914,6 +914,7 @@
         <label class="text-xs font-semibold text-gray-500">Vendor<input id="bulk-vendor" type="text" placeholder="No change" class="mt-1 w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm"></label>
         <label class="text-xs font-semibold text-gray-500">Type<select id="bulk-type" onchange="updateBulkTypeOptions()" class="mt-1 w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm"><option value="">No change</option></select></label>
         <label id="bulk-transfer-to-wrap" class="text-xs font-semibold text-gray-500 hidden">Transfer to account<select id="bulk-transfer-to" class="mt-1 w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm"><option value="">Choose destination account</option></select><span class="block mt-1 text-[10px] text-gray-400">The selected transactions' existing accounts will remain the source accounts.</span></label>
+        <label id="bulk-transfer-mode-wrap" class="text-xs font-semibold text-gray-500 hidden">Transfer handling<select id="bulk-transfer-mode" class="mt-1 w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm"><option value="">Choose how to handle the destination…</option><option value="create">Create destination entries (only one side exists)</option><option value="match">Match existing destination transactions (both sides already exist)</option></select><span class="block mt-1 text-[10px] text-gray-400">Choose Match when the destination-side income transactions are already recorded. FinHub will pair them instead of adding the amount again.</span></label>
         <label class="text-xs font-semibold text-gray-500">Bucket<select id="bulk-category" onchange="updateBulkSubcategoryOptions()" class="mt-1 w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm"><option value="">No change</option></select></label>
         <label class="text-xs font-semibold text-gray-500">Subcategory<select id="bulk-subcategory" class="mt-1 w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm"><option value="">No change</option></select></label>
       </div>
@@ -2142,11 +2143,11 @@ Bonus"></textarea></div>
             let change = (t.type === 'Income' || isExternalTransferIn) ? amount : -amount;
             let type = isExternalTransferIn ? 'Transfer In' : (t.type || 'Transaction');
             if (t.type === 'Transfer' && t.transferToAccountId) type = 'Transfer Out';
-            entries.push({ id: t.id, date: t.date || '', description: t.vendor || t.desc || 'Transaction', detail: t.desc && t.vendor && t.desc !== t.vendor ? t.desc : '', type, change, reconciled: !!t.reconciled });
+            entries.push({ id: t.id, date: t.type==='Transfer' && t.transferToAccountId ? (statementTransactionDateForAccount(t,acc.id) || t.date || '') : (t.date || ''), description: t.vendor || t.desc || 'Transaction', detail: t.desc && t.vendor && t.desc !== t.vendor ? t.desc : '', type, change, reconciled: t.type==='Transfer' && t.transferToAccountId ? statementTransactionReconciledForAccount(t,acc.id) : !!t.reconciled });
           } else if (t.type === 'Transfer' && t.transferToAccountId === acc.id) {
             const amount = Number(t.amount) || 0;
             const source = state.accounts.find(a => a.id === t.accountId);
-            entries.push({ id: `${t.id}_incoming`, date: t.date || '', description: t.vendor || 'Account transfer', detail: t.desc || (source ? `Transfer from ${source.name}` : 'Transfer received'), type: 'Transfer In', change: amount, reconciled: !!t.reconciled });
+            entries.push({ id: `${t.id}_incoming`, date: statementTransactionDateForAccount(t,acc.id) || t.date || '', description: t.vendor || 'Account transfer', detail: t.desc || (source ? `Transfer from ${source.name}` : 'Transfer received'), type: 'Transfer In', change: amount, reconciled: statementTransactionReconciledForAccount(t,acc.id) });
           }
         });
       } else {
@@ -3428,6 +3429,7 @@ Bonus"></textarea></div>
       transferTo.innerHTML = '<option value="">Choose destination account</option>' +
         (state.accounts || []).filter(a=>a.type==='asset').map(a=>`<option value="${escapeHtml(String(a.id))}">${escapeHtml(a.name)}</option>`).join('');
       ['bulk-vendor','bulk-type','bulk-category','bulk-subcategory','bulk-transfer-to'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+      const transferModeSelect=document.getElementById('bulk-transfer-mode'); if(transferModeSelect) transferModeSelect.value='';
       updateBulkTypeOptions();
       updateBulkSubcategoryOptions();
       document.getElementById('bulk-edit-modal').classList.remove('hidden');
@@ -3436,7 +3438,9 @@ Bonus"></textarea></div>
     function updateBulkTypeOptions() {
       const type = document.getElementById('bulk-type')?.value;
       const transferWrap = document.getElementById('bulk-transfer-to-wrap');
+      const modeWrap = document.getElementById('bulk-transfer-mode-wrap');
       if (transferWrap) transferWrap.classList.toggle('hidden', type !== 'Transfer');
+      if (modeWrap) modeWrap.classList.toggle('hidden', type !== 'Transfer');
       updateBulkCategoryOptions();
     }
     function updateBulkCategoryOptions() {
@@ -3489,6 +3493,40 @@ Bonus"></textarea></div>
       }
       select.innerHTML=options;
     }
+    function bulkFindExistingTransferCounterpart(sourceTx, destinationAccountId, reservedIds = new Set()) {
+      const isOutgoingExpense=sourceTx?.type==='Expense'&&!sourceTx.transferToAccountId;
+      const isExistingTransfer=sourceTx?.type==='Transfer'&&String(sourceTx.transferToAccountId)===String(destinationAccountId);
+      if (!sourceTx || (!isOutgoingExpense&&!isExistingTransfer) || sourceTx.calendarBillId || sourceTx.debtPaymentId) return { status: 'invalid', candidates: [] };
+      const amountCents = Math.round(Math.abs(Number(sourceTx.amount) || 0) * 100);
+      const sourceDate = new Date(`${sourceTx.date || ''}T00:00:00`).getTime();
+      const candidates = (state.transactions || []).filter(candidate => {
+        if (!candidate || String(candidate.id) === String(sourceTx.id) || reservedIds.has(String(candidate.id))) return false;
+        if (candidate.type !== 'Income' || String(candidate.accountId) !== String(destinationAccountId)) return false;
+        if (candidate.transferToAccountId || candidate.calendarBillId || candidate.debtPaymentId) return false;
+        if (Math.round(Math.abs(Number(candidate.amount) || 0) * 100) !== amountCents) return false;
+        const candidateDate = new Date(`${candidate.date || ''}T00:00:00`).getTime();
+        if (!Number.isFinite(sourceDate) || !Number.isFinite(candidateDate) || Math.abs(candidateDate-sourceDate) > 86400000) return false;
+        return true;
+      });
+      return { status: candidates.length === 1 ? 'unique' : candidates.length ? 'ambiguous' : 'missing', candidates };
+    }
+    function statementMatchMetadataForTransaction(tx, accountId) {
+      const records = Array.isArray(tx?.transferStatementMatches) ? tx.transferStatementMatches.map(x => ({...x})) : [];
+      if (tx && (tx.reconciled || tx.statementMatchId || tx.statementMatchGroupId)) {
+        records.push({accountId:String(accountId),rowId:tx.statementMatchId || null,groupId:tx.statementMatchGroupId || null,date:tx.date || '',description:tx.statementDescription || tx.vendor || tx.desc || '',reconciledAt:tx.reconciledAt || new Date().toISOString()});
+      }
+      const seen = new Set();
+      return records.filter(record => {
+        const key = `${record.accountId}|${record.rowId || ''}|${record.groupId || ''}`;
+        if (seen.has(key)) return false;
+        seen.add(key); return true;
+      });
+    }
+    function setTransferReconciledAccounts(tx, accountIds) {
+      tx.reconciledAccountIds = [...new Set((accountIds || []).filter(Boolean).map(String))];
+      tx.reconciled = tx.reconciledAccountIds.length > 0;
+    }
+
     function applyBulkEdit() {
       const ids=Array.from(selectedLedgerIds);
       const vendorValue=document.getElementById('bulk-vendor').value.trim();
@@ -3496,15 +3534,17 @@ Bonus"></textarea></div>
       const categoryValue=document.getElementById('bulk-category').value;
       const subcategoryValue=document.getElementById('bulk-subcategory').value;
       const transferToAccountId=document.getElementById('bulk-transfer-to')?.value || '';
+      const transferMode=document.getElementById('bulk-transfer-mode')?.value || 'create';
       const hasChanges=vendorValue!=='' || typeValue!=='' || categoryValue!=='' || subcategoryValue!=='';
       if (!hasChanges) { alert('Choose at least one field to update.'); return; }
       const valid=ids.map(id=>state.transactions.find(t=>String(t.id)===String(id))).filter(Boolean);
       if (!valid.length)return;
       if (typeValue === 'Transfer') {
         if (!transferToAccountId) { alert('Choose the destination account for the internal transfers.'); return; }
+        if (!transferMode) { alert('Choose whether FinHub should create destination entries or match destination transactions that already exist.'); return; }
         const invalidSources=valid.filter(t=>{
           const from=state.accounts.find(a=>String(a.id)===String(t.accountId));
-          return !from || from.type!=='asset' || String(t.accountId)===String(transferToAccountId);
+          return !from || from.type!=='asset' || String(t.accountId)===String(transferToAccountId) || (t.type==='Transfer' && String(t.transferToAccountId||'')!==String(transferToAccountId));
         });
         const to=state.accounts.find(a=>String(a.id)===String(transferToAccountId));
         if (!to || to.type!=='asset') { alert('The destination must be an asset account.'); return; }
@@ -3513,9 +3553,35 @@ Bonus"></textarea></div>
           return;
         }
       }
+      let transferPairs = [];
+      if (typeValue === 'Transfer' && transferMode === 'create') {
+        const likelyExisting = valid.map(sourceTx=>({source:sourceTx,match:bulkFindExistingTransferCounterpart(sourceTx,transferToAccountId)})).filter(x=>x.match.status==='unique'||x.match.status==='ambiguous');
+        if(likelyExisting.length && !confirm(`FinHub found ${likelyExisting.length} selected transaction(s) with a possible existing Income transaction in the destination account. Create mode will add destination balance effects and could duplicate those amounts. Continue only if those are not the matching transfer entries.`)) return;
+      }
+      if (typeValue === 'Transfer' && transferMode === 'match') {
+        const reservedDestinationIds = new Set();
+        const issues = [];
+        valid.forEach(sourceTx => {
+          const match = bulkFindExistingTransferCounterpart(sourceTx, transferToAccountId, reservedDestinationIds);
+          if (match.status === 'unique') {
+            const counterpart = match.candidates[0];
+            reservedDestinationIds.add(String(counterpart.id));
+            transferPairs.push({source:sourceTx,destination:counterpart});
+          } else {
+            issues.push(`${sourceTx.vendor || sourceTx.desc || 'Transaction'} (${sourceTx.date || 'no date'}, ${formatFinancial(sourceTx.amount)}): ${match.status === 'ambiguous' ? `${match.candidates.length} possible destination matches` : match.status === 'invalid' ? 'source must be an Expense' : 'no matching destination Income transaction'}`);
+          }
+        });
+        if (issues.length) {
+          alert(`FinHub couldn't safely pair every selected transaction. No changes were made.
+
+${issues.slice(0,8).join('\n')}${issues.length>8?`\n…and ${issues.length-8} more.`:''}\n\nSelect only outgoing Expense transactions and make sure each has exactly one matching Income transaction in the destination account with the same amount and a date within one day.`);
+          return;
+        }
+      }
+
       let bulkTypeRows = valid;
       if (typeValue) {
-        const protectedRows = valid.filter(t => t.calendarBillId || t.debtPaymentId || t.transferToAccountId);
+        const protectedRows = valid.filter(t => t.calendarBillId || t.debtPaymentId || (t.transferToAccountId && !(typeValue==='Transfer' && transferMode==='match' && String(t.transferToAccountId)===String(transferToAccountId))));
         if (protectedRows.length) {
           const protectedIds = new Set(protectedRows.map(t => String(t.id)));
           bulkTypeRows = valid.filter(t => !protectedIds.has(String(t.id)));
@@ -3536,12 +3602,19 @@ Bonus"></textarea></div>
       const targetCategory=typeValue==='Transfer' ? 'Transfer' : (pairedCategory || (categoryValue && categoryValue!=='__CLEAR__' ? categoryValue : ''));
       const targetSubcategory=typeValue==='Transfer' ? '' : (pairedSubcategory || (subcategoryValue && !subcategoryValue.startsWith('__PAIR__') ? subcategoryValue : ''));
       const clearBucket=typeValue!=='Transfer' && categoryValue==='__CLEAR__';
+      const alreadyTransferPairs=transferPairs.filter(pair=>pair.source.type==='Transfer').length;
+      const expensePairs=transferPairs.length-alreadyTransferPairs;
+      const destinationName=state.accounts.find(a=>String(a.id)===String(transferToAccountId))?.name || 'the destination account';
       const confirmationDetail=typeValue==='Transfer'
-        ? ` The selected transactions will become Internal Transfers from their existing accounts to ${state.accounts.find(a=>String(a.id)===String(transferToAccountId))?.name || 'the selected destination'}. Their amounts will be removed from source balances and added to the destination balance. They will be excluded from income and expense reporting.`
+        ? (transferMode === 'match'
+          ? ` FinHub will pair ${transferPairs.length} existing destination Income transaction(s) in ${destinationName}. ${expensePairs} Expense/Income pair(s) will be combined without changing balances. ${alreadyTransferPairs} already-created Internal Transfer(s) will have their duplicate destination Income row removed and the destination balance reduced to eliminate the extra credit.`
+          : ` The selected transactions will become Internal Transfers from their existing accounts to ${destinationName}. Their amounts will be removed from source balances and added to the destination balance.`)
         : clearBucket ? ' The bucket and subcategory will be cleared.' : (targetCategory ? ` The bucket will be set to “${targetCategory}”.` : '');
-      const typeDetail = typeValue ? ` Type will become “${typeValue==='Transfer'?'Internal Transfer':typeValue}”; account balances will be adjusted to preserve the correct effect of each transaction.` : '';
-      if (!confirm(`Apply the selected changes to ${valid.length} transaction${valid.length===1?'':'s'}?${typeDetail}${confirmationDetail}`))return;
-      captureUndo('Bulk edit transaction types and details');
+      const typeDetail = typeValue ? (typeValue==='Transfer' && transferMode==='match' ? ' Type will be “Internal Transfer”; FinHub will preserve correct balances for ordinary Expense/Income pairs and remove duplicate destination credits from transfers already created.' : ` Type will become “${typeValue==='Transfer'?'Internal Transfer':typeValue}”; account balances will be adjusted to preserve the correct effect of each transaction.`) : '';
+      const pairDetail = transferMode==='match' && transferPairs.length ? `\n\nPairs to be linked:\n${transferPairs.slice(0,8).map(pair=>`• ${pair.source.date} ${pair.source.vendor||pair.source.desc||'Outgoing'} ${formatFinancial(pair.source.amount)} ↔ ${pair.destination.date} ${pair.destination.vendor||pair.destination.desc||'Incoming'}`).join('\n')}${transferPairs.length>8?`\n…and ${transferPairs.length-8} more.`:''}` : '';
+      if (!confirm(`Apply the selected changes to ${valid.length} transaction${valid.length===1?'':'s'}?${typeDetail}${confirmationDetail}${pairDetail}`))return;
+      if (typeValue === 'Transfer' && transferMode === 'match') captureStatementUndo('Bulk match existing transactions as internal transfers');
+      else captureUndo('Bulk edit transaction types and details');
 
       const eligibleTypeIds = new Set((typeValue ? bulkTypeRows : valid).map(t => String(t.id)));
       let updatedCount=0;
@@ -3554,8 +3627,38 @@ Bonus"></textarea></div>
           const oldEffect=oldIsCredit ? amount : -amount;
           const source=state.accounts.find(a=>String(a.id)===String(t.accountId));
           const destination=state.accounts.find(a=>String(a.id)===String(transferToAccountId));
-          if (source) source.balance=(Number(source.balance)||0) + (-amount-oldEffect);
-          if (destination) destination.balance=(Number(destination.balance)||0) + amount;
+          if (transferMode === 'create') {
+            if (source) source.balance=(Number(source.balance)||0) + (-amount-oldEffect);
+            if (destination) destination.balance=(Number(destination.balance)||0) + amount;
+          } else {
+            const pair=transferPairs.find(x=>String(x.source.id)===String(t.id));
+            if (!pair) return;
+            const destTx=pair.destination;
+            const sourceWasAlreadyTransfer=t.type==='Transfer' && String(t.transferToAccountId)===String(transferToAccountId);
+            t.transferSourceOriginSnapshot={...t};
+            const combinedMatches=[...statementMatchMetadataForTransaction(t,t.accountId),...statementMatchMetadataForTransaction(destTx,destTx.accountId)];
+            const reconciledAccounts=combinedMatches.map(x=>x.accountId);
+            t.transferStatementMatches=combinedMatches;
+            if (destTx.reconciled || destTx.statementMatchId || destTx.statementMatchGroupId) reconciledAccounts.push(destTx.accountId);
+            if (t.reconciled || t.statementMatchId || t.statementMatchGroupId) reconciledAccounts.push(t.accountId);
+            setTransferReconciledAccounts(t,reconciledAccounts);
+            t.transferMergedEntries=Array.isArray(t.transferMergedEntries)?t.transferMergedEntries:[];
+            t.transferMergedEntries.push({transaction:{...destTx},mergedAt:new Date().toISOString()});
+            // If the source was still an Expense, the two existing account effects already
+            // equal one transfer, so balances stay unchanged. If it was already an Internal
+            // Transfer, its destination credit is already present; reverse the duplicate
+            // standalone Income credit while removing that extra row.
+            if(sourceWasAlreadyTransfer && destination) destination.balance=(Number(destination.balance)||0)-amount;
+            t.transferMergeMode=sourceWasAlreadyTransfer?'existing-transfer-duplicate':'paired-existing-entries';
+            state.transactions=state.transactions.filter(x=>String(x.id)!==String(destTx.id));
+            if (typeof pendingStatementRows !== 'undefined' && Array.isArray(pendingStatementRows)) {
+              pendingStatementRows.forEach(row=>{
+                if(String(row.matchedTransactionId||'')===String(destTx.id)) {
+                  row.transferMergedOriginalStatus=row.status; row.status='matched'; row.matchedTransactionId=t.id; row.transferMergedInto=t.id; row.matchedAsInternalTransfer=true;
+                }
+              });
+            }
+          }
           t.type='Transfer';
           t.category='Transfer';
           t.subcategory='';
@@ -3596,6 +3699,7 @@ Bonus"></textarea></div>
       });
       selectedLedgerIds.clear();
       saveData();
+      if (typeValue === 'Transfer' && transferMode === 'match' && typeof persistStatementBatch === 'function') persistStatementBatch();
       closeBulkEditModal();
       renderLedger();
       renderDashboard();
@@ -3919,6 +4023,13 @@ Bonus"></textarea></div>
       reader.onerror = () => { const host=document.getElementById('recon-preview');if(host)host.innerHTML='<p class="text-xs text-rose-500">FinHub could not read that file. Try saving it as a CSV and uploading again.</p>'; };
       reader.readAsText(file);
     }
+    function statementTransactionDateForAccount(t, accountId) {
+      if(t && t.type==='Transfer' && t.transferToAccountId) {
+        const side=(t.transferStatementMatches||[]).find(m=>String(m.accountId)===String(accountId) && m.date);
+        if(side) return side.date;
+      }
+      return t?.date || '';
+    }
     function statementTransactionDeltaForAccount(t, accountId) {
       const amount = Number(t?.amount) || 0;
       if (!t || !amount) return 0;
@@ -3938,7 +4049,7 @@ Bonus"></textarea></div>
       const txs = (state.transactions || []).filter(t => statementTransactionDeltaForAccount(t, accountId) !== 0);
       const allActivity = txs.reduce((sum,t) => sum + statementTransactionDeltaForAccount(t,accountId), 0);
       const opening = Number.isFinite(Number(account.openingBalance)) ? Number(account.openingBalance) : (Number(account.balance) || 0) - allActivity;
-      const throughDate = txs.filter(t => String(t.date || '') <= endDate).reduce((sum,t) => sum + statementTransactionDeltaForAccount(t,accountId), 0);
+      const throughDate = txs.filter(t => String(statementTransactionDateForAccount(t,accountId) || '') <= endDate).reduce((sum,t) => sum + statementTransactionDeltaForAccount(t,accountId), 0);
       return Math.round((opening + throughDate) * 100) / 100;
     }
     function renderStatementBalanceCheck() {
@@ -4009,13 +4120,14 @@ Bonus"></textarea></div>
       const index=new Map();
       const add=(accountId,direction,t)=>{if(!accountId||!direction)return;const key=statementMatchKey(accountId,direction,t.amount);if(!index.has(key))index.set(key,[]);index.get(key).push(t);};
       (state.transactions||[]).forEach(t=>{
-        if(t.reconciled||t.statementMatchId||t.statementMatchGroupId)return;
         if(t.type==='Transfer'){
-          if(t.externalTransferDirection==='in'&&!t.transferToAccountId)add(t.accountId,'Income',t);
-          else if(t.accountId)add(t.accountId,'Expense',t);
-          if(t.transferToAccountId)add(t.transferToAccountId,'Income',t);
-        } else if(t.type==='Income') add(t.accountId,'Income',t);
-        else if(t.type==='Expense'||t.type==='Debt Payment') add(t.accountId,'Expense',t);
+          if(t.externalTransferDirection==='in'&&!t.transferToAccountId){if(!statementTransactionReconciledForAccount(t,t.accountId))add(t.accountId,'Income',t);}
+          else if(t.accountId&&!statementTransactionReconciledForAccount(t,t.accountId))add(t.accountId,'Expense',t);
+          if(t.transferToAccountId&&!statementTransactionReconciledForAccount(t,t.transferToAccountId))add(t.transferToAccountId,'Income',t);
+        } else if(!statementTransactionReconciledForAccount(t,t.accountId)) {
+          if(t.type==='Income') add(t.accountId,'Income',t);
+          else if(t.type==='Expense'||t.type==='Debt Payment') add(t.accountId,'Expense',t);
+        }
       });
       return index;
     }
@@ -4030,9 +4142,15 @@ Bonus"></textarea></div>
       (state.transactions||[]).forEach(t=>{
         if(!(t.reconciled||t.source==='statement-import'||t.statementMatchId||t.statementMatchGroupId))return;
         if(t.type==='Transfer'){
-          if(t.externalTransferDirection==='in'&&!t.transferToAccountId) add(t.accountId,'Income',t);
-          else if(t.accountId) add(t.accountId,'Expense',t);
-          if(t.transferToAccountId) add(t.transferToAccountId,'Income',t);
+          if(t.externalTransferDirection==='in'&&!t.transferToAccountId) { if(statementTransactionReconciledForAccount(t,t.accountId)) add(t.accountId,'Income',t); }
+          else if(t.accountId && statementTransactionReconciledForAccount(t,t.accountId)) {
+            const side=(t.transferStatementMatches||[]).find(m=>String(m.accountId)===String(t.accountId));
+            add(t.accountId,'Expense',{...t,date:side?.date||t.date,statementDescription:side?.description||t.statementDescription});
+          }
+          if(t.transferToAccountId && statementTransactionReconciledForAccount(t,t.transferToAccountId)) {
+            const side=(t.transferStatementMatches||[]).find(m=>String(m.accountId)===String(t.transferToAccountId));
+            add(t.transferToAccountId,'Income',{...t,date:side?.date||t.date,statementDescription:side?.description||t.statementDescription});
+          }
         } else {
           const direction=statementDirectionForTransaction(t,t.accountId);
           if(direction) add(t.accountId,direction,t);
@@ -4061,7 +4179,8 @@ Bonus"></textarea></div>
       let matched=0;
       strong.forEach(({row,transaction})=>{
         if(!transaction||usage.get(transaction.id)!==1)return;
-        transaction.statementMatchId=row.id;transaction.reconciled=true;transaction.reconciledAt=new Date().toISOString();transaction.statementDescription=row.description;
+        if(transaction.type==='Transfer' && transaction.transferToAccountId) addTransferStatementMatch(transaction,row.accountId,row);
+        else { transaction.statementMatchId=row.id;transaction.reconciled=true;transaction.reconciledAt=new Date().toISOString();transaction.statementDescription=row.description; }
         row.status='matched';row.matchedTransactionId=transaction.id;matched++;
       });
       return matched;
@@ -4200,6 +4319,41 @@ Bonus"></textarea></div>
       changes.forEach(x=>{x.t.vendor=x.clean;});
       saveData();renderLedger();renderDashboard();alert(`Cleaned ${changes.length} existing vendor name${changes.length===1?'':'s'}.`);
     }
+    function statementDescriptionForAccount(t, accountId) {
+      if(t && t.type==='Transfer' && t.transferToAccountId) {
+        const side=(t.transferStatementMatches||[]).find(m=>String(m.accountId)===String(accountId) && m.description);
+        if(side) return side.description;
+      }
+      return t?.statementDescription || t?.vendor || t?.desc || '';
+    }
+    function statementTransactionReconciledForAccount(t, accountId) {
+      if (!t) return false;
+      if (t.type === 'Transfer' && t.transferToAccountId) {
+        if (Array.isArray(t.reconciledAccountIds)) return t.reconciledAccountIds.map(String).includes(String(accountId));
+        if (Array.isArray(t.transferStatementMatches)) return t.transferStatementMatches.some(m => String(m.accountId) === String(accountId));
+        return !!(t.reconciled || t.statementMatchId || t.statementMatchGroupId); // legacy transfers had one global reconciliation flag
+      }
+      return !!(t.reconciled || t.statementMatchId || t.statementMatchGroupId);
+    }
+    function addTransferStatementMatch(t, accountId, row) {
+      t.transferStatementMatches = Array.isArray(t.transferStatementMatches) ? t.transferStatementMatches : [];
+      t.transferStatementMatches = t.transferStatementMatches.filter(m => !(String(m.accountId)===String(accountId) && String(m.rowId||'')===String(row.id||'')));
+      t.transferStatementMatches.push({accountId:String(accountId),rowId:row.id||null,date:row.date||'',description:row.description||'',direction:row.type||'',reconciledAt:new Date().toISOString()});
+      const ids=Array.isArray(t.reconciledAccountIds)?t.reconciledAccountIds.map(String):[];
+      if(!Array.isArray(t.reconciledAccountIds) && (t.reconciled || t.statementMatchId || t.statementMatchGroupId) && t.accountId && !ids.includes(String(t.accountId))) ids.push(String(t.accountId));
+      if(!ids.includes(String(accountId)))ids.push(String(accountId));
+      setTransferReconciledAccounts(t,ids);
+    }
+    function removeTransferStatementMatch(t, accountId, rowId) {
+      if (!t || t.type !== 'Transfer' || !t.transferToAccountId) return false;
+      t.transferStatementMatches=(t.transferStatementMatches||[]).filter(m=>!(String(m.accountId)===String(accountId)&&String(m.rowId||'')===String(rowId||'')));
+      const stillMatched=(t.transferStatementMatches||[]).some(m=>String(m.accountId)===String(accountId));
+      if(!stillMatched)t.reconciledAccountIds=(t.reconciledAccountIds||[]).map(String).filter(id=>id!==String(accountId));
+      t.reconciled=!!(t.reconciledAccountIds||[]).length;
+      if(String(t.statementMatchId||'')===String(rowId||'')){delete t.statementMatchId;delete t.statementDescription;}
+      return true;
+    }
+
     function statementDirectionForTransaction(t, accountId) {
       if (!t) return null;
       if (t.type === 'Transfer') {
@@ -4218,7 +4372,7 @@ Bonus"></textarea></div>
       const selectedRows = pendingStatementRows.filter(r => manualSelectedStatementIds.has(r.id));
       const direction = selectedRows.length ? selectedRows[0].type : null;
       return (state.transactions || []).filter(t => {
-        if (t.reconciled || t.statementMatchId || t.statementMatchGroupId) return false;
+        if (statementTransactionReconciledForAccount(t, accountId)) return false;
         const txDirection = statementDirectionForTransaction(t, accountId);
         if (!txDirection || (direction && txDirection !== direction)) return false;
         return true;
@@ -4274,7 +4428,13 @@ Bonus"></textarea></div>
       const now = new Date().toISOString();
       captureStatementUndo('Manually match grouped statement transactions');
       totals.bankRows.forEach(row => { row.status='matched'; row.matchedGroupId=groupId; row.matchedTransactionIds=totals.ledgerRows.map(t=>t.id); });
-      totals.ledgerRows.forEach(tx => { tx.statementMatchGroupId=groupId; tx.reconciled=true; tx.reconciledAt=now; tx.statementMatchDescription=totals.bankRows.map(r=>r.description).join(' + '); });
+      totals.ledgerRows.forEach(tx => {
+        if(tx.type==='Transfer' && tx.transferToAccountId) {
+          tx.transferStatementMatches=Array.isArray(tx.transferStatementMatches)?tx.transferStatementMatches:[];
+          tx.transferStatementMatches.push({accountId:String(accountId),rowId:null,groupId,date:totals.bankRows[0]?.date||'',description:totals.bankRows.map(r=>r.description).join(' + '),direction,reconciledAt:now});
+          const ids=Array.isArray(tx.reconciledAccountIds)?tx.reconciledAccountIds.map(String):[]; if(!Array.isArray(tx.reconciledAccountIds)&&(tx.reconciled||tx.statementMatchId||tx.statementMatchGroupId)&&tx.accountId)ids.push(String(tx.accountId)); if(!ids.includes(String(accountId)))ids.push(String(accountId)); setTransferReconciledAccounts(tx,ids);
+        } else { tx.statementMatchGroupId=groupId; tx.reconciled=true; tx.reconciledAt=now; tx.statementMatchDescription=totals.bankRows.map(r=>r.description).join(' + '); }
+      });
       state.statementReconciliation = state.statementReconciliation || {batches:[]};
       state.statementReconciliation.groups = Array.isArray(state.statementReconciliation.groups) ? state.statementReconciliation.groups : [];
       state.statementReconciliation.groups.push({id:groupId,accountId,direction,bankRows:totals.bankRows.map(r=>({id:r.id,date:r.date,description:r.description,amount:r.amount,type:r.type})),transactionIds:totals.ledgerRows.map(t=>t.id),total:totals.bankCents/100,matchedAt:now,active:true});
@@ -4287,6 +4447,12 @@ Bonus"></textarea></div>
       if (!confirm('Undo this grouped match? The original transactions will remain in place and return to unreconciled status.')) return;
       captureStatementUndo('Undo grouped statement match');
       (state.transactions||[]).filter(t => t.statementMatchGroupId === groupId).forEach(t => { delete t.statementMatchGroupId; delete t.statementMatchDescription; delete t.reconciled; delete t.reconciledAt; });
+      (state.transactions||[]).filter(t=>t.type==='Transfer'&&t.transferToAccountId).forEach(t=>{
+        t.transferStatementMatches=(t.transferStatementMatches||[]).filter(m=>String(m.groupId||'')!==String(groupId));
+        const stillMatched=(t.transferStatementMatches||[]).some(m=>String(m.accountId)===String(group.accountId));
+        if(!stillMatched)t.reconciledAccountIds=(t.reconciledAccountIds||[]).map(String).filter(id=>id!==String(group.accountId));
+        t.reconciled=!!(t.reconciledAccountIds||[]).length;
+      });
       group.active = false; group.undoneAt = new Date().toISOString();
       pendingStatementRows.filter(r => r.matchedGroupId === groupId).forEach(r => { r.status='pending'; delete r.matchedGroupId; delete r.matchedTransactionIds; });
       persistStatementBatch(); renderLedger(); renderStatementPreview();
@@ -4295,9 +4461,62 @@ Bonus"></textarea></div>
     function findStatementMatches(row,index=buildStatementMatchIndex()) {
       const target=normalizeStatementText(applyVendorCleanupRules(row.description));
       return (index.get(statementMatchKey(row.accountId,row.type,row.amount))||[])
-        .map(t=>{const delta=Math.abs(new Date(t.date+'T00:00:00').getTime()-new Date(row.date+'T00:00:00').getTime())/86400000;const name=normalizeStatementText(t.vendor||t.desc);const textScore=target&&name?(target.includes(name)||name.includes(target)?2:0):0;return {t,delta,score:(delta===0?4:delta<=1?2:0)+textScore};})
+        .map(t=>{const delta=Math.abs(new Date(t.date+'T00:00:00').getTime()-new Date(row.date+'T00:00:00').getTime())/86400000;const name=normalizeStatementText(statementDescriptionForAccount(t,row.accountId));const textScore=target&&name?(target.includes(name)||name.includes(target)?2:0):0;return {t,delta,score:(delta===0?4:delta<=1?2:0)+textScore};})
         .filter(x=>x.delta<=1).sort((a,b)=>b.score-a.score||a.delta-b.delta).slice(0,6).map(x=>x.t);
     }
+    function findCrossAccountTransferCandidates(row) {
+      if(!row || !row.accountId || !['Expense','Income'].includes(row.type)) return [];
+      const expectedType=row.type==='Expense'?'Income':'Expense';
+      const amountCents=Math.round(Math.abs(Number(row.amount)||0)*100);
+      const rowTime=new Date(`${row.date||''}T00:00:00`).getTime();
+      return (state.transactions||[]).filter(tx=>{
+        if(!tx || tx.type!==expectedType || String(tx.accountId)===String(row.accountId)) return false;
+        const other=state.accounts.find(a=>String(a.id)===String(tx.accountId));
+        if(!other || other.type!=='asset' || tx.transferToAccountId || tx.calendarBillId || tx.debtPaymentId) return false;
+        if(Math.round(Math.abs(Number(tx.amount)||0)*100)!==amountCents) return false;
+        const txTime=new Date(`${tx.date||''}T00:00:00`).getTime();
+        return Number.isFinite(rowTime)&&Number.isFinite(txTime)&&Math.abs(txTime-rowTime)<=86400000;
+      }).sort((a,b)=>Math.abs(new Date(a.date+'T00:00:00').getTime()-rowTime)-Math.abs(new Date(b.date+'T00:00:00').getTime()-rowTime));
+    }
+    function matchStatementRowAsInternalTransfer(rowId, candidateId) {
+      const row=pendingStatementRows.find(r=>r.id===rowId && r.status==='pending');
+      const candidate=(state.transactions||[]).find(t=>String(t.id)===String(candidateId));
+      if(!row || !candidate) return;
+      const candidates=findCrossAccountTransferCandidates(row);
+      if(!candidates.some(t=>String(t.id)===String(candidate.id))) { alert('That possible counterpart is no longer eligible. Refresh the review and try again.'); return; }
+      if(candidates.length>1 && !confirm(`There are ${candidates.length} possible opposite-account transactions with the same amount and a date within one day. Pair with ${candidate.vendor||candidate.desc||'the selected transaction'} in ${state.accounts.find(a=>String(a.id)===String(candidate.accountId))?.name||'the other account'}?`)) return;
+      if(!confirm(`Match this ${row.type==='Expense'?'outgoing':'incoming'} statement row with the existing ${candidate.type} transaction in ${state.accounts.find(a=>String(a.id)===String(candidate.accountId))?.name||'the other account'} as one Internal Transfer? FinHub will not create a duplicate transaction.`)) return;
+      captureStatementUndo('Match existing transactions as internal transfer');
+      const original={...candidate};
+      const amount=Math.abs(Number(candidate.amount)||0);
+      const sourceId=row.type==='Expense'?row.accountId:candidate.accountId;
+      const destinationId=row.type==='Expense'?candidate.accountId:row.accountId;
+      const source=state.accounts.find(a=>String(a.id)===String(sourceId));
+      const destination=state.accounts.find(a=>String(a.id)===String(destinationId));
+      if(!source||!destination||source.type!=='asset'||destination.type!=='asset') { alert('Both sides of an internal transfer must be asset accounts.'); return; }
+      if(row.type==='Expense') source.balance=(Number(source.balance)||0)-amount;
+      else destination.balance=(Number(destination.balance)||0)+amount;
+      const priorMatches=statementMatchMetadataForTransaction(candidate,candidate.accountId);
+      candidate.transferOriginSnapshot=original;
+      candidate.transferAddedSideAccountId=String(row.accountId);
+      candidate.transferAddedSideRowId=row.id;
+      candidate.transferAddedSideDirection=row.type;
+      candidate.transferStatementMatches=priorMatches;
+      candidate.accountId=sourceId;
+      candidate.transferToAccountId=destinationId;
+      delete candidate.statementMatchId; delete candidate.statementMatchGroupId; delete candidate.statementDescription; delete candidate.statementMatchDescription; delete candidate.reconciledAt;
+      candidate.type='Transfer';
+      candidate.category='Transfer';
+      candidate.subcategory='';
+      delete candidate.externalTransferDirection;
+      if(!candidate.vendor)candidate.vendor='Account transfer';
+      const ids=priorMatches.map(m=>m.accountId); if(original.reconciled||original.statementMatchId||original.statementMatchGroupId)ids.push(original.accountId); ids.push(row.accountId);
+      setTransferReconciledAccounts(candidate,ids);
+      addTransferStatementMatch(candidate,row.accountId,row);
+      row.status='matched'; row.matchedTransactionId=candidate.id; row.matchedAsInternalTransfer=true;
+      persistStatementBatch(); renderLedger(); renderDashboard(); renderZbbFundingTracker(); renderStatementPreview(); renderStatementBalanceCheck();
+    }
+
     function renderStatementPreview() {
       const host=document.getElementById('recon-preview'); if(!host)return;
       const activeGroups=(state.statementReconciliation?.groups||[]).filter(g=>g.active!==false);
@@ -4323,10 +4542,13 @@ Bonus"></textarea></div>
       const batchActionCount=pendingStatementRows.filter(r=>r.status==='matched'||r.status==='imported').length;
       host.innerHTML=`<div class="flex flex-wrap justify-between gap-2"><div><h4 class="font-bold text-sm">Review ${pendingStatementRows.length} statement rows</h4><p class="text-xs text-gray-400">${matches} possible matches on this page · ${pendingStatementRows.filter(r=>r.status==='matched').length} matched · ${pendingStatementRows.filter(r=>r.status==='imported').length} imported · ${pendingStatementRows.filter(r=>r.status==='duplicate').length} possible duplicates · ${pendingStatementRows.filter(r=>r.status==='skipped').length} skipped. Batch saved automatically.</p></div><div class="flex flex-wrap gap-2">${batchActionCount?`<button onclick="undoActiveStatementBatchActions()" class="px-3 py-2 rounded-lg bg-amber-500/15 text-amber-600 text-xs font-semibold">Undo batch actions (${batchActionCount})</button>`:''}<button onclick="clearStatementBatch()" class="px-3 py-2 rounded-lg bg-gray-200 dark:bg-gray-800 text-xs font-semibold">Clear batch</button><button onclick="importAllUnmatchedStatementRows()" class="px-3 py-2 rounded-lg bg-indigo-600 text-white text-xs font-semibold theme-bg">Import unmatched rows only</button></div></div>${manualPanel}<div class="space-y-2">${pageRows.map(row=>{
         const candidatesForRow=candidateLookup.get(row.id)||[];const suggested=candidatesForRow[0];
-        const status=row.status==='matched'?'Matched':row.status==='imported'?'Imported':row.status==='skipped'?'Skipped':row.status==='duplicate'?'Possible duplicate':suggested?'Suggested match':'No match found';
+        const crossCandidates=row.status==='pending'?findCrossAccountTransferCandidates(row):[];
+        const crossCandidate=crossCandidates[0];
+        const crossOptions=crossCandidates.map(tx=>`<option value="${tx.id}">${escapeHtml(state.accounts.find(a=>String(a.id)===String(tx.accountId))?.name||'Other account')} · ${tx.date} · ${escapeHtml(tx.vendor||tx.desc||tx.type)} · ${formatFinancial(tx.amount)}</option>`).join('');
+        const status=row.status==='matched'?'Matched':row.status==='imported'?'Imported':row.status==='skipped'?'Skipped':row.status==='duplicate'?'Possible duplicate':suggested?'Suggested match':crossCandidate?'Possible transfer counterpart':'No match found';
         const options=candidatesForRow.map(t=>`<option value="${t.id}" ${suggested&&t.id===suggested.id?'selected':''}>${t.date} · ${escapeHtml(t.vendor||t.desc||'Transaction')} · ${formatFinancial(t.amount)}</option>`).join('');
         const undoButton=row.matchedGroupId?`<button onclick="undoManualStatementMatch('${row.matchedGroupId}')" class="px-2.5 py-1.5 bg-gray-200 dark:bg-gray-800 rounded-lg text-xs">Undo grouped match</button>`:`<button onclick="unlinkStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-gray-200 dark:bg-gray-800 rounded-lg text-xs">Undo match</button>`;
-        return `<div class="border border-gray-200 dark:border-gray-800 rounded-xl p-3 space-y-2"><div class="flex justify-between gap-3"><div class="min-w-0"><div class="font-semibold text-xs">${escapeHtml(row.description)}</div><div class="text-[10px] text-indigo-400">Vendor name: ${escapeHtml(row.cleanedVendorName || applyVendorCleanupRules(row.description))}</div><div class="text-[10px] text-gray-400">${row.date} · ${row.type}</div></div><strong class="text-sm accounting-num whitespace-nowrap">${formatFinancial(row.amount)}</strong></div><div class="flex flex-wrap items-center gap-2"><span class="text-[10px] ${row.status==='matched'?'text-emerald-500':row.status==='duplicate'?'text-amber-500':'text-gray-400'}">${status}</span>${row.status==='pending'&&candidatesForRow.length?`<select id="stmt-match-${row.id}" class="flex-1 min-w-[180px] bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-1 text-xs">${options}</select><button onclick="linkStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-emerald-600 text-white rounded-lg text-xs">Match</button>`:''}${row.status==='pending'?`<button onclick="openVendorRuleModal('${row.id}')" class="px-2.5 py-1.5 bg-violet-600/15 text-violet-500 rounded-lg text-xs">Clean name / create rule</button><button onclick="importStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-indigo-600 text-white rounded-lg text-xs">Import as new</button><button onclick="skipStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-gray-200 dark:bg-gray-800 rounded-lg text-xs">Skip</button>`:row.status==='duplicate'?`<span class="text-[10px] text-amber-500">${row.duplicateOfRowId?'Duplicates another row in this upload':`Looks like: ${escapeHtml((state.transactions||[]).find(t=>t.id===row.duplicateTransactionId)?.vendor||'an existing transaction')}`}</span><button onclick="allowStatementDuplicate('${row.id}')" class="px-2.5 py-1.5 bg-amber-500/15 text-amber-600 rounded-lg text-xs">Import anyway</button><button onclick="skipStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-gray-200 dark:bg-gray-800 rounded-lg text-xs">Skip</button>`:row.status==='matched'?undoButton:''}</div></div>`;
+        return `<div class="border border-gray-200 dark:border-gray-800 rounded-xl p-3 space-y-2"><div class="flex justify-between gap-3"><div class="min-w-0"><div class="font-semibold text-xs">${escapeHtml(row.description)}</div><div class="text-[10px] text-indigo-400">Vendor name: ${escapeHtml(row.cleanedVendorName || applyVendorCleanupRules(row.description))}</div><div class="text-[10px] text-gray-400">${row.date} · ${row.type}</div></div><strong class="text-sm accounting-num whitespace-nowrap">${formatFinancial(row.amount)}</strong></div><div class="flex flex-wrap items-center gap-2"><span class="text-[10px] ${row.status==='matched'?'text-emerald-500':row.status==='duplicate'?'text-amber-500':'text-gray-400'}">${status}</span>${row.status==='pending'&&candidatesForRow.length?`<select id="stmt-match-${row.id}" class="flex-1 min-w-[180px] bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-1 text-xs">${options}</select><button onclick="linkStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-emerald-600 text-white rounded-lg text-xs">Match</button>`:''}${row.status==='pending'?`${crossCandidates.length?`<select id="stmt-transfer-match-${row.id}" class="min-w-[180px] bg-gray-50 dark:bg-gray-950 border border-indigo-300 dark:border-indigo-800 rounded-lg px-2 py-1 text-xs">${crossOptions}</select><button onclick="matchStatementRowAsInternalTransfer('${row.id}',document.getElementById('stmt-transfer-match-${row.id}').value)" class="px-2.5 py-1.5 bg-indigo-600 text-white rounded-lg text-xs">Match as Internal Transfer</button>`:''}<button onclick="openVendorRuleModal('${row.id}')" class="px-2.5 py-1.5 bg-violet-600/15 text-violet-500 rounded-lg text-xs">Clean name / create rule</button><button onclick="importStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-indigo-600 text-white rounded-lg text-xs">Import as new</button><button onclick="skipStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-gray-200 dark:bg-gray-800 rounded-lg text-xs">Skip</button>`:row.status==='duplicate'?`<span class="text-[10px] text-amber-500">${row.duplicateOfRowId?'Duplicates another row in this upload':`Looks like: ${escapeHtml((state.transactions||[]).find(t=>t.id===row.duplicateTransactionId)?.vendor||'an existing transaction')}`}</span><button onclick="allowStatementDuplicate('${row.id}')" class="px-2.5 py-1.5 bg-amber-500/15 text-amber-600 rounded-lg text-xs">Import anyway</button><button onclick="skipStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-gray-200 dark:bg-gray-800 rounded-lg text-xs">Skip</button>`:row.status==='matched'?undoButton:''}</div></div>`;
       }).join('')}</div><div class="flex flex-wrap items-center justify-between gap-2 text-xs text-gray-500"><span>Showing ${pageStart+1}–${Math.min(pageStart+statementPreviewPageSize,pendingStatementRows.length)} of ${pendingStatementRows.length} statement rows · Page ${statementPreviewPage+1} of ${totalPages}</span><div class="flex gap-2"><button onclick="changeStatementPreviewPage(-1)" ${statementPreviewPage===0?'disabled':''} class="px-3 py-1.5 rounded-lg bg-gray-200 dark:bg-gray-800 disabled:opacity-40">Previous</button><button onclick="changeStatementPreviewPage(1)" ${statementPreviewPage>=totalPages-1?'disabled':''} class="px-3 py-1.5 rounded-lg bg-gray-200 dark:bg-gray-800 disabled:opacity-40">Next</button></div></div><div class="text-[10px] text-gray-400">Individual matching uses account, transaction type, amount and a date within one day. Grouped manual matching supports different amounts and dates, but requires equal selected totals.</div>${groupsHtml}`;
       renderStatementBalanceCheck();
     }
@@ -4346,18 +4568,55 @@ Bonus"></textarea></div>
       const selected=document.getElementById(`stmt-match-${rowId}`)?.value;
       const transaction=state.transactions.find(t=>t.id===selected); if(!transaction)return;
       captureStatementUndo('Match statement transaction');
-      transaction.statementMatchId=row.id; transaction.reconciled=true; transaction.reconciledAt=new Date().toISOString(); transaction.statementDescription=row.description;
+      if(transaction.type==='Transfer' && transaction.transferToAccountId) addTransferStatementMatch(transaction,row.accountId,row);
+      else { transaction.statementMatchId=row.id; transaction.reconciled=true; transaction.reconciledAt=new Date().toISOString(); transaction.statementDescription=row.description; }
       row.status='matched'; row.matchedTransactionId=transaction.id;
       state.statementReconciliation=state.statementReconciliation||{batches:[]};
       persistStatementBatch(); renderLedger(); renderStatementPreview();
     }
+    function restoreBulkMergedTransferSide(row, transfer) {
+      if(!row || !transfer || String(row.transferMergedInto||'')!==String(transfer.id) || !transfer.transferSourceOriginSnapshot) return false;
+      const entry=(transfer.transferMergedEntries||[]).find(item=>String(item.transaction?.statementMatchId||'')===String(row.id));
+      if(!entry?.transaction) return false;
+      const sourceSnapshot={...transfer.transferSourceOriginSnapshot};
+      const destinationSnapshot={...entry.transaction};
+      const restoreDuplicateCredit=transfer.transferMergeMode==='existing-transfer-duplicate';
+      const amount=Math.abs(Number(destinationSnapshot.amount)||0);
+      Object.keys(transfer).forEach(key=>delete transfer[key]); Object.assign(transfer,sourceSnapshot);
+      if(!(state.transactions||[]).some(t=>String(t.id)===String(destinationSnapshot.id))) state.transactions.push(destinationSnapshot);
+      if(restoreDuplicateCredit) {
+        const destinationAccount=(state.accounts||[]).find(a=>String(a.id)===String(destinationSnapshot.accountId));
+        if(destinationAccount) destinationAccount.balance=(Number(destinationAccount.balance)||0)+amount;
+      }
+      return true;
+    }
+
     function unlinkStatementRow(rowId) {
       const row=pendingStatementRows.find(r=>r.id===rowId); if(!row)return;
       if (row.matchedGroupId) { undoManualStatementMatch(row.matchedGroupId); return; }
       const transaction=state.transactions.find(t=>t.id===row.matchedTransactionId);
       if(transaction)captureStatementUndo('Unmatch statement transaction');
-      if(transaction){delete transaction.statementMatchId;delete transaction.reconciled;delete transaction.reconciledAt;delete transaction.statementDescription;}
-      row.status='pending';delete row.matchedTransactionId;
+      if(transaction && row.transferMergedInto) {
+        const entry=(transaction.transferMergedEntries||[]).find(item=>String(item.transaction?.statementMatchId||'')===String(row.id));
+        const restoredDestination=entry?.transaction ? {...entry.transaction} : null;
+        if(restoreBulkMergedTransferSide(row,transaction) && restoredDestination) {
+          row.status=row.transferMergedOriginalStatus || 'matched';
+          row.matchedTransactionId=restoredDestination.id;
+          delete row.matchedAsInternalTransfer; delete row.transferMergedInto; delete row.transferMergedOriginalStatus;
+          persistStatementBatch(); renderLedger(); renderStatementPreview();
+          return;
+        }
+      }
+      if(transaction && transaction.transferAddedSideRowId===row.id && transaction.transferOriginSnapshot) {
+        const original=transaction.transferOriginSnapshot;
+        const amount=Math.abs(Number(transaction.amount)||0);
+        const account=state.accounts.find(a=>String(a.id)===String(transaction.transferAddedSideAccountId));
+        if(account) account.balance=(Number(account.balance)||0)+(transaction.transferAddedSideDirection==='Expense'?amount:-amount);
+        Object.keys(transaction).forEach(key=>delete transaction[key]); Object.assign(transaction,original);
+      } else if(transaction && transaction.type==='Transfer' && transaction.transferToAccountId) {
+        removeTransferStatementMatch(transaction,row.accountId,row.id);
+      } else if(transaction){delete transaction.statementMatchId;delete transaction.reconciled;delete transaction.reconciledAt;delete transaction.statementDescription;}
+      row.status='pending';delete row.matchedTransactionId;delete row.matchedAsInternalTransfer;delete row.transferMergedInto;delete row.transferMergedOriginalStatus;
       persistStatementBatch();renderLedger();renderStatementPreview();
     }
     function importStatementRow(rowId) {
@@ -4383,7 +4642,13 @@ Bonus"></textarea></div>
       const groupIds=new Set(actionable.map(r=>r.matchedGroupId).filter(Boolean));
       groupIds.forEach(groupId=>{
         (state.transactions||[]).filter(t=>t.statementMatchGroupId===groupId).forEach(t=>{delete t.statementMatchGroupId;delete t.statementMatchDescription;delete t.reconciled;delete t.reconciledAt;});
-        const group=(state.statementReconciliation?.groups||[]).find(g=>g.id===groupId);if(group){group.active=false;group.undoneAt=new Date().toISOString();}
+        const group=(state.statementReconciliation?.groups||[]).find(g=>g.id===groupId);
+        (state.transactions||[]).filter(t=>t.type==='Transfer'&&t.transferToAccountId).forEach(t=>{
+          t.transferStatementMatches=(t.transferStatementMatches||[]).filter(m=>String(m.groupId||'')!==String(groupId));
+          if(group){const still=(t.transferStatementMatches||[]).some(m=>String(m.accountId)===String(group.accountId));if(!still)t.reconciledAccountIds=(t.reconciledAccountIds||[]).map(String).filter(id=>id!==String(group.accountId));}
+          t.reconciled=!!(t.reconciledAccountIds||[]).length;
+        });
+        if(group){group.active=false;group.undoneAt=new Date().toISOString();}
         pendingStatementRows.filter(r=>r.matchedGroupId===groupId).forEach(r=>{r.status='pending';delete r.matchedGroupId;delete r.matchedTransactionIds;});
       });
       actionable.forEach(row=>{
@@ -4391,10 +4656,27 @@ Bonus"></textarea></div>
           const tx=(state.transactions||[]).find(t=>t.id===row.matchedTransactionId&&t.source==='statement-import'&&t.statementMatchId===row.id);
           if(tx){const account=(state.accounts||[]).find(a=>a.id===tx.accountId);if(account){if(tx.type==='Expense')account.balance=(Number(account.balance)||0)+(Number(tx.amount)||0);else if(tx.type==='Income')account.balance=(Number(account.balance)||0)-(Number(tx.amount)||0);}state.transactions=state.transactions.filter(t=>t.id!==tx.id);}
         } else if(row.status==='matched'&&!row.matchedGroupId){
-          const tx=(state.transactions||[]).find(t=>t.id===row.matchedTransactionId&&t.statementMatchId===row.id);
-          if(tx){delete tx.statementMatchId;delete tx.statementDescription;delete tx.reconciled;delete tx.reconciledAt;}
+          const tx=(state.transactions||[]).find(t=>t.id===row.matchedTransactionId);
+          if(tx && row.transferMergedInto) {
+            const entry=(tx.transferMergedEntries||[]).find(item=>String(item.transaction?.statementMatchId||'')===String(row.id));
+            const restoredDestination=entry?.transaction ? {...entry.transaction} : null;
+            if(restoreBulkMergedTransferSide(row,tx) && restoredDestination) {
+              const restored=(state.transactions||[]).find(t=>String(t.id)===String(restoredDestination.id));
+              if(restored && row.transferMergedOriginalStatus==='imported') {
+                const account=(state.accounts||[]).find(a=>String(a.id)===String(restored.accountId)); if(account) account.balance=(Number(account.balance)||0)-(Number(restored.amount)||0);
+                state.transactions=state.transactions.filter(t=>String(t.id)!==String(restored.id));
+              } else if(restored && row.transferMergedOriginalStatus==='matched') {
+                delete restored.statementMatchId; delete restored.statementDescription; delete restored.reconciled; delete restored.reconciledAt;
+              }
+            }
+          } else if(tx && tx.transferAddedSideRowId===row.id && tx.transferOriginSnapshot) {
+            const original=tx.transferOriginSnapshot; const amount=Math.abs(Number(tx.amount)||0); const account=(state.accounts||[]).find(a=>String(a.id)===String(tx.transferAddedSideAccountId));
+            if(account) account.balance=(Number(account.balance)||0)+(tx.transferAddedSideDirection==='Expense'?amount:-amount);
+            Object.keys(tx).forEach(key=>delete tx[key]); Object.assign(tx,original);
+          } else if(tx && tx.type==='Transfer' && tx.transferToAccountId) removeTransferStatementMatch(tx,row.accountId,row.id);
+          else if(tx){delete tx.statementMatchId;delete tx.statementDescription;delete tx.reconciled;delete tx.reconciledAt;}
         }
-        if(row.status!=='pending'){row.status='pending';delete row.matchedTransactionId;delete row.matchedGroupId;delete row.matchedTransactionIds;}
+        if(row.status!=='pending'){row.status='pending';delete row.matchedTransactionId;delete row.matchedGroupId;delete row.matchedTransactionIds;delete row.transferMergedInto;delete row.transferMergedOriginalStatus;delete row.matchedAsInternalTransfer;}
       });
       persistStatementBatch();renderLedger();renderDashboard();renderZbbFundingTracker();renderStatementPreview();renderStatementBalanceCheck();
     }
