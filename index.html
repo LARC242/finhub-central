@@ -165,6 +165,7 @@
     <i class="fa-solid fa-rotate-left text-indigo-400"></i>
     <span id="undo-toast-msg" class="text-xs">Action performed.</span>
     <button onclick="executeUndo()" class="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-xs font-semibold theme-bg">Undo</button>
+    <button onclick="document.getElementById('undo-toast').classList.add('hidden')" aria-label="Dismiss Undo notification" title="Dismiss notification" class="px-1.5 py-1 text-gray-400 hover:text-white text-xs">×</button>
   </div>
 
   <!-- Sidebar Nav -->
@@ -641,7 +642,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label class="block text-xs font-semibold text-gray-500 mb-1">Extra Monthly Debt Contribution: <strong id="extra-payoff-val" class="text-indigo-400 theme-text">$0 / mo</strong></label>
-            <input type="range" id="sim-extra-slider" min="0" max="1000" step="25" value="0" oninput="updateExtraPayoff(this.value)" class="w-full accent-indigo-600 cursor-pointer">
+            <input type="range" id="sim-extra-slider" min="0" max="1000" step="25" value="0" onchange="updateExtraPayoff(this.value)" class="w-full accent-indigo-600 cursor-pointer">
           </div>
           <div class="text-xs space-y-1 text-gray-400 flex flex-col justify-center">
             <div>Interest Saved Under Current Strategy: <strong id="debt-interest-saved" class="text-emerald-400 font-bold">$0.00</strong></div>
@@ -1391,23 +1392,72 @@ Bonus"></textarea></div>
     }
 
     let undoStack = [];
+    const MAX_UNDO_HISTORY = 20;
+
+    function renderUndoToast() {
+      const toast = document.getElementById('undo-toast');
+      const message = document.getElementById('undo-toast-msg');
+      if (!toast || !message) return;
+      if (!undoStack.length) {
+        toast.classList.add('hidden');
+        return;
+      }
+      const latest = undoStack[undoStack.length - 1];
+      message.textContent = `${latest.desc} performed${undoStack.length > 1 ? ` · ${undoStack.length} actions available` : ''}.`;
+      toast.classList.remove('hidden');
+    }
+
     function pushUndoState(description, callback) {
       undoStack.push({ desc: description, undo: callback });
-      const toast = document.getElementById('undo-toast');
-      document.getElementById('undo-toast-msg').innerText = `${description} performed.`;
-      toast.classList.remove('hidden');
-      setTimeout(() => { toast.classList.add('hidden'); }, 8000);
+      if (undoStack.length > MAX_UNDO_HISTORY) undoStack.splice(0, undoStack.length - MAX_UNDO_HISTORY);
+      renderUndoToast();
     }
+
+    function refreshFinHubAfterUndo() {
+      // A snapshot can affect several linked areas. Refresh each independently
+      // so one optional panel cannot prevent the rest of the app from updating.
+      const refreshers = [
+        () => renderDashboard(),
+        () => renderCalendar(),
+        () => renderLedger(),
+        () => renderDebtPlanner(),
+        () => renderDebtPaymentHistory(),
+        () => renderZbbPlanner(),
+        () => renderZbbFundingTracker(),
+        () => renderJointAppView(),
+        () => renderSettings(),
+        () => renderStatementPreview(),
+        () => renderStatementBalanceCheck()
+      ];
+      refreshers.forEach(refresh => {
+        try { refresh(); } catch (error) { console.warn('FinHub Undo refresh warning:', error); }
+      });
+      try {
+        if (typeof selectedLedgerIds !== 'undefined' && selectedLedgerIds instanceof Set) selectedLedgerIds.clear();
+        if (typeof updateLedgerSelectionUI === 'function') updateLedgerSelectionUI();
+      } catch (error) { console.warn('FinHub Undo selection refresh warning:', error); }
+    }
+
     function executeUndo() {
+      if (!undoStack.length) { renderUndoToast(); return; }
       const last = undoStack.pop();
-      if (last) { last.undo(); document.getElementById('undo-toast').classList.add('hidden'); }
+      try {
+        last.undo();
+        renderUndoToast();
+      } catch (error) {
+        undoStack.push(last);
+        console.error('FinHub Undo failed:', error);
+        renderUndoToast();
+        alert(`FinHub could not undo "${last.desc}". Your current data has not intentionally been cleared; please export a backup before continuing.`);
+      }
     }
+
     function captureUndo(description) {
       const snapshot = JSON.stringify(state);
       pushUndoState(description, () => {
         state = JSON.parse(snapshot);
         saveData();
-        renderDashboard(); renderCalendar(); renderLedger(); renderDebtPlanner();
+        refreshFinHubAfterUndo();
       });
     }
 
@@ -1914,7 +1964,8 @@ Bonus"></textarea></div>
 
     function setAccountIncluded(id, included) {
       const acc = state.accounts.find(a => a.id === id);
-      if (!acc) return;
+      if (!acc || Boolean(acc.hidden) === !Boolean(included)) return;
+      captureUndo(`${included ? 'Include' : 'Exclude'} account "${acc.name}"`);
       acc.hidden = !included;
       saveData();
       renderDashboard();
@@ -1923,11 +1974,18 @@ Bonus"></textarea></div>
     function saveAccountActualBalance(id, value) {
       const acc = state.accounts.find(a => a.id === id);
       if (!acc) return;
-      if (value === '') { delete acc.actualBalance; delete acc.actualBalanceUpdatedAt; }
-      else {
-        const amount = Number(value);
+      let amount = null;
+      if (value !== '') {
+        amount = Number(value);
         if (!Number.isFinite(amount)) { alert('Enter a valid balance.'); renderDashboard(); return; }
-        acc.actualBalance = Math.round(amount * 100) / 100;
+        amount = Math.round(amount * 100) / 100;
+      }
+      const current = acc.actualBalance === undefined || acc.actualBalance === null ? null : Number(acc.actualBalance);
+      if ((amount === null && current === null) || (amount !== null && current !== null && Math.abs(amount - current) < 0.005)) return;
+      captureUndo(`Update actual balance for "${acc.name}"`);
+      if (amount === null) { delete acc.actualBalance; delete acc.actualBalanceUpdatedAt; }
+      else {
+        acc.actualBalance = amount;
         acc.actualBalanceUpdatedAt = new Date().toISOString();
       }
       saveData(); renderDashboard(); renderLedgerBalanceCheck();
@@ -1937,6 +1995,7 @@ Bonus"></textarea></div>
       const acc = state.accounts.find(a => a.id === id);
       if (!acc) return;
       const now = new Date();
+      captureUndo(`Record reconciliation date for "${acc.name}"`);
       acc.lastReconciledAt = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
       if (acc.actualBalance !== undefined && acc.actualBalance !== null) {
         acc.lastReconciledSnapshot = { date: acc.lastReconciledAt, actualBalance: Number(acc.actualBalance), calculatedBalance: Number(acc.balance) || 0, variance: Number(acc.actualBalance) - (Number(acc.balance) || 0) };
@@ -1957,6 +2016,8 @@ Bonus"></textarea></div>
       const nextDate = prompt('Enter the reconciliation date (YYYY-MM-DD):', acc.lastReconciledAt || new Date().toISOString().slice(0,10));
       if (nextDate === null) return;
       if (nextDate && !/^\d{4}-\d{2}-\d{2}$/.test(nextDate)) { alert('Please use YYYY-MM-DD format.'); return; }
+      if ((nextDate || '') === (acc.lastReconciledAt || '')) return;
+      captureUndo(`Edit reconciliation date for "${acc.name}"`);
       acc.lastReconciledAt = nextDate || '';
       if (acc.lastReconciledSnapshot) acc.lastReconciledSnapshot.date = acc.lastReconciledAt;
       saveData(); renderDashboard();
@@ -1966,6 +2027,7 @@ Bonus"></textarea></div>
       const acc = state.accounts.find(a => a.id === id);
       if (!acc || !acc.lastReconciledAt) return;
       if (!confirm(`Clear the reconciliation date for ${acc.name}? This will not affect transactions or balances.`)) return;
+      captureUndo(`Clear reconciliation date for "${acc.name}"`);
       delete acc.lastReconciledAt;
       delete acc.lastReconciledSnapshot;
       saveData(); renderDashboard();
@@ -1978,6 +2040,7 @@ Bonus"></textarea></div>
       const order = sortAccountIds(group);
       const from = order.indexOf(draggedId), to = order.indexOf(targetId);
       if (from < 0 || to < 0) return;
+      captureUndo('Reorder accounts');
       order.splice(from, 1); order.splice(to, 0, draggedId);
       state.accountOrder[group] = order;
       saveData(); renderDashboard();
@@ -1993,6 +2056,7 @@ Bonus"></textarea></div>
       const order = sortAccountIds(group);
       const index = order.indexOf(id), target = index + direction;
       if (index < 0 || target < 0 || target >= order.length) return;
+      captureUndo('Reorder accounts');
       [order[index], order[target]] = [order[target], order[index]];
       state.accountOrder[group] = order;
       saveData(); renderDashboard();
@@ -2104,6 +2168,7 @@ Bonus"></textarea></div>
 
     function deleteSnapshot(snapId) {
       if (confirm("Delete this historical snapshot record?")) {
+        captureUndo('Delete net worth snapshot');
         state.netWorthSnapshots = state.netWorthSnapshots.filter(s => s.id !== snapId);
         saveData();
         renderSnapshots();
@@ -2388,6 +2453,7 @@ Bonus"></textarea></div>
       const zbb = getActiveZbbTemplate();
       const allocationState = getVariablePoolAllocationState(zbb, cycle, period);
       if (!confirm('Reset this paycheque’s variable category allocations to their original budget splits?')) return;
+      captureUndo('Reset variable spending allocations');
       allocationState.rec.variableAllocations = { ...allocationState.defaults };
       saveData();
       renderZbbPlanner();
@@ -2595,7 +2661,9 @@ Bonus"></textarea></div>
 
     function updateZbbTracking(itemId, field, value) {
       const record = getZbbTrackingRecord(itemId);
-      record[field] = Math.max(0, Number(value) || 0);
+      const nextValue = Math.max(0, Number(value) || 0);
+      if (Number(record[field] || 0) !== nextValue) captureUndo('Update bill reserve tracking');
+      record[field] = nextValue;
       saveData();
       renderZbbFundingTracker();
     }
@@ -2605,6 +2673,7 @@ Bonus"></textarea></div>
       const contribution = Math.max(0, Number(input?.value) || 0);
       if (!contribution) return;
       const record = getZbbTrackingRecord(itemId);
+      captureUndo('Add bill reserve contribution');
       record.reserved = Math.max(0, Number(record.reserved) || 0) + contribution;
       record.contribution = 0;
       saveData();
@@ -2626,13 +2695,18 @@ Bonus"></textarea></div>
 
     function toggleVariablePoolCategory(category, checked) {
       state.variablePoolCategories = Array.isArray(state.variablePoolCategories) ? state.variablePoolCategories : [];
-      if (checked && !state.variablePoolCategories.includes(category)) state.variablePoolCategories.push(category);
+      const currentlyChecked = state.variablePoolCategories.includes(category);
+      if (currentlyChecked === Boolean(checked)) return;
+      captureUndo(`${checked ? 'Include' : 'Exclude'} "${category}" in variable spending pool`);
+      if (checked && !currentlyChecked) state.variablePoolCategories.push(category);
       if (!checked) state.variablePoolCategories = state.variablePoolCategories.filter(name => name !== category);
       saveData(); renderZbbFundingTracker();
     }
 
     function updateZbbPoolDate(cycle, field, value) {
       const rec = getZbbPoolRecord(state.selectedZbbPeriod || '2026-11', cycle);
+      if (String(rec[field] || '') === String(value || '')) return;
+      captureUndo(`Change paycheque ${cycle} variable pool ${field === 'startDate' ? 'start' : 'end'} date`);
       rec[field] = value;
       saveData(); renderZbbFundingTracker();
     }
@@ -2645,6 +2719,7 @@ Bonus"></textarea></div>
       const destination = cycle === 1 ? `Paycheque 2 (${period})` : cycle === 2 ? `Paycheque 3 (${period})` : `Paycheque 1 (${nextZbbMonth(period)})`;
       const verb = decision === 'carry' ? `carry ${formatFinancial(transferAmount)} forward to ${destination}` : `release ${formatFinancial(Math.max(0, remaining))} and reset the pool to $0 for ${destination}`;
       if (!confirm(`Confirm: ${verb}? This decision can be changed later by revisiting this paycheque.`)) return;
+      captureUndo(`Set variable pool decision for paycheque ${cycle}`);
       rec.decision = decision; rec.carryOut = transferAmount; rec.decidedAt = new Date().toISOString();
       rec.decisionHistory = Array.isArray(rec.decisionHistory) ? rec.decisionHistory : [];
       rec.decisionHistory.push({ decision, amount: transferAmount, remainingAtDecision: remaining, destination, date: rec.decidedAt });
@@ -3051,7 +3126,8 @@ Bonus"></textarea></div>
       event.preventDefault(); event.stopPropagation();
       const id = event.dataTransfer.getData('text/plain') || draggedCalendarBillId;
       const bill = state.calendarBills.find(b => b.id === id);
-      if (!bill || bill.paid || !newDate) return;
+      if (!bill || bill.paid || !newDate || bill.date === newDate) return;
+      captureUndo(`Move calendar item "${bill.desc || 'Scheduled item'}"`);
       bill.date = newDate;
       draggedCalendarBillId = null;
       saveData(); renderCalendar(); renderLedger();
@@ -3171,6 +3247,7 @@ Bonus"></textarea></div>
     function applyCalendarItemDeletion(id, deleteFuture) {
       const bill = state.calendarBills.find(b => b.id === id);
       if (!bill) return;
+      captureUndo(`${deleteFuture ? 'Delete future occurrences of' : 'Delete'} "${bill.desc || 'calendar item'}"`);
       const isSeriesOccurrence = !!(bill.recurring && bill.recurring !== 'none') || !!bill.recurrenceGenerated || !!bill.recurrenceRootId;
       if (!isSeriesOccurrence) {
         state.calendarBills = state.calendarBills.filter(b => b.id !== id);
@@ -3254,6 +3331,7 @@ Bonus"></textarea></div>
         return;
       }
 
+      captureUndo(editId ? `Edit scheduled item "${existingBill?.desc || data.desc}"` : `Add scheduled item "${data.desc}"`);
       if (editId) {
         const idx = state.calendarBills.findIndex(b => b.id === editId);
         if (idx >= 0) state.calendarBills[idx] = { ...state.calendarBills[idx], ...data };
@@ -3397,6 +3475,7 @@ Bonus"></textarea></div>
         dueDate, notes: document.getElementById('jb-notes').value
       };
 
+      captureUndo(editId ? 'Edit joint household bill' : 'Add joint household bill');
       if (editId) {
         const b = state.jointBills.find(item => item.id === editId);
         if (b) Object.assign(b, billData, { ym });
@@ -3409,16 +3488,26 @@ Bonus"></textarea></div>
       saveData(); closeJointBillModal(); renderJointAppView();
     }
 
-    function deleteJointBill(id) { state.jointBills = state.jointBills.filter(b => b.id !== id); saveData(); renderJointAppView(); }
+    function deleteJointBill(id) {
+      if (!(state.jointBills || []).some(b => String(b.id) === String(id))) return;
+      captureUndo('Delete joint household bill');
+      state.jointBills = state.jointBills.filter(b => b.id !== id);
+      saveData(); renderJointAppView();
+    }
     function saveTransfersSent(val) {
       const ym = state.selectedJointYM || '2026-11';
       if (!state.jointMetaData[ym]) state.jointMetaData[ym] = { transfersSent: 0, notes: '' };
-      state.jointMetaData[ym].transfersSent = parseFloat(val) || 0;
+      const nextValue = parseFloat(val) || 0;
+      if (Number(state.jointMetaData[ym].transfersSent) === nextValue) return;
+      captureUndo('Update joint transfers sent');
+      state.jointMetaData[ym].transfersSent = nextValue;
       saveData(); renderJointAppView();
     }
     function saveJointNotes(val) {
       const ym = state.selectedJointYM || '2026-11';
       if (!state.jointMetaData[ym]) state.jointMetaData[ym] = { transfersSent: 0, notes: '' };
+      if (String(state.jointMetaData[ym].notes || '') === String(val || '')) return;
+      captureUndo('Update joint bill notes');
       state.jointMetaData[ym].notes = val;
       saveData();
     }
@@ -4920,6 +5009,7 @@ Bonus"></textarea></div>
       const hasActions=pendingStatementRows.some(r=>r.status==='matched'||r.status==='imported');
       const warning=hasActions?' Imported transactions and reconciled matches will remain, but the batch-level undo option will no longer be available after clearing. Use Undo batch actions first if you want to reverse them.':' No transactions will be deleted.';
       if(!confirm(`Clear this saved statement review batch? The processed date range will be kept to warn about overlapping uploads.${warning}`))return;
+      captureStatementUndo('Clear statement review batch');
       archiveActiveStatementBatch();pendingStatementRows=[];manualSelectedStatementIds=new Set();manualSelectedTransactionIds=new Set();
       document.getElementById('recon-end-date').value='';document.getElementById('recon-opening-balance').value='';document.getElementById('recon-closing-balance').value='';
       saveData();renderStatementPreview();renderStatementBalanceCheck();
@@ -5022,6 +5112,7 @@ Bonus"></textarea></div>
       const idx = state.transactions.findIndex(t => t.id === id);
       if (idx >= 0) {
         const t = state.transactions[idx];
+        captureUndo(`Delete transaction "${t.vendor || t.desc || t.id}"`);
         const acc = state.accounts.find(a => a.id === t.accountId);
         if (t.type === 'Transfer' && t.transferToAccountId) { const target=state.accounts.find(a=>a.id===t.transferToAccountId); if(acc) acc.balance += Number(t.amount)||0; if(target) target.balance -= Number(t.amount)||0; }
         else if (acc) { if (t.type === 'Income' || (t.type === 'Transfer' && t.externalTransferDirection === 'in')) acc.balance -= Number(t.amount)||0; else acc.balance += Number(t.amount)||0; }
@@ -5129,6 +5220,7 @@ Bonus"></textarea></div>
       if (!name || name.toLowerCase() === 'transfer') { alert('Enter a valid income bucket name. Transfer is reserved.'); return; }
       if (state.incomeCategories.some((c, i) => i !== idx && c.name.toLowerCase() === name.toLowerCase())) { alert('An income bucket with that name already exists.'); return; }
       const oldName = idx >= 0 ? state.incomeCategories[idx]?.name : '';
+      captureUndo(idx >= 0 ? `Edit income bucket "${oldName}"` : `Add income bucket "${name}"`);
       const updated = {name, subcategories};
       if (idx >= 0) {
         state.incomeCategories[idx] = updated;
@@ -5141,6 +5233,7 @@ Bonus"></textarea></div>
       const count = (state.transactions || []).filter(t => t.type === 'Income' && t.category === bucket.name).length;
       if (count) { alert(`“${bucket.name}” is used by ${count} income transaction(s). Reassign those transactions before deleting it.`); return; }
       if (!confirm(`Delete the unused income bucket “${bucket.name}”?`)) return;
+      captureUndo(`Delete income bucket "${bucket.name}"`);
       state.incomeCategories.splice(idx, 1); if (state.lastUsedIncomeCategory === bucket.name) delete state.lastUsedIncomeCategory;
       saveData(); renderSettings(); renderLedger(); renderDashboard();
     }
@@ -5149,11 +5242,19 @@ Bonus"></textarea></div>
     function closeTypeModal() { document.getElementById('type-modal').classList.add('hidden'); }
     function saveTransactionType(e) {
       e.preventDefault();
-      const name = document.getElementById('type-name').value;
-      if (name && !state.transactionTypes.includes(name)) state.transactionTypes.push(name);
+      const name = document.getElementById('type-name').value.trim();
+      if (name && !state.transactionTypes.includes(name)) {
+        captureUndo(`Add transaction type "${name}"`);
+        state.transactionTypes.push(name);
+      }
       saveData(); closeTypeModal(); renderSettings();
     }
-    function deleteType(idx) { state.transactionTypes.splice(idx, 1); saveData(); renderSettings(); }
+    function deleteType(idx) {
+      if (!Number.isInteger(Number(idx)) || !state.transactionTypes[idx]) return;
+      captureUndo(`Delete transaction type "${state.transactionTypes[idx]}"`);
+      state.transactionTypes.splice(idx, 1);
+      saveData(); renderSettings();
+    }
 
     function openMerchantRuleModal(editIndex = -1) {
       const select = document.getElementById('mr-category');
@@ -5236,6 +5337,7 @@ Bonus"></textarea></div>
       if (duplicate) { alert('A spending bucket with that name already exists.'); return; }
       if (!name.trim()) { alert('Enter a bucket name.'); return; }
       const oldName = editIdx >= 0 ? state.categories[editIdx].name : '';
+      captureUndo(editIdx >= 0 ? `Edit spending bucket "${oldName}"` : `Add spending bucket "${name.trim()}"`);
       const updated = { name: name.trim(), subcategories };
       if (editIdx >= 0) {
         state.categories[editIdx] = updated;
@@ -5261,6 +5363,7 @@ Bonus"></textarea></div>
         return;
       }
       if (!confirm(`Delete the unused bucket “${name}”?`)) return;
+      captureUndo(`Delete spending bucket "${name}"`);
       state.categories.splice(idx, 1);
       if (Array.isArray(state.variablePoolCategories)) state.variablePoolCategories = state.variablePoolCategories.filter(n => n !== name);
       if (state.lastUsedCategory === name) delete state.lastUsedCategory;
@@ -5268,7 +5371,11 @@ Bonus"></textarea></div>
     }
 
     function updateExtraPayoff(val) {
-      state.extraPayoff = parseFloat(val) || 0;
+      const nextValue = parseFloat(val) || 0;
+      if (Number(state.extraPayoff || 0) !== nextValue) {
+        captureUndo('Change extra monthly debt payoff');
+        state.extraPayoff = nextValue;
+      }
       document.getElementById('extra-payoff-val').innerText = `$${state.extraPayoff} / mo`;
       saveData(); renderDebtPlanner();
     }
@@ -5282,6 +5389,7 @@ Bonus"></textarea></div>
       const fullIdx = state.accounts.findIndex(a => a.id === debtId);
       const targetFullIdx = state.accounts.findIndex(a => a.id === debts[newIdx].id);
 
+      captureUndo('Change debt payoff priority');
       const item = state.accounts.splice(fullIdx, 1)[0];
       state.accounts.splice(targetFullIdx, 0, item);
       saveData(); renderDebtPlanner();
@@ -5498,6 +5606,7 @@ Bonus"></textarea></div>
       const id = document.getElementById('edit-debt-id').value;
       const d = state.accounts.find(a => a.id === id);
       if (d) {
+        captureUndo(`Edit debt details for "${d.name}"`);
         d.name = document.getElementById('ed-name').value;
         d.balance = parseFloat(document.getElementById('ed-balance').value) || 0;
         d.startBal = parseFloat(document.getElementById('ed-startbal').value) || d.balance;
@@ -5586,6 +5695,7 @@ Bonus"></textarea></div>
       const transactionId = `tx_${paymentId}`;
       const date = document.getElementById('dp-date').value; const desc = document.getElementById('dp-desc').value;
       const payment = { id: paymentId, accountId, fundingAccountId, transactionId, date, desc, amount, principalAmount, interestAmount, source: 'debt-payment-log' };
+      captureUndo(`Record debt payment "${desc || 'Debt payment'}"`);
       state.debtPayments.push(payment);
       state.transactions.unshift({ id: transactionId, date, desc, vendor: desc, type: 'Debt Payment', category: 'Debt Service', subcategory: principalAmount > 0 ? 'Principal Paydown' : 'Interest Payment', amount, accountId: fundingAccountId, debtPaymentId: paymentId, debtAccountId: accountId, debtPrincipalAmount: principalAmount, debtInterestAmount: interestAmount, source: 'debt-payment-log' });
       debtAcc.balance = Math.max(0, (Number(debtAcc.balance) || 0) - principalAmount); fundingAcc.balance = (Number(fundingAcc.balance) || 0) - amount;
@@ -5594,6 +5704,7 @@ Bonus"></textarea></div>
 
     function deleteDebtPayment(id) {
       const p = (state.debtPayments || []).find(dp => dp.id === id); if (!p || !confirm('Delete this debt payment and reverse its account balance effects?')) return;
+      captureUndo(`Delete debt payment "${p.desc || p.id}"`);
       const linked = state.transactions.find(t => t.id === p.transactionId || t.debtPaymentId === id);
       const debtAcc = state.accounts.find(a => a.id === p.accountId && a.type === 'debt');
       if (debtAcc) debtAcc.balance = (Number(debtAcc.balance) || 0) + Number(p.principalAmount ?? p.amount ?? 0);
@@ -5673,12 +5784,9 @@ Bonus"></textarea></div>
         saveData(); closeAccountModal(); closeAccountDetailModal(); renderDashboard(); renderLedger();
       } else {
         const newAcc = { id: Date.now().toString(), ...accountData, hidden: false };
+        captureUndo(`Add Account "${newAcc.name}"`);
         state.accounts.push(newAcc);
-        saveData(); closeAccountModal(); renderDashboard();
-        pushUndoState(`Add Account "${newAcc.name}"`, () => {
-          state.accounts = state.accounts.filter(a => a.id !== newAcc.id);
-          saveData(); renderDashboard();
-        });
+        saveData(); closeAccountModal(); renderDashboard(); renderLedger();
       }
     }
 
@@ -5860,6 +5968,7 @@ Bonus"></textarea></div>
       if (name.toLowerCase() === 'transfer') { alert('Transfer is reserved and cannot be used as an income or expense bucket.'); return; }
       const existing = collection.find(c => c.name.toLowerCase() === name.toLowerCase());
       if (existing) { alert('A bucket with that name already exists.'); refreshTransactionBucketOptions(existing.name); return; }
+      captureUndo(`Add ${isIncome ? 'income' : 'expense'} bucket "${name}"`);
       collection.push({ name, subcategories: [] });
       if (isIncome) state.lastUsedIncomeCategory = name; else state.lastUsedCategory = name;
       saveData(); refreshTransactionBucketOptions(name); renderSettings();
@@ -5883,6 +5992,7 @@ Bonus"></textarea></div>
         document.getElementById('tx-subcategory').value = bucket.subcategories.find(sub => sub.name.toLowerCase() === name.toLowerCase()).name;
         return;
       }
+      captureUndo(`Add subcategory "${name}" to "${bucketName}"`);
       bucket.subcategories.push({ name, limit: 0, rollover: false });
       saveData();
       updateSubcategoryDropdown();
@@ -5914,8 +6024,6 @@ Bonus"></textarea></div>
         document.getElementById('tx-category').focus();
         return;
       }
-      captureUndo(editId ? 'Edit transaction' : 'Add transaction');
-
       const editingRecord = editId ? state.transactions.find(t => t.id === editId) : null;
       if (editingRecord && (editingRecord.calendarBillId || editingRecord.debtPaymentId) && editingRecord.type !== type) {
         alert('This transaction is linked to a scheduled bill or debt payment. Its transaction type cannot be changed here because that would break the payment linkage. You can still edit its other fields.');
@@ -5928,6 +6036,7 @@ Bonus"></textarea></div>
         if (isInternalTransfer && (!transferToAccountId || transferToAccountId === accountId)) { alert('Choose a destination account different from the source account.'); return; }
         if (isInternalTransfer && (state.accounts.find(a=>String(a.id)===String(accountId))?.type !== 'asset' || state.accounts.find(a=>String(a.id)===String(transferToAccountId))?.type !== 'asset')) { alert('Internal transfers must be between two asset accounts. Use the debt payment workflow for payments to a liability.'); return; }
         if (isInternalTransfer && amount <= 0) { alert('Enter a transfer amount greater than zero.'); return; }
+        captureUndo(editId ? 'Edit transaction' : 'Add transaction');
 
         // Reverse the previous transaction's balance effect before applying the edited type.
         if (oldT && oldT.type === 'Transfer' && oldT.transferToAccountId) {
@@ -5959,6 +6068,7 @@ Bonus"></textarea></div>
           delete state.transactions[idx].transferToAccountId;
         } else { alert('The transaction could not be found.'); return; }
       } else if (isSplit && !editId) {
+        captureUndo('Add split transaction');
         const rows = document.querySelectorAll('#split-rows-container > div');
         rows.forEach(r => {
           const val = r.querySelector('.split-cat-select').value;
@@ -5990,6 +6100,11 @@ Bonus"></textarea></div>
           );
           if (possibleDuplicate && !confirm(`A similar transaction already exists (${possibleDuplicate.date}, ${possibleDuplicate.vendor || possibleDuplicate.desc}, ${formatFinancial(possibleDuplicate.amount)}). Add another anyway?`)) return;
         }
+        if (editId && !state.transactions.some(t => String(t.id) === String(editId))) {
+          alert('This transaction could not be found. The Expense Tracker has not been changed.');
+          return;
+        }
+        captureUndo(editId ? 'Edit transaction' : 'Add transaction');
 
         state.lastUsedAccountId = accountId;
         if (category) { if (type === 'Income') state.lastUsedIncomeCategory = category; else state.lastUsedCategory = category; }
@@ -6126,6 +6241,7 @@ Bonus"></textarea></div>
           // Keep a recoverable copy of the current browser data before replacing it.
           try { localStorage.setItem('finhub_central_preimport_backup', JSON.stringify(state)); }
           catch (backupErr) { alert('A safety copy could not be created because browser storage is full. Export a backup first; import cancelled.'); e.target.value = ''; return; }
+          captureStatementUndo('Import FinHub backup');
           state = loaded;
           state.collapsibles = state.collapsibles || {};
           if (state.collapsibles['sec-networth-chart'] === undefined) state.collapsibles['sec-networth-chart'] = true;
