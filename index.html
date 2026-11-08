@@ -912,7 +912,8 @@
       <p class="text-xs text-gray-500">Only fields you change will be applied. Leave a field set to “No change” to preserve each transaction's current value.</p>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <label class="text-xs font-semibold text-gray-500">Vendor<input id="bulk-vendor" type="text" placeholder="No change" class="mt-1 w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm"></label>
-        <label class="text-xs font-semibold text-gray-500">Type<select id="bulk-type" onchange="updateBulkCategoryOptions()" class="mt-1 w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm"><option value="">No change</option></select></label>
+        <label class="text-xs font-semibold text-gray-500">Type<select id="bulk-type" onchange="updateBulkTypeOptions()" class="mt-1 w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm"><option value="">No change</option></select></label>
+        <label id="bulk-transfer-to-wrap" class="text-xs font-semibold text-gray-500 hidden">Transfer to account<select id="bulk-transfer-to" class="mt-1 w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm"><option value="">Choose destination account</option></select><span class="block mt-1 text-[10px] text-gray-400">The selected transactions' existing accounts will remain the source accounts.</span></label>
         <label class="text-xs font-semibold text-gray-500">Bucket<select id="bulk-category" onchange="updateBulkSubcategoryOptions()" class="mt-1 w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm"><option value="">No change</option></select></label>
         <label class="text-xs font-semibold text-gray-500">Subcategory<select id="bulk-subcategory" class="mt-1 w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm"><option value="">No change</option></select></label>
       </div>
@@ -3421,17 +3422,36 @@ Bonus"></textarea></div>
         (state.categories || []).filter(c=>c.name !== 'Transfer').map(c=>`<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`).join('');
       const typeSelect = document.getElementById('bulk-type');
       typeSelect.innerHTML = '<option value="">No change</option>' +
-        (state.transactionTypes || ['Expense','Income','Debt Payment']).filter(type=>type !== 'Transfer').map(type=>`<option value="${escapeHtml(type)}">${escapeHtml(type)}</option>`).join('');
-      ['bulk-vendor','bulk-type','bulk-category','bulk-subcategory'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+        (state.transactionTypes || ['Expense','Income','Debt Payment']).filter(type=>type !== 'Transfer').map(type=>`<option value="${escapeHtml(type)}">${escapeHtml(type)}</option>`).join('') +
+        '<option value="Transfer">Internal Transfer</option>';
+      const transferTo = document.getElementById('bulk-transfer-to');
+      transferTo.innerHTML = '<option value="">Choose destination account</option>' +
+        (state.accounts || []).filter(a=>a.type==='asset').map(a=>`<option value="${escapeHtml(String(a.id))}">${escapeHtml(a.name)}</option>`).join('');
+      ['bulk-vendor','bulk-type','bulk-category','bulk-subcategory','bulk-transfer-to'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+      updateBulkTypeOptions();
       updateBulkSubcategoryOptions();
       document.getElementById('bulk-edit-modal').classList.remove('hidden');
     }
     function closeBulkEditModal() { document.getElementById('bulk-edit-modal').classList.add('hidden'); }
+    function updateBulkTypeOptions() {
+      const type = document.getElementById('bulk-type')?.value;
+      const transferWrap = document.getElementById('bulk-transfer-to-wrap');
+      if (transferWrap) transferWrap.classList.toggle('hidden', type !== 'Transfer');
+      updateBulkCategoryOptions();
+    }
     function updateBulkCategoryOptions() {
       const type = document.getElementById('bulk-type')?.value;
       const select = document.getElementById('bulk-category');
       if (!select) return;
       const current = select.value;
+      if (type === 'Transfer') {
+        select.innerHTML = '<option value="Transfer">Internal Transfer</option>';
+        select.value = 'Transfer';
+        select.disabled = true;
+        updateBulkSubcategoryOptions();
+        return;
+      }
+      select.disabled = false;
       const buckets = type === 'Income' ? (state.incomeCategories || []) : (state.categories || []);
       select.innerHTML = '<option value="">No change</option><option value="__CLEAR__">Clear bucket</option>' +
         buckets.filter(c => c.name !== 'Transfer').map(c => `<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`).join('');
@@ -3443,22 +3463,25 @@ Bonus"></textarea></div>
       const select=document.getElementById('bulk-subcategory');
       if(!select)return;
       const categoryValue=document.getElementById('bulk-category').value;
-      const buckets=document.getElementById('bulk-type')?.value === 'Income' ? (state.incomeCategories || []) : (state.categories || []);
+      const typeValue=document.getElementById('bulk-type')?.value;
+      const buckets=typeValue === 'Income' ? (state.incomeCategories || []) : (state.categories || []);
+      if (typeValue === 'Transfer' || categoryValue === 'Transfer') {
+        select.innerHTML='<option value="">No subcategory</option>';
+        select.value='';
+        select.disabled=true;
+        return;
+      }
+      select.disabled=false;
       let options='<option value="">No change</option>';
-
       if (categoryValue === '__CLEAR__') {
         options += '<option value="" disabled>Select a bucket first</option>';
-      } else if (categoryValue === 'Transfer') {
-        options += '<option value="" disabled>Transfer has no subcategories</option>';
       } else if (categoryValue) {
         const bucket=buckets.find(c=>c.name===categoryValue);
-        (bucket?.subcategories || []).forEach(sub=>{
-          options += `<option value="${escapeHtml(sub.name)}">${escapeHtml(sub.name)}</option>`;
-        });
+        (bucket?.subcategories || []).forEach(sub=>{ options += `<option value="${escapeHtml(sub.name)}">${escapeHtml(sub.name)}</option>`; });
       } else {
         options += '<option value="" disabled>Choosing a subcategory will also set its bucket</option>';
-        buckets.forEach((bucket, bucketIndex)=>{
-          (bucket.subcategories || []).forEach((sub, subIndex)=>{
+        buckets.forEach(bucket=>{
+          (bucket.subcategories || []).forEach(sub=>{
             const value=`__PAIR__${encodeURIComponent(bucket.name)}::${encodeURIComponent(sub.name)}`;
             options += `<option value="${escapeHtml(value)}">${escapeHtml(bucket.name)} — ${escapeHtml(sub.name)}</option>`;
           });
@@ -3472,55 +3495,74 @@ Bonus"></textarea></div>
       const typeValue=document.getElementById('bulk-type').value;
       const categoryValue=document.getElementById('bulk-category').value;
       const subcategoryValue=document.getElementById('bulk-subcategory').value;
+      const transferToAccountId=document.getElementById('bulk-transfer-to')?.value || '';
       const hasChanges=vendorValue!=='' || typeValue!=='' || categoryValue!=='' || subcategoryValue!=='';
       if (!hasChanges) { alert('Choose at least one field to update.'); return; }
       const valid=ids.map(id=>state.transactions.find(t=>String(t.id)===String(id))).filter(Boolean);
       if (!valid.length)return;
+      if (typeValue === 'Transfer') {
+        if (!transferToAccountId) { alert('Choose the destination account for the internal transfers.'); return; }
+        const invalidSources=valid.filter(t=>{
+          const from=state.accounts.find(a=>String(a.id)===String(t.accountId));
+          return !from || from.type!=='asset' || String(t.accountId)===String(transferToAccountId);
+        });
+        const to=state.accounts.find(a=>String(a.id)===String(transferToAccountId));
+        if (!to || to.type!=='asset') { alert('The destination must be an asset account.'); return; }
+        if (invalidSources.length) {
+          alert(`${invalidSources.length} selected transaction(s) cannot be converted: each source must be an asset account different from the destination. Remove those transactions from the selection or choose another destination.`);
+          return;
+        }
+      }
       let bulkTypeRows = valid;
       if (typeValue) {
-        // A debtAccountId by itself is only an activity association (for example, an interest expense),
-        // not proof that the transaction is a linked debt payment. Protect only records whose
-        // payment/transfer workflow actually owns their balance effects.
         const protectedRows = valid.filter(t => t.calendarBillId || t.debtPaymentId || t.transferToAccountId);
         if (protectedRows.length) {
           const protectedIds = new Set(protectedRows.map(t => String(t.id)));
           bulkTypeRows = valid.filter(t => !protectedIds.has(String(t.id)));
           if (!bulkTypeRows.length) {
-            alert(`None of the ${valid.length} selected transactions can have their type changed because they are linked to scheduled payments or internal transfers. Edit those through their linked workflow instead.`);
+            alert(`None of the ${valid.length} selected transactions can have their type changed because they are linked to scheduled payments or existing internal transfers. Edit those through their linked workflow instead.`);
             return;
           }
-          if (!confirm(`${protectedRows.length} selected transaction(s) are linked to scheduled payments or internal transfers and will be skipped. Continue with the other ${bulkTypeRows.length}?`)) return;
+          if (!confirm(`${protectedRows.length} selected transaction(s) linked to scheduled payments or existing internal transfers will be skipped. Continue with the other ${bulkTypeRows.length}?`)) return;
         }
       }
 
       let pairedCategory='', pairedSubcategory='';
       if (subcategoryValue.startsWith('__PAIR__')) {
         const pair=subcategoryValue.slice(8).split('::');
-        try {
-          pairedCategory=decodeURIComponent(pair[0] || '');
-          pairedSubcategory=decodeURIComponent(pair[1] || '');
-        } catch(e) {
-          alert('That subcategory selection could not be read. Please choose it again.');
-          return;
-        }
+        try { pairedCategory=decodeURIComponent(pair[0] || ''); pairedSubcategory=decodeURIComponent(pair[1] || ''); }
+        catch(e) { alert('That subcategory selection could not be read. Please choose it again.'); return; }
       }
-      const targetCategory=pairedCategory || (categoryValue && categoryValue!=='__CLEAR__' ? categoryValue : '');
-      const targetSubcategory=pairedSubcategory || (subcategoryValue && !subcategoryValue.startsWith('__PAIR__') ? subcategoryValue : '');
-      const clearBucket=categoryValue==='__CLEAR__';
-      const confirmationDetail=clearBucket
-        ? ' The bucket and subcategory will be cleared.'
-        : targetCategory === 'Transfer'
-          ? ' The bucket will be set to Transfer and the subcategory cleared. Account balances will not be changed.'
-          : (targetCategory ? ` The bucket will be set to “${targetCategory}”.` : '');
-      const typeDetail = typeValue ? ` Type will become “${typeValue}”; account balances will be adjusted to preserve the correct effect of the transaction.` : '';
+      const targetCategory=typeValue==='Transfer' ? 'Transfer' : (pairedCategory || (categoryValue && categoryValue!=='__CLEAR__' ? categoryValue : ''));
+      const targetSubcategory=typeValue==='Transfer' ? '' : (pairedSubcategory || (subcategoryValue && !subcategoryValue.startsWith('__PAIR__') ? subcategoryValue : ''));
+      const clearBucket=typeValue!=='Transfer' && categoryValue==='__CLEAR__';
+      const confirmationDetail=typeValue==='Transfer'
+        ? ` The selected transactions will become Internal Transfers from their existing accounts to ${state.accounts.find(a=>String(a.id)===String(transferToAccountId))?.name || 'the selected destination'}. Their amounts will be removed from source balances and added to the destination balance. They will be excluded from income and expense reporting.`
+        : clearBucket ? ' The bucket and subcategory will be cleared.' : (targetCategory ? ` The bucket will be set to “${targetCategory}”.` : '');
+      const typeDetail = typeValue ? ` Type will become “${typeValue==='Transfer'?'Internal Transfer':typeValue}”; account balances will be adjusted to preserve the correct effect of each transaction.` : '';
       if (!confirm(`Apply the selected changes to ${valid.length} transaction${valid.length===1?'':'s'}?${typeDetail}${confirmationDetail}`))return;
-      if (typeValue) captureUndo('Bulk edit transaction types and details');
+      captureUndo('Bulk edit transaction types and details');
 
       const eligibleTypeIds = new Set((typeValue ? bulkTypeRows : valid).map(t => String(t.id)));
+      let updatedCount=0;
       valid.forEach(t=>{
         if(vendorValue!=='')t.vendor=vendorValue;
         const canChangeType = !!typeValue && eligibleTypeIds.has(String(t.id));
-        if (canChangeType && typeValue) {
+        if (canChangeType && typeValue === 'Transfer') {
+          const amount=Math.abs(Number(t.amount)||0);
+          const oldIsCredit=t.type==='Income' || (t.type==='Transfer' && t.externalTransferDirection==='in');
+          const oldEffect=oldIsCredit ? amount : -amount;
+          const source=state.accounts.find(a=>String(a.id)===String(t.accountId));
+          const destination=state.accounts.find(a=>String(a.id)===String(transferToAccountId));
+          if (source) source.balance=(Number(source.balance)||0) + (-amount-oldEffect);
+          if (destination) destination.balance=(Number(destination.balance)||0) + amount;
+          t.type='Transfer';
+          t.category='Transfer';
+          t.subcategory='';
+          t.transferToAccountId=transferToAccountId;
+          delete t.externalTransferDirection;
+          if (!t.vendor || t.vendor==='') t.vendor='Account transfer';
+        } else if (canChangeType && typeValue) {
           const amount = Number(t.amount) || 0;
           const oldIsCredit = t.type === 'Income' || (t.type === 'Transfer' && t.externalTransferDirection === 'in');
           const newIsCredit = typeValue === 'Income';
@@ -3531,17 +3573,14 @@ Bonus"></textarea></div>
           t.type = typeValue;
           delete t.externalTransferDirection;
         }
-        if(clearBucket) {
-          t.category='';
-          t.subcategory='';
-        } else if(targetCategory === 'Transfer') {
-          t.category='Transfer';
-          t.subcategory='';
+        if (typeValue === 'Transfer' && canChangeType) {
+          // Transfer classification owns its bucket and has no subcategory.
+        } else if(clearBucket) {
+          t.category=''; t.subcategory='';
         } else if(targetCategory) {
           t.category=targetCategory;
-          if(targetSubcategory) {
-            t.subcategory=targetSubcategory;
-          } else {
+          if(targetSubcategory) t.subcategory=targetSubcategory;
+          else {
             const targetBuckets = t.type === 'Income' ? (state.incomeCategories || []) : (state.categories || []);
             const targetBucket=targetBuckets.find(c=>c.name===targetCategory);
             const stillValid=(targetBucket?.subcategories || []).some(sub=>sub.name===t.subcategory);
@@ -3553,6 +3592,7 @@ Bonus"></textarea></div>
           const targetBuckets = t.type === 'Income' ? (state.incomeCategories || []) : (state.categories || []);
           if (!targetBuckets.some(c => c.name === t.category)) { t.category = ''; t.subcategory = ''; }
         }
+        updatedCount++;
       });
       selectedLedgerIds.clear();
       saveData();
@@ -3560,7 +3600,8 @@ Bonus"></textarea></div>
       renderLedger();
       renderDashboard();
       renderZbbFundingTracker();
-      alert(`Updated ${rowsToUpdate.length} transaction${rowsToUpdate.length===1?'':'s'}${rowsToUpdate.length < valid.length ? `; skipped ${valid.length-rowsToUpdate.length} protected transaction${valid.length-rowsToUpdate.length===1?'':'s'}` : ''}.`);
+      const skipped=valid.length-updatedCount;
+      alert(`Updated ${updatedCount} transaction${updatedCount===1?'':'s'}${skipped ? `; skipped ${skipped} protected transaction${skipped===1?'':'s'}` : ''}.`);
     }
     function setLedgerView(v) {
       state.ledgerView = v;
