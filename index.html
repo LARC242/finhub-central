@@ -6418,6 +6418,12 @@ Bonus"></textarea></div>
         if (!debt) return 'The selected debt account is missing or archived.';
         if (row.importType === 'Debt Payment' && row.type !== 'Expense') return 'A debt payment must be a debit / money-out transaction.';
         if (row.importType === 'Debt Payment Reversal' && row.type !== 'Income') return 'A debt payment reversal must be a credit / money-in transaction.';
+        if (row.importType === 'Debt Payment Reversal' && row.reversalOfTransactionId) {
+          const original = (state.transactions || []).find(t => String(t.id) === String(row.reversalOfTransactionId));
+          if (!original || original.type !== 'Debt Payment') return 'The linked original debt payment could not be found.';
+          const remaining = Math.max(0, Math.abs(Number(original.amount)||0) - getTransactionReversedAmount(original.id));
+          if (Number(row.amount) > remaining + 0.009) return `This reversal exceeds the original payment's remaining reversible amount of $${remaining.toFixed(2)}.`;
+        }
         if (Math.abs((Number(row.principalAmount) || 0) + (Number(row.interestAmount) || 0) - Number(row.amount)) > 0.01) return 'Principal plus Interest must equal the payment Amount.';
       }
       if (row.importType === 'Transfer') {
@@ -6451,7 +6457,7 @@ Bonus"></textarea></div>
         const debt = (state.accounts || []).find(a => String(a.id) === String(row.debtAccountId) && a.type === 'debt');
         const principal = Math.round((Number(row.principalAmount) || 0) * 100) / 100;
         const interest = Math.round((Number(row.interestAmount) || 0) * 100) / 100;
-        Object.assign(base, { category: 'Debt Payment', subcategory: row.paymentType || inferDebtPaymentClassification(debt), paymentType: row.paymentType || inferDebtPaymentClassification(debt), debtAccountId: debt.id, debtPrincipalAmount: principal, debtInterestAmount: interest, workflowSource: 'statement-import-debt-payment-reversal' });
+        Object.assign(base, { category: 'Debt Payment', subcategory: row.paymentType || inferDebtPaymentClassification(debt), paymentType: row.paymentType || inferDebtPaymentClassification(debt), debtAccountId: debt.id, debtPrincipalAmount: principal, debtInterestAmount: interest, workflowSource: 'statement-import-debt-payment-reversal', isReversal: true, reversalOfTransactionId: row.reversalOfTransactionId || '', reversalOriginalType: 'Debt Payment', reversalOriginalSource: row.reversalOfTransactionId ? ((state.transactions || []).find(t=>String(t.id)===String(row.reversalOfTransactionId))?.source || '') : '' });
       } else if (importType === 'Debt Payment') {
         const debt = (state.accounts || []).find(a => String(a.id) === String(row.debtAccountId) && a.type === 'debt');
         const paymentId = `dp_stmt_${Date.now()}_${Math.random().toString(36).slice(2,7)}`;
@@ -6490,8 +6496,45 @@ Bonus"></textarea></div>
       row.status = 'imported'; row.matchedTransactionId = transactionId;
       return base;
     }
+    function findDebtPaymentReversalCandidates(row) {
+      if (!row || row.importType !== 'Debt Payment Reversal') return [];
+      const cents = Math.round(Math.abs(Number(row.amount) || 0) * 100);
+      const rowDate = new Date(`${row.date || ''}T00:00:00`).getTime();
+      return (state.transactions || []).filter(tx => {
+        if (!tx || tx.type !== 'Debt Payment' || tx.isReversal || tx.reversalOfTransactionId) return false;
+        if (String(tx.accountId) !== String(row.accountId)) return false;
+        if (String(tx.debtAccountId || '') !== String(row.debtAccountId || '')) return false;
+        const originalCents = Math.round(Math.abs(Number(tx.amount) || 0) * 100);
+        const reversedCents = Math.round(getTransactionReversedAmount(tx.id) * 100);
+        const remainingCents = Math.max(0, originalCents - reversedCents);
+        if (!remainingCents || cents > remainingCents) return false;
+        const txDate = new Date(`${tx.date || ''}T00:00:00`).getTime();
+        const days = Math.abs(txDate - rowDate) / 86400000;
+        return Number.isFinite(days) && days <= 120;
+      }).map(tx => {
+        const days = Math.abs(new Date(`${tx.date}T00:00:00`).getTime() - rowDate) / 86400000;
+        const sameVendor = normalizeStatementText(tx.vendor || tx.desc).split(' ').some(word => word.length > 3 && normalizeStatementText(row.description).includes(word));
+        return { tx, days, score: (sameVendor ? 4 : 0) + (days <= 7 ? 3 : days <= 30 ? 2 : 0) };
+      }).sort((a,b) => b.score-a.score || a.days-b.days).map(x => x.tx);
+    }
     function importStatementRow(rowId) {
       const row=pendingStatementRows.find(r=>r.id===rowId);if(!row||row.status!=='pending')return;
+      if (row.importType === 'Debt Payment Reversal' && !row.reversalOfTransactionId) {
+        const candidates = findDebtPaymentReversalCandidates(row);
+        if (candidates.length) {
+          const best = candidates[0];
+          const remaining = Math.max(0, Math.abs(Number(best.amount)||0) - getTransactionReversedAmount(best.id));
+          const choice = confirm(`Possible original debt payment found:\n\n${best.date} · ${best.vendor || best.desc || 'Debt payment'} · $${Math.abs(Number(best.amount)||0).toFixed(2)}\nRemaining reversible: $${remaining.toFixed(2)}\n\nLink this incoming reversal to that payment?\nChoose Cancel to import using the supplied Principal and Interest split without linking.`);
+          if (choice) {
+            const ratio = Math.abs(Number(row.amount)||0) / Math.abs(Number(best.amount)||1);
+            row.reversalOfTransactionId = best.id;
+            row.principalAmount = Math.round((Number(best.debtPrincipalAmount ?? best.principalAmount ?? 0) * ratio) * 100) / 100;
+            row.interestAmount = Math.round((Math.abs(Number(row.amount)||0) - row.principalAmount) * 100) / 100;
+            row.debtAccountId = best.debtAccountId || row.debtAccountId;
+            row.paymentType = best.paymentType || best.subcategory || row.paymentType;
+          }
+        }
+      }
       const validation = validateStatementImportRow(row);
       if (validation) { alert(`This row needs attention before it can be imported:\n\n${validation}`); return; }
       captureStatementUndo('Import statement transaction');
