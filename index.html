@@ -1470,15 +1470,16 @@ Bonus"></textarea></div>
           <div><label class="block text-xs font-semibold text-gray-500 mb-1">Date</label><input type="date" id="tx-date" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
           <div><label id="tx-account-label" class="block text-xs font-semibold text-gray-500 mb-1">Account</label><select id="tx-account" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></select></div>
         </div>
+        <p class="text-[10px] text-gray-400 -mt-2">Card purchase: choose the credit-card account and record an Expense. Paying the card from chequing is a separate Debt Payment. Merchant refund: enter a negative Expense in the original purchase category so it offsets spending instead of inflating Income.</p>
         <div><label class="block text-xs font-semibold text-gray-500 mb-1">Vendor <span class="text-rose-500">*</span></label><input type="text" id="tx-vendor" oninput="applySmartMerchantRules(this.value)" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" placeholder="e.g. Costco"></div>
         <div class="grid grid-cols-2 gap-3">
           <div><label class="block text-xs font-semibold text-gray-500 mb-1">Transaction Type</label><select id="tx-type" onchange="updateTransactionTypeFields()" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></select></div>
           <div id="tx-amount-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Total Amount ($)</label><input type="number" step="0.01" id="tx-amount" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
         </div>
         <div id="tx-debt-payment-guidance" class="hidden rounded-xl border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30 p-3 space-y-2">
-          <div class="text-xs font-bold text-amber-800 dark:text-amber-200">Use the Debt Payment workflow</div>
-          <p class="text-[11px] text-amber-800 dark:text-amber-200">A debt payment changes two balances: the funding asset decreases by the full payment, and the selected liability decreases by the principal portion. Use the button below so FinHub records both sides correctly.</p>
-          <button type="button" onclick="openDebtPaymentFromTransaction()" class="w-full px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold">Continue to Debt Payment form</button>
+          <div class="text-xs font-bold text-amber-800 dark:text-amber-200">Complete the Debt Payment details</div>
+          <p class="text-[11px] text-amber-800 dark:text-amber-200">A debt payment reduces the funding account by the full payment and reduces the liability by the principal portion. When editing an existing bank-paid Expense, FinHub will convert that same transaction instead of creating a duplicate.</p>
+          <button type="button" onclick="openDebtPaymentFromTransaction()" class="w-full px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold">Continue to Debt Payment details</button>
         </div>
         <details class="rounded-lg border border-gray-200 dark:border-gray-800 px-3 py-2">
           <summary class="cursor-pointer text-xs font-semibold text-gray-500">Additional details (optional)</summary>
@@ -1556,15 +1557,17 @@ Bonus"></textarea></div>
       <h3 class="text-lg font-bold">Log Debt Payment</h3>
       <form id="debt-payment-form" onsubmit="saveDebtPayment(event)" class="space-y-3">
         <input type="hidden" id="dp-edit-id" value="">
+        <input type="hidden" id="dp-existing-tx-id" value="">
         <div><label class="block text-xs font-semibold text-gray-500 mb-1">Date</label><input type="date" id="dp-date" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
         <div class="rounded-xl bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-900 p-3">
           <div class="text-[10px] uppercase tracking-wide font-semibold text-indigo-600 dark:text-indigo-300">Debt being paid</div>
           <div id="dp-target-debt-name" class="mt-1 text-sm font-bold text-indigo-800 dark:text-indigo-200">Select a debt account first</div>
         </div>
+        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Payment classification</label><select id="dp-payment-type" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"><option value="Credit Card Payment">Credit Card Payment</option><option value="Line of Credit Payment">Line of Credit Payment</option><option value="Loan Payment">Loan Payment</option><option value="Mortgage Payment">Mortgage Payment</option><option value="Other Debt Payment">Other Debt Payment</option></select><p class="text-[10px] text-gray-400 mt-1">This classifies the payment; principal and interest are tracked separately below.</p></div>
         <div><label class="block text-xs font-semibold text-gray-500 mb-1">Description</label><input type="text" id="dp-desc" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" placeholder="Debt payment"></div>
         <div><label class="block text-xs font-semibold text-gray-500 mb-1">Total payment ($)</label><input type="number" step="0.01" min="0.01" id="dp-amount" required oninput="updateDebtPaymentSplit()" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
         <div class="grid grid-cols-2 gap-3"><div><label class="block text-xs font-semibold text-gray-500 mb-1">Principal portion ($)</label><input type="number" step="0.01" min="0" id="dp-principal" required oninput="this.dataset.manual='1';updateDebtPaymentSplit()" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div><div><label class="block text-xs font-semibold text-gray-500 mb-1">Interest portion ($)</label><input type="number" id="dp-interest" readonly class="w-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div></div>
-        <p id="dp-split-help" class="text-[10px] text-gray-400">Only the principal portion reduces the debt balance. Interest is included in the total cash payment.</p>
+        <p id="dp-split-help" class="text-[10px] text-gray-400">Enter the split from your lender statement. If interest was already recorded separately with Record Interest Charge, do not include it again here; keep the full payment in the principal portion. Otherwise, enter the actual principal and interest split. Only principal reduces the debt balance, and the interest portion is reported as an expense.</p>
         <div>
           <label class="block text-xs font-semibold text-gray-500 mb-1">Funding account — money comes from here</label>
           <select id="dp-funding-account" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></select>
@@ -1659,6 +1662,63 @@ Bonus"></textarea></div>
     }
 
     function escapeHtml(value) { return String(value ?? '').replace(/[&<>\"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[ch])); }
+
+    const DEBT_PAYMENT_CLASSIFICATIONS = ['Credit Card Payment','Line of Credit Payment','Loan Payment','Mortgage Payment','Other Debt Payment'];
+    function inferDebtPaymentClassification(account) {
+      const text = `${account?.individualType || ''} ${account?.name || ''}`.toLowerCase();
+      if (/credit.?card|visa|mastercard|master card|amex|american express/.test(text)) return 'Credit Card Payment';
+      if (/line of credit|\bloc\b/.test(text)) return 'Line of Credit Payment';
+      if (/mortgage/.test(text)) return 'Mortgage Payment';
+      if (/loan|student/.test(text)) return 'Loan Payment';
+      return 'Other Debt Payment';
+    }
+    function transactionBalanceDeltaForAccount(transaction, accountOrId) {
+      if (!transaction) return 0;
+      const account = typeof accountOrId === 'object' ? accountOrId : state.accounts.find(a => String(a.id) === String(accountOrId));
+      if (!account) return 0;
+      const amount = Number(transaction.amount) || 0;
+      if (!amount) return 0;
+      if (transaction.type === 'Transfer') {
+        if (String(transaction.accountId) === String(account.id)) {
+          return transaction.externalTransferDirection === 'in' && !transaction.transferToAccountId ? amount : -amount;
+        }
+        if (String(transaction.transferToAccountId || '') === String(account.id)) return amount;
+        return 0;
+      }
+      if (transaction.type === 'Interest Charge') {
+        return account.type === 'debt' && String(transaction.debtAccountId || transaction.accountId) === String(account.id) ? amount : 0;
+      }
+      if (String(transaction.accountId) !== String(account.id)) return 0;
+      if (transaction.type === 'Income') return account.type === 'debt' ? -amount : amount;
+      if (transaction.type === 'Expense') return account.type === 'debt' ? amount : -amount;
+      if (transaction.type === 'Debt Payment') return account.type === 'debt' ? 0 : -amount;
+      return 0;
+    }
+    function applyTransactionBalanceEffect(transaction, multiplier = 1) {
+      if (!transaction) return;
+      const amount = Number(transaction.amount) || 0;
+      if (transaction.type === 'Transfer' && transaction.transferToAccountId) {
+        const from = state.accounts.find(a => String(a.id) === String(transaction.accountId));
+        const to = state.accounts.find(a => String(a.id) === String(transaction.transferToAccountId));
+        if (from) from.balance = Math.round(((Number(from.balance) || 0) - amount * multiplier) * 100) / 100;
+        if (to) to.balance = Math.round(((Number(to.balance) || 0) + amount * multiplier) * 100) / 100;
+        return;
+      }
+      const account = state.accounts.find(a => String(a.id) === String(transaction.accountId));
+      if (account) account.balance = Math.round(((Number(account.balance) || 0) + transactionBalanceDeltaForAccount(transaction, account) * multiplier) * 100) / 100;
+    }
+    function getExpenseReportingComponents(transaction) {
+      if (!transaction) return [];
+      const signedAmount = Number(transaction.amount) || 0;
+      const amount = Math.max(0, signedAmount);
+      if (transaction.type === 'Expense' && signedAmount !== 0) return [{ transaction, category: transaction.category || 'Uncategorized', subcategory: transaction.subcategory || 'Uncategorized', amount: signedAmount, component: signedAmount < 0 ? 'Refund' : 'Expense' }];
+      if (transaction.type === 'Interest Charge' && amount > 0) return [{ transaction, category: 'Debt Service', subcategory: 'Interest expense', amount, component: 'Interest charge' }];
+      if (transaction.type === 'Debt Payment') {
+        const interest = Math.max(0, Math.min(amount, Number(transaction.debtInterestAmount) || 0));
+        if (interest > 0) return [{ transaction, category: 'Debt Service', subcategory: 'Interest expense', amount: interest, component: 'Interest portion' }];
+      }
+      return [];
+    }
 
     let state = JSON.parse(localStorage.getItem('finhub_central_v25')) || JSON.parse(localStorage.getItem('finhub_central_v24')) || {
       darkMode: true,
@@ -1778,6 +1838,35 @@ Bonus"></textarea></div>
       state.incomeCategories = [...new Set([...starterIncomeNames, ...legacyIncomeNames])].map(name => ({ name, subcategories: [] }));
     }
     state.incomeCategories = state.incomeCategories.filter(c => c && c.name && c.name !== 'Transfer');
+    state.accounts = Array.isArray(state.accounts) ? state.accounts : [];
+    state.transactions = Array.isArray(state.transactions) ? state.transactions : [];
+    state.debtPayments = Array.isArray(state.debtPayments) ? state.debtPayments : [];
+    state.calendarBills = Array.isArray(state.calendarBills) ? state.calendarBills : [];
+    state.categories = Array.isArray(state.categories) ? state.categories : [];
+    let debtServiceCategory = state.categories.find(c => c.name === 'Debt Service');
+    if (!debtServiceCategory) { debtServiceCategory = { name: 'Debt Service', subcategories: [] }; state.categories.push(debtServiceCategory); }
+    debtServiceCategory.subcategories = Array.isArray(debtServiceCategory.subcategories) ? debtServiceCategory.subcategories : [];
+    ['Credit Card Payment','Line of Credit Payment','Loan Payment','Mortgage Payment','Other Debt Payment','Interest expense','Principal Paydown'].forEach(name => {
+      if (!debtServiceCategory.subcategories.some(sub => sub.name === name)) debtServiceCategory.subcategories.push({ name, limit: 0, rollover: false });
+    });
+    state.debtPayments.forEach(payment => {
+      const linked = state.transactions.find(t => String(t.id) === String(payment.transactionId) || String(t.debtPaymentId) === String(payment.id));
+      const debtAccount = state.accounts.find(a => String(a.id) === String(payment.accountId) && a.type === 'debt');
+      const paymentType = DEBT_PAYMENT_CLASSIFICATIONS.includes(payment.paymentType || linked?.paymentType) ? (payment.paymentType || linked.paymentType) : inferDebtPaymentClassification(debtAccount);
+      payment.paymentType = paymentType;
+      if (linked) { linked.paymentType = paymentType; linked.category = 'Debt Service'; linked.subcategory = paymentType; }
+    });
+    state.transactions.forEach(t => {
+      if (t.type !== 'Debt Payment') return;
+      const payment = state.debtPayments.find(p => String(p.id) === String(t.debtPaymentId) || String(p.transactionId) === String(t.id));
+      const bill = t.calendarBillId ? state.calendarBills.find(b => String(b.id) === String(t.calendarBillId)) : null;
+      const debtAccount = state.accounts.find(a => String(a.id) === String(t.debtAccountId || payment?.accountId || bill?.debtAccountId || bill?.relatedDebtAccountId) && a.type === 'debt') || (bill ? resolveDebtAccountForBill(bill) : null);
+      const paymentType = DEBT_PAYMENT_CLASSIFICATIONS.includes(t.paymentType || payment?.paymentType) ? (t.paymentType || payment.paymentType) : inferDebtPaymentClassification(debtAccount);
+      t.paymentType = paymentType;
+      t.category = 'Debt Service';
+      t.subcategory = paymentType;
+      if (payment) payment.paymentType = paymentType;
+    });
     (state.transactions || []).forEach(t => {
       if (t.type !== 'Transfer' || t.transferToAccountId || !t.externalTransferDirection) return;
       if (t.externalTransferDirection === 'in') {
@@ -2234,7 +2323,10 @@ Bonus"></textarea></div>
       const assets = visibleAccounts.filter(a => a.type === 'asset').reduce((s, a) => s + (Number(a.balance) || 0), 0);
       const liabilities = visibleAccounts.filter(a => a.type === 'debt').reduce((s, a) => s + (Number(a.balance) || 0), 0);
       const totalIncome = getTransactionsInDashboardPeriod('Income').reduce((s, t) => s + (Number(t.amount) || 0), 0);
-      const totalExpenses = getTransactionsInDashboardPeriod('Expense').reduce((s, t) => s + (Number(t.amount) || 0), 0) + getTransactionsInDashboardPeriod('Interest Charge').reduce((s,t) => s + (Number(t.amount) || 0), 0);
+      const totalExpenses = state.transactions
+        .filter(t => t.date >= getDashboardDateRange().start && t.date <= getDashboardDateRange().end)
+        .flatMap(t => getExpenseReportingComponents(t))
+        .reduce((sum, component) => sum + (Number(component.amount) || 0), 0);
       const netWorth = assets - liabilities;
       const periodLabels = { month: 'This month', previous: 'Last month', '3months': 'Last 3 months', '6months': 'Last 6 months', ytd: 'Year to date' };
       const periodLabel = periodLabels[state.dashboardPeriod] || 'This month';
@@ -2258,15 +2350,20 @@ Bonus"></textarea></div>
       const currentMonth = getDashboardDateRange('month');
       state.categories.forEach(bucket => {
         (bucket.subcategories || []).forEach(sub => {
-          const spent = state.transactions.filter(t => t.type === 'Expense' && t.category !== 'Transfer' && t.subcategory === sub.name && t.date >= currentMonth.start && t.date <= currentMonth.end).reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
+          const spent = state.transactions
+            .filter(t => t.date >= currentMonth.start && t.date <= currentMonth.end)
+            .flatMap(t => getExpenseReportingComponents(t))
+            .filter(component => component.category === bucket.name && component.subcategory === sub.name)
+            .reduce((sum, component) => sum + (Number(component.amount) || 0), 0);
+          const budgetSpent = Math.max(0, spent);
           const limit = Number(sub.limit) || 0;
-          const pct = limit > 0 ? Math.min(100, Math.round((spent / limit) * 100)) : 0;
-          const statusClass = limit > 0 && spent > limit ? 'text-rose-500 bg-rose-50 dark:bg-rose-950/40 border-rose-200' : pct > 85 ? 'text-amber-500 bg-amber-50 dark:bg-amber-950/40 border-amber-200' : 'text-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200';
-          const statusText = limit <= 0 ? 'No Limit' : spent > limit ? 'Over Limit' : pct > 85 ? 'Near Limit' : 'On Track';
+          const pct = limit > 0 ? Math.min(100, Math.round((budgetSpent / limit) * 100)) : 0;
+          const statusClass = limit > 0 && budgetSpent > limit ? 'text-rose-500 bg-rose-50 dark:bg-rose-950/40 border-rose-200' : pct > 85 ? 'text-amber-500 bg-amber-50 dark:bg-amber-950/40 border-amber-200' : 'text-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200';
+          const statusText = limit <= 0 ? 'No Limit' : budgetSpent > limit ? 'Over Limit' : pct > 85 ? 'Near Limit' : 'On Track';
           varGrid.innerHTML += `
             <div class="p-3.5 rounded-xl border ${statusClass} flex flex-col justify-between">
               <div class="flex justify-between items-center text-xs"><div><span class="font-bold text-gray-800 dark:text-gray-200">${sub.name}</span>${sub.rollover ? '<span class="text-[9px] bg-indigo-500/20 text-indigo-400 px-1.5 py-0.5 rounded font-semibold ml-1">Rollover Cap</span>' : ''}<div class="text-[10px] text-gray-400">Bucket: ${bucket.name}</div></div><span class="font-semibold text-[10px] uppercase px-1.5 py-0.5 rounded border">${statusText}</span></div>
-              <div class="mt-2 text-xs"><div class="flex justify-between text-gray-500"><span>Spent: <strong class="accounting-num">${formatFinancial(spent, true)}</strong></span><span>Limit: <strong class="accounting-num">${limit > 0 ? formatFinancial(limit) : 'Not set'}</strong></span></div><div class="w-full bg-gray-200 dark:bg-gray-800 h-1.5 rounded-full mt-1.5 overflow-hidden"><div class="h-full ${spent > limit && limit > 0 ? 'bg-rose-500' : 'bg-indigo-600'}" style="width: ${pct}%"></div></div></div>
+              <div class="mt-2 text-xs"><div class="flex justify-between text-gray-500"><span>Spent: <strong class="accounting-num">${formatFinancial(budgetSpent, true)}</strong></span><span>Limit: <strong class="accounting-num">${limit > 0 ? formatFinancial(limit) : 'Not set'}</strong></span></div><div class="w-full bg-gray-200 dark:bg-gray-800 h-1.5 rounded-full mt-1.5 overflow-hidden"><div class="h-full ${budgetSpent > limit && limit > 0 ? 'bg-rose-500' : 'bg-indigo-600'}" style="width: ${pct}%"></div></div></div>
             </div>`;
         });
       });
@@ -2457,88 +2554,132 @@ Bonus"></textarea></div>
       const label = document.getElementById('spending-chart-period');
       const levelEl = document.getElementById('spending-chart-level');
       const level = levelEl ? (levelEl.value || state.spendingChartLevel || 'category') : (state.spendingChartLevel || 'category');
-      if(levelEl) levelEl.value=level; state.spendingChartLevel = level;
+      if (levelEl) levelEl.value = level;
+      state.spendingChartLevel = level;
       const range = getDashboardDateRange();
-      const expenses = state.transactions.filter(t => ['Expense','Interest Charge'].includes(t.type) && t.category !== 'Transfer' && !(t.desc || '').toLowerCase().startsWith('transfer ') && t.date >= range.start && t.date <= range.end);
+      const expenses = state.transactions
+        .filter(t => t.date >= range.start && t.date <= range.end && t.category !== 'Transfer' && !(t.desc || '').toLowerCase().startsWith('transfer '))
+        .flatMap(t => getExpenseReportingComponents(t));
       const totals = {};
-      expenses.forEach(t => { const key = level === 'subcategory' ? (t.subcategory || 'Uncategorized') : (t.category || 'Uncategorized'); totals[key] = (totals[key] || 0) + (Number(t.amount) || 0); });
-      const entries = Object.entries(totals).sort((a,b) => b[1]-a[1]);
-      const total = entries.reduce((sum, entry) => sum + entry[1], 0);
-      label.textContent = `Expense transactions · ${range.start} to ${range.end} · Select a category for details`;
-      const totalEl = document.getElementById('spending-chart-total'); if (totalEl) totalEl.textContent = `Total: ${formatFinancial(total)}`;
-      detail.classList.add('hidden'); detail.innerHTML = '';
-      if (!entries.length || total <= 0) { el.innerHTML = '<p class="text-xs text-gray-400 py-6 text-center">No expense transactions in this period yet.</p>'; return; }
-      const palette = ['#6366f1','#10b981','#f59e0b','#ec4899','#06b6d4','#8b5cf6','#f97316','#84cc16','#64748b','#d946ef'];
-      const slices = entries.map((entry,i)=>({name:entry[0],value:entry[1],color:palette[i%palette.length]}));
-      let cursor = 0; const stops = slices.map(x=>{const from=cursor; cursor += x.value/total*100; return `${x.color} ${from.toFixed(2)}% ${cursor.toFixed(2)}%`;}).join(',');
-      const donut = document.createElement('div'); donut.className='spending-donut'; donut.style.background=`conic-gradient(${stops})`; donut.setAttribute('role','img'); donut.setAttribute('aria-label','Expense distribution pie chart');
-      const legend = document.createElement('div'); legend.className='spending-legend space-y-2';
-      slices.forEach(slice=>{
-        const row=document.createElement('button'); row.type='button'; row.className='flex items-center justify-between gap-3 rounded-lg p-2 hover:bg-gray-50 dark:hover:bg-gray-800 text-xs';
-        const left=document.createElement('span'); left.className='flex items-center gap-2 min-w-0';
-        const swatch=document.createElement('span'); swatch.className='w-3 h-3 rounded-sm flex-shrink-0'; swatch.style.background=slice.color;
-        const name=document.createElement('span'); name.className='truncate'; name.textContent=slice.name; left.append(swatch,name);
-        const right=document.createElement('strong'); right.className='whitespace-nowrap accounting-num'; right.textContent=`${formatFinancial(slice.value)} · ${(slice.value/total*100).toFixed(1)}%`;
-        row.append(left,right); row.addEventListener('click',()=>showCategoryTransactions(slice.name, level)); legend.appendChild(row);
+      expenses.forEach(component => {
+        const key = level === 'subcategory' ? (component.subcategory || 'Uncategorized') : (component.category || 'Uncategorized');
+        totals[key] = (totals[key] || 0) + (Number(component.amount) || 0);
       });
-      el.innerHTML=''; const chartWrap=document.createElement('div'); chartWrap.className='flex flex-col items-center gap-2'; chartWrap.append(donut); const totalLabel=document.createElement('div'); totalLabel.className='text-xs text-gray-500'; totalLabel.textContent=`${expenses.length} expense transaction${expenses.length===1?'':'s'}`; chartWrap.append(totalLabel); el.append(chartWrap,legend);
+      const entries = Object.entries(totals).filter(([, value]) => value > 0).sort((a, b) => b[1] - a[1]);
+      const total = entries.reduce((sum, entry) => sum + entry[1], 0);
+      label.textContent = `Net expenses (refunds offset the original category) · ${range.start} to ${range.end} · Select a category for details`;
+      const totalEl = document.getElementById('spending-chart-total');
+      if (totalEl) totalEl.textContent = `Total: ${formatFinancial(total)}`;
+      detail.classList.add('hidden');
+      detail.innerHTML = '';
+      if (!entries.length || total <= 0) {
+        el.innerHTML = '<p class="text-xs text-gray-400 py-6 text-center">No expense activity in this period yet.</p>';
+        return;
+      }
+      const palette = ['#6366f1','#10b981','#f59e0b','#ec4899','#06b6d4','#8b5cf6','#f97316','#84cc16','#64748b','#d946ef'];
+      const slices = entries.map((entry, i) => ({ name: entry[0], value: entry[1], color: palette[i % palette.length] }));
+      let cursor = 0;
+      const stops = slices.map(x => {
+        const from = cursor;
+        cursor += x.value / total * 100;
+        return `${x.color} ${from.toFixed(2)}% ${cursor.toFixed(2)}%`;
+      }).join(',');
+      const donut = document.createElement('div');
+      donut.className = 'spending-donut';
+      donut.style.background = `conic-gradient(${stops})`;
+      donut.setAttribute('role', 'img');
+      donut.setAttribute('aria-label', 'Expense distribution pie chart');
+      const legend = document.createElement('div');
+      legend.className = 'spending-legend space-y-2';
+      slices.forEach(slice => {
+        const row = document.createElement('button');
+        row.type = 'button';
+        row.className = 'flex items-center justify-between gap-3 rounded-lg p-2 hover:bg-gray-50 dark:hover:bg-gray-800 text-xs';
+        const left = document.createElement('span');
+        left.className = 'flex items-center gap-2 min-w-0';
+        const swatch = document.createElement('span');
+        swatch.className = 'w-3 h-3 rounded-sm flex-shrink-0';
+        swatch.style.background = slice.color;
+        const name = document.createElement('span');
+        name.className = 'truncate';
+        name.textContent = slice.name;
+        left.append(swatch, name);
+        const right = document.createElement('strong');
+        right.className = 'whitespace-nowrap accounting-num';
+        right.textContent = `${formatFinancial(slice.value)} · ${(slice.value / total * 100).toFixed(1)}%`;
+        row.append(left, right);
+        row.addEventListener('click', () => showCategoryTransactions(slice.name, level));
+        legend.appendChild(row);
+      });
+      el.innerHTML = '';
+      const chartWrap = document.createElement('div');
+      chartWrap.className = 'flex flex-col items-center gap-2';
+      chartWrap.append(donut);
+      const totalLabel = document.createElement('div');
+      totalLabel.className = 'text-xs text-gray-500';
+      totalLabel.textContent = `${expenses.length} expense component${expenses.length === 1 ? '' : 's'}`;
+      chartWrap.append(totalLabel);
+      el.append(chartWrap, legend);
     }
 
     function showCategoryTransactions(category, level = state.spendingChartLevel || 'category') {
       const detail = document.getElementById('spending-category-detail');
       const range = getDashboardDateRange();
-      // Match the chart's transaction types so the drill-down agrees with its totals.
-      const matches = state.transactions.filter(t => ['Expense', 'Interest Charge'].includes(t.type) && t.date >= range.start && t.date <= range.end && t.category !== 'Transfer' && !(t.desc || '').toLowerCase().startsWith('transfer ') && (level === 'subcategory' ? (t.subcategory || 'Uncategorized') : (t.category || 'Uncategorized')) === category);
+      const matches = state.transactions
+        .filter(t => t.date >= range.start && t.date <= range.end && t.category !== 'Transfer' && !(t.desc || '').toLowerCase().startsWith('transfer '))
+        .flatMap(t => getExpenseReportingComponents(t))
+        .filter(component => (level === 'subcategory' ? (component.subcategory || 'Uncategorized') : (component.category || 'Uncategorized')) === category);
       detail.innerHTML = '';
 
       const title = document.createElement('div');
       title.className = 'flex flex-wrap items-center justify-between gap-2 font-semibold text-sm mb-3';
       const titleText = document.createElement('span');
-      titleText.textContent = `${category} · ${matches.length} transaction${matches.length===1?'':'s'}`;
+      titleText.textContent = `${category} · ${matches.length} transaction${matches.length === 1 ? '' : 's'}`;
       const close = document.createElement('button');
       close.type = 'button';
       close.className = 'text-xs text-indigo-500 hover:underline';
       close.textContent = 'Close';
-      close.addEventListener('click',()=>detail.classList.add('hidden'));
+      close.addEventListener('click', () => detail.classList.add('hidden'));
       title.append(titleText, close);
       detail.appendChild(title);
 
       const hint = document.createElement('p');
       hint.className = 'text-[10px] text-gray-400 mb-3';
-      hint.textContent = 'Transactions are grouped by vendor. Select “Open transaction” to review or edit the original record.';
+      hint.textContent = 'Transactions are grouped by vendor. Principal repayments are excluded; interest portions are included. Select “Open transaction” to edit the original record.';
       detail.appendChild(hint);
 
       if (!matches.length) {
-        const empty=document.createElement('p');
-        empty.className='text-xs text-gray-400';
-        empty.textContent='No transactions found.';
+        const empty = document.createElement('p');
+        empty.className = 'text-xs text-gray-400';
+        empty.textContent = 'No transactions found.';
         detail.appendChild(empty);
       } else {
         const vendorGroups = new Map();
-        matches.forEach(t => {
-          const vendor = String(t.vendor || 'Vendor not recorded').trim() || 'Vendor not recorded';
+        matches.forEach(component => {
+          const transaction = component.transaction;
+          const vendor = String(transaction.vendor || transaction.desc || 'Vendor not recorded').trim() || 'Vendor not recorded';
           if (!vendorGroups.has(vendor)) vendorGroups.set(vendor, []);
-          vendorGroups.get(vendor).push(t);
+          vendorGroups.get(vendor).push(component);
         });
-        const sortedVendors = Array.from(vendorGroups.entries()).sort((a,b)=>a[0].localeCompare(b[0], undefined, { sensitivity: 'base' }));
-        sortedVendors.forEach(([vendor, transactions]) => {
-          transactions.sort((a,b)=>String(b.date || '').localeCompare(String(a.date || '')));
-          const vendorTotal = transactions.reduce((sum,t)=>sum+(Number(t.amount)||0),0);
+        const sortedVendors = Array.from(vendorGroups.entries()).sort((a, b) => a[0].localeCompare(b[0], undefined, { sensitivity: 'base' }));
+        sortedVendors.forEach(([vendor, components]) => {
+          components.sort((a, b) => String(b.transaction.date || '').localeCompare(String(a.transaction.date || '')));
+          const vendorTotal = components.reduce((sum, component) => sum + (Number(component.amount) || 0), 0);
           const group = document.createElement('section');
           group.className = 'rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden mb-3';
-
           const vendorHeader = document.createElement('div');
           vendorHeader.className = 'flex flex-wrap justify-between items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-gray-950';
           const vendorName = document.createElement('strong');
           vendorName.className = 'text-xs font-semibold';
-          vendorName.textContent = `${vendor} · ${transactions.length} transaction${transactions.length===1?'':'s'}`;
+          vendorName.textContent = `${vendor} · ${components.length} transaction${components.length === 1 ? '' : 's'}`;
           const vendorAmount = document.createElement('strong');
           vendorAmount.className = 'text-xs accounting-num whitespace-nowrap';
           vendorAmount.textContent = formatFinancial(vendorTotal, true);
           vendorHeader.append(vendorName, vendorAmount);
           group.appendChild(vendorHeader);
 
-          transactions.forEach(t => {
+          components.forEach(component => {
+            const t = component.transaction;
             const row = document.createElement('div');
             row.className = 'flex flex-wrap justify-between items-center gap-3 px-3 py-2 border-t border-gray-100 dark:border-gray-800 text-xs';
             const description = document.createElement('div');
@@ -2548,20 +2689,20 @@ Bonus"></textarea></div>
             date.textContent = t.date || 'Date not recorded';
             const memo = document.createElement('div');
             memo.className = 'font-medium break-words';
-            memo.textContent = t.desc || (t.type === 'Interest Charge' ? 'Interest charge' : 'Expense');
+            memo.textContent = `${t.desc || t.vendor || (t.type === 'Interest Charge' ? 'Interest charge' : 'Expense')}${component.component === 'Interest portion' ? ' · Interest portion' : ''}`;
             description.append(date, memo);
-
             const actions = document.createElement('div');
             actions.className = 'flex items-center gap-3';
             const amount = document.createElement('strong');
             amount.className = 'accounting-num whitespace-nowrap';
-            amount.textContent = formatFinancial(t.amount, true);
+            amount.textContent = formatFinancial(component.amount, true);
             const open = document.createElement('button');
             open.type = 'button';
             open.className = 'text-indigo-500 hover:text-indigo-400 font-semibold whitespace-nowrap';
             open.textContent = 'Open transaction';
             open.addEventListener('click', () => {
               if (t.type === 'Interest Charge') openInterestChargeModal(String(t.id));
+              else if (t.type === 'Debt Payment' && t.debtPaymentId) openDebtPaymentModal(String(t.debtPaymentId));
               else openTransactionModal(String(t.id));
             });
             actions.append(amount, open);
@@ -2579,7 +2720,11 @@ Bonus"></textarea></div>
       const now = new Date();
       const months = [];
       for (let i=5; i>=0; i--) { const d = new Date(now.getFullYear(), now.getMonth()-i, 1); const ym = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; months.push({ ym, label: d.toLocaleString(undefined,{month:'short'}) }); }
-      const values = months.map(m => ({...m, income: state.transactions.filter(t=>t.type==='Income' && t.category!=='Transfer' && t.date.startsWith(m.ym)).reduce((s,t)=>s+(Number(t.amount)||0),0), expense: state.transactions.filter(t=>t.type==='Expense' && t.category!=='Transfer' && t.date.startsWith(m.ym)).reduce((s,t)=>s+(Number(t.amount)||0),0)}));
+      const values = months.map(m => ({
+        ...m,
+        income: state.transactions.filter(t => t.type === 'Income' && t.category !== 'Transfer' && t.date.startsWith(m.ym)).reduce((sum, t) => sum + (Number(t.amount) || 0), 0),
+        expense: Math.max(0, state.transactions.filter(t => t.date.startsWith(m.ym)).flatMap(t => getExpenseReportingComponents(t)).reduce((sum, component) => sum + (Number(component.amount) || 0), 0))
+      }));
       const max = Math.max(1,...values.flatMap(v=>[v.income,v.expense]));
       el.innerHTML = `<div class="flex gap-4 text-[10px] text-gray-500 mb-2"><span><i class="fa-solid fa-square text-indigo-500 mr-1"></i>Income</span><span><i class="fa-solid fa-square text-amber-500 mr-1"></i>Expenses</span></div>` + values.map(v=>`<div class="grid grid-cols-[42px_1fr] gap-2 items-center"><span class="text-[10px] text-gray-400">${v.label}</span><div class="space-y-1"><div class="h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden"><div class="h-full bg-indigo-500" style="width:${v.income/max*100}%"></div></div><div class="h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden"><div class="h-full bg-amber-500" style="width:${v.expense/max*100}%"></div></div></div></div>`).join('');
     }
@@ -2675,6 +2820,7 @@ Bonus"></textarea></div>
             let change = (t.type === 'Income' || isExternalTransferIn) ? amount : -amount;
             let type = isExternalTransferIn ? 'Transfer In' : (t.type || 'Transaction');
             if (t.type === 'Transfer' && t.transferToAccountId) type = 'Transfer Out';
+            if (t.type === 'Expense' && amount < 0) type = 'Refund / credit';
             entries.push({ id: t.id, date: t.type==='Transfer' && t.transferToAccountId ? (statementTransactionDateForAccount(t,acc.id) || t.date || '') : (t.date || ''), description: t.vendor || t.desc || 'Transaction', detail: t.desc && t.vendor && t.desc !== t.vendor ? t.desc : '', type, change, reconciled: t.type==='Transfer' && t.transferToAccountId ? statementTransactionReconciledForAccount(t,acc.id) : !!t.reconciled });
           } else if (t.type === 'Transfer' && t.transferToAccountId === acc.id) {
             const amount = Number(t.amount) || 0;
@@ -2687,7 +2833,8 @@ Bonus"></textarea></div>
           const payment = t.debtPaymentId ? debtPayments.get(t.debtPaymentId) : null;
           const bill = t.calendarBillId ? bills.get(t.calendarBillId) : null;
           const linkedBillDebt = bill && bill.type === 'debt' ? resolveDebtAccountForBill(bill) : null;
-          const related = t.debtAccountId === acc.id || payment?.accountId === acc.id || linkedBillDebt?.id === acc.id;
+          const postedDirectlyToDebtAccount = String(t.accountId || '') === String(acc.id) && ['Expense', 'Income'].includes(t.type);
+          const related = t.debtAccountId === acc.id || payment?.accountId === acc.id || linkedBillDebt?.id === acc.id || postedDirectlyToDebtAccount;
           if (!related) return;
           let principal = 0;
           let change = 0;
@@ -2696,9 +2843,18 @@ Bonus"></textarea></div>
             change = -principal;
           } else if (t.type === 'Interest Charge') {
             change = Number(t.amount) || 0;
+          } else if (postedDirectlyToDebtAccount && t.type === 'Expense') {
+            change = Number(t.amount) || 0;
+          } else if (postedDirectlyToDebtAccount && t.type === 'Income') {
+            change = -(Number(t.amount) || 0);
           }
           const isInterest = t.type === 'Interest Charge' || (Number(t.debtInterestAmount) || 0) > 0 || /interest/i.test(`${t.category || ''} ${t.subcategory || ''} ${t.desc || ''} ${t.vendor || ''}`);
-          const type = t.type === 'Debt Payment' ? (principal > 0 ? 'Debt payment' : 'Interest-only payment') : (t.type === 'Interest Charge' ? 'Interest charged to balance' : (isInterest ? 'Interest expense' : (t.type || 'Related transaction')));
+          let type = t.type || 'Related transaction';
+          if (t.type === 'Debt Payment') type = principal > 0 ? 'Debt payment' : 'Interest-only payment';
+          else if (t.type === 'Interest Charge') type = 'Interest charged to balance';
+          else if (postedDirectlyToDebtAccount && t.type === 'Expense') type = 'Credit / debt purchase';
+          else if (postedDirectlyToDebtAccount && t.type === 'Income') type = 'Refund / credit';
+          else if (isInterest) type = 'Interest expense';
           entries.push({ id: t.id, date: t.date || '', description: t.vendor || t.desc || 'Transaction', detail: t.desc && t.vendor && t.desc !== t.vendor ? t.desc : '', type, change, amount: Number(t.amount) || 0, principal, reconciled: !!t.reconciled });
         });
       }
@@ -4392,18 +4548,7 @@ Bonus"></textarea></div>
       rows.forEach(t => {
         const idx = state.transactions.findIndex(x => String(x.id) === String(t.id));
         if (idx < 0) return;
-        const acc = state.accounts.find(a => String(a.id) === String(t.accountId));
-        if (t.type === 'Interest Charge') {
-          const debtAcc = state.accounts.find(a => String(a.id) === String(t.debtAccountId || t.accountId) && a.type === 'debt');
-          if (debtAcc) debtAcc.balance = Math.round(((Number(debtAcc.balance) || 0) - (Number(t.amount) || 0)) * 100) / 100;
-        } else if (t.type === 'Transfer' && t.transferToAccountId) {
-          const target = state.accounts.find(a => String(a.id) === String(t.transferToAccountId));
-          if (acc) acc.balance = (Number(acc.balance) || 0) + (Number(t.amount) || 0);
-          if (target) target.balance = (Number(target.balance) || 0) - (Number(t.amount) || 0);
-        } else if (acc) {
-          if (t.type === 'Income' || (t.type === 'Transfer' && t.externalTransferDirection === 'in')) acc.balance = (Number(acc.balance) || 0) - (Number(t.amount) || 0);
-          else acc.balance = (Number(acc.balance) || 0) + (Number(t.amount) || 0);
-        }
+        applyTransactionBalanceEffect(t, -1);
         let debtPrincipalReversed = false;
         if (t.debtPaymentId) {
           const debtPayment = (state.debtPayments || []).find(p => String(p.id) === String(t.debtPaymentId));
@@ -4620,6 +4765,10 @@ Bonus"></textarea></div>
         }
       }
       let bulkTypeRows = valid;
+      if (typeValue === 'Debt Payment') {
+        alert('Debt Payments must be processed one at a time through the Debt Payment form so the liability, funding account, and principal/interest split stay linked.');
+        return;
+      }
       if (typeValue) {
         const protectedRows = valid.filter(t => t.calendarBillId || t.debtPaymentId || (t.transferToAccountId && !(typeValue==='Transfer' && transferMode==='match' && String(t.transferToAccountId)===String(transferToAccountId))));
         if (protectedRows.length) {
@@ -4706,15 +4855,10 @@ Bonus"></textarea></div>
           delete t.externalTransferDirection;
           if (!t.vendor || t.vendor==='') t.vendor='Account transfer';
         } else if (canChangeType && typeValue) {
-          const amount = Number(t.amount) || 0;
-          const oldIsCredit = t.type === 'Income' || (t.type === 'Transfer' && t.externalTransferDirection === 'in');
-          const newIsCredit = typeValue === 'Income';
-          if (oldIsCredit !== newIsCredit) {
-            const account = state.accounts.find(a => String(a.id) === String(t.accountId));
-            if (account) account.balance = (Number(account.balance) || 0) + (newIsCredit ? amount : -amount) - (oldIsCredit ? amount : -amount);
-          }
+          applyTransactionBalanceEffect(t, -1);
           t.type = typeValue;
           delete t.externalTransferDirection;
+          applyTransactionBalanceEffect(t, 1);
         }
         if (typeValue === 'Transfer' && canChangeType) {
           // Transfer classification owns its bucket and has no subcategory.
@@ -5070,9 +5214,15 @@ Bonus"></textarea></div>
         return true;
       });
 
-      const totalExpenses = matchedTxs.reduce((sum, t) => sum + (['Expense', 'Debt Payment', 'Interest Charge'].includes(t.type) && t.category !== 'Transfer' ? (Number(t.amount) || 0) : 0), 0);
+      const totalExpenses = matchedTxs.reduce((sum, t) => sum + getExpenseReportingComponents(t).reduce((componentSum, component) => componentSum + (Number(component.amount) || 0), 0), 0);
       const totalIncome = matchedTxs.reduce((sum, t) => sum + (t.type === 'Income' && t.category !== 'Transfer' ? (Number(t.amount) || 0) : 0), 0);
-      const totalOther = matchedTxs.reduce((sum, t) => sum + ((!['Expense', 'Debt Payment', 'Interest Charge', 'Income'].includes(t.type) || t.category === 'Transfer') ? (Number(t.amount) || 0) : 0), 0);
+      const totalOther = matchedTxs.reduce((sum, t) => {
+        if (t.type === 'Debt Payment') {
+          const paymentInterest = getExpenseReportingComponents(t).reduce((componentSum, component) => componentSum + (Number(component.amount) || 0), 0);
+          return sum + Math.max(0, (Number(t.amount) || 0) - paymentInterest);
+        }
+        return sum + ((!['Expense', 'Interest Charge', 'Income'].includes(t.type) || t.category === 'Transfer') ? (Number(t.amount) || 0) : 0);
+      }, 0);
       const netTotal = totalIncome - totalExpenses;
       const expenseTotalEl = document.getElementById('ledger-total-expenses');
       const incomeTotalEl = document.getElementById('ledger-total-income');
@@ -5093,7 +5243,7 @@ Bonus"></textarea></div>
           const acc = state.accounts.find(a => a.id === t.accountId);
           // Colour amounts by cash direction for this account, not by transaction label.
           // External Transfer In is a credit; Transfer Out and internal transfers are debits.
-          const isOutflow = t.type === 'Expense' || t.type === 'Debt Payment' || t.type === 'Interest Charge' ||
+          const isOutflow = (t.type === 'Expense' && Number(t.amount) >= 0) || t.type === 'Debt Payment' || t.type === 'Interest Charge' ||
             (t.type === 'Transfer' && t.externalTransferDirection !== 'in');
           tbody.innerHTML += `
             <tr class="hover:bg-gray-50 dark:hover:bg-gray-950">
@@ -5239,17 +5389,7 @@ Bonus"></textarea></div>
       return t?.date || '';
     }
     function statementTransactionDeltaForAccount(t, accountId) {
-      const amount = Number(t?.amount) || 0;
-      if (!t || !amount) return 0;
-      if (t.type === 'Transfer') {
-        if (t.accountId === accountId) return t.externalTransferDirection === 'in' && !t.transferToAccountId ? amount : -amount;
-        if (t.transferToAccountId === accountId) return amount;
-        return 0;
-      }
-      if (t.accountId !== accountId) return 0;
-      if (t.type === 'Income') return amount;
-      if (t.type === 'Expense' || t.type === 'Debt Payment') return -amount;
-      return 0;
+      return transactionBalanceDeltaForAccount(t, accountId);
     }
     function calculatedAccountBalanceAsOf(accountId, endDate) {
       const account = (state.accounts || []).find(a => a.id === accountId);
@@ -5571,7 +5711,7 @@ Bonus"></textarea></div>
         return null;
       }
       if (t.accountId !== accountId) return null;
-      if (t.type === 'Income') return 'Income';
+      if (t.type === 'Income' || (t.type === 'Expense' && Number(t.amount) < 0)) return 'Income';
       if (['Expense', 'Debt Payment'].includes(t.type)) return 'Expense';
       return null;
     }
@@ -5834,7 +5974,7 @@ Bonus"></textarea></div>
       const merchantRule=(state.merchantRules||[]).find(rule=>normalizeStatementText(row.description).includes(normalizeStatementText(rule.keyword)));
       const transaction={id:`tx_stmt_${Date.now()}_${Math.random().toString(36).slice(2,7)}`,date:row.date,vendor:(row.cleanedVendorName || applyVendorCleanupRules(row.description)),desc:row.description,type:row.type,category:merchantRule?.category||'',subcategory:merchantRule?.subcategory||'',amount:row.amount,accountId:row.accountId,statementMatchId:row.id,reconciled:true,reconciledAt:new Date().toISOString(),source:'statement-import'};
       state.transactions.unshift(transaction);
-      if(row.type==='Expense') account.balance-=row.amount; else if(row.type==='Income') account.balance+=row.amount;
+      applyTransactionBalanceEffect(transaction, 1);
       row.status='imported';row.matchedTransactionId=transaction.id;
       persistStatementBatch();renderLedger();renderDashboard();renderZbbFundingTracker();renderStatementPreview();
     }
@@ -5862,7 +6002,7 @@ Bonus"></textarea></div>
       actionable.forEach(row=>{
         if(row.status==='imported'){
           const tx=(state.transactions||[]).find(t=>t.id===row.matchedTransactionId&&t.source==='statement-import'&&t.statementMatchId===row.id);
-          if(tx){const account=(state.accounts||[]).find(a=>a.id===tx.accountId);if(account){if(tx.type==='Expense')account.balance=(Number(account.balance)||0)+(Number(tx.amount)||0);else if(tx.type==='Income')account.balance=(Number(account.balance)||0)-(Number(tx.amount)||0);}state.transactions=state.transactions.filter(t=>t.id!==tx.id);}
+          if(tx){applyTransactionBalanceEffect(tx, -1);state.transactions=state.transactions.filter(t=>t.id!==tx.id);}
         } else if(row.status==='matched'&&!row.matchedGroupId){
           const tx=(state.transactions||[]).find(t=>t.id===row.matchedTransactionId);
           if(tx && row.transferMergedInto) {
@@ -5909,7 +6049,7 @@ Bonus"></textarea></div>
         const merchantRule=(state.merchantRules||[]).find(rule=>normalizeStatementText(row.description).includes(normalizeStatementText(rule.keyword)));
         const transaction={id:`tx_stmt_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,date:row.date,vendor:(row.cleanedVendorName||applyVendorCleanupRules(row.description)),desc:row.description,type:row.type,category:merchantRule?.category||'',subcategory:merchantRule?.subcategory||'',amount:row.amount,accountId:row.accountId,statementMatchId:row.id,reconciled:true,reconciledAt:now,source:'statement-import'};
         state.transactions.unshift(transaction);
-        if(row.type==='Expense')account.balance-=row.amount;else if(row.type==='Income')account.balance+=row.amount;
+        applyTransactionBalanceEffect(transaction, 1);
         row.status='imported';row.matchedTransactionId=transaction.id;
       });
       persistStatementBatch();renderLedger();renderDashboard();renderZbbFundingTracker();renderStatementPreview();
@@ -6067,23 +6207,8 @@ Bonus"></textarea></div>
       }
       captureUndo(`Delete transaction "${t.vendor || t.desc || t.id}"`);
 
-      const account = state.accounts.find(a => String(a.id) === String(t.accountId));
       let debtPrincipalReversed = false;
-
-      if (t.type === 'Interest Charge') {
-        const debtAccount = state.accounts.find(a => String(a.id) === String(t.debtAccountId || t.accountId) && a.type === 'debt');
-        if (debtAccount) debtAccount.balance = Math.round(((Number(debtAccount.balance) || 0) - (Number(t.amount) || 0)) * 100) / 100;
-      } else if (t.type === 'Transfer' && t.transferToAccountId) {
-        const target = state.accounts.find(a => String(a.id) === String(t.transferToAccountId));
-        if (account) account.balance = (Number(account.balance) || 0) + (Number(t.amount) || 0);
-        if (target) target.balance = (Number(target.balance) || 0) - (Number(t.amount) || 0);
-      } else if (account) {
-        if (t.type === 'Income' || (t.type === 'Transfer' && t.externalTransferDirection === 'in')) {
-          account.balance = (Number(account.balance) || 0) - (Number(t.amount) || 0);
-        } else {
-          account.balance = (Number(account.balance) || 0) + (Number(t.amount) || 0);
-        }
-      }
+      applyTransactionBalanceEffect(t, -1);
 
       if (t.debtPaymentId) {
         const debtPayment = (state.debtPayments || []).find(p => String(p.id) === String(t.debtPaymentId));
@@ -6968,7 +7093,8 @@ Bonus"></textarea></div>
       const rows = (state.transactions || []).filter(t => {
         const payment = t.debtPaymentId ? payments.get(t.debtPaymentId) : null;
         const bill = t.calendarBillId ? (state.calendarBills || []).find(b => b.id === t.calendarBillId) : null;
-        const related = String(t.debtAccountId || '') === String(accId) || String(payment?.accountId || '') === String(accId) || (bill && String(resolveDebtAccountForBill(bill)?.id || '') === String(accId)) || (!t.debtAccountId && !payment && !bill && debt && `${t.vendor || ''} ${t.desc || ''}`.toLowerCase().includes(String(debt.name || '').toLowerCase()));
+        const postedDirectlyToDebtAccount = String(t.accountId || '') === String(accId) && ['Expense', 'Income'].includes(t.type);
+        const related = String(t.debtAccountId || '') === String(accId) || String(payment?.accountId || '') === String(accId) || (bill && String(resolveDebtAccountForBill(bill)?.id || '') === String(accId)) || postedDirectlyToDebtAccount || (!t.debtAccountId && !payment && !bill && debt && `${t.vendor || ''} ${t.desc || ''}`.toLowerCase().includes(String(debt.name || '').toLowerCase()));
         if (!related) return false;
         if (from && t.date < from) return false;
         if (to && t.date > to) return false;
@@ -6981,12 +7107,17 @@ Bonus"></textarea></div>
         const funding = state.accounts.find(a => String(a.id) === String(t.accountId));
         const payment = t.debtPaymentId ? payments.get(t.debtPaymentId) : (state.debtPayments || []).find(p => String(p.transactionId) === String(t.id));
         const principal = t.debtPrincipalAmount !== undefined ? Number(t.debtPrincipalAmount) : (t.type === 'Debt Payment' ? Number(t.amount) : 0);
+        const postedDirectlyToDebtAccount = String(t.accountId || '') === String(accId) && ['Expense', 'Income'].includes(t.type);
         const kind = t.type === 'Interest Charge'
           ? 'Interest charged to balance'
           : t.type === 'Debt Payment'
             ? (principal === 0 && Number(t.amount) > 0 ? 'Interest-only payment' : 'Debt payment')
-            : (/interest/i.test(`${t.category || ''} ${t.subcategory || ''} ${t.desc || ''} ${t.vendor || ''}`) ? 'Interest expense' : (t.type || 'Other debt activity'));
-        const treatment = t.type === 'Interest Charge' ? 'Added to liability' : (funding?.type === 'asset' ? funding.name : 'No funding account');
+            : postedDirectlyToDebtAccount && t.type === 'Expense'
+              ? 'Credit / debt purchase'
+              : postedDirectlyToDebtAccount && t.type === 'Income'
+                ? 'Refund / credit'
+                : (/interest/i.test(`${t.category || ''} ${t.subcategory || ''} ${t.desc || ''} ${t.vendor || ''}`) ? 'Interest expense' : (t.type || 'Other debt activity'));
+        const treatment = t.type === 'Interest Charge' ? 'Added to liability' : (postedDirectlyToDebtAccount ? 'Posted to liability account' : (funding?.type === 'asset' ? funding.name : 'No funding account'));
         let actions = '';
         if (payment) {
           // Open the actual ledger transaction for vendor/category edits, while
@@ -7035,11 +7166,33 @@ Bonus"></textarea></div>
       }
     }
     function openDebtPaymentFromTransaction() {
-      const debtId = document.getElementById('tx-related-debt')?.value || '';
-      const fundingId = document.getElementById('tx-account')?.value || '';
-      const amount = Number(document.getElementById('tx-amount')?.value) || 0;
-      const date = document.getElementById('tx-date')?.value || new Date().toISOString().slice(0, 10);
-      const desc = document.getElementById('tx-vendor')?.value || document.getElementById('tx-desc')?.value || 'Debt payment';
+      const editId = document.getElementById('tx-edit-id')?.value || '';
+      const existingTx = editId ? state.transactions.find(t => String(t.id) === String(editId)) : null;
+      if (editId && !existingTx) { alert('The original transaction could not be found. No changes were made.'); return; }
+      if (existingTx?.debtPaymentId) {
+        const payment = (state.debtPayments || []).find(p => String(p.id) === String(existingTx.debtPaymentId));
+        if (!payment) { alert('The linked debt payment record could not be found. No changes were made.'); return; }
+        closeTransactionModal();
+        openDebtPaymentModal(payment.id);
+        return;
+      }
+      if (existingTx?.calendarBillId) {
+        alert('This transaction is linked to the Bill & Income Calendar. Edit the scheduled payment from the calendar instead.');
+        return;
+      }
+      if (existingTx && existingTx.type !== 'Expense') {
+        alert('Only an existing bank-paid Expense can be converted here. Use the Debt Payment workflow for a new payment or a linked payment record.');
+        return;
+      }
+      if (existingTx && existingTx.debtPaymentId) {
+        alert('This transaction is already linked to a debt payment. Open its Payment details instead.');
+        return;
+      }
+      const debtId = document.getElementById('tx-related-debt')?.value || existingTx?.debtAccountId || document.getElementById('debt-account-picker')?.value || '';
+      const fundingId = document.getElementById('tx-account')?.value || existingTx?.accountId || '';
+      const amount = Number(document.getElementById('tx-amount')?.value ?? existingTx?.amount) || 0;
+      const date = document.getElementById('tx-date')?.value || existingTx?.date || new Date().toISOString().slice(0, 10);
+      const desc = document.getElementById('tx-vendor')?.value || existingTx?.vendor || document.getElementById('tx-desc')?.value || existingTx?.desc || 'Debt payment';
       const debt = state.accounts.find(a => String(a.id) === String(debtId) && a.type === 'debt');
       const funding = state.accounts.find(a => String(a.id) === String(fundingId) && a.type === 'asset');
       if (!debt) {
@@ -7047,7 +7200,7 @@ Bonus"></textarea></div>
         return;
       }
       if (!funding) {
-        alert('Select an asset account, such as chequing or savings, as the funding account.');
+        alert('The payment must come from a chequing, savings or other asset account. A card purchase charged to the credit card itself is an Expense, not a Debt Payment.');
         return;
       }
       if (amount <= 0) {
@@ -7059,14 +7212,20 @@ Bonus"></textarea></div>
         alert('This debt account is not available in the Debt section. Refresh the Debt screen and try again.');
         return;
       }
+      if (existingTx && (existingTx.type !== 'Expense' || existingTx.calendarBillId || existingTx.debtPaymentId)) {
+        alert('This record cannot be converted in place. No changes were made.');
+        return;
+      }
       debtPicker.value = debt.id;
       renderDebtPaymentHistory();
       closeTransactionModal();
       openDebtPaymentModal();
+      document.getElementById('dp-existing-tx-id').value = existingTx ? String(existingTx.id) : '';
       document.getElementById('dp-funding-account').value = funding.id;
       document.getElementById('dp-date').value = date;
       document.getElementById('dp-desc').value = desc;
       document.getElementById('dp-amount').value = amount.toFixed(2);
+      document.getElementById('dp-payment-type').value = inferDebtPaymentClassification(debt);
       document.getElementById('dp-principal').dataset.manual = '0';
       document.getElementById('dp-principal').value = debt.paymentMethod === 'interest-only' ? '0.00' : debt.paymentMethod === 'custom' ? '' : amount.toFixed(2);
       updateDebtPaymentSplit();
@@ -7149,6 +7308,7 @@ Bonus"></textarea></div>
       document.getElementById('debt-payment-form').reset();
       const payment = paymentId ? (state.debtPayments || []).find(p => String(p.id) === String(paymentId)) : null;
       document.getElementById('dp-edit-id').value = payment?.id || '';
+      document.getElementById('dp-existing-tx-id').value = '';
       document.getElementById('dp-date').value = payment?.date || new Date().toISOString().split('T')[0];
       const funding = document.getElementById('dp-funding-account'); funding.innerHTML = '';
       state.accounts.filter(a => a.type === 'asset' && !a.archived).forEach(a => funding.innerHTML += `<option value="${a.id}">${a.name} (${formatFinancial(a.balance)})</option>`);
@@ -7157,6 +7317,7 @@ Bonus"></textarea></div>
       const debt = state.accounts.find(a => a.id === (payment?.accountId || picker.value) && a.type === 'debt');
       const targetLabel = document.getElementById('dp-target-debt-name');
       if (targetLabel) targetLabel.textContent = debt ? debt.name : 'Select a debt account first';
+      document.getElementById('dp-payment-type').value = payment?.paymentType || inferDebtPaymentClassification(debt);
       document.getElementById('dp-desc').value = payment?.desc || '';
       document.getElementById('dp-amount').value = payment ? Number(payment.amount).toFixed(2) : '';
       document.getElementById('dp-principal').dataset.manual = payment ? '1' : '0';
@@ -7172,25 +7333,37 @@ Bonus"></textarea></div>
     function saveDebtPayment(e) {
       e.preventDefault();
       const editId = document.getElementById('dp-edit-id').value;
+      const conversionTxId = document.getElementById('dp-existing-tx-id').value;
       const accountId = document.getElementById('debt-account-picker').value;
       const fundingAccountId = document.getElementById('dp-funding-account').value;
       const amount = Math.round(Math.max(0, Number(document.getElementById('dp-amount').value) || 0) * 100) / 100;
       const principalAmount = Math.round(Math.max(0, Number(document.getElementById('dp-principal').value) || 0) * 100) / 100;
       const interestAmount = Math.round((amount - principalAmount) * 100) / 100;
+      const paymentType = DEBT_PAYMENT_CLASSIFICATIONS.includes(document.getElementById('dp-payment-type').value)
+        ? document.getElementById('dp-payment-type').value
+        : 'Other Debt Payment';
       const debtAcc = state.accounts.find(a => String(a.id) === String(accountId) && a.type === 'debt');
       const fundingAcc = state.accounts.find(a => String(a.id) === String(fundingAccountId) && a.type === 'asset' && !a.archived);
       const oldPayment = editId ? (state.debtPayments || []).find(p => String(p.id) === String(editId)) : null;
       const oldTransaction = oldPayment ? state.transactions.find(t => String(t.id) === String(oldPayment.transactionId) || String(t.debtPaymentId) === String(oldPayment.id)) : null;
+      const conversionTransaction = conversionTxId ? state.transactions.find(t => String(t.id) === String(conversionTxId)) : null;
       if (editId && !oldPayment) { alert('The original debt payment could not be found. No changes were made.'); return; }
       if (editId && !oldTransaction) { alert('The linked transaction for this debt payment could not be found. No changes were made.'); return; }
+      if (conversionTxId && !conversionTransaction) { alert('The original Expense transaction could not be found. No changes were made.'); return; }
+      if (conversionTransaction && (conversionTransaction.type !== 'Expense' || conversionTransaction.calendarBillId || conversionTransaction.debtPaymentId)) {
+        alert('Only an unlinked Expense can be converted to a Debt Payment. No changes were made.'); return;
+      }
+      const conversionFunding = conversionTransaction ? state.accounts.find(a => String(a.id) === String(conversionTransaction.accountId) && a.type === 'asset') : null;
+      if (conversionTransaction && !conversionFunding) { alert('The original Expense must have been paid from an asset account such as chequing or savings. No changes were made.'); return; }
       if (!debtAcc || !fundingAcc || amount <= 0 || principalAmount > amount + 0.005) {
         alert('Select the debt being paid, choose an active asset funding account, and enter a valid payment split. Principal cannot exceed the total payment.');
         return;
       }
       const oldDebt = oldPayment ? state.accounts.find(a => String(a.id) === String(oldPayment.accountId) && a.type === 'debt') : null;
       const oldFunding = oldPayment ? state.accounts.find(a => String(a.id) === String(oldPayment.fundingAccountId) && a.type === 'asset') : null;
-      const availablePrincipal = (Number(debtAcc.balance) || 0) + (oldDebt && oldDebt.id === debtAcc.id ? (Number(oldPayment.principalAmount) || 0) : 0);
-      const availableFunding = (Number(fundingAcc.balance) || 0) + (oldFunding && oldFunding.id === fundingAcc.id ? (Number(oldPayment.amount) || 0) : 0);
+      const availablePrincipal = (Number(debtAcc.balance) || 0) + (oldDebt && String(oldDebt.id) === String(debtAcc.id) ? (Number(oldPayment.principalAmount) || 0) : 0);
+      const conversionCredit = conversionTransaction && String(conversionFunding.id) === String(fundingAcc.id) ? (Number(conversionTransaction.amount) || 0) : 0;
+      const availableFunding = (Number(fundingAcc.balance) || 0) + (oldFunding && String(oldFunding.id) === String(fundingAcc.id) ? (Number(oldPayment.amount) || 0) : conversionCredit);
       if (principalAmount > availablePrincipal + 0.005) { alert('The principal portion cannot exceed the outstanding debt balance after accounting for the payment being edited.'); return; }
       if (debtAcc.paymentMethod === 'custom' && document.getElementById('dp-principal').value.trim() === '') { alert('Enter the principal portion for this custom payment.'); return; }
       if (availableFunding < amount && !confirm('The funding account has less balance than the payment amount. Proceed anyway?')) return;
@@ -7198,8 +7371,14 @@ Bonus"></textarea></div>
       const date = document.getElementById('dp-date').value;
       const desc = document.getElementById('dp-desc').value.trim();
       if (!date || !desc) { alert('Enter a payment date and description.'); return; }
-      captureUndo(editId ? `Edit debt payment "${desc || oldPayment.desc || oldPayment.id}"` : `Record debt payment "${desc || 'Debt payment'}"`);
+      if (conversionTransaction && !createLocalSafetyCopy(`Before converting Expense "${conversionTransaction.vendor || conversionTransaction.desc || conversionTransaction.id}" to a debt payment`)) {
+        alert('FinHub could not create a local safety copy. Export a JSON backup before converting this transaction.');
+        return;
+      }
+      captureUndo(editId ? `Edit debt payment "${desc || oldPayment.desc || oldPayment.id}"` : conversionTransaction ? `Convert Expense to debt payment "${desc}"` : `Record debt payment "${desc || 'Debt payment'}"`);
 
+      let payment;
+      let paymentTransaction;
       if (oldPayment) {
         // Reverse the previous entry first, then apply the corrected payment.
         if (oldDebt) oldDebt.balance = Math.round(((Number(oldDebt.balance) || 0) + (Number(oldPayment.principalAmount) || 0)) * 100) / 100;
@@ -7211,12 +7390,14 @@ Bonus"></textarea></div>
         oldPayment.amount = amount;
         oldPayment.principalAmount = principalAmount;
         oldPayment.interestAmount = interestAmount;
+        oldPayment.paymentType = paymentType;
         oldTransaction.date = date;
         oldTransaction.desc = desc;
         oldTransaction.vendor = desc;
         oldTransaction.type = 'Debt Payment';
         oldTransaction.category = 'Debt Service';
-        oldTransaction.subcategory = principalAmount > 0 ? 'Principal Paydown' : 'Interest Payment';
+        oldTransaction.subcategory = paymentType;
+        oldTransaction.paymentType = paymentType;
         oldTransaction.amount = amount;
         oldTransaction.accountId = fundingAccountId;
         oldTransaction.debtPaymentId = oldPayment.id;
@@ -7224,16 +7405,40 @@ Bonus"></textarea></div>
         oldTransaction.debtPrincipalAmount = principalAmount;
         oldTransaction.debtInterestAmount = interestAmount;
         oldTransaction.source = 'debt-payment-log';
+        payment = oldPayment;
+        paymentTransaction = oldTransaction;
+        applyTransactionBalanceEffect(paymentTransaction, 1);
+      } else if (conversionTransaction) {
+        // Reverse the original Expense, then reapply the cash outflow as a Debt Payment.
+        // Its transaction ID and bank movement are preserved; no duplicate is created.
+        applyTransactionBalanceEffect(conversionTransaction, -1);
+        const paymentId = `dp_${Date.now()}_${Math.random().toString(36).slice(2,6)}`;
+        payment = { id: paymentId, accountId, fundingAccountId, transactionId: conversionTransaction.id, date, desc, amount, principalAmount, interestAmount, paymentType, source: 'debt-payment-log' };
+        paymentTransaction = {
+          ...conversionTransaction,
+          date, desc, vendor: desc, type: 'Debt Payment', category: 'Debt Service', subcategory: paymentType,
+          paymentType, amount, accountId: fundingAccountId, debtPaymentId: paymentId, debtAccountId: accountId,
+          debtPrincipalAmount: principalAmount, debtInterestAmount: interestAmount, source: 'debt-payment-log'
+        };
+        const transactionIndex = state.transactions.findIndex(t => String(t.id) === String(conversionTransaction.id));
+        state.transactions[transactionIndex] = paymentTransaction;
+        state.debtPayments.push(payment);
+        applyTransactionBalanceEffect(paymentTransaction, 1);
       } else {
         const paymentId = `dp_${Date.now()}_${Math.random().toString(36).slice(2,6)}`;
         const transactionId = `tx_${paymentId}`;
-        const payment = { id: paymentId, accountId, fundingAccountId, transactionId, date, desc, amount, principalAmount, interestAmount, source: 'debt-payment-log' };
+        payment = { id: paymentId, accountId, fundingAccountId, transactionId, date, desc, amount, principalAmount, interestAmount, paymentType, source: 'debt-payment-log' };
+        paymentTransaction = {
+          id: transactionId, date, desc, vendor: desc, type: 'Debt Payment', category: 'Debt Service', subcategory: paymentType,
+          paymentType, amount, accountId: fundingAccountId, debtPaymentId: paymentId, debtAccountId: accountId,
+          debtPrincipalAmount: principalAmount, debtInterestAmount: interestAmount, source: 'debt-payment-log'
+        };
         state.debtPayments.push(payment);
-        state.transactions.unshift({ id: transactionId, date, desc, vendor: desc, type: 'Debt Payment', category: 'Debt Service', subcategory: principalAmount > 0 ? 'Principal Paydown' : 'Interest Payment', amount, accountId: fundingAccountId, debtPaymentId: paymentId, debtAccountId: accountId, debtPrincipalAmount: principalAmount, debtInterestAmount: interestAmount, source: 'debt-payment-log' });
+        state.transactions.unshift(paymentTransaction);
+        applyTransactionBalanceEffect(paymentTransaction, 1);
       }
 
       debtAcc.balance = Math.max(0, Math.round(((Number(debtAcc.balance) || 0) - principalAmount) * 100) / 100);
-      fundingAcc.balance = Math.round(((Number(fundingAcc.balance) || 0) - amount) * 100) / 100;
       saveData(); closeDebtPaymentModal(); renderDebtPlanner(); renderDebtPaymentHistory(); renderLedger(); renderDashboard(); renderCalendar();
     }
 
@@ -7347,15 +7552,15 @@ Bonus"></textarea></div>
       const selectedType = document.getElementById('tx-type')?.value || '';
       const isTransfer = selectedType === 'Transfer';
       const isDebtPayment = selectedType === 'Debt Payment';
-      const isNewDebtPayment = isDebtPayment && !document.getElementById('tx-edit-id')?.value;
+      const requiresDebtWorkflow = isDebtPayment;
       document.getElementById('tx-transfer-destination-wrap')?.classList.toggle('hidden', !isTransfer);
-      document.getElementById('tx-debt-payment-guidance')?.classList.toggle('hidden', !isNewDebtPayment);
+      document.getElementById('tx-debt-payment-guidance')?.classList.toggle('hidden', !requiresDebtWorkflow);
       const submitButton = document.querySelector('#transaction-form button[type="submit"]');
       if (submitButton) {
-        submitButton.disabled = isNewDebtPayment;
-        submitButton.classList.toggle('opacity-50', isNewDebtPayment);
-        submitButton.classList.toggle('cursor-not-allowed', isNewDebtPayment);
-        submitButton.title = isNewDebtPayment ? 'Use Continue to Debt Payment form to record both account effects.' : '';
+        submitButton.disabled = requiresDebtWorkflow;
+        submitButton.classList.toggle('opacity-50', requiresDebtWorkflow);
+        submitButton.classList.toggle('cursor-not-allowed', requiresDebtWorkflow);
+        submitButton.title = requiresDebtWorkflow ? 'Use Continue to Debt Payment details so FinHub updates the funding and liability balances together.' : '';
       }
       const additionalDetails = document.querySelector('#transaction-form > details');
       if (additionalDetails && isDebtPayment) additionalDetails.open = true;
@@ -7383,11 +7588,25 @@ Bonus"></textarea></div>
         const available = isIncome ? (state.incomeCategories || []) : (state.categories || []);
         const keepSelected = selected !== 'Transfer' && available.some(c => c.name === selected) ? selected : '';
         refreshTransactionBucketOptions(keepSelected);
-        document.getElementById('tx-category-label').textContent = isIncome ? 'Income Bucket (Optional)' : 'Expense Bucket (Optional)';
-        document.getElementById('tx-add-bucket-btn').classList.remove('hidden');
+        document.getElementById('tx-category-label').textContent = isDebtPayment ? 'Debt Service (assigned in payment details)' : isIncome ? 'Income Bucket (Optional)' : 'Expense Bucket (Optional)';
+        document.getElementById('tx-add-bucket-btn').classList.toggle('hidden', isDebtPayment);
+        if (isDebtPayment) {
+          const debtService = (state.categories || []).find(c => c.name === 'Debt Service');
+          if (debtService) { document.getElementById('tx-category').value = 'Debt Service'; updateSubcategoryDropdown(); }
+          document.getElementById('tx-save-category-rule').checked = false;
+          document.getElementById('tx-save-category-rule').disabled = true;
+          document.getElementById('tx-is-split').value = 'false';
+          document.getElementById('split-tx-toggle-btn').classList.add('hidden');
+        }
         const ruleCheckbox = document.getElementById('tx-save-category-rule');
-        if (ruleCheckbox) { ruleCheckbox.disabled = isIncome; if (!isIncome) ruleCheckbox.disabled = false; if (isIncome) { ruleCheckbox.checked = false; document.getElementById('tx-category-rule-options')?.classList.add('hidden'); } }
-        if (!document.getElementById('tx-edit-id').value) document.getElementById('split-tx-toggle-btn').classList.remove('hidden');
+        if (ruleCheckbox) {
+          ruleCheckbox.disabled = isIncome || isDebtPayment;
+          if (isIncome || isDebtPayment) {
+            ruleCheckbox.checked = false;
+            document.getElementById('tx-category-rule-options')?.classList.add('hidden');
+          }
+        }
+        if (!document.getElementById('tx-edit-id').value && !isDebtPayment) document.getElementById('split-tx-toggle-btn').classList.remove('hidden');
       }
     }
     function toggleTransactionRuleOptions() {
@@ -7577,8 +7796,8 @@ Bonus"></textarea></div>
       const isSplit = document.getElementById('tx-is-split').value === "true";
       const accountId = document.getElementById('tx-account').value;
       const type = document.getElementById('tx-type').value;
-      if (type === 'Debt Payment' && !editId) {
-        alert('Please use Continue to Debt Payment form. The standard transaction form does not update the liability balance.');
+      if (type === 'Debt Payment') {
+        alert('Please use Continue to Debt Payment details. FinHub will create or convert the linked payment record and apply both balance effects correctly.');
         return;
       }
       const selectedAccount = state.accounts.find(a => String(a.id) === String(document.getElementById('tx-account').value));
@@ -7615,19 +7834,8 @@ Bonus"></textarea></div>
         if (isInternalTransfer && amount <= 0) { alert('Enter a transfer amount greater than zero.'); return; }
         captureUndo(editId ? 'Edit transaction' : 'Add transaction');
 
-        // Reverse the previous transaction's balance effect before applying the edited type.
-        if (oldT && oldT.type === 'Transfer' && oldT.transferToAccountId) {
-          const oldFrom = state.accounts.find(a => String(a.id) === String(oldT.accountId));
-          const oldTo = state.accounts.find(a => String(a.id) === String(oldT.transferToAccountId));
-          if (oldFrom) oldFrom.balance = (Number(oldFrom.balance)||0) + (Number(oldT.amount)||0);
-          if (oldTo) oldTo.balance = (Number(oldTo.balance)||0) - (Number(oldT.amount)||0);
-        } else if (oldT) {
-          const oldAcc = state.accounts.find(a => String(a.id) === String(oldT.accountId));
-          if (oldAcc) {
-            const oldWasCredit = oldT.type === 'Income' || (oldT.type === 'Transfer' && oldT.externalTransferDirection === 'in');
-            oldAcc.balance = (Number(oldAcc.balance)||0) + (oldWasCredit ? -(Number(oldT.amount)||0) : (Number(oldT.amount)||0));
-          }
-        }
+        // Reverse the previous transaction using the source account's type-aware rules.
+        if (oldT) applyTransactionBalanceEffect(oldT, -1);
 
         if (isInternalTransfer) {
           const from = state.accounts.find(a => String(a.id) === String(accountId));
@@ -7638,11 +7846,11 @@ Bonus"></textarea></div>
           delete transferRecord.externalTransferDirection;
           if (idx >= 0) state.transactions[idx] = transferRecord; else state.transactions.unshift(transferRecord);
         } else if (oldT) {
-          const newAcc = state.accounts.find(a => String(a.id) === String(accountId));
-          if (newAcc) newAcc.balance = (Number(newAcc.balance)||0) + (type === 'Income' ? amount : -amount);
-          state.transactions[idx] = { ...oldT, date, desc, vendor, type, category:document.getElementById('tx-category').value, subcategory:document.getElementById('tx-subcategory').value, amount, accountId, debtAccountId:document.getElementById('tx-related-debt').value || undefined };
-          delete state.transactions[idx].externalTransferDirection;
-          delete state.transactions[idx].transferToAccountId;
+          const updated = { ...oldT, date, desc, vendor, type, category:document.getElementById('tx-category').value, subcategory:document.getElementById('tx-subcategory').value, amount, accountId, debtAccountId:document.getElementById('tx-related-debt').value || undefined };
+          delete updated.externalTransferDirection;
+          delete updated.transferToAccountId;
+          state.transactions[idx] = updated;
+          applyTransactionBalanceEffect(updated, 1);
         } else { alert('The transaction could not be found.'); return; }
       } else if (isSplit && !editId) {
         captureUndo('Add split transaction');
@@ -7652,15 +7860,15 @@ Bonus"></textarea></div>
           const catSub = val ? val.split('::') : ['', ''];
           const amt = parseFloat(r.querySelector('.split-amt-input').value) || 0;
           if (amt > 0) {
-            state.transactions.unshift({
+            const splitTransaction = {
               id: Date.now().toString() + Math.random(),
               date, desc, vendor, type,
               category: catSub[0] || '',
               subcategory: catSub[1] || '',
               amount: amt, accountId
-            });
-            const acc = state.accounts.find(a => a.id === accountId);
-            if (acc) { if (type === 'Income') acc.balance += amt; else acc.balance -= amt; }
+            };
+            state.transactions.unshift(splitTransaction);
+            applyTransactionBalanceEffect(splitTransaction, 1);
           }
         });
       } else {
@@ -7696,8 +7904,7 @@ Bonus"></textarea></div>
             const loggedDebtAccount = linkedDebtPayment ? state.accounts.find(a => a.id === linkedDebtPayment.accountId && a.type === 'debt') : null;
             if (oldDebtAccount) oldDebtAccount.balance = (Number(oldDebtAccount.balance) || 0) + (Number(oldT.debtPrincipalAmount ?? oldT.amount) || 0);
             if (loggedDebtAccount) loggedDebtAccount.balance = (Number(loggedDebtAccount.balance) || 0) + (Number(oldT.debtPrincipalAmount ?? linkedDebtPayment.principalAmount ?? oldT.amount) || 0);
-            const oldAcc = state.accounts.find(a => a.id === oldT.accountId);
-            if (oldAcc) { if (oldT.type === 'Income') oldAcc.balance -= oldT.amount; else oldAcc.balance += oldT.amount; }
+            applyTransactionBalanceEffect(oldT, -1);
             state.transactions[idx] = { ...oldT, id: editId, date, desc, vendor, type, category, subcategory, amount, accountId, ...(oldT.debtPaymentId || oldT.calendarBillId ? {} : { debtAccountId: relatedDebtAccountId || undefined }) };
             const updatedT = state.transactions[idx];
             if (oldT.calendarBillId) {
@@ -7718,13 +7925,12 @@ Bonus"></textarea></div>
               linkedDebtPayment.date = date; linkedDebtPayment.desc = desc || vendor; linkedDebtPayment.amount = amount; linkedDebtPayment.fundingAccountId = accountId;
               if (type === 'Debt Payment' && loggedDebtAccount) { const principal = Math.max(0, Number(oldT.debtPrincipalAmount ?? linkedDebtPayment.principalAmount ?? amount) || 0); updatedT.debtPrincipalAmount = principal; updatedT.debtInterestAmount = Math.max(0, amount - principal); linkedDebtPayment.amount = amount; linkedDebtPayment.principalAmount = principal; linkedDebtPayment.interestAmount = Math.max(0, amount - principal); loggedDebtAccount.balance = Math.max(0, (Number(loggedDebtAccount.balance) || 0) - principal); }
             }
-            const newAcc = state.accounts.find(a => a.id === accountId);
-            if (newAcc) { if (type === 'Income') newAcc.balance += amount; else newAcc.balance -= amount; }
+            applyTransactionBalanceEffect(updatedT, 1);
           }
         } else {
-          state.transactions.unshift({ id: Date.now().toString(), date, desc, vendor, type, category, subcategory, amount, accountId, ...(relatedDebtAccountId ? { debtAccountId: relatedDebtAccountId } : {}) });
-          const acc = state.accounts.find(a => a.id === accountId);
-          if (acc) { if (type === 'Income') acc.balance += amount; else acc.balance -= amount; }
+          const newTransaction = { id: Date.now().toString(), date, desc, vendor, type, category, subcategory, amount, accountId, ...(relatedDebtAccountId ? { debtAccountId: relatedDebtAccountId } : {}) };
+          state.transactions.unshift(newTransaction);
+          applyTransactionBalanceEffect(newTransaction, 1);
         }
       }
 
