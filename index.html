@@ -1012,7 +1012,7 @@
           <button onclick="toggleCollapse('sec-advanced-types')" class="w-full flex justify-between items-center text-left">
             <div>
               <h3 class="text-md font-bold">Advanced: Custom Transaction Types</h3>
-              <p class="text-xs text-gray-400 mt-1">Most users can keep the standard transaction types.</p>
+              <p class="text-xs text-gray-400 mt-1">Use the four standard types for everyday entries: Expense, Income, Transfer and Debt.</p>
             </div>
             <i id="sec-advanced-types-icon" class="fa-solid fa-chevron-down text-gray-400 transition-transform"></i>
           </button>
@@ -1025,6 +1025,10 @@
         <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-4 shadow-sm">
           <div class="flex flex-wrap items-center justify-between gap-2"><div><h3 class="text-md font-bold">Expense Buckets & Subcategories</h3><p class="text-[10px] text-gray-400 mt-1">Used for spending, budgets and expense reporting.</p></div><button type="button" onclick="openCategoryModal()" class="px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-semibold theme-bg"><i class="fa-solid fa-plus mr-1"></i>Add Expense Bucket</button></div>
           <div id="settings-categories-list" class="space-y-3"></div>
+        </div>
+        <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-4 shadow-sm">
+          <div><h3 class="text-md font-bold">Debt Categories & Subcategories</h3><p class="text-[10px] text-gray-400 mt-1">Used only when Type is Debt. Principal reduces the liability; interest is included in expense reporting.</p></div>
+          <div id="settings-debt-categories-list" class="space-y-3"></div>
         </div>
         <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-4 shadow-sm">
           <div class="flex flex-wrap items-center justify-between gap-2"><div><h3 class="text-md font-bold">Income Buckets & Subcategories</h3><p class="text-[10px] text-gray-400 mt-1">Used to classify money received. Kept separate from expense buckets.</p></div><button type="button" onclick="openIncomeCategoryModal()" class="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-semibold"><i class="fa-solid fa-plus mr-1"></i>Add Income Bucket</button></div>
@@ -1083,8 +1087,8 @@
         <div><label class="block text-xs font-semibold text-gray-500 mb-1">Bank description contains</label><input id="import-rule-match" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" placeholder="e.g. RBC LOC INTEREST"></div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div><label class="block text-xs font-semibold text-gray-500 mb-1">Clean vendor name</label><input id="import-rule-vendor" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" placeholder="e.g. RBC"></div>
-          <div><label class="block text-xs font-semibold text-gray-500 mb-1">FinHub transaction type</label><select id="import-rule-type" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"><option value="">Use statement debit/credit</option><option>Expense</option><option>Income</option><option>Debt Payment</option><option>Transfer</option></select></div>
-          <div><label class="block text-xs font-semibold text-gray-500 mb-1">Category</label><input id="import-rule-category" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" placeholder="e.g. Debt Service"></div>
+          <div><label class="block text-xs font-semibold text-gray-500 mb-1">FinHub transaction type</label><select id="import-rule-type" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"><option value="">Use statement debit/credit</option><option>Expense</option><option>Income</option><option>Transfer</option><option>Debt</option></select></div>
+          <div><label class="block text-xs font-semibold text-gray-500 mb-1">Category</label><input id="import-rule-category" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" placeholder="e.g. Debt Payment"></div>
           <div><label class="block text-xs font-semibold text-gray-500 mb-1">Subcategory / Payment classification</label><input id="import-rule-subcategory" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" placeholder="e.g. Line of Credit Payment"></div>
           <div><label class="block text-xs font-semibold text-gray-500 mb-1">Debt account</label><select id="import-rule-debt-account" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"><option value="">No debt account</option></select></div>
           <div><label class="block text-xs font-semibold text-gray-500 mb-1">Payment classification</label><select id="import-rule-payment-type" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"><option value="">Infer from debt account</option><option>Credit Card Payment</option><option>Line of Credit Payment</option><option>Loan Payment</option><option>Mortgage Payment</option><option>Other Debt Payment</option></select></div>
@@ -1514,6 +1518,10 @@ Bonus"></textarea></div>
           <div><label class="block text-xs font-semibold text-gray-500 mb-1">Transaction Type</label><select id="tx-type" onchange="updateTransactionTypeFields()" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></select></div>
           <div id="tx-amount-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Total Amount ($)</label><input type="number" step="0.01" id="tx-amount" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
         </div>
+        <div id="tx-interest-charge-guidance" class="hidden rounded-xl border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30 p-3 space-y-1">
+          <div class="text-xs font-bold text-amber-800 dark:text-amber-200">Interest added to a debt balance</div>
+          <p class="text-[11px] text-amber-800 dark:text-amber-200">Choose the liability account in the Account field. Saving records interest expense and increases that debt balance. If the interest was paid from chequing or savings, use Category “Debt Payment” instead and enter $0 principal with the full payment as interest.</p>
+        </div>
         <div id="tx-debt-payment-guidance" class="hidden rounded-xl border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30 p-3 space-y-2">
           <div class="text-xs font-bold text-amber-800 dark:text-amber-200">Complete the Debt Payment details</div>
           <p class="text-[11px] text-amber-800 dark:text-amber-200">For an existing bank-imported payment, keep Account set to the chequing or savings account the money came from. Under Additional details, choose the liability being paid. Continue converts that original transaction in place—same transaction ID and no duplicate bank withdrawal.</p>
@@ -1524,7 +1532,7 @@ Bonus"></textarea></div>
           <summary class="cursor-pointer text-xs font-semibold text-gray-500">Additional details (optional)</summary>
           <div class="space-y-2 pt-3">
             <div><label class="block text-xs font-semibold text-gray-500 mb-1">Description</label><input type="text" id="tx-desc" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" placeholder="e.g. Weekly groceries"></div>
-            <div><label class="block text-xs font-semibold text-gray-500 mb-1">Related Debt Account</label><select id="tx-related-debt" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"><option value="">Not linked to a debt account</option></select><p class="text-[10px] text-gray-400 mt-1">Link interest expenses or other activity to a debt account.</p></div>
+            <div id="tx-related-debt-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Related Debt Account</label><select id="tx-related-debt" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"><option value="">Not linked to a debt account</option></select><p id="tx-related-debt-help" class="text-[10px] text-gray-400 mt-1">Link interest expenses or other activity to a debt account.</p></div>
           </div>
         </details>
         <div id="tx-transfer-destination-wrap" class="hidden"><label class="block text-xs font-semibold text-gray-500 mb-1">Account To</label><select id="tx-transfer-to" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></select></div>
@@ -1533,10 +1541,10 @@ Bonus"></textarea></div>
           <div class="grid grid-cols-2 gap-3">
             <div>
               <div class="flex items-center justify-between mb-1"><label id="tx-category-label" class="block text-xs font-semibold text-gray-500">Expense Bucket (Optional)</label><button id="tx-add-bucket-btn" type="button" onclick="quickAddBucketFromTransaction()" class="text-[10px] font-semibold text-indigo-500 hover:text-indigo-400">+ Add bucket</button></div>
-              <select id="tx-category" onchange="updateSubcategoryDropdown()" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"><option value="">-- None --</option></select>
+              <select id="tx-category" onchange="updateTransactionTypeFields()" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"><option value="">-- None --</option></select>
             </div>
             <div>
-              <div class="flex items-center justify-between mb-1"><label class="block text-xs font-semibold text-gray-500">Subcategory (Optional)</label><button type="button" onclick="quickAddSubcategoryFromTransaction()" class="text-[10px] font-semibold text-indigo-500 hover:text-indigo-400">+ Add subcategory</button></div>
+              <div class="flex items-center justify-between mb-1"><label class="block text-xs font-semibold text-gray-500">Subcategory (Optional)</label><button id="tx-add-subcategory-btn" type="button" onclick="quickAddSubcategoryFromTransaction()" class="text-[10px] font-semibold text-indigo-500 hover:text-indigo-400">+ Add subcategory</button></div>
               <select id="tx-subcategory" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"><option value="">-- None --</option></select>
             </div>
           </div>
@@ -1702,7 +1710,29 @@ Bonus"></textarea></div>
 
     function escapeHtml(value) { return String(value ?? '').replace(/[&<>\"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[ch])); }
 
+    const STANDARD_TRANSACTION_TYPES = ['Expense', 'Income', 'Transfer', 'Debt'];
     const DEBT_PAYMENT_CLASSIFICATIONS = ['Credit Card Payment','Line of Credit Payment','Loan Payment','Mortgage Payment','Other Debt Payment'];
+    const DEFAULT_EXPENSE_BUCKETS = [
+      { name: 'Housing & Bills', subcategories: ['Rent','Utilities','Internet','Phone'] },
+      { name: 'Living Expenses', subcategories: ['Groceries','Takeout','Household Supplies'] },
+      { name: 'Transportation', subcategories: ['Gas','Car Maintenance','Parking'] },
+      { name: 'Kids & Activities', subcategories: ['Gymnastics','Soccer','School Expenses'] },
+      { name: 'Pets', subcategories: ['Food','Veterinary','Supplies'] },
+      { name: 'Personal & Lifestyle', subcategories: ['Clothing','Entertainment','Personal Care'] },
+      // Interest remains an expense for reporting, even when it is recorded in a Debt workflow.
+      { name: 'Debt Service', subcategories: ['Interest Expense'] }
+    ];
+    const DEFAULT_DEBT_CATEGORIES = [
+      { name: 'Debt Payment', subcategories: DEBT_PAYMENT_CLASSIFICATIONS },
+      { name: 'Interest Charge', subcategories: ['Interest Expense'] }
+    ];
+    function displayFinHubTransactionType(type) {
+      return ['Debt', 'Debt Payment', 'Interest Charge'].includes(type) ? 'Debt' : (type || '');
+    }
+    function internalTransactionType(type, category) {
+      if (type !== 'Debt') return type;
+      return category === 'Interest Charge' ? 'Interest Charge' : 'Debt Payment';
+    }
     function inferDebtPaymentClassification(account) {
       const text = `${account?.individualType || ''} ${account?.name || ''}`.toLowerCase();
       if (/credit.?card|visa|mastercard|master card|amex|american express/.test(text)) return 'Credit Card Payment';
@@ -1751,10 +1781,10 @@ Bonus"></textarea></div>
       const signedAmount = Number(transaction.amount) || 0;
       const amount = Math.max(0, signedAmount);
       if (transaction.type === 'Expense' && signedAmount !== 0) return [{ transaction, category: transaction.category || 'Uncategorized', subcategory: transaction.subcategory || 'Uncategorized', amount: signedAmount, component: signedAmount < 0 ? 'Refund' : 'Expense' }];
-      if (transaction.type === 'Interest Charge' && amount > 0) return [{ transaction, category: 'Debt Service', subcategory: 'Interest expense', amount, component: 'Interest charge' }];
+      if (transaction.type === 'Interest Charge' && amount > 0) return [{ transaction, category: 'Debt Service', subcategory: 'Interest Expense', amount, component: 'Interest charge' }];
       if (transaction.type === 'Debt Payment') {
         const interest = Math.max(0, Math.min(amount, Number(transaction.debtInterestAmount) || 0));
-        if (interest > 0) return [{ transaction, category: 'Debt Service', subcategory: 'Interest expense', amount: interest, component: 'Interest portion' }];
+        if (interest > 0) return [{ transaction, category: 'Debt Service', subcategory: 'Interest Expense', amount: interest, component: 'Interest portion' }];
       }
       return [];
     }
@@ -1795,13 +1825,10 @@ Bonus"></textarea></div>
       merchantRules: [],
       importRules: [],
       vendorCleanupRules: [],
-      transactionTypes: ['Expense', 'Income', 'Debt Payment', 'Transfer'],
-      // Keep a small starter category framework, but no sample budgets or activity.
-      categories: [
-        { name: 'Housing & Bills', subcategories: [{ name: 'Rent & Utilities', limit: 0, rollover: false }] },
-        { name: 'Living Expenses', subcategories: [{ name: 'Groceries', limit: 0, rollover: true }, { name: 'Gas', limit: 0, rollover: true }] },
-        { name: 'Debt Service', subcategories: [{ name: 'Interest expense', limit: 0, rollover: false }, { name: 'Principal Paydown', limit: 0, rollover: false }] }
-      ],
+      transactionTypes: [...STANDARD_TRANSACTION_TYPES],
+      // Editable expense buckets. Debt-specific classifications live separately below.
+      categories: DEFAULT_EXPENSE_BUCKETS.map(bucket => ({ name: bucket.name, subcategories: bucket.subcategories.map(name => ({ name, limit: 0, rollover: false })) })),
+      debtCategories: DEFAULT_DEBT_CATEGORIES.map(bucket => ({ name: bucket.name, subcategories: bucket.subcategories.map(name => ({ name, limit: 0, rollover: false })) })),
       incomeCategories: [
         { name: 'Employment Income', subcategories: [] },
         { name: 'Government Benefits', subcategories: [] },
@@ -1864,18 +1891,34 @@ Bonus"></textarea></div>
     state.debtPayments = Array.isArray(state.debtPayments) ? state.debtPayments : [];
     state.calendarBills = Array.isArray(state.calendarBills) ? state.calendarBills : [];
     state.categories = Array.isArray(state.categories) ? state.categories : [];
-    let debtServiceCategory = state.categories.find(c => c.name === 'Debt Service');
-    if (!debtServiceCategory) { debtServiceCategory = { name: 'Debt Service', subcategories: [] }; state.categories.push(debtServiceCategory); }
-    debtServiceCategory.subcategories = Array.isArray(debtServiceCategory.subcategories) ? debtServiceCategory.subcategories : [];
-    ['Credit Card Payment','Line of Credit Payment','Loan Payment','Mortgage Payment','Other Debt Payment','Interest expense','Principal Paydown'].forEach(name => {
-      if (!debtServiceCategory.subcategories.some(sub => sub.name === name)) debtServiceCategory.subcategories.push({ name, limit: 0, rollover: false });
+    // Add any missing recommended expense buckets without overwriting user-created buckets or limits.
+    DEFAULT_EXPENSE_BUCKETS.forEach(defaultBucket => {
+      let bucket = state.categories.find(c => c && c.name === defaultBucket.name);
+      if (!bucket) { bucket = { name: defaultBucket.name, subcategories: [] }; state.categories.push(bucket); }
+      bucket.subcategories = Array.isArray(bucket.subcategories) ? bucket.subcategories : [];
+      defaultBucket.subcategories.forEach(name => {
+        if (!bucket.subcategories.some(sub => String(sub.name).toLowerCase() === name.toLowerCase())) bucket.subcategories.push({ name, limit: 0, rollover: false });
+      });
     });
+    state.debtCategories = Array.isArray(state.debtCategories) ? state.debtCategories : [];
+    DEFAULT_DEBT_CATEGORIES.forEach(defaultBucket => {
+      let bucket = state.debtCategories.find(c => c && c.name === defaultBucket.name);
+      if (!bucket) { bucket = { name: defaultBucket.name, subcategories: [] }; state.debtCategories.push(bucket); }
+      bucket.subcategories = Array.isArray(bucket.subcategories) ? bucket.subcategories : [];
+      defaultBucket.subcategories.forEach(name => {
+        if (!bucket.subcategories.some(sub => String(sub.name).toLowerCase() === name.toLowerCase())) bucket.subcategories.push({ name, limit: 0, rollover: false });
+      });
+    });
+    // The UI has four standard types. Older internal debt records keep their storage types,
+    // but the transaction list and editor present both as the single user-facing type Debt.
+    const customTypes = (Array.isArray(state.transactionTypes) ? state.transactionTypes : []).filter(type => !['Expense','Income','Transfer','Debt','Debt Payment','Interest Charge'].includes(type));
+    state.transactionTypes = [...STANDARD_TRANSACTION_TYPES, ...customTypes.filter((type, index) => customTypes.indexOf(type) === index)];
     state.debtPayments.forEach(payment => {
       const linked = state.transactions.find(t => String(t.id) === String(payment.transactionId) || String(t.debtPaymentId) === String(payment.id));
       const debtAccount = state.accounts.find(a => String(a.id) === String(payment.accountId) && a.type === 'debt');
       const paymentType = DEBT_PAYMENT_CLASSIFICATIONS.includes(payment.paymentType || linked?.paymentType) ? (payment.paymentType || linked.paymentType) : inferDebtPaymentClassification(debtAccount);
       payment.paymentType = paymentType;
-      if (linked) { linked.paymentType = paymentType; linked.category = 'Debt Service'; linked.subcategory = paymentType; }
+      if (linked) { linked.paymentType = paymentType; linked.category = 'Debt Payment'; linked.subcategory = paymentType; }
     });
     state.transactions.forEach(t => {
       if (t.type !== 'Debt Payment') return;
@@ -1884,9 +1927,25 @@ Bonus"></textarea></div>
       const debtAccount = state.accounts.find(a => String(a.id) === String(t.debtAccountId || payment?.accountId || bill?.debtAccountId || bill?.relatedDebtAccountId) && a.type === 'debt') || (bill ? resolveDebtAccountForBill(bill) : null);
       const paymentType = DEBT_PAYMENT_CLASSIFICATIONS.includes(t.paymentType || payment?.paymentType) ? (t.paymentType || payment.paymentType) : inferDebtPaymentClassification(debtAccount);
       t.paymentType = paymentType;
-      t.category = 'Debt Service';
+      t.category = 'Debt Payment';
       t.subcategory = paymentType;
       if (payment) payment.paymentType = paymentType;
+    });
+    (state.transactions || []).forEach(t => {
+      if (t.type === 'Interest Charge') { t.category = 'Interest Charge'; t.subcategory = 'Interest Expense'; }
+      if (t.type === 'Debt Payment') { t.category = 'Debt Payment'; }
+    });
+    state.calendarBills.forEach(bill => { if (bill.type === 'debt' && bill.category === 'Debt Service') bill.category = 'Debt Payment'; });
+    state.importRules = (state.importRules || []).map(rule => {
+      const next = { ...rule };
+      if (['Debt Payment','Debt Service'].includes(next.type)) next.type = 'Debt';
+      if (next.type === 'Debt' || next.category === 'Debt Service') {
+        const isInterest = /interest/i.test(`${next.subcategory || ''} ${next.match || ''}`) && !DEBT_PAYMENT_CLASSIFICATIONS.includes(next.paymentType || next.subcategory);
+        next.category = isInterest ? 'Interest Charge' : 'Debt Payment';
+        if (isInterest) next.subcategory = 'Interest Expense';
+        else if (!next.paymentType && DEBT_PAYMENT_CLASSIFICATIONS.includes(next.subcategory)) next.paymentType = next.subcategory;
+      }
+      return next;
     });
     (state.transactions || []).forEach(t => {
       if (t.type !== 'Transfer' || t.transferToAccountId || !t.externalTransferDirection) return;
@@ -1899,6 +1958,7 @@ Bonus"></textarea></div>
       }
       delete t.externalTransferDirection;
     });
+    state.transactionTaxonomyVersion = 2;
     state.appVisualTheme = ['classic','silver','neutral','colorful'].includes(state.appVisualTheme) ? state.appVisualTheme : 'classic';
     if (!Array.isArray(state.variablePoolCategories)) state.variablePoolCategories = (state.categories || []).filter(c => !/housing|bill|debt service/i.test(c.name)).map(c => c.name);
     // New planner, reconciliation, and sinking-fund fields are additive; existing transactions and budgets remain intact.
@@ -4612,7 +4672,7 @@ Bonus"></textarea></div>
         (state.categories || []).filter(c=>c.name !== 'Transfer').map(c=>`<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`).join('');
       const typeSelect = document.getElementById('bulk-type');
       typeSelect.innerHTML = '<option value="">No change</option>' +
-        (state.transactionTypes || ['Expense','Income','Debt Payment']).filter(type=>type !== 'Transfer').map(type=>`<option value="${escapeHtml(type)}">${escapeHtml(type)}</option>`).join('') +
+        (state.transactionTypes || STANDARD_TRANSACTION_TYPES).filter(type=>type !== 'Transfer' && type !== 'Debt').map(type=>`<option value="${escapeHtml(type)}">${escapeHtml(type)}</option>`).join('') +
         '<option value="Transfer">Internal Transfer</option>';
       const transferTo = document.getElementById('bulk-transfer-to');
       transferTo.innerHTML = '<option value="">Choose destination account</option>' +
@@ -4787,7 +4847,7 @@ Bonus"></textarea></div>
         }
       }
       let bulkTypeRows = valid;
-      if (typeValue === 'Debt Payment') {
+      if (typeValue === 'Debt') {
         alert('Debt Payments must be processed one at a time through the Debt Payment form so the liability, funding account, and principal/interest split stay linked.');
         return;
       }
@@ -4934,7 +4994,7 @@ Bonus"></textarea></div>
       if (key === 'date') return t.date || '';
       if (key === 'vendor') return t.vendor || '(No vendor)';
       if (key === 'desc') return t.desc || '(No description)';
-      if (key === 'type') return t.type || '';
+      if (key === 'type') return displayFinHubTransactionType(t.type);
       if (key === 'category') return t.category || '(Uncategorized)';
       if (key === 'subcategory') return t.subcategory || '(No subcategory)';
       if (key === 'account') return acc ? acc.name : '(No account)';
@@ -5273,7 +5333,7 @@ Bonus"></textarea></div>
               <td data-label="Date" class="px-4 py-3"><div class="flex items-center gap-2"><input type="checkbox" class="ledger-row-select accent-indigo-600" data-id="${t.id}" ${selectedLedgerIds.has(t.id)?'checked':''} onchange="toggleLedgerTransactionSelection('${t.id}',this.checked)" aria-label="Select transaction ${t.date}"><span>${t.date}</span></div></td>
               <td data-label="Vendor" class="px-4 py-3">${t.vendor || 'Vendor not recorded'}</td>
               <td data-label="Description" class="px-4 py-3">${t.desc || '-'}</td>
-              <td data-label="Type" class="px-4 py-3"><span class="px-2 py-0.5 rounded text-[10px] bg-gray-100 dark:bg-gray-800">${t.type === 'Transfer' ? 'Internal Transfer' : t.type}</span><div class="mt-1 flex flex-wrap gap-1"><span class="px-1.5 py-0.5 rounded text-[9px] bg-indigo-500/10 text-indigo-500">${escapeHtml(transactionSourceShortLabel(t))}</span>${transactionStatementStatusBadge(t)}</div></td>
+              <td data-label="Type" class="px-4 py-3"><span class="px-2 py-0.5 rounded text-[10px] bg-gray-100 dark:bg-gray-800">${t.type === 'Transfer' ? 'Internal Transfer' : displayFinHubTransactionType(t.type)}</span><div class="mt-1 flex flex-wrap gap-1"><span class="px-1.5 py-0.5 rounded text-[9px] bg-indigo-500/10 text-indigo-500">${escapeHtml(transactionSourceShortLabel(t))}</span>${transactionStatementStatusBadge(t)}</div></td>
               <td data-label="Bucket" class="px-4 py-3">${t.category || '-'}</td>
               <td data-label="Subcategory" class="px-4 py-3">${t.subcategory || '-'}</td>
               <td data-label="Account" class="px-4 py-3">${acc ? (t.transferToAccountId ? `${acc.name} → ${(state.accounts.find(a=>a.id===t.transferToAccountId)||{}).name||'Account'}` : acc.name) : '-'}</td>
@@ -5588,7 +5648,7 @@ Bonus"></textarea></div>
         if(!v)return '';
         if(v==='expense'||v==='spending')return 'Expense';
         if(v==='income'||v==='deposit')return 'Income';
-        if(v==='debtpayment'||v==='debtservice'||v==='payment')return 'Debt Payment';
+        if(v==='debt'||v==='debtpayment'||v==='debtservice'||v==='payment')return 'Debt';
         if(v==='transfer'||v==='accounttransfer')return 'Transfer';
         return String(value||'').trim();
       };
@@ -5684,7 +5744,7 @@ Bonus"></textarea></div>
       document.getElementById('import-rule-modal-title').textContent = existing ? 'Edit Statement Import Rule' : 'Add Statement Import Rule';
       document.getElementById('import-rule-match').value = existing?.match || row?.description || '';
       document.getElementById('import-rule-vendor').value = existing?.vendor || row?.vendor || row?.cleanedVendorName || applyVendorCleanupRules(row?.description || '') || '';
-      document.getElementById('import-rule-type').value = existing?.type || row?.importType || '';
+      document.getElementById('import-rule-type').value = displayFinHubTransactionType(existing?.type || row?.importType || '');
       document.getElementById('import-rule-category').value = existing?.category || row?.category || '';
       document.getElementById('import-rule-subcategory').value = existing?.subcategory || row?.subcategory || '';
       document.getElementById('import-rule-debt-account').value = existing?.debtAccountId || row?.debtAccountId || '';
@@ -5744,20 +5804,26 @@ Bonus"></textarea></div>
       row.importRuleMatch = rule?.match || '';
       const merchantRule = (state.merchantRules || []).find(r => normalizeStatementText(row.description).includes(normalizeStatementText(r.keyword)));
       row.vendor = explicit.vendor || rule?.vendor || applyVendorCleanupRules(row.description);
-      row.importType = explicit.type || rule?.type || row.type;
-      row.category = explicit.category || rule?.category || (row.importType === 'Expense' ? (merchantRule?.category || '') : '');
-      row.subcategory = explicit.subcategory || rule?.subcategory || (row.importType === 'Expense' ? (merchantRule?.subcategory || '') : '');
+      const requestedType = explicit.type || rule?.type || row.type;
+      const requestedCategory = explicit.category || rule?.category || '';
+      const requestedSubcategory = explicit.subcategory || rule?.subcategory || '';
+      row.importType = internalTransactionType(requestedType, requestedCategory);
+      row.category = requestedCategory || (row.importType === 'Expense' ? (merchantRule?.category || '') : '');
+      row.subcategory = requestedSubcategory || (row.importType === 'Expense' ? (merchantRule?.subcategory || '') : '');
       const rawDebtAccount = explicit.debtAccount || '';
       const debtAccount = rawDebtAccount ? resolveStatementAccount(rawDebtAccount, 'debt') : null;
       row.debtAccountId = debtAccount?.id || rule?.debtAccountId || '';
-      row.paymentType = explicit.paymentType || rule?.paymentType || '';
+      row.paymentType = explicit.paymentType || rule?.paymentType || (DEBT_PAYMENT_CLASSIFICATIONS.includes(requestedSubcategory) ? requestedSubcategory : (DEBT_PAYMENT_CLASSIFICATIONS.includes(rule?.subcategory) ? rule.subcategory : ''));
       if (row.importType === 'Debt Payment') {
-        row.category = 'Debt Service';
+        row.category = 'Debt Payment';
         if (!row.paymentType) {
           const debt = (state.accounts || []).find(a => String(a.id) === String(row.debtAccountId));
           row.paymentType = inferDebtPaymentClassification(debt);
         }
         row.subcategory = row.paymentType;
+      } else if (row.importType === 'Interest Charge') {
+        row.category = 'Interest Charge';
+        row.subcategory = 'Interest Expense';
       }
       row.transferToAccountId = (explicit.transferTo ? resolveStatementAccount(explicit.transferTo, 'asset')?.id : '') || rule?.transferToAccountId || '';
       const hasPrincipal = Number.isFinite(explicit.principal);
@@ -5781,7 +5847,9 @@ Bonus"></textarea></div>
         else if (!debt) row.importValidationError = rawDebtAccount ? `Debt account "${rawDebtAccount}" was not found. Use the exact FinHub account name.` : 'Choose a Debt Account column or create an import rule with a debt account.';
         else if (row.principalAmount === null || row.interestAmount === null) row.importValidationError = 'Add Principal and Interest columns, or set an interest-only / principal-only split in an import rule.';
         else if (row.principalAmount < 0 || row.interestAmount < 0 || Math.abs((row.principalAmount + row.interestAmount) - row.amount) > 0.01) row.importValidationError = 'Principal plus Interest must equal the payment Amount.';
-        else if (!DEBT_PAYMENT_CLASSIFICATIONS.includes(row.paymentType)) row.importValidationError = 'Choose a valid Payment Classification.';
+        else if (!DEBT_PAYMENT_CLASSIFICATIONS.includes(row.paymentType)) row.importValidationError = 'Choose a valid Debt Payment subcategory.';
+      } else if (row.importType === 'Interest Charge') {
+        row.importValidationError = 'An Interest Charge increases a liability without a cash funding-account transaction. Record it through Debt → Record Interest Charge. If the interest was paid from chequing, import it as Type Debt, Category Debt Payment, with Principal 0 and Interest equal to the full payment.';
       } else if (row.importType === 'Transfer') {
         if (row.type !== 'Expense') row.importValidationError = 'A transfer import must be a debit / money-out row from the selected source account.';
         else if (!resolveStatementAccount(row.transferToAccountId, 'asset')) row.importValidationError = 'Choose a valid Transfer To Account.';
@@ -6107,7 +6175,7 @@ Bonus"></textarea></div>
         const status=row.status==='matched'?'Matched':row.status==='imported'?'Imported':row.status==='skipped'?'Skipped':row.status==='duplicate'?'Possible duplicate':suggested?'Suggested match':crossCandidate?'Possible transfer counterpart':'No match found';
         const options=candidatesForRow.map(t=>`<option value="${t.id}" ${suggested&&t.id===suggested.id?'selected':''}>${t.date} · ${escapeHtml(t.vendor||t.desc||'Transaction')} · ${formatFinancial(t.amount)}</option>`).join('');
         const undoButton=row.matchedGroupId?`<button onclick="undoManualStatementMatch('${row.matchedGroupId}')" class="px-2.5 py-1.5 bg-gray-200 dark:bg-gray-800 rounded-lg text-xs">Undo grouped match</button>`:`<button onclick="unlinkStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-gray-200 dark:bg-gray-800 rounded-lg text-xs">Undo match</button>`;
-        const importSummary = [row.importType || row.type, row.vendor || row.cleanedVendorName || applyVendorCleanupRules(row.description), row.category, row.subcategory, row.debtAccountId ? state.accounts.find(a=>String(a.id)===String(row.debtAccountId))?.name : ''].filter(Boolean).join(' · ');
+        const importSummary = [displayFinHubTransactionType(row.importType || row.type), row.vendor || row.cleanedVendorName || applyVendorCleanupRules(row.description), row.category, row.subcategory, row.debtAccountId ? state.accounts.find(a=>String(a.id)===String(row.debtAccountId))?.name : ''].filter(Boolean).join(' · ');
         const importWarning = row.importValidationError ? `<div class="rounded-lg bg-amber-500/10 border border-amber-500/20 p-2 text-[10px] text-amber-600">${escapeHtml(row.importValidationError)}</div>` : '';
         const splitLine = row.importType==='Debt Payment' && row.principalAmount!==null && row.interestAmount!==null ? `<div class="text-[10px] text-gray-400">Principal ${formatFinancial(row.principalAmount)} · Interest ${formatFinancial(row.interestAmount)}${row.paymentType?' · '+escapeHtml(row.paymentType):''}</div>` : '';
         return `<div class="border border-gray-200 dark:border-gray-800 rounded-xl p-3 space-y-2"><div class="flex justify-between gap-3"><div class="min-w-0"><div class="font-semibold text-xs">${escapeHtml(row.description)}</div><div class="text-[10px] text-indigo-400">Vendor: ${escapeHtml(row.vendor || row.cleanedVendorName || applyVendorCleanupRules(row.description))}</div><div class="text-[10px] text-gray-400">${row.date} · Statement direction: ${row.type==='Expense'?'Debit / money out':'Credit / money in'}</div><div class="text-[10px] text-gray-500 mt-0.5">FinHub import: ${escapeHtml(importSummary)}</div>${splitLine}</div><strong class="text-sm accounting-num whitespace-nowrap">${formatFinancial(row.amount)}</strong></div>${importWarning}<div class="flex flex-wrap items-center gap-2"><span class="text-[10px] ${row.status==='matched'?'text-emerald-500':row.status==='duplicate'?'text-amber-500':'text-gray-400'}">${status}</span>${row.status==='pending'&&candidatesForRow.length?`<select id="stmt-match-${row.id}" class="flex-1 min-w-[180px] bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-1 text-xs">${options}</select><button onclick="linkStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-emerald-600 text-white rounded-lg text-xs">Match</button>`:''}${row.status==='pending'?`${crossCandidates.length?`<select id="stmt-transfer-match-${row.id}" class="min-w-[180px] bg-gray-50 dark:bg-gray-950 border border-indigo-300 dark:border-indigo-800 rounded-lg px-2 py-1 text-xs">${crossOptions}</select><button onclick="matchStatementRowAsInternalTransfer('${row.id}',document.getElementById('stmt-transfer-match-${row.id}').value)" class="px-2.5 py-1.5 bg-indigo-600 text-white rounded-lg text-xs">Match as Internal Transfer</button>`:''}<button onclick="openVendorRuleModal('${row.id}')" class="px-2.5 py-1.5 bg-violet-600/15 text-violet-500 rounded-lg text-xs">Clean vendor</button><button onclick="openImportRuleModal('${row.id}')" class="px-2.5 py-1.5 bg-violet-600/15 text-violet-500 rounded-lg text-xs">Save import rule</button><button onclick="importStatementRow('${row.id}')" ${row.importValidationError?'disabled title="Fix the import details before importing"':''} class="px-2.5 py-1.5 bg-indigo-600 text-white rounded-lg text-xs disabled:opacity-40">Import as new</button><button onclick="skipStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-gray-200 dark:bg-gray-800 rounded-lg text-xs">Skip</button>`:row.status==='duplicate'?`<span class="text-[10px] text-amber-500">${row.duplicateOfRowId?'Duplicates another row in this upload':`Looks like: ${escapeHtml((state.transactions||[]).find(t=>t.id===row.duplicateTransactionId)?.vendor||'an existing transaction')}`}</span><button onclick="allowStatementDuplicate('${row.id}')" class="px-2.5 py-1.5 bg-amber-500/15 text-amber-600 rounded-lg text-xs">Import anyway</button><button onclick="skipStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-gray-200 dark:bg-gray-800 rounded-lg text-xs">Skip</button>`:row.status==='matched'?undoButton:''}</div></div>`;
@@ -6211,6 +6279,7 @@ Bonus"></textarea></div>
         desc: row.description, type: importType, amount, accountId: row.accountId,
         statementMatchId: row.id, reconciled: true, reconciledAt: now, statementDescription: row.description, source: 'statement-import'
       };
+      if (importType === 'Interest Charge') throw new Error('Interest Charges must be entered through Debt → Record Interest Charge; they are not cash transactions from an asset statement.');
       if (importType === 'Debt Payment') {
         const debt = (state.accounts || []).find(a => String(a.id) === String(row.debtAccountId) && a.type === 'debt');
         const paymentId = `dp_stmt_${Date.now()}_${Math.random().toString(36).slice(2,7)}`;
@@ -6218,7 +6287,7 @@ Bonus"></textarea></div>
         const interest = Math.round((Number(row.interestAmount) || 0) * 100) / 100;
         const paymentType = DEBT_PAYMENT_CLASSIFICATIONS.includes(row.paymentType) ? row.paymentType : inferDebtPaymentClassification(debt);
         Object.assign(base, {
-          category: 'Debt Service', subcategory: paymentType, paymentType,
+          category: 'Debt Payment', subcategory: paymentType, paymentType,
           debtPaymentId: paymentId, debtAccountId: debt.id,
           debtPrincipalAmount: principal, debtInterestAmount: interest,
           workflowSource: 'statement-import-debt-payment'
@@ -6402,7 +6471,7 @@ Bonus"></textarea></div>
             desc: bill.desc || '',
             vendor: bill.vendor || bill.desc || 'Scheduled bill',
             type: bill.type === 'income' ? 'Income' : bill.type === 'debt' ? 'Debt Payment' : 'Expense',
-            category: bill.category || (bill.type === 'debt' ? 'Debt Service' : ''),
+            category: bill.category || (bill.type === 'debt' ? 'Debt Payment' : ''),
             subcategory: bill.type === 'debt' ? (scheduledPrincipal > 0 ? 'Principal Paydown' : 'Interest Payment') : (bill.subcategory || ''),
             amount: totalAmount,
             accountId: bill.accountId,
@@ -6457,7 +6526,9 @@ Bonus"></textarea></div>
 
       saveData();
       renderLedger(); renderDashboard(); renderCalendar(); renderZbbFundingTracker(); renderDebtPlanner();
-    }    function markBillPaid(billId) {
+    }
+
+    function markBillPaid(billId) {
       const bill = state.calendarBills.find(b => b.id === billId);
       if (!bill || bill.paid) return;
       setCalendarBillPaid(bill, true);
@@ -6505,11 +6576,14 @@ Bonus"></textarea></div>
       state.transactions.splice(idx, 1);
       saveData();
       renderLedger(); renderDashboard(); renderCalendar(); renderZbbFundingTracker(); renderDebtPlanner(); renderDebtPaymentHistory();
-    }    function renderSettings() {
+    }
+
+    function renderSettings() {
       const typesList = document.getElementById('settings-types-list');
       typesList.innerHTML = '';
       state.transactionTypes.forEach((t, idx) => {
-        typesList.innerHTML += `<div class="flex justify-between items-center bg-gray-50 dark:bg-gray-950 p-2.5 rounded-xl text-xs"><span>${t}</span><button onclick="deleteType(${idx})" class="text-rose-500"><i class="fa-solid fa-trash"></i></button></div>`;
+        const isStandard = STANDARD_TRANSACTION_TYPES.includes(t);
+        typesList.innerHTML += `<div class="flex justify-between items-center bg-gray-50 dark:bg-gray-950 p-2.5 rounded-xl text-xs"><span>${escapeHtml(t)}</span>${isStandard ? '<span class="text-[10px] text-gray-400">Standard</span>' : `<button onclick="deleteType(${idx})" class="text-rose-500" title="Delete custom transaction type"><i class="fa-solid fa-trash"></i></button>`}</div>`;
       });
 
       const rulesList = document.getElementById('merchant-rules-list');
@@ -6569,6 +6643,14 @@ Bonus"></textarea></div>
           </div>
         `;
       });
+      const debtCatList = document.getElementById('settings-debt-categories-list');
+      if (debtCatList) {
+        debtCatList.innerHTML = '';
+        (state.debtCategories || []).forEach(cat => {
+          const subsHtml = (cat.subcategories || []).map(sub => `<div class="text-[11px] text-gray-500 pl-4 py-0.5 border-l-2 border-amber-500 my-1">${escapeHtml(sub.name)}</div>`).join('');
+          debtCatList.innerHTML += `<div class="bg-gray-50 dark:bg-gray-950 p-4 rounded-xl border border-gray-200 dark:border-gray-800 space-y-2"><strong class="text-sm text-amber-600 dark:text-amber-400">${escapeHtml(cat.name)}</strong><div>${subsHtml || '<div class="text-[11px] text-gray-400 pl-4">No subcategories defined</div>'}</div></div>`;
+        });
+      }
       const incomeCatList = document.getElementById('settings-income-categories-list');
       if (incomeCatList) {
         incomeCatList.innerHTML = '';
@@ -6621,6 +6703,7 @@ Bonus"></textarea></div>
     function saveTransactionType(e) {
       e.preventDefault();
       const name = document.getElementById('type-name').value.trim();
+      if (STANDARD_TRANSACTION_TYPES.includes(name) || ['Debt Payment','Interest Charge'].includes(name)) { alert('That is a reserved FinHub transaction type. Use the standard Expense, Income, Transfer or Debt types.'); return; }
       if (name && !state.transactionTypes.includes(name)) {
         captureUndo(`Add transaction type "${name}"`);
         state.transactionTypes.push(name);
@@ -6629,6 +6712,7 @@ Bonus"></textarea></div>
     }
     function deleteType(idx) {
       if (!Number.isInteger(Number(idx)) || !state.transactionTypes[idx]) return;
+      if (STANDARD_TRANSACTION_TYPES.includes(state.transactionTypes[idx])) { alert('The standard FinHub transaction types cannot be deleted.'); return; }
       captureUndo(`Delete transaction type "${state.transactionTypes[idx]}"`);
       state.transactionTypes.splice(idx, 1);
       saveData(); renderSettings();
@@ -7502,7 +7586,8 @@ Bonus"></textarea></div>
       document.getElementById('dp-date').value = date;
       document.getElementById('dp-desc').value = desc;
       document.getElementById('dp-amount').value = amount.toFixed(2);
-      document.getElementById('dp-payment-type').value = inferDebtPaymentClassification(debt);
+      const selectedPaymentClass = document.getElementById('tx-type')?.value === 'Debt' && document.getElementById('tx-category')?.value === 'Debt Payment' ? document.getElementById('tx-subcategory')?.value : '';
+      document.getElementById('dp-payment-type').value = DEBT_PAYMENT_CLASSIFICATIONS.includes(selectedPaymentClass) ? selectedPaymentClass : inferDebtPaymentClassification(debt);
       document.getElementById('dp-principal').dataset.manual = '0';
       document.getElementById('dp-principal').value = debt.paymentMethod === 'interest-only' ? '0.00' : debt.paymentMethod === 'custom' ? '' : amount.toFixed(2);
       updateDebtPaymentSplit();
@@ -7563,13 +7648,13 @@ Bonus"></textarea></div>
         existing.debtAccountId = debt.id;
         existing.debtInterestAmount = Math.round(amount * 100) / 100;
         existing.debtPrincipalAmount = 0;
-        existing.category = 'Debt Service';
-        existing.subcategory = 'Interest expense';
+        existing.category = 'Interest Charge';
+        existing.subcategory = 'Interest Expense';
       } else {
         const id = `interest_${Date.now()}_${Math.random().toString(36).slice(2,7)}`;
         state.transactions.unshift({
           id, date, desc: description, vendor: debt.name, type: 'Interest Charge',
-          category: 'Debt Service', subcategory: 'Interest expense',
+          category: 'Interest Charge', subcategory: 'Interest Expense',
           amount: Math.round(amount * 100) / 100, accountId: debt.id,
           debtAccountId: debt.id, debtInterestAmount: Math.round(amount * 100) / 100,
           debtPrincipalAmount: 0, source: 'debt-interest-charge'
@@ -7672,7 +7757,7 @@ Bonus"></textarea></div>
         oldTransaction.desc = desc;
         oldTransaction.vendor = desc;
         oldTransaction.type = 'Debt Payment';
-        oldTransaction.category = 'Debt Service';
+        oldTransaction.category = 'Debt Payment';
         oldTransaction.subcategory = paymentType;
         oldTransaction.paymentType = paymentType;
         oldTransaction.amount = amount;
@@ -7697,7 +7782,7 @@ Bonus"></textarea></div>
         payment = { id: paymentId, accountId, fundingAccountId, transactionId: conversionTransaction.id, date, desc, amount, principalAmount, interestAmount, paymentType, source: 'debt-payment-log' };
         paymentTransaction = {
           ...conversionTransaction,
-          date, desc, vendor: desc, type: 'Debt Payment', category: 'Debt Service', subcategory: paymentType,
+          date, desc, vendor: desc, type: 'Debt Payment', category: 'Debt Payment', subcategory: paymentType,
           paymentType, amount, accountId: fundingAccountId, debtPaymentId: paymentId, debtAccountId: accountId,
           debtPrincipalAmount: principalAmount, debtInterestAmount: interestAmount,
           // Preserve whether this began as a bank-statement import or manual entry.
@@ -7712,7 +7797,7 @@ Bonus"></textarea></div>
         const transactionId = `tx_${paymentId}`;
         payment = { id: paymentId, accountId, fundingAccountId, transactionId, date, desc, amount, principalAmount, interestAmount, paymentType, source: 'debt-payment-log' };
         paymentTransaction = {
-          id: transactionId, date, desc, vendor: desc, type: 'Debt Payment', category: 'Debt Service', subcategory: paymentType,
+          id: transactionId, date, desc, vendor: desc, type: 'Debt Payment', category: 'Debt Payment', subcategory: paymentType,
           paymentType, amount, accountId: fundingAccountId, debtPaymentId: paymentId, debtAccountId: accountId,
           debtPrincipalAmount: principalAmount, debtInterestAmount: interestAmount, source: 'debt-payment-log'
         };
@@ -7832,33 +7917,50 @@ Bonus"></textarea></div>
     }
 
     function updateTransactionTypeFields() {
-      const selectedType = document.getElementById('tx-type')?.value || '';
+      const typeSelect = document.getElementById('tx-type');
+      const categorySelect = document.getElementById('tx-category');
+      const selectedType = typeSelect?.value || '';
+      let selectedCategory = categorySelect?.value || '';
       const isTransfer = selectedType === 'Transfer';
-      const isDebtPayment = selectedType === 'Debt Payment';
-      const requiresDebtWorkflow = isDebtPayment;
-      document.getElementById('tx-transfer-destination-wrap')?.classList.toggle('hidden', !isTransfer);
-      document.getElementById('tx-debt-payment-guidance')?.classList.toggle('hidden', !requiresDebtWorkflow);
+      const isDebt = selectedType === 'Debt';
+      if (isDebt && !['Debt Payment','Interest Charge'].includes(selectedCategory)) selectedCategory = 'Debt Payment';
+      if (!isDebt && selectedCategory === 'Debt Payment' || !isDebt && selectedCategory === 'Interest Charge') selectedCategory = '';
+      const isDebtPayment = isDebt && selectedCategory === 'Debt Payment';
+      const isInterestCharge = isDebt && selectedCategory === 'Interest Charge';
       const submitButton = document.querySelector('#transaction-form button[type="submit"]');
+      const transferWrap = document.getElementById('tx-transfer-destination-wrap');
+      const debtPaymentGuidance = document.getElementById('tx-debt-payment-guidance');
+      const interestGuidance = document.getElementById('tx-interest-charge-guidance');
+      transferWrap?.classList.toggle('hidden', !isTransfer);
+      debtPaymentGuidance?.classList.toggle('hidden', !isDebtPayment);
+      interestGuidance?.classList.toggle('hidden', !isInterestCharge);
       if (submitButton) {
-        submitButton.disabled = requiresDebtWorkflow;
-        submitButton.classList.toggle('opacity-50', requiresDebtWorkflow);
-        submitButton.classList.toggle('cursor-not-allowed', requiresDebtWorkflow);
-        submitButton.title = requiresDebtWorkflow ? 'Use Continue to Debt Payment details so FinHub updates the funding and liability balances together.' : '';
+        submitButton.disabled = isDebtPayment;
+        submitButton.classList.toggle('opacity-50', isDebtPayment);
+        submitButton.classList.toggle('cursor-not-allowed', isDebtPayment);
+        submitButton.textContent = isInterestCharge ? 'Save Interest Charge' : isDebtPayment ? 'Continue to Debt Payment' : 'Save Transaction';
+        submitButton.title = isDebtPayment ? 'Use Continue to Debt Payment details so FinHub updates the funding and liability balances together.' : '';
       }
       const additionalDetails = document.querySelector('#transaction-form > details');
       if (additionalDetails && isDebtPayment) additionalDetails.open = true;
+      const relatedWrap = document.getElementById('tx-related-debt-wrap');
+      relatedWrap?.classList.toggle('hidden', isInterestCharge || isTransfer);
       const relatedDebtLabel = document.querySelector('label[for="tx-related-debt"]') || document.querySelector('#tx-related-debt')?.previousElementSibling;
       if (relatedDebtLabel) relatedDebtLabel.textContent = isDebtPayment ? 'Debt Account Being Paid' : 'Related Debt Account';
-      const relatedDebtHelp = document.querySelector('#tx-related-debt')?.nextElementSibling;
+      const relatedDebtHelp = document.getElementById('tx-related-debt-help');
       if (relatedDebtHelp) relatedDebtHelp.textContent = isDebtPayment ? 'Choose the liability account being paid, then continue to the dedicated payment form.' : 'Link interest expenses or other activity to a debt account.';
       const accountLabel = document.getElementById('tx-account-label');
-      if (accountLabel) accountLabel.textContent = isTransfer ? 'Account From' : isDebtPayment ? 'Funding Account (asset)' : 'Account';
+      if (accountLabel) accountLabel.textContent = isTransfer ? 'Account From' : isDebtPayment ? 'Paid From (chequing / savings)' : isInterestCharge ? 'Debt Account Receiving Charge' : 'Account';
+      const addBucketButton = document.getElementById('tx-add-bucket-btn');
+      const addSubcategoryButton = document.getElementById('tx-add-subcategory-btn');
+      const ruleCheckbox = document.getElementById('tx-save-category-rule');
       if (isTransfer) {
         refreshTransactionBucketOptions('Transfer');
-        document.getElementById('tx-category-label').textContent = 'Transfer';
-        document.getElementById('tx-add-bucket-btn').classList.add('hidden');
-        const ruleCheckbox = document.getElementById('tx-save-category-rule'); if (ruleCheckbox) { ruleCheckbox.checked = false; ruleCheckbox.disabled = true; }
-        document.getElementById('tx-category').value = 'Transfer';
+        document.getElementById('tx-category-label').textContent = 'Category';
+        addBucketButton?.classList.add('hidden');
+        addSubcategoryButton?.classList.add('hidden');
+        if (ruleCheckbox) { ruleCheckbox.checked = false; ruleCheckbox.disabled = true; }
+        categorySelect.value = 'Transfer';
         document.getElementById('tx-subcategory').value = '';
         document.getElementById('tx-is-split').value = 'false';
         document.getElementById('single-tx-fields').classList.remove('hidden');
@@ -7866,30 +7968,28 @@ Bonus"></textarea></div>
         document.getElementById('split-tx-fields').classList.add('hidden');
         document.getElementById('split-tx-toggle-btn').classList.add('hidden');
       } else {
-        const selected = document.getElementById('tx-category').value;
-        const isIncome = document.getElementById('tx-type').value === 'Income';
-        const available = isIncome ? (state.incomeCategories || []) : (state.categories || []);
-        const keepSelected = selected !== 'Transfer' && available.some(c => c.name === selected) ? selected : '';
+        const buckets = selectedType === 'Income' ? (state.incomeCategories || []) : isDebt ? (state.debtCategories || []) : (state.categories || []);
+        const keepSelected = selectedCategory && buckets.some(c => c.name === selectedCategory) ? selectedCategory : '';
         refreshTransactionBucketOptions(keepSelected);
-        document.getElementById('tx-category-label').textContent = isDebtPayment ? 'Debt Service (assigned in payment details)' : isIncome ? 'Income Bucket (Optional)' : 'Expense Bucket (Optional)';
-        document.getElementById('tx-add-bucket-btn').classList.toggle('hidden', isDebtPayment);
-        if (isDebtPayment) {
-          const debtService = (state.categories || []).find(c => c.name === 'Debt Service');
-          if (debtService) { document.getElementById('tx-category').value = 'Debt Service'; updateSubcategoryDropdown(); }
-          document.getElementById('tx-save-category-rule').checked = false;
-          document.getElementById('tx-save-category-rule').disabled = true;
-          document.getElementById('tx-is-split').value = 'false';
-          document.getElementById('split-tx-toggle-btn').classList.add('hidden');
-        }
-        const ruleCheckbox = document.getElementById('tx-save-category-rule');
+        if (isDebt && !categorySelect.value) { categorySelect.value = 'Debt Payment'; updateSubcategoryDropdown(); }
+        document.getElementById('tx-category-label').textContent = isDebtPayment ? 'Debt Category' : isInterestCharge ? 'Debt Category' : selectedType === 'Income' ? 'Income Bucket' : 'Expense Bucket';
+        addBucketButton?.classList.toggle('hidden', isDebt);
+        addSubcategoryButton?.classList.toggle('hidden', isDebt);
         if (ruleCheckbox) {
-          ruleCheckbox.disabled = isIncome || isDebtPayment;
-          if (isIncome || isDebtPayment) {
-            ruleCheckbox.checked = false;
-            document.getElementById('tx-category-rule-options')?.classList.add('hidden');
-          }
+          ruleCheckbox.disabled = selectedType !== 'Expense';
+          if (selectedType !== 'Expense') { ruleCheckbox.checked = false; document.getElementById('tx-category-rule-options')?.classList.add('hidden'); }
         }
-        if (!document.getElementById('tx-edit-id').value && !isDebtPayment) document.getElementById('split-tx-toggle-btn').classList.remove('hidden');
+        if (isDebt) {
+          document.getElementById('tx-is-split').value = 'false';
+          document.getElementById('tx-amount-wrap').classList.remove('hidden');
+          document.getElementById('split-tx-fields').classList.add('hidden');
+          document.getElementById('single-tx-fields').classList.remove('hidden');
+          document.getElementById('split-tx-toggle-btn').classList.add('hidden');
+          const subSelect = document.getElementById('tx-subcategory');
+          if (isInterestCharge) subSelect.value = 'Interest Expense';
+        } else if (!document.getElementById('tx-edit-id').value) {
+          document.getElementById('split-tx-toggle-btn').classList.remove('hidden');
+        }
       }
     }
     function toggleTransactionRuleOptions() {
@@ -8007,7 +8107,7 @@ Bonus"></textarea></div>
           document.getElementById('tx-date').value = tx.date;
           document.getElementById('tx-desc').value = transactionDescriptionForForm(tx);
           document.getElementById('tx-vendor').value = tx.vendor || '';
-          document.getElementById('tx-type').value = tx.type;
+          document.getElementById('tx-type').value = displayFinHubTransactionType(tx.type);
           refreshTransactionBucketOptions(tx.category || '');
           document.getElementById('tx-category').value = tx.category || '';
           updateSubcategoryDropdown();
@@ -8074,7 +8174,9 @@ Bonus"></textarea></div>
     
     function getTransactionBuckets() {
       const type = document.getElementById('tx-type')?.value;
-      return type === 'Income' ? (state.incomeCategories || []) : (state.categories || []);
+      if (type === 'Income') return state.incomeCategories || [];
+      if (type === 'Debt') return state.debtCategories || [];
+      return state.categories || [];
     }
 
     function updateSubcategoryDropdown() {
@@ -8091,15 +8193,16 @@ Bonus"></textarea></div>
       const select = document.getElementById('tx-category');
       if (!select) return;
       const type = document.getElementById('tx-type')?.value;
-      const buckets = type === 'Income' ? (state.incomeCategories || []) : (state.categories || []);
+      const buckets = type === 'Income' ? (state.incomeCategories || []) : type === 'Debt' ? (state.debtCategories || []) : (state.categories || []);
       const transferOption = type === 'Transfer' ? '<option value="Transfer">Transfer</option>' : '';
       select.innerHTML = '<option value="">-- None --</option>' + transferOption + buckets.filter(c => c.name !== 'Transfer').map(c => `<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`).join('');
       select.value = selectedName;
       updateSubcategoryDropdown();
     }
-
     function quickAddBucketFromTransaction() {
-      const isIncome = document.getElementById('tx-type')?.value === 'Income';
+      const currentType = document.getElementById('tx-type')?.value;
+      if (!['Expense','Income'].includes(currentType)) { alert('Custom buckets can only be added to Expense or Income. Debt classifications are built in, and Transfer has no bucket.'); return; }
+      const isIncome = currentType === 'Income';
       const collection = isIncome ? (state.incomeCategories || (state.incomeCategories = [])) : (state.categories || (state.categories = []));
       const raw = prompt(`Enter the new ${isIncome ? 'income' : 'expense'} bucket name:`);
       if (raw === null) return;
@@ -8116,6 +8219,7 @@ Bonus"></textarea></div>
 
     function quickAddSubcategoryFromTransaction() {
       const bucketName = document.getElementById('tx-category').value;
+      if (document.getElementById('tx-type')?.value === 'Debt') { alert('Debt payment classifications are managed by FinHub and cannot be customized here.'); return; }
       if (!bucketName || bucketName === 'Transfer') {
         alert('Choose a spending bucket first. Transfer does not have subcategories.');
         return;
@@ -8145,12 +8249,15 @@ Bonus"></textarea></div>
       const editId = document.getElementById('tx-edit-id').value;
       const isSplit = document.getElementById('tx-is-split').value === "true";
       const accountId = document.getElementById('tx-account').value;
-      const type = document.getElementById('tx-type').value;
+      const visibleType = document.getElementById('tx-type').value;
+      const selectedCategory = document.getElementById('tx-category').value;
+      const type = internalTransactionType(visibleType, selectedCategory);
       if (type === 'Debt Payment') {
         alert('Please use Continue to Debt Payment details. FinHub will create or convert the linked payment record and apply both balance effects correctly.');
         return;
       }
       const selectedAccount = state.accounts.find(a => String(a.id) === String(document.getElementById('tx-account').value));
+      if (type === 'Interest Charge' && selectedAccount?.type !== 'debt') { alert('For an Interest Charge, choose the liability account whose balance is increasing. If the interest is being paid from chequing or savings, use Debt → Debt Payment with $0 principal and the full amount as interest.'); return; }
       if (selectedAccount?.archived && !editId) { alert('This account is archived. Restore it before recording new activity.'); return; }
       const amount = parseFloat(document.getElementById('tx-amount').value) || 0;
       const desc = (document.getElementById('tx-desc').value || '').trim();
@@ -8165,7 +8272,7 @@ Bonus"></textarea></div>
         alert('Please enter a vendor before saving this transaction.');
         return;
       }
-      if (saveCategoryRule && type !== 'Transfer' && (!document.getElementById('tx-category').value || document.getElementById('tx-category').value === 'Transfer')) {
+      if (saveCategoryRule && type === 'Expense' && (!document.getElementById('tx-category').value || document.getElementById('tx-category').value === 'Transfer')) {
         alert('Choose a spending bucket before saving a categorization rule.');
         document.getElementById('tx-category').focus();
         return;
@@ -8224,9 +8331,9 @@ Bonus"></textarea></div>
           }
         });
       } else {
-        const category = document.getElementById('tx-category').value;
-        const subcategory = document.getElementById('tx-subcategory').value;
-        const relatedDebtAccountId = document.getElementById('tx-related-debt').value || '';
+        const category = type === 'Interest Charge' ? 'Interest Charge' : document.getElementById('tx-category').value;
+        const subcategory = type === 'Interest Charge' ? 'Interest Expense' : document.getElementById('tx-subcategory').value;
+        const relatedDebtAccountId = type === 'Interest Charge' ? accountId : (document.getElementById('tx-related-debt').value || '');
 
         if (!editId) {
           const normalize = value => String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -8287,7 +8394,7 @@ Bonus"></textarea></div>
         }
       }
 
-      if (saveCategoryRule && !isSplit && type !== 'Transfer') {
+      if (saveCategoryRule && !isSplit && type === 'Expense') {
         const ruleCategory = document.getElementById('tx-category').value;
         const ruleSubcategory = document.getElementById('tx-subcategory').value;
         if (ruleCategory && ruleCategory !== 'Transfer') saveTransactionCategoryRule(vendor, ruleCategory, ruleSubcategory, categoryRuleScope);
@@ -8298,7 +8405,7 @@ Bonus"></textarea></div>
     function downloadBlob(blob, filename) { const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1200); }
     function exportTransactionsCSV() {
       const rows=[['id','date','vendor','description','type','category','subcategory','amount','account','accountId','transferToAccountId']];
-      (state.transactions||[]).forEach(t=>{const acc=state.accounts.find(a=>a.id===t.accountId);rows.push([t.id,t.date,t.vendor||'',t.desc||'',t.type,t.category||'',t.subcategory||'',t.amount,acc?.name||'',t.accountId||'',t.transferToAccountId||'']);});
+      (state.transactions||[]).forEach(t=>{const acc=state.accounts.find(a=>a.id===t.accountId);rows.push([t.id,t.date,t.vendor||'',t.desc||'',displayFinHubTransactionType(t.type),t.category||'',t.subcategory||'',t.amount,acc?.name||'',t.accountId||'',t.transferToAccountId||'']);});
       const csv=rows.map(row=>row.map(v=>{const x=String(v??'');return /[",\n]/.test(x)?'"'+x.replace(/"/g,'""')+'"':x;}).join(',')).join('\r\n');
       downloadBlob(new Blob([csv],{type:'text/csv;charset=utf-8'}),`finhub_transactions_${new Date().toISOString().slice(0,10)}.csv`);
     }
