@@ -1735,7 +1735,7 @@ Bonus"></textarea></div>
       // CSVs may use the plain-language Type value "Reversal" for a returned
       // debt payment. Keep the stored ledger type explicit so the debt reversal
       // workflow restores principal, reverses interest, and credits the funding account.
-      if (normalizedType.toLowerCase() === 'reversal' && normalizedCategory === 'debt payment') return 'Debt Payment Reversal';
+      if (normalizedType.toLowerCase() === 'reversal' && normalizedCategory === normalizeStatementText('Debt Payment')) return 'Debt Payment Reversal';
       if (normalizedType !== 'Debt') return normalizedType;
       return category === 'Interest Charge' ? 'Interest Charge' : 'Debt Payment';
     }
