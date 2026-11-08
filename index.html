@@ -156,6 +156,7 @@
     body[data-finhub-theme="neutral"] input, body[data-finhub-theme="neutral"] select, body[data-finhub-theme="neutral"] textarea,
     body[data-finhub-theme="colorful"] input, body[data-finhub-theme="colorful"] select, body[data-finhub-theme="colorful"] textarea { border-color:rgba(120,130,145,.38) !important; }
 
+      .sidebar-collapsed .nav-section-label { display:none; }
   </style>
 </head>
 <body id="app-body" class="bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 min-h-screen flex flex-col md:flex-row transition-colors duration-200 relative">
@@ -186,28 +187,43 @@
         </div>
       </div>
 
-      <nav class="p-3 space-y-1 text-sm font-medium">
-        <button onclick="switchTab('dashboard')" id="nav-dashboard" title="Dashboard" class="nav-btn w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl transition-colors bg-indigo-600 text-white shadow-md shadow-indigo-600/20">
+      <nav class="p-3 space-y-3 text-sm font-medium" aria-label="Main navigation">
+        <div class="nav-group space-y-1">
+          <div class="nav-section-label px-4 pt-2 pb-1 text-[9px] font-bold tracking-[0.18em] uppercase text-gray-400">OVERVIEW</div>
+          <button onclick="switchTab('dashboard')" id="nav-dashboard" title="Dashboard" class="nav-btn w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl transition-colors bg-indigo-600 text-white shadow-md shadow-indigo-600/20">
           <i class="fa-solid fa-chart-pie w-5"></i><span class="sidebar-nav-label">Dashboard</span>
         </button>
-        <button onclick="switchTab('biweekly')" id="nav-biweekly" title="Paycheque ZBB Planner" class="nav-btn w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+        </div>
+        <div class="nav-group space-y-1">
+          <div class="nav-section-label px-4 pt-2 pb-1 text-[9px] font-bold tracking-[0.18em] uppercase text-gray-400">PLAN</div>
+          <button onclick="switchTab('biweekly')" id="nav-biweekly" title="Paycheque ZBB Planner" class="nav-btn w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
           <i class="fa-solid fa-scale-balanced w-5"></i><span class="sidebar-nav-label">Paycheque ZBB Planner</span>
         </button>
-        <button onclick="switchTab('calendar')" id="nav-calendar" title="Bill & Income Calendar" class="nav-btn w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+          <button onclick="switchTab('calendar')" id="nav-calendar" title="Bill & Income Calendar" class="nav-btn w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
           <i class="fa-solid fa-calendar-days w-5"></i><span class="sidebar-nav-label">Bill & Income Calendar</span>
         </button>
-        <button onclick="switchTab('joint')" id="nav-joint" title="Joint Household Bills" class="nav-btn w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-          <i class="fa-solid fa-people-arrows w-5"></i><span class="sidebar-nav-label">Joint Household Bills</span>
-        </button>
-        <button onclick="switchTab('debt')" id="nav-debt" title="Debt Payoff & Schedule" class="nav-btn w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-          <i class="fa-solid fa-arrow-trend-down w-5"></i><span class="sidebar-nav-label">Debt Payoff & Schedule</span>
-        </button>
-        <button onclick="switchTab('ledger')" id="nav-ledger" title="Expense Tracker & Bills" class="nav-btn w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+        </div>
+        <div class="nav-group space-y-1">
+          <div class="nav-section-label px-4 pt-2 pb-1 text-[9px] font-bold tracking-[0.18em] uppercase text-gray-400">TRACK</div>
+          <button onclick="switchTab('ledger')" id="nav-ledger" title="Expense Tracker & Bills" class="nav-btn w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
           <i class="fa-solid fa-receipt w-5"></i><span class="sidebar-nav-label">Expense Tracker & Bills</span>
         </button>
-        <button onclick="switchTab('settings')" id="nav-settings" title="Categories & Settings" class="nav-btn w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+        </div>
+        <div class="nav-group space-y-1">
+          <div class="nav-section-label px-4 pt-2 pb-1 text-[9px] font-bold tracking-[0.18em] uppercase text-gray-400">DEBT</div>
+          <button onclick="switchTab('debt')" id="nav-debt" title="Debt Payoff & Schedule" class="nav-btn w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+          <i class="fa-solid fa-arrow-trend-down w-5"></i><span class="sidebar-nav-label">Debt Payoff & Schedule</span>
+        </button>
+        </div>
+        <div class="nav-group space-y-1">
+          <div class="nav-section-label px-4 pt-2 pb-1 text-[9px] font-bold tracking-[0.18em] uppercase text-gray-400">MANAGE</div>
+          <button onclick="switchTab('joint')" id="nav-joint" title="Joint Household Bills" class="nav-btn w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+          <i class="fa-solid fa-people-arrows w-5"></i><span class="sidebar-nav-label">Joint Household Bills</span>
+        </button>
+          <button onclick="switchTab('settings')" id="nav-settings" title="Categories & Settings" class="nav-btn w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
           <i class="fa-solid fa-gear w-5"></i><span class="sidebar-nav-label">Categories & Settings</span>
         </button>
+        </div>
       </nav>
     </div>
 
@@ -282,6 +298,26 @@
           <div class="text-xs font-medium text-gray-500 uppercase tracking-wider">Net Worth</div>
           <div id="dash-networth" class="text-xl font-bold text-indigo-500 mt-1 accounting-num blur-target theme-text">$ - </div>
           <div class="text-[10px] text-gray-400 mt-1">Assets less included debt accounts.</div>
+        </div>
+      </div>
+
+      <div data-dashboard-block="debt-health" class="dashboard-block bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+        <div class="p-5 border-b border-gray-200 dark:border-gray-800">
+          <h3 class="font-bold text-md"><i class="fa-solid fa-chart-line text-rose-500 mr-2"></i>Debt Movement & Interest Report</h3>
+          <p id="debt-health-period-label" class="text-xs text-gray-400 mt-1">Principal reduction and borrowing costs in the selected Dashboard period.</p>
+        </div>
+        <div class="p-5 space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+            <div class="rounded-xl bg-gray-50 dark:bg-gray-950 p-3"><div class="text-[10px] text-gray-500">Principal paid</div><div id="debt-health-principal" class="text-lg font-bold accounting-num">$0.00</div></div>
+            <div class="rounded-xl bg-gray-50 dark:bg-gray-950 p-3"><div class="text-[10px] text-gray-500">Interest paid from cash</div><div id="debt-health-interest-paid" class="text-lg font-bold accounting-num">$0.00</div></div>
+            <div class="rounded-xl bg-gray-50 dark:bg-gray-950 p-3"><div class="text-[10px] text-gray-500">Interest added to debt</div><div id="debt-health-interest-added" class="text-lg font-bold accounting-num">$0.00</div></div>
+            <div class="rounded-xl bg-gray-50 dark:bg-gray-950 p-3"><div class="text-[10px] text-gray-500">Net principal reduction</div><div id="debt-health-net" class="text-lg font-bold accounting-num">$0.00</div></div>
+          </div>
+          <div>
+            <div class="text-xs font-semibold mb-2">Monthly debt movement · Last 6 months</div>
+            <div class="overflow-x-auto"><table class="w-full text-left text-xs"><thead class="text-gray-500 bg-gray-50 dark:bg-gray-950"><tr><th class="px-3 py-2">Month</th><th class="px-3 py-2 text-right">Principal paid</th><th class="px-3 py-2 text-right">Interest paid</th><th class="px-3 py-2 text-right">Interest added</th><th class="px-3 py-2 text-right">Net reduction</th></tr></thead><tbody id="debt-health-monthly-rows"></tbody></table></div>
+          </div>
+          <p class="text-[10px] text-gray-400">Net principal reduction equals principal paid less interest added to debt balances. Interest paid from cash is shown separately because it is a borrowing cost but does not increase the liability again. Historical figures depend on correctly recorded principal and interest splits.</p>
         </div>
       </div>
 
@@ -603,11 +639,14 @@
           <h2 class="text-2xl font-bold">Debt Payoff & Repayment Schedule</h2>
           <p class="text-sm text-gray-500 dark:text-gray-400">Minimum payment schedules, upcoming bills, and payoff acceleration</p>
         </div>
-        <select id="debt-strategy" onchange="setDebtStrategy(this.value)" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-1.5 text-xs">
-          <option value="custom">Manual Priority Order</option>
-          <option value="snowball">Lowest Balance First (Snowball)</option>
-          <option value="avalanche">Highest APR First (Avalanche)</option>
-        </select>
+        <div class="flex flex-wrap items-center gap-2">
+          <select id="debt-strategy" onchange="setDebtStrategy(this.value)" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-1.5 text-xs">
+            <option value="custom">Manual Priority Order</option>
+            <option value="snowball">Lowest Balance First (Snowball)</option>
+            <option value="avalanche">Highest APR First (Avalanche)</option>
+          </select>
+          <button onclick="openInterestChargeModal()" class="px-3 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold"><i class="fa-solid fa-plus mr-1"></i>Record Interest Charge</button>
+        </div>
       </div>
 
       <!-- UPCOMING DEBT BILLS COLLAPSIBLE BLOCK -->
@@ -646,12 +685,33 @@
               <div class="relative flex-1 max-w-xs"><span class="absolute left-3 top-2.5 text-xs text-gray-400">$</span><input type="number" id="sim-extra-per-pay" min="0" step="0.01" value="0.00" onchange="updateExtraPayoff(this.value)" class="w-full pl-7 pr-3 py-2 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-bold accounting-num"></div>
               <strong id="extra-payoff-val" class="text-indigo-400 theme-text text-xs">$0.00 / paycheque</strong>
             </div>
-            <p class="text-[10px] text-gray-400 mt-2">Monthly equivalent: <strong id="debt-extra-monthly-equivalent" class="accounting-num">$0.00</strong> (per-paycheque amount × 26 ÷ 12).</p>
+            <p class="text-[10px] text-gray-400 mt-2">Monthly equivalent: <strong id="debt-extra-monthly-equivalent" class="accounting-num">$0.00</strong> Annualized from 24 regular cheques plus two custom third-cheque contributions. Set a custom P3 amount in the Paycheque Planner.</p>
           </div>
           <div class="text-xs space-y-1 text-gray-400 flex flex-col justify-center">
             <div>Interest Saved Under Current Strategy: <strong id="debt-interest-saved" class="text-emerald-400 font-bold">$0.00</strong></div>
             <div>Time Saved: <strong id="debt-time-saved" class="text-indigo-400 font-bold theme-text">0 Months</strong></div>
           </div>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+        <div class="p-5 border-b border-gray-200 dark:border-gray-800">
+          <h3 class="font-bold">Payoff Strategy Comparison</h3>
+          <p class="text-xs text-gray-500 mt-1">Compares estimated payoff time and interest using the same current debt balances, minimums and per-paycheque extra contribution.</p>
+        </div>
+        <div class="overflow-x-auto"><table class="w-full text-left text-xs"><thead class="bg-gray-50 dark:bg-gray-950 text-gray-500"><tr><th class="px-4 py-3">Strategy</th><th class="px-4 py-3 text-right">Estimated months</th><th class="px-4 py-3 text-right">Estimated interest</th><th class="px-4 py-3 text-right">Debt-free date</th></tr></thead><tbody id="debt-strategy-comparison-rows"></tbody></table></div>
+      </div>
+      <div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+        <div class="p-5 border-b border-gray-200 dark:border-gray-800">
+          <h3 class="font-bold">Projected Amortization Schedule</h3>
+          <p class="text-xs text-gray-500 mt-1">Portfolio-level monthly projection using the selected payoff strategy. Estimates assume payments are made monthly and use the entered APR schedule.</p>
+        </div>
+        <div class="max-h-[420px] overflow-auto"><table class="w-full text-left text-xs"><thead class="sticky top-0 bg-gray-50 dark:bg-gray-950 text-gray-500"><tr><th class="px-4 py-3">Period</th><th class="px-4 py-3 text-right">Ending debt</th><th class="px-4 py-3 text-right">Interest accrued</th><th class="px-4 py-3 text-right">Minimum payments</th><th class="px-4 py-3 text-right">Extra principal</th></tr></thead><tbody id="debt-projection-schedule-rows"></tbody></table></div>
+        <p id="debt-projection-schedule-note" class="px-5 py-3 text-[10px] text-gray-400"></p>
+        <div class="border-t border-gray-200 dark:border-gray-800 p-5">
+          <h4 class="font-semibold text-xs mb-2">Monthly projection by debt account</h4>
+          <div class="max-h-[420px] overflow-auto"><table class="w-full text-left text-xs"><thead class="sticky top-0 bg-gray-50 dark:bg-gray-950 text-gray-500"><tr><th class="px-3 py-2">Period</th><th class="px-3 py-2">Debt account</th><th class="px-3 py-2 text-right">Ending balance</th><th class="px-3 py-2 text-right">Interest</th><th class="px-3 py-2 text-right">Minimum payment</th><th class="px-3 py-2 text-right">Extra principal</th></tr></thead><tbody id="debt-projection-account-rows"></tbody></table></div>
+          <p id="debt-projection-account-note" class="text-[10px] text-gray-400 mt-2">Per-account estimates use the currently selected strategy and the APR/payment assumptions saved on each debt account.</p>
         </div>
       </div>
 
@@ -688,7 +748,7 @@
           <select id="debt-activity-type" onchange="renderDebtPaymentHistory()" class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-2 text-xs"><option value="all">All transaction types</option><option value="payment">Debt payments</option><option value="interest">Interest expenses</option><option value="other">Other related activity</option></select>
           <input type="search" id="debt-activity-search" oninput="renderDebtPaymentHistory()" placeholder="Search description/vendor" class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-2 text-xs">
         </div>
-        <div class="overflow-x-auto"><table class="w-full text-left text-xs"><thead class="text-gray-500 border-b border-gray-200 dark:border-gray-800"><tr><th class="py-2 pr-3">Date</th><th class="py-2 pr-3">Description</th><th class="py-2 pr-3">Type</th><th class="py-2 pr-3 text-right">Amount</th><th class="py-2 pr-3 text-right">Principal</th><th class="py-2">Funding account</th></tr></thead><tbody id="debt-payment-rows" class="divide-y divide-gray-200 dark:divide-gray-800"></tbody></table></div>
+        <div class="overflow-x-auto"><table class="w-full text-left text-xs"><thead class="text-gray-500 border-b border-gray-200 dark:border-gray-800"><tr><th class="py-2 pr-3">Date</th><th class="py-2 pr-3">Description</th><th class="py-2 pr-3">Type</th><th class="py-2 pr-3 text-right">Amount</th><th class="py-2 pr-3 text-right">Principal</th><th class="py-2">Funding account / treatment</th><th class="py-2 text-right">Actions</th></tr></thead><tbody id="debt-payment-rows" class="divide-y divide-gray-200 dark:divide-gray-800"></tbody></table></div>
         <div id="debt-activity-empty" class="hidden text-xs text-gray-400 py-3">No matching activity for these filters.</div>
       </div>
     </section>
@@ -791,6 +851,14 @@
         </div>
       </div>
 
+      <div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-4 shadow-sm">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <div><h3 class="text-sm font-bold">Reconciliation Overview</h3><p class="text-[10px] text-gray-500 mt-1">All active accounts, their latest statement balances and outstanding variances.</p></div>
+          <span id="reconciliation-overview-summary" class="text-[10px] text-gray-400"></span>
+        </div>
+        <div class="overflow-x-auto"><table class="w-full text-left text-xs"><thead class="text-gray-500 bg-gray-50 dark:bg-gray-950"><tr><th class="px-3 py-2">Account</th><th class="px-3 py-2 text-right">FinHub balance</th><th class="px-3 py-2 text-right">Statement balance</th><th class="px-3 py-2 text-right">Variance</th><th class="px-3 py-2">Last reconciled</th><th class="px-3 py-2 text-right">Review</th></tr></thead><tbody id="reconciliation-overview-rows"></tbody></table></div>
+      </div>
+
       <!-- CALENDAR VIEW CONTAINER -->
       <div id="ledger-calendar-container" class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-4 shadow-sm hidden">
         <h3 class="text-md font-bold text-indigo-600 dark:text-indigo-400 theme-text">Posted Transaction History by Date</h3>
@@ -842,6 +910,11 @@
         <div class="rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 p-3 text-xs text-amber-800 dark:text-amber-200">
           <strong>Important:</strong> Importing replaces the data currently on this device; it does not merge two sets of changes. FinHub validates the file and shows a preview first. A local safety copy is created before replacement when browser storage allows it.
         </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-3 shadow-sm">
+        <div><h3 class="font-bold text-sm"><i class="fa-solid fa-box-archive mr-2 text-amber-500"></i>Archived Accounts</h3><p class="text-[11px] text-gray-500 mt-1">Closed or retired accounts are excluded from active totals and new-entry pickers, but all historical transactions and reconciliation records are retained.</p></div>
+        <div id="archived-accounts-list" class="space-y-2"></div>
       </div>
 
       <!-- FULL APPLICATION THEME SELECTOR -->
@@ -1009,7 +1082,7 @@
         <div class="flex items-center gap-2">
           <button id="acc-detail-edit-asset" onclick="openAssetEditModal(window.currentEditingAccountId)" class="hidden px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold theme-bg"><i class="fa-solid fa-pen mr-1"></i> Edit Account</button>
           <button id="acc-detail-edit-debt" onclick="openDebtDetailModal(window.currentEditingAccountId)" class="hidden px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold theme-bg"><i class="fa-solid fa-pen mr-1"></i> Edit Liability</button>
-          <button onclick="confirmDeleteAccountFromModal()" class="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-semibold"><i class="fa-solid fa-trash mr-1"></i> Delete Account</button>
+          <button id="acc-detail-archive-btn" onclick="confirmDeleteAccountFromModal()" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-semibold"><i class="fa-solid fa-box-archive mr-1"></i> Archive Account</button>
         </div>
       </div>
       <div id="acc-detail-balance-summary" class="grid grid-cols-1 sm:grid-cols-3 gap-2"></div>
@@ -1393,6 +1466,29 @@ Bonus"></textarea></div>
         </div>
 
         <div class="flex space-x-3 pt-3 pb-1 sticky bottom-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 mt-2"><button type="button" onclick="closeTransactionModal()" class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold">Cancel</button><button type="submit" class="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold theme-bg">Save Transaction</button></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD / EDIT INTEREST CHARGE -->
+  <div id="interest-charge-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-[75]">
+    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
+      <div class="flex items-start justify-between gap-3">
+        <div><h3 id="interest-charge-modal-title" class="text-lg font-bold">Record Interest Charge</h3><p class="text-xs text-gray-500 mt-1">Use this when interest is added directly to the debt balance, rather than withdrawn from chequing.</p></div>
+        <button type="button" onclick="closeInterestChargeModal()" class="text-gray-400 hover:text-gray-700 dark:hover:text-white" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="interest-charge-form" onsubmit="saveInterestCharge(event)" class="space-y-3">
+        <input type="hidden" id="interest-charge-edit-id" value="">
+        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Debt account receiving the interest charge</label><select id="interest-charge-debt" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></select></div>
+        <div class="grid grid-cols-2 gap-3">
+          <div><label class="block text-xs font-semibold text-gray-500 mb-1">Charge date</label><input type="date" id="interest-charge-date" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
+          <div><label class="block text-xs font-semibold text-gray-500 mb-1">Interest amount ($)</label><input type="number" id="interest-charge-amount" min="0.01" step="0.01" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
+        </div>
+        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Description</label><input type="text" id="interest-charge-description" required value="Monthly interest charge" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
+        <div class="rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900 p-3 text-[11px] text-rose-800 dark:text-rose-200">
+          This increases the selected liability and records an interest expense. It does not change any chequing or savings account.
+        </div>
+        <div class="flex gap-2"><button type="button" onclick="closeInterestChargeModal()" class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold">Cancel</button><button type="submit" class="flex-1 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-sm font-semibold">Save Interest Charge</button></div>
       </form>
     </div>
   </div>
@@ -1984,13 +2080,65 @@ Bonus"></textarea></div>
 
     function setDashboardCustomRange(){const start=document.getElementById('dashboard-range-start')?.value||'';const end=document.getElementById('dashboard-range-end')?.value||'';if(start&&end&&start>end){alert('The start date must be before the end date.');return;}state.dashboardCustomRange={start,end};saveData();renderDashboard();}
 
+    function getDebtMovementForRange(startDate, endDate) {
+      const transactions = (state.transactions || []).filter(t => t.date >= startDate && t.date <= endDate);
+      let principalPaid = 0, interestPaid = 0, interestAdded = 0;
+      transactions.forEach(t => {
+        if (t.type === 'Debt Payment') {
+          principalPaid += Number(t.debtPrincipalAmount) || 0;
+          interestPaid += Number(t.debtInterestAmount) || 0;
+        } else if (t.type === 'Interest Charge') {
+          interestAdded += Number(t.amount) || 0;
+        }
+      });
+      return {
+        principalPaid: Math.round(principalPaid * 100) / 100,
+        interestPaid: Math.round(interestPaid * 100) / 100,
+        interestAdded: Math.round(interestAdded * 100) / 100,
+        netReduction: Math.round((principalPaid - interestAdded) * 100) / 100
+      };
+    }
+
+    function renderDebtMovementReport() {
+      const range = getDashboardDateRange();
+      const summary = getDebtMovementForRange(range.start, range.end);
+      const period = document.getElementById('debt-health-period-label');
+      if (period) period.textContent = `Debt activity from ${range.start} to ${range.end}.`;
+      const values = {
+        'debt-health-principal': summary.principalPaid,
+        'debt-health-interest-paid': summary.interestPaid,
+        'debt-health-interest-added': summary.interestAdded,
+        'debt-health-net': summary.netReduction
+      };
+      Object.entries(values).forEach(([id,value]) => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.textContent = formatFinancial(Math.abs(value), value < 0);
+          if (id === 'debt-health-net') el.className = `text-lg font-bold accounting-num ${value < 0 ? 'text-rose-500' : 'text-emerald-500'}`;
+        }
+      });
+
+      const body = document.getElementById('debt-health-monthly-rows');
+      if (!body) return;
+      const now = new Date();
+      const months = [];
+      for (let offset = 5; offset >= 0; offset--) {
+        const monthDate = new Date(now.getFullYear(), now.getMonth() - offset, 1);
+        const start = `${monthDate.getFullYear()}-${String(monthDate.getMonth()+1).padStart(2,'0')}-01`;
+        const lastDay = new Date(monthDate.getFullYear(), monthDate.getMonth()+1, 0).getDate();
+        const end = `${monthDate.getFullYear()}-${String(monthDate.getMonth()+1).padStart(2,'0')}-${String(lastDay).padStart(2,'0')}`;
+        months.push({ label: monthDate.toLocaleString('default',{month:'short',year:'numeric'}), ...getDebtMovementForRange(start,end) });
+      }
+      body.innerHTML = months.map(item => `<tr class="border-t border-gray-100 dark:border-gray-800"><td class="px-3 py-2">${item.label}</td><td class="px-3 py-2 text-right accounting-num">${formatFinancial(item.principalPaid)}</td><td class="px-3 py-2 text-right accounting-num">${formatFinancial(item.interestPaid)}</td><td class="px-3 py-2 text-right accounting-num">${formatFinancial(item.interestAdded)}</td><td class="px-3 py-2 text-right accounting-num ${item.netReduction < 0 ? 'text-rose-500' : 'text-emerald-500'}">${formatFinancial(Math.abs(item.netReduction),item.netReduction < 0)}</td></tr>`).join('');
+    }
+
     function renderDashboard() {
       updateSidebarNetWorth();
-      const visibleAccounts = state.accounts.filter(a => !a.hidden);
+      const visibleAccounts = state.accounts.filter(a => !a.hidden && !a.archived);
       const assets = visibleAccounts.filter(a => a.type === 'asset').reduce((s, a) => s + (Number(a.balance) || 0), 0);
       const liabilities = visibleAccounts.filter(a => a.type === 'debt').reduce((s, a) => s + (Number(a.balance) || 0), 0);
       const totalIncome = getTransactionsInDashboardPeriod('Income').reduce((s, t) => s + (Number(t.amount) || 0), 0);
-      const totalExpenses = getTransactionsInDashboardPeriod('Expense').reduce((s, t) => s + (Number(t.amount) || 0), 0);
+      const totalExpenses = getTransactionsInDashboardPeriod('Expense').reduce((s, t) => s + (Number(t.amount) || 0), 0) + getTransactionsInDashboardPeriod('Interest Charge').reduce((s,t) => s + (Number(t.amount) || 0), 0);
       const netWorth = assets - liabilities;
       const periodLabels = { month: 'This month', previous: 'Last month', '3months': 'Last 3 months', '6months': 'Last 6 months', ytd: 'Year to date' };
       const periodLabel = periodLabels[state.dashboardPeriod] || 'This month';
@@ -2039,7 +2187,7 @@ Bonus"></textarea></div>
       assetList.innerHTML = ''; debtList.innerHTML = '';
       const renderAccountRows = (accounts, list, group) => {
         const ordered = sortBySavedOrder(accounts, group);
-        const shown = state.showHiddenAccounts ? ordered : ordered.filter(a => !a.hidden);
+        const shown = state.showHiddenAccounts ? ordered.filter(a => !a.archived) : ordered.filter(a => !a.hidden && !a.archived);
         if (!shown.length) { list.innerHTML = '<p class="text-xs text-gray-400 py-3">No accounts to display.</p>'; return; }
         shown.forEach((acc, index) => {
           const isAsset = acc.type === 'asset';
@@ -2073,8 +2221,8 @@ Bonus"></textarea></div>
           list.appendChild(row);
         });
       };
-      renderAccountRows(state.accounts.filter(a => a.type === 'asset'), assetList, 'assets');
-      renderAccountRows(state.accounts.filter(a => a.type === 'debt'), debtList, 'debts');
+      renderAccountRows(state.accounts.filter(a => a.type === 'asset' && !a.archived), assetList, 'assets');
+      renderAccountRows(state.accounts.filter(a => a.type === 'debt' && !a.archived), debtList, 'debts');
       const showHiddenControl = document.getElementById('show-excluded-accounts');
       if (showHiddenControl) showHiddenControl.checked = !!state.showHiddenAccounts;
 
@@ -2082,6 +2230,7 @@ Bonus"></textarea></div>
       renderSpendingCategoryChart();
       renderDashboardUpcoming();
       applyDashboardOrder();
+      renderDebtMovementReport();
       renderIncomeExpenseChart();
       renderDebtProgressChart();
       renderSnapshots();
@@ -2214,7 +2363,7 @@ Bonus"></textarea></div>
       const level = levelEl ? (levelEl.value || state.spendingChartLevel || 'category') : (state.spendingChartLevel || 'category');
       if(levelEl) levelEl.value=level; state.spendingChartLevel = level;
       const range = getDashboardDateRange();
-      const expenses = state.transactions.filter(t => t.type === 'Expense' && t.category !== 'Transfer' && !(t.desc || '').toLowerCase().startsWith('transfer ') && t.date >= range.start && t.date <= range.end);
+      const expenses = state.transactions.filter(t => ['Expense','Interest Charge'].includes(t.type) && t.category !== 'Transfer' && !(t.desc || '').toLowerCase().startsWith('transfer ') && t.date >= range.start && t.date <= range.end);
       const totals = {};
       expenses.forEach(t => { const key = level === 'subcategory' ? (t.subcategory || 'Uncategorized') : (t.category || 'Uncategorized'); totals[key] = (totals[key] || 0) + (Number(t.amount) || 0); });
       const entries = Object.entries(totals).sort((a,b) => b[1]-a[1]);
@@ -2278,7 +2427,7 @@ Bonus"></textarea></div>
     }
 
     function recordNetWorthSnapshot() {
-      const visibleAccounts = state.accounts.filter(a => !a.hidden);
+      const visibleAccounts = state.accounts.filter(a => !a.hidden && !a.archived);
       const assets = visibleAccounts.filter(a => a.type === 'asset').reduce((s, a) => s + a.balance, 0);
       const debt = visibleAccounts.filter(a => a.type === 'debt').reduce((s, a) => s + a.balance, 0);
       const todayStr = new Date().toISOString().split('T')[0];
@@ -2319,7 +2468,7 @@ Bonus"></textarea></div>
     }
 
     function updateSidebarNetWorth() {
-      const visibleAccounts = state.accounts.filter(a => !a.hidden);
+      const visibleAccounts = state.accounts.filter(a => !a.hidden && !a.archived);
       const assets = visibleAccounts.filter(a => a.type === 'asset').reduce((s, a) => s + a.balance, 0);
       const liab = visibleAccounts.filter(a => a.type === 'debt').reduce((s, a) => s + a.balance, 0);
       document.getElementById('sidebar-networth').innerText = formatFinancial(assets - liab);
@@ -2376,12 +2525,16 @@ Bonus"></textarea></div>
           const related = t.debtAccountId === acc.id || payment?.accountId === acc.id || linkedBillDebt?.id === acc.id;
           if (!related) return;
           let principal = 0;
+          let change = 0;
           if (t.type === 'Debt Payment') {
             principal = Number(t.debtPrincipalAmount ?? payment?.principalAmount ?? bill?.principalAmount ?? t.amount) || 0;
+            change = -principal;
+          } else if (t.type === 'Interest Charge') {
+            change = Number(t.amount) || 0;
           }
-          const isInterest = (Number(t.debtInterestAmount) || 0) > 0 || /interest/i.test(`${t.category || ''} ${t.subcategory || ''} ${t.desc || ''} ${t.vendor || ''}`);
-          const type = t.type === 'Debt Payment' ? (principal > 0 ? 'Principal + interest payment' : 'Interest-only payment') : (isInterest ? 'Interest expense' : (t.type || 'Related transaction'));
-          entries.push({ id: t.id, date: t.date || '', description: t.vendor || t.desc || 'Transaction', detail: t.desc && t.vendor && t.desc !== t.vendor ? t.desc : '', type, change: -principal, amount: Number(t.amount) || 0, principal, reconciled: !!t.reconciled });
+          const isInterest = t.type === 'Interest Charge' || (Number(t.debtInterestAmount) || 0) > 0 || /interest/i.test(`${t.category || ''} ${t.subcategory || ''} ${t.desc || ''} ${t.vendor || ''}`);
+          const type = t.type === 'Debt Payment' ? (principal > 0 ? 'Debt payment' : 'Interest-only payment') : (t.type === 'Interest Charge' ? 'Interest charged to balance' : (isInterest ? 'Interest expense' : (t.type || 'Related transaction')));
+          entries.push({ id: t.id, date: t.date || '', description: t.vendor || t.desc || 'Transaction', detail: t.desc && t.vendor && t.desc !== t.vendor ? t.desc : '', type, change, amount: Number(t.amount) || 0, principal, reconciled: !!t.reconciled });
         });
       }
       return entries.sort((a, b) => String(a.date).localeCompare(String(b.date)) || String(a.id).localeCompare(String(b.id)));
@@ -2390,6 +2543,12 @@ Bonus"></textarea></div>
     function openAccountDetail(accId) {
       const acc = state.accounts.find(a => a.id === accId);
       if (!acc) return;
+      const archiveButton = document.getElementById('acc-detail-archive-btn');
+      if (archiveButton) {
+        archiveButton.disabled = !!acc.archived;
+        archiveButton.innerHTML = acc.archived ? '<i class="fa-solid fa-box-archive mr-1"></i> Archived' : '<i class="fa-solid fa-box-archive mr-1"></i> Archive Account';
+        archiveButton.classList.toggle('opacity-50', !!acc.archived);
+      }
       window.currentEditingAccountId = acc.id;
       document.getElementById('acc-detail-title').innerText = `${acc.name} - Transactions & Settings`;
       const debtEditButton = document.getElementById('acc-detail-edit-debt');
@@ -2463,16 +2622,62 @@ Bonus"></textarea></div>
     function closeAccountDetailModal() { document.getElementById('account-detail-modal').classList.add('hidden'); }
 
     function deleteAccountById(id) {
-      const acc = state.accounts.find(a => a.id === id);
-      if (!acc) return;
-      if (!confirm(`Are you sure you want to delete account "${acc.name}"?`)) return;
-      if (!createLocalSafetyCopy(`Before deleting account "${acc.name}"`)) {
-        alert('FinHub could not create a local safety copy. Export a JSON backup before deleting this account.');
+      const acc = state.accounts.find(a => String(a.id) === String(id));
+      if (!acc || acc.archived) return;
+      const today = new Date().toISOString().slice(0,10);
+      const futureScheduled = (state.calendarBills || []).filter(b => !b.recurrenceOccurrenceDeleted && !b.paid && String(b.date || '') >= today && (
+        String(b.accountId || '') === String(id) || String(b.debtAccountId || '') === String(id) || String(resolveDebtAccountForBill(b)?.id || '') === String(id)
+      ));
+      if (futureScheduled.length) {
+        alert(`This account is linked to ${futureScheduled.length} upcoming unpaid calendar item(s). Reassign or cancel those scheduled items before archiving the account.`);
         return;
       }
-      captureUndo(`Delete account "${acc.name}"`);
-      state.accounts = state.accounts.filter(a => a.id !== id);
-      saveData(); closeAccountDetailModal(); renderDashboard();
+      if (Math.abs(Number(acc.balance) || 0) >= 0.005) {
+        alert(`This account still has a balance of ${formatFinancial(acc.balance)}. Reconcile it and bring the balance to $0.00 before archiving, so it is not removed from your current asset or debt totals prematurely.`);
+        return;
+      }
+      const linkedTransactions = (state.transactions || []).filter(t =>
+        String(t.accountId) === String(id) ||
+        String(t.transferToAccountId || '') === String(id) ||
+        String(t.debtAccountId || '') === String(id)
+      ).length;
+      const message = `Archive "${acc.name}"? It will be removed from active account totals and new-entry lists, but its transactions, balance history and reconciliation records will be preserved. ${linkedTransactions} linked transaction(s) will remain available in history.`;
+      if (!confirm(message)) return;
+      if (!createLocalSafetyCopy(`Before archiving account "${acc.name}"`)) {
+        alert('FinHub could not create a local safety copy. Export a JSON backup before archiving this account.');
+        return;
+      }
+      captureUndo(`Archive account "${acc.name}"`);
+      acc.archived = true;
+      acc.archivedAt = new Date().toISOString();
+      saveData();
+      closeAccountDetailModal();
+      renderDashboard(); renderLedger(); renderDebtPlanner(); renderSettings();
+    }
+
+    function restoreAccountById(id) {
+      const acc = state.accounts.find(a => String(a.id) === String(id) && a.archived);
+      if (!acc) return;
+      captureUndo(`Restore account "${acc.name}"`);
+      acc.archived = false;
+      delete acc.archivedAt;
+      saveData();
+      renderDashboard(); renderLedger(); renderDebtPlanner(); renderSettings();
+    }
+
+    function renderArchivedAccountsSettings() {
+      const host = document.getElementById('archived-accounts-list');
+      if (!host) return;
+      const archived = (state.accounts || []).filter(a => a.archived);
+      if (!archived.length) {
+        host.innerHTML = '<p class="text-xs text-gray-400">No archived accounts. Archived accounts retain their complete history and can be restored here.</p>';
+        return;
+      }
+      host.innerHTML = archived.map(account => {
+        const date = account.archivedAt ? new Date(account.archivedAt).toLocaleDateString() : 'Date not recorded';
+        const type = account.type === 'debt' ? 'Liability' : 'Asset';
+        return `<div class="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950 text-xs"><div><div class="font-semibold">${escapeHtml(account.name)}</div><div class="text-gray-400">${type} · Archived ${date} · Historical balance ${formatFinancial(account.balance)}</div></div><div class="flex gap-2"><button onclick="openAccountDetail('${account.id}')" class="px-2.5 py-1.5 rounded-lg bg-gray-200 dark:bg-gray-800">History</button><button onclick="restoreAccountById('${account.id}')" class="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold">Restore</button></div></div>`;
+      }).join('');
     }
 
     function confirmDeleteAccountFromModal() {
@@ -2603,10 +2808,10 @@ Bonus"></textarea></div>
         return (Number(item.monthly) || 0) * (((Number(split[0]) || 0) + (Number(split[1]) || 0)) / 100);
       };
       const sumMonthly = list => (list || []).reduce((sum, item) => sum + monthlyAmount(item), 0);
-      const monthlyIncome = sumMonthly(zbb.incomes), monthlyBills = sumMonthly(zbb.bills), monthlyVariable = getVariablePoolAllocationState(zbb, 1, period).poolBudget + getVariablePoolAllocationState(zbb, 2, period).poolBudget, monthlyDebt = sumMonthly(zbb.debts), monthlySavings = sumMonthly(zbb.savings);
+      const monthlyIncome = sumMonthly(zbb.incomes), monthlyBills = sumMonthly(zbb.bills), monthlyVariable = getVariablePoolAllocationState(zbb, 1, period).poolBudget + getVariablePoolAllocationState(zbb, 2, period).poolBudget, monthlyDebt = sumMonthly(zbb.debts) + getExtraDebtContributionForPaycheque(1) + getExtraDebtContributionForPaycheque(2), monthlySavings = sumMonthly(zbb.savings);
       const thirdChequeAmount = item => { const split = item.split || [50, 50, 0]; return item.splitMode === 'dollar' ? (Number(split[2]) || 0) : (Number(item.monthly) || 0) * ((Number(split[2]) || 0) / 100); };
       const sumThird = list => (list || []).reduce((sum, item) => sum + thirdChequeAmount(item), 0);
-      const thirdChequeNet = sumThird(zbb.incomes) - sumThird(zbb.bills) - getVariablePoolAllocationState(zbb, 3, period).poolBudget - sumThird(zbb.debts) - sumThird(zbb.savings);
+      const thirdChequeNet = sumThird(zbb.incomes) - sumThird(zbb.bills) - getVariablePoolAllocationState(zbb, 3, period).poolBudget - sumThird(zbb.debts) - getExtraDebtContributionForPaycheque(3) - sumThird(zbb.savings);
       const monthlyPanel = document.getElementById('zbb-monthly-rollup');
       if (monthlyPanel) monthlyPanel.innerHTML = `
         <div class="flex items-center justify-between mb-3"><div><h3 class="font-bold text-sm">Calendar-month roll-up</h3><p class="text-[10px] text-gray-400">Combined allocation from Paycheques 1 and 2. Paycheque 3 is shown separately below.</p></div><span class="text-[10px] text-indigo-400">Monthly view</span></div>
@@ -2632,6 +2837,8 @@ Bonus"></textarea></div>
       (zbb.bills || []).forEach(b => billsSum += calcAmt(b));
       variableSum = variablePoolState.poolBudget;
       (zbb.debts || []).forEach(d => debtSum += calcAmt(d));
+      const extraDebtThisPaycheque = getExtraDebtContributionForPaycheque(cycle);
+      debtSum += extraDebtThisPaycheque;
       (zbb.savings || []).forEach(s => savingsSum += calcAmt(s));
 
       const remAfterBills = incomeSum - billsSum;
@@ -2722,6 +2929,10 @@ Bonus"></textarea></div>
         });
       }
       renderSection('zbb-debt-list', zbb.debts, 'debt', 'text-amber-600 dark:text-amber-400');
+      const zbbDebtList = document.getElementById('zbb-debt-list');
+      if (zbbDebtList) {
+        zbbDebtList.insertAdjacentHTML('beforeend', `<div class="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl border border-emerald-200 dark:border-emerald-900 bg-emerald-50/70 dark:bg-emerald-950/20 text-xs"><div><div class="font-semibold text-emerald-700 dark:text-emerald-300">Extra debt contribution · Paycheque ${cycle}</div><div class="text-[10px] text-gray-500">Separate from required minimum payments; flows into the Debt payoff simulator.</div></div><div class="flex items-center gap-2"><span class="text-gray-500">$</span><input type="number" min="0" step="0.01" value="${extraDebtThisPaycheque.toFixed(2)}" onchange="updateZbbExtraDebtContribution(this.value)" aria-label="Extra debt contribution for paycheque ${cycle}" class="w-32 text-right bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1.5 font-bold accounting-num"></div></div>`);
+      }
       renderSection('zbb-savings-list', zbb.savings, 'savings', 'text-indigo-600 dark:text-indigo-400');
 
       document.getElementById('zbb-sum-income').innerText = formatFinancial(incomeSum);
@@ -3293,7 +3504,7 @@ Bonus"></textarea></div>
       const select = document.getElementById('cal-debt-account');
       if (!select) return;
       select.innerHTML = '';
-      const debts = state.accounts.filter(a => a.type === 'debt');
+      const debts = state.accounts.filter(a => a.type === 'debt' && !a.archived);
       debts.forEach(a => select.innerHTML += `<option value="${a.id}" ${a.id === selectedId ? 'selected' : ''}>${a.name}</option>`);
       if (!debts.length) select.innerHTML = '<option value="">No debt accounts available</option>';
       toggleCalendarDebtAccount();
@@ -3311,7 +3522,7 @@ Bonus"></textarea></div>
       document.getElementById('cal-date').value = dateStr || `${state.currentYear}-${(state.currentMonth + 1).toString().padStart(2, '0')}-01`;
       const accSelect = document.getElementById('cal-account');
       accSelect.innerHTML = '';
-      state.accounts.filter(a => a.type === 'asset').forEach(a => accSelect.innerHTML += `<option value="${a.id}">${a.name}</option>`);
+      state.accounts.filter(a => a.type === 'asset' && !a.archived).forEach(a => accSelect.innerHTML += `<option value="${a.id}">${a.name}</option>`);
       populateCalendarDebtAccount();
       document.getElementById('cal-principal-amount').value = '';
       document.getElementById('calendar-modal').classList.remove('hidden');
@@ -3332,7 +3543,7 @@ Bonus"></textarea></div>
       document.getElementById('cal-recurring').value = item.recurring || 'none';
       const accSelect = document.getElementById('cal-account');
       accSelect.innerHTML = '';
-      state.accounts.filter(a => a.type === 'asset').forEach(a => accSelect.innerHTML += `<option value="${a.id}" ${a.id === item.accountId ? 'selected' : ''}>${a.name}</option>`);
+      state.accounts.filter(a => a.type === 'asset' && !a.archived).forEach(a => accSelect.innerHTML += `<option value="${a.id}" ${a.id === item.accountId ? 'selected' : ''}>${a.name}</option>`);
       const linkedDebt = resolveDebtAccountForBill(item);
       populateCalendarDebtAccount(item.debtAccountId || linkedDebt?.id || '');
       document.getElementById('calendar-modal').classList.remove('hidden');
@@ -3692,7 +3903,10 @@ Bonus"></textarea></div>
         const idx = state.transactions.findIndex(x => String(x.id) === String(t.id));
         if (idx < 0) return;
         const acc = state.accounts.find(a => String(a.id) === String(t.accountId));
-        if (t.type === 'Transfer' && t.transferToAccountId) {
+        if (t.type === 'Interest Charge') {
+          const debtAcc = state.accounts.find(a => String(a.id) === String(t.debtAccountId || t.accountId) && a.type === 'debt');
+          if (debtAcc) debtAcc.balance = Math.round(((Number(debtAcc.balance) || 0) - (Number(t.amount) || 0)) * 100) / 100;
+        } else if (t.type === 'Transfer' && t.transferToAccountId) {
           const target = state.accounts.find(a => String(a.id) === String(t.transferToAccountId));
           if (acc) acc.balance = (Number(acc.balance) || 0) + (Number(t.amount) || 0);
           if (target) target.balance = (Number(target.balance) || 0) - (Number(t.amount) || 0);
@@ -3700,20 +3914,26 @@ Bonus"></textarea></div>
           if (t.type === 'Income' || (t.type === 'Transfer' && t.externalTransferDirection === 'in')) acc.balance = (Number(acc.balance) || 0) - (Number(t.amount) || 0);
           else acc.balance = (Number(acc.balance) || 0) + (Number(t.amount) || 0);
         }
+        let debtPrincipalReversed = false;
         if (t.debtPaymentId) {
           const debtPayment = (state.debtPayments || []).find(p => String(p.id) === String(t.debtPaymentId));
           if (debtPayment) {
             const debtAcc = state.accounts.find(a => String(a.id) === String(debtPayment.accountId) && a.type === 'debt');
-            if (debtAcc) debtAcc.balance = (Number(debtAcc.balance) || 0) + (Number(t.debtPrincipalAmount ?? debtPayment.principalAmount ?? debtPayment.amount ?? t.amount ?? 0) || 0);
+            if (debtAcc) {
+              const principal = Number(t.debtPrincipalAmount ?? debtPayment.principalAmount ?? debtPayment.amount ?? 0) || 0;
+              debtAcc.balance = Math.round(((Number(debtAcc.balance) || 0) + principal) * 100) / 100;
+              debtPrincipalReversed = true;
+            }
             state.debtPayments = state.debtPayments.filter(p => String(p.id) !== String(debtPayment.id));
           }
         }
         if (t.calendarBillId) {
           const linkedBill = (state.calendarBills || []).find(b => String(b.id) === String(t.calendarBillId));
           if (linkedBill) {
-            if (linkedBill.type === 'debt') {
+            if (linkedBill.type === 'debt' && !debtPrincipalReversed) {
               const debtAccount = resolveDebtAccountForBill(linkedBill);
-              if (debtAccount) debtAccount.balance = (Number(debtAccount.balance) || 0) + (Number(t.debtPrincipalAmount ?? t.amount) || 0);
+              const principal = Number(t.debtPrincipalAmount ?? linkedBill.principalAmount ?? linkedBill.amount ?? 0) || 0;
+              if (debtAccount) debtAccount.balance = Math.round(((Number(debtAccount.balance) || 0) + principal) * 100) / 100;
             }
             linkedBill.paid = false;
             delete linkedBill.linkedTransactionId;
@@ -3740,7 +3960,7 @@ Bonus"></textarea></div>
         '<option value="Transfer">Internal Transfer</option>';
       const transferTo = document.getElementById('bulk-transfer-to');
       transferTo.innerHTML = '<option value="">Choose destination account</option>' +
-        (state.accounts || []).filter(a=>a.type==='asset').map(a=>`<option value="${escapeHtml(String(a.id))}">${escapeHtml(a.name)}</option>`).join('');
+        (state.accounts || []).filter(a=>a.type==='asset' && !a.archived).map(a=>`<option value="${escapeHtml(String(a.id))}">${escapeHtml(a.name)}</option>`).join('');
       ['bulk-vendor','bulk-type','bulk-category','bulk-subcategory','bulk-transfer-to'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
       const transferModeSelect=document.getElementById('bulk-transfer-mode'); if(transferModeSelect) transferModeSelect.value='';
       updateBulkTypeOptions();
@@ -4273,6 +4493,41 @@ Bonus"></textarea></div>
         </div>`;
     }
 
+    function focusAccountReconciliation(accountId) {
+      ledgerBalanceAccountId = String(accountId);
+      renderLedgerBalanceCheck();
+      const select = document.getElementById('ledger-balance-account-select');
+      if (select) select.value = String(accountId);
+      renderLedgerBalanceCheck();
+      document.getElementById('ledger-balance-check')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function renderReconciliationOverview() {
+      const body = document.getElementById('reconciliation-overview-rows');
+      if (!body) return;
+      const accounts = (state.accounts || []).filter(a => !a.archived);
+      const rows = accounts.map(account => {
+        const calculated = Number(account.balance) || 0;
+        const hasStatement = account.actualBalance !== undefined && account.actualBalance !== null && account.actualBalance !== '' && Number.isFinite(Number(account.actualBalance));
+        const statement = hasStatement ? Number(account.actualBalance) : null;
+        const variance = hasStatement ? Math.round((statement - calculated) * 100) / 100 : null;
+        const balanced = variance !== null && Math.abs(variance) < 0.005;
+        return `<tr class="border-t border-gray-100 dark:border-gray-800">
+          <td class="px-3 py-2 font-semibold">${escapeHtml(account.name)}<div class="text-[10px] text-gray-400">${account.type === 'debt' ? 'Liability' : 'Asset'}${account.hidden ? ' · Excluded from totals' : ''}</div></td>
+          <td class="px-3 py-2 text-right accounting-num">${formatFinancial(calculated)}</td>
+          <td class="px-3 py-2 text-right accounting-num">${hasStatement ? formatFinancial(statement) : '—'}</td>
+          <td class="px-3 py-2 text-right accounting-num ${variance === null ? 'text-gray-400' : balanced ? 'text-emerald-500' : 'text-amber-500'}">${variance === null ? 'Not entered' : formatFinancial(variance)}</td>
+          <td class="px-3 py-2 text-gray-500">${escapeHtml(account.lastReconciledAt || 'Not reconciled')}</td>
+          <td class="px-3 py-2 text-right"><button onclick="focusAccountReconciliation('${account.id}')" class="text-indigo-500 hover:underline">Review</button></td>
+        </tr>`;
+      });
+      body.innerHTML = rows.join('') || '<tr><td colspan="6" class="px-3 py-4 text-center text-gray-400">No active accounts.</td></tr>';
+      const checked = accounts.filter(a => a.actualBalance !== undefined && a.actualBalance !== null && a.actualBalance !== '').length;
+      const exceptions = accounts.filter(a => a.actualBalance !== undefined && a.actualBalance !== null && a.actualBalance !== '' && Math.abs((Number(a.actualBalance) || 0) - (Number(a.balance) || 0)) >= 0.005).length;
+      const summary = document.getElementById('reconciliation-overview-summary');
+      if (summary) summary.textContent = `${checked} of ${accounts.length} have a statement balance · ${exceptions} variance(s) to review`;
+    }
+
     function renderLedger() {
       const filterInput = document.getElementById('upcoming-bills-filter');
       if (!filterInput.value) {
@@ -4303,6 +4558,7 @@ Bonus"></textarea></div>
 
       renderLedgerFilterStrip();
       renderLedgerBalanceCheck();
+      renderReconciliationOverview();
       const runningBalances = buildLedgerRunningBalanceMap();
       const tbody = document.getElementById('ledger-rows');
       tbody.innerHTML = '';
@@ -4324,9 +4580,9 @@ Bonus"></textarea></div>
         return true;
       });
 
-      const totalExpenses = matchedTxs.reduce((sum, t) => sum + (['Expense', 'Debt Payment'].includes(t.type) && t.category !== 'Transfer' ? (Number(t.amount) || 0) : 0), 0);
+      const totalExpenses = matchedTxs.reduce((sum, t) => sum + (['Expense', 'Debt Payment', 'Interest Charge'].includes(t.type) && t.category !== 'Transfer' ? (Number(t.amount) || 0) : 0), 0);
       const totalIncome = matchedTxs.reduce((sum, t) => sum + (t.type === 'Income' && t.category !== 'Transfer' ? (Number(t.amount) || 0) : 0), 0);
-      const totalOther = matchedTxs.reduce((sum, t) => sum + ((!['Expense', 'Debt Payment', 'Income'].includes(t.type) || t.category === 'Transfer') ? (Number(t.amount) || 0) : 0), 0);
+      const totalOther = matchedTxs.reduce((sum, t) => sum + ((!['Expense', 'Debt Payment', 'Interest Charge', 'Income'].includes(t.type) || t.category === 'Transfer') ? (Number(t.amount) || 0) : 0), 0);
       const netTotal = totalIncome - totalExpenses;
       const expenseTotalEl = document.getElementById('ledger-total-expenses');
       const incomeTotalEl = document.getElementById('ledger-total-income');
@@ -4347,7 +4603,7 @@ Bonus"></textarea></div>
           const acc = state.accounts.find(a => a.id === t.accountId);
           // Colour amounts by cash direction for this account, not by transaction label.
           // External Transfer In is a credit; Transfer Out and internal transfers are debits.
-          const isOutflow = t.type === 'Expense' || t.type === 'Debt Payment' ||
+          const isOutflow = t.type === 'Expense' || t.type === 'Debt Payment' || t.type === 'Interest Charge' ||
             (t.type === 'Transfer' && t.externalTransferDirection !== 'in');
           tbody.innerHTML += `
             <tr class="hover:bg-gray-50 dark:hover:bg-gray-950">
@@ -4361,7 +4617,7 @@ Bonus"></textarea></div>
               <td data-label="Amount" class="px-4 py-3 text-right font-bold ${isOutflow ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'} accounting-num">${formatFinancial(t.amount, isOutflow)}</td>
               ${renderLedgerRunningBalanceCell(t, runningBalances)}
               <td data-label="Actions" class="px-4 py-3 text-center space-x-2">
-                <button title="Edit transaction" onclick="openTransactionModal('${t.id}')" class="text-indigo-400 hover:text-indigo-300 theme-text"><i class="fa-solid fa-pen"></i></button>
+                <button title="Edit transaction" onclick="${t.type === 'Interest Charge' ? `openInterestChargeModal('${t.id}')` : `openTransactionModal('${t.id}')`}" class="text-indigo-400 hover:text-indigo-300 theme-text"><i class="fa-solid fa-pen"></i></button>
                 <button onclick="deleteTransaction('${t.id}')" class="text-rose-500 hover:text-rose-400"><i class="fa-solid fa-trash"></i></button>
               </td>
             </tr>
@@ -5188,100 +5444,187 @@ Bonus"></textarea></div>
 
     function setCalendarBillPaid(bill, shouldBePaid) {
       if (!bill || Boolean(bill.paid) === Boolean(shouldBePaid)) return;
-      const fundingAccount = state.accounts.find(a => a.id === bill.accountId);
+      const fundingAccount = state.accounts.find(a => String(a.id) === String(bill.accountId));
       const debtAccount = bill.type === 'debt' ? resolveDebtAccountForBill(bill) : null;
       const totalAmount = Math.max(0, Number(bill.amount) || 0);
-      if (bill.type === 'debt' && bill.principalAmount === undefined) bill.principalAmount = debtAccount?.paymentMethod === 'interest-only' ? 0 : totalAmount;
-      const principalAmount = bill.type === 'debt' ? Math.min(totalAmount, Math.max(0, Number(bill.principalAmount ?? totalAmount) || 0)) : 0;
-      if (shouldBePaid && bill.type === 'debt' && (!fundingAccount || fundingAccount.type !== 'asset' || !debtAccount)) {
-        alert('This debt payment needs both a funding account and the specific credit/debt account being paid. Edit the calendar item and select both before marking it paid.'); return;
+      if (bill.type === 'debt' && bill.principalAmount === undefined) {
+        bill.principalAmount = debtAccount?.paymentMethod === 'interest-only' ? 0 : totalAmount;
       }
-      if (shouldBePaid && !fundingAccount) { alert('Select a valid funding account before marking this item paid.'); return; }
-      captureUndo(`${shouldBePaid ? 'Pay' : 'Unpay'} scheduled item "${bill.desc}"`);
+      const scheduledPrincipal = bill.type === 'debt'
+        ? Math.min(totalAmount, Math.max(0, Number(bill.principalAmount ?? totalAmount) || 0))
+        : 0;
+
+      if (shouldBePaid && bill.type === 'debt' && (!fundingAccount || fundingAccount.type !== 'asset' || !debtAccount)) {
+        alert('This debt payment needs both a funding account and the specific credit/debt account being paid. Edit the calendar item and select both before marking it paid.');
+        return;
+      }
+      if (shouldBePaid && !fundingAccount) {
+        alert('Select a valid funding account before marking this item paid.');
+        return;
+      }
+
       const existing = findBillPaymentTransaction(bill);
+      if (shouldBePaid && existing && bill.type === 'debt') {
+        const alreadyLinkedDebtId = existing.debtAccountId ? String(existing.debtAccountId) : '';
+        if (alreadyLinkedDebtId && alreadyLinkedDebtId !== String(debtAccount.id)) {
+          alert('The matching payment is already linked to a different debt account. Review the transaction before linking it to this calendar item.');
+          return;
+        }
+      }
+
+      captureUndo(`${shouldBePaid ? 'Pay' : 'Unpay'} scheduled item "${bill.desc}"`);
+
       if (shouldBePaid) {
         if (existing) {
+          // This transaction was already entered and its funding-account effect
+          // already applied. Link it to the scheduled item without replaying cash.
           bill.linkedTransactionId = existing.id;
           existing.calendarBillId = bill.id;
           if (bill.type === 'debt') {
-            existing.debtAccountId = debtAccount.id;
-            existing.debtPrincipalAmount = principalAmount;
-            existing.debtInterestAmount = Math.max(0, totalAmount - principalAmount);
-            // Existing legacy transaction already affected cash; apply only the liability side here.
-            debtAccount.balance = Math.max(0, (Number(debtAccount.balance) || 0) - principalAmount);
+            const hasAppliedLiabilityEffect =
+              existing.type === 'Debt Payment' &&
+              String(existing.debtAccountId || '') === String(debtAccount.id) &&
+              existing.debtPrincipalAmount !== undefined &&
+              existing.debtPrincipalAmount !== null;
+            if (!hasAppliedLiabilityEffect) {
+              existing.debtAccountId = debtAccount.id;
+              existing.debtPrincipalAmount = scheduledPrincipal;
+              if (existing.debtInterestAmount === undefined) {
+                existing.debtInterestAmount = Math.max(0, Number(existing.amount) - scheduledPrincipal);
+              }
+              debtAccount.balance = Math.max(0, (Number(debtAccount.balance) || 0) - scheduledPrincipal);
+            } else {
+              // Preserve the actual principal/interest split from the Debt Payment form.
+              bill.principalAmount = Number(existing.debtPrincipalAmount) || 0;
+            }
           }
         } else {
           const transactionId = `tx_bill_${bill.id}_${Date.now()}`;
-          const transaction = { id: transactionId, date: bill.date, desc: bill.desc || '', vendor: bill.vendor || bill.desc || 'Scheduled bill', type: bill.type === 'income' ? 'Income' : bill.type === 'debt' ? 'Debt Payment' : 'Expense', category: bill.category || (bill.type === 'debt' ? 'Debt Service' : ''), subcategory: bill.subcategory || '', amount: totalAmount, accountId: bill.accountId, calendarBillId: bill.id, source: 'calendar-bill' };
-          if (bill.type === 'debt') { transaction.debtAccountId = debtAccount.id; transaction.debtPrincipalAmount = principalAmount; transaction.debtInterestAmount = Math.max(0, totalAmount - principalAmount); }
-          state.transactions.unshift(transaction); bill.linkedTransactionId = transactionId;
+          const transaction = {
+            id: transactionId,
+            date: bill.date,
+            desc: bill.desc || '',
+            vendor: bill.vendor || bill.desc || 'Scheduled bill',
+            type: bill.type === 'income' ? 'Income' : bill.type === 'debt' ? 'Debt Payment' : 'Expense',
+            category: bill.category || (bill.type === 'debt' ? 'Debt Service' : ''),
+            subcategory: bill.type === 'debt' ? (scheduledPrincipal > 0 ? 'Principal Paydown' : 'Interest Payment') : (bill.subcategory || ''),
+            amount: totalAmount,
+            accountId: bill.accountId,
+            calendarBillId: bill.id,
+            source: 'calendar-bill'
+          };
+          if (bill.type === 'debt') {
+            transaction.debtAccountId = debtAccount.id;
+            transaction.debtPrincipalAmount = scheduledPrincipal;
+            transaction.debtInterestAmount = Math.max(0, totalAmount - scheduledPrincipal);
+          }
+          state.transactions.unshift(transaction);
+          bill.linkedTransactionId = transactionId;
           if (bill.type === 'income') fundingAccount.balance = (Number(fundingAccount.balance) || 0) + totalAmount;
           else fundingAccount.balance = (Number(fundingAccount.balance) || 0) - totalAmount;
-          if (debtAccount) debtAccount.balance = Math.max(0, (Number(debtAccount.balance) || 0) - principalAmount);
+          if (debtAccount) debtAccount.balance = Math.max(0, (Number(debtAccount.balance) || 0) - scheduledPrincipal);
         }
         bill.paid = true;
       } else {
-        const linked = existing || (bill.linkedTransactionId ? state.transactions.find(t => t.id === bill.linkedTransactionId) : null);
-        const principalToReverse = bill.type === 'debt' ? Number(linked?.debtPrincipalAmount ?? bill.principalAmount ?? bill.amount) || 0 : 0;
-        if (linked) {
-          const linkedFunding = state.accounts.find(a => a.id === linked.accountId);
+        const linked = existing || (bill.linkedTransactionId
+          ? state.transactions.find(t => String(t.id) === String(bill.linkedTransactionId))
+          : null);
+
+        if (linked && linked.source === 'calendar-bill') {
+          // A transaction created by this calendar item is removed and reversed.
+          const linkedFunding = state.accounts.find(a => String(a.id) === String(linked.accountId));
           if (linkedFunding) {
             if (linked.type === 'Income') linkedFunding.balance = (Number(linkedFunding.balance) || 0) - (Number(linked.amount) || 0);
             else linkedFunding.balance = (Number(linkedFunding.balance) || 0) + (Number(linked.amount) || 0);
           }
-          state.transactions = state.transactions.filter(t => t.id !== linked.id);
-        } else if (fundingAccount) {
-          if (bill.type === 'income') fundingAccount.balance = (Number(fundingAccount.balance) || 0) - totalAmount;
-          else fundingAccount.balance = (Number(fundingAccount.balance) || 0) + totalAmount;
+          if (bill.type === 'debt') {
+            const principalToReverse = Number(linked.debtPrincipalAmount ?? scheduledPrincipal) || 0;
+            if (debtAccount) debtAccount.balance = Math.round(((Number(debtAccount.balance) || 0) + principalToReverse) * 100) / 100;
+          }
+          state.transactions = state.transactions.filter(t => String(t.id) !== String(linked.id));
+        } else if (linked) {
+          // A separately recorded transaction remains real ledger history.
+          // Unmark only removes the calendar association; it never deletes or
+          // reverses the transaction's balances or its Debt Payment record.
+          delete linked.calendarBillId;
+        } else {
+          // Legacy paid item without a linked transaction: reverse its recorded effects.
+          if (fundingAccount) {
+            if (bill.type === 'income') fundingAccount.balance = (Number(fundingAccount.balance) || 0) - totalAmount;
+            else fundingAccount.balance = (Number(fundingAccount.balance) || 0) + totalAmount;
+          }
+          if (debtAccount) debtAccount.balance = Math.round(((Number(debtAccount.balance) || 0) + scheduledPrincipal) * 100) / 100;
         }
-        if (debtAccount) debtAccount.balance = (Number(debtAccount.balance) || 0) + principalToReverse;
-        delete bill.linkedTransactionId; bill.paid = false;
+        delete bill.linkedTransactionId;
+        bill.paid = false;
       }
-      saveData(); renderLedger(); renderDashboard(); renderCalendar(); renderZbbFundingTracker(); renderDebtPlanner();
-    }
 
-    function markBillPaid(billId) {
+      saveData();
+      renderLedger(); renderDashboard(); renderCalendar(); renderZbbFundingTracker(); renderDebtPlanner();
+    }    function markBillPaid(billId) {
       const bill = state.calendarBills.find(b => b.id === billId);
       if (!bill || bill.paid) return;
       setCalendarBillPaid(bill, true);
     }
 
     function deleteTransaction(id) {
-      const idx = state.transactions.findIndex(t => t.id === id);
-      if (idx >= 0) {
-        const t = state.transactions[idx];
-        if (!createLocalSafetyCopy(`Before deleting transaction "${t.vendor || t.desc || t.id}"`)) {
-          alert('FinHub could not create a local safety copy. Export a JSON backup before deleting this transaction.');
-          return;
-        }
-        captureUndo(`Delete transaction "${t.vendor || t.desc || t.id}"`);
-        const acc = state.accounts.find(a => a.id === t.accountId);
-        if (t.type === 'Transfer' && t.transferToAccountId) { const target=state.accounts.find(a=>a.id===t.transferToAccountId); if(acc) acc.balance += Number(t.amount)||0; if(target) target.balance -= Number(t.amount)||0; }
-        else if (acc) { if (t.type === 'Income' || (t.type === 'Transfer' && t.externalTransferDirection === 'in')) acc.balance -= Number(t.amount)||0; else acc.balance += Number(t.amount)||0; }
-        if (t.debtPaymentId) {
-          const debtPayment = (state.debtPayments || []).find(p => p.id === t.debtPaymentId);
-          if (debtPayment) {
-            const debtAcc = state.accounts.find(a => a.id === debtPayment.accountId && a.type === 'debt');
-            if (debtAcc) debtAcc.balance = (Number(debtAcc.balance) || 0) + (Number(t.debtPrincipalAmount ?? debtPayment.principalAmount ?? debtPayment.amount ?? t.amount ?? 0) || 0);
-            state.debtPayments = state.debtPayments.filter(p => p.id !== debtPayment.id);
-          }
-        }
-        if (t.calendarBillId) {
-          const linkedBill = (state.calendarBills || []).find(b => b.id === t.calendarBillId);
-          if (linkedBill) {
-            if (linkedBill.type === 'debt') {
-              const debtAccount = resolveDebtAccountForBill(linkedBill);
-              if (debtAccount) debtAccount.balance = (Number(debtAccount.balance) || 0) + (Number(t.debtPrincipalAmount ?? t.amount) || 0);
-            }
-            linkedBill.paid = false; delete linkedBill.linkedTransactionId;
-          }
-        }
-        state.transactions.splice(idx, 1);
-        saveData(); renderLedger(); renderDashboard(); renderCalendar(); renderZbbFundingTracker();
+      const idx = state.transactions.findIndex(t => String(t.id) === String(id));
+      if (idx < 0) return;
+      const t = state.transactions[idx];
+      if (!createLocalSafetyCopy(`Before deleting transaction "${t.vendor || t.desc || t.id}"`)) {
+        alert('FinHub could not create a local safety copy. Export a JSON backup before deleting this transaction.');
+        return;
       }
-    }
+      captureUndo(`Delete transaction "${t.vendor || t.desc || t.id}"`);
 
-    function renderSettings() {
+      const account = state.accounts.find(a => String(a.id) === String(t.accountId));
+      let debtPrincipalReversed = false;
+
+      if (t.type === 'Interest Charge') {
+        const debtAccount = state.accounts.find(a => String(a.id) === String(t.debtAccountId || t.accountId) && a.type === 'debt');
+        if (debtAccount) debtAccount.balance = Math.round(((Number(debtAccount.balance) || 0) - (Number(t.amount) || 0)) * 100) / 100;
+      } else if (t.type === 'Transfer' && t.transferToAccountId) {
+        const target = state.accounts.find(a => String(a.id) === String(t.transferToAccountId));
+        if (account) account.balance = (Number(account.balance) || 0) + (Number(t.amount) || 0);
+        if (target) target.balance = (Number(target.balance) || 0) - (Number(t.amount) || 0);
+      } else if (account) {
+        if (t.type === 'Income' || (t.type === 'Transfer' && t.externalTransferDirection === 'in')) {
+          account.balance = (Number(account.balance) || 0) - (Number(t.amount) || 0);
+        } else {
+          account.balance = (Number(account.balance) || 0) + (Number(t.amount) || 0);
+        }
+      }
+
+      if (t.debtPaymentId) {
+        const debtPayment = (state.debtPayments || []).find(p => String(p.id) === String(t.debtPaymentId));
+        if (debtPayment) {
+          const debtAccount = state.accounts.find(a => String(a.id) === String(debtPayment.accountId) && a.type === 'debt');
+          if (debtAccount) {
+            const principal = Number(t.debtPrincipalAmount ?? debtPayment.principalAmount ?? debtPayment.amount ?? 0) || 0;
+            debtAccount.balance = Math.round(((Number(debtAccount.balance) || 0) + principal) * 100) / 100;
+            debtPrincipalReversed = true;
+          }
+          state.debtPayments = state.debtPayments.filter(p => String(p.id) !== String(debtPayment.id));
+        }
+      }
+
+      if (t.calendarBillId) {
+        const linkedBill = (state.calendarBills || []).find(b => String(b.id) === String(t.calendarBillId));
+        if (linkedBill) {
+          if (linkedBill.type === 'debt' && !debtPrincipalReversed) {
+            const debtAccount = resolveDebtAccountForBill(linkedBill);
+            const principal = Number(t.debtPrincipalAmount ?? linkedBill.principalAmount ?? linkedBill.amount ?? 0) || 0;
+            if (debtAccount) debtAccount.balance = Math.round(((Number(debtAccount.balance) || 0) + principal) * 100) / 100;
+          }
+          linkedBill.paid = false;
+          delete linkedBill.linkedTransactionId;
+        }
+      }
+
+      state.transactions.splice(idx, 1);
+      saveData();
+      renderLedger(); renderDashboard(); renderCalendar(); renderZbbFundingTracker(); renderDebtPlanner(); renderDebtPaymentHistory();
+    }    function renderSettings() {
       const typesList = document.getElementById('settings-types-list');
       typesList.innerHTML = '';
       state.transactionTypes.forEach((t, idx) => {
@@ -5343,6 +5686,7 @@ Bonus"></textarea></div>
         });
       }
       syncCustomColorControls();
+      renderArchivedAccountsSettings();
     }
 
     function openIncomeCategoryModal(editIdx = -1) {
@@ -5520,8 +5864,43 @@ Bonus"></textarea></div>
       return Math.max(0, (Number(state.extraPayoff) || 0) * 12 / 26);
     }
 
+    function getExtraDebtContributionForPaycheque(cycle) {
+      if (Number(cycle) === 3 && state.extraPayoffThirdPay !== undefined && state.extraPayoffThirdPay !== null && String(state.extraPayoffThirdPay).trim() !== '' && Number.isFinite(Number(state.extraPayoffThirdPay))) {
+        return Math.max(0, Number(state.extraPayoffThirdPay) || 0);
+      }
+      return getExtraDebtContributionPerPaycheque();
+    }
+
+    function updateZbbExtraDebtContribution(value) {
+      const cycle = Number(state.selectedPayCycle || 1);
+      const raw = String(value ?? '').trim();
+      const amount = raw === '' ? 0 : Number(raw);
+      if (!Number.isFinite(amount) || amount < 0) {
+        alert('Enter a valid extra debt contribution of zero or more.');
+        renderZbbPlanner();
+        return;
+      }
+      const normalized = Math.round(amount * 100) / 100;
+      const current = getExtraDebtContributionForPaycheque(cycle);
+      if (Math.abs(current - normalized) < 0.005) return;
+      captureUndo(cycle === 3 ? 'Change third-paycheque extra debt contribution' : 'Change biweekly extra debt contribution');
+      if (cycle === 3) state.extraPayoffThirdPay = normalized;
+      else {
+        state.extraPayoffPerPaycheque = normalized;
+        state.extraPayoff = Math.round((normalized * 26 / 12) * 100) / 100;
+      }
+      saveData();
+      renderZbbPlanner();
+      renderDebtPlanner();
+    }
+
     function getExtraDebtContributionMonthlyEquivalent() {
-      return getExtraDebtContributionPerPaycheque() * 26 / 12;
+      // Most months have two regular cheques; the annual 26-paycheque pattern
+      // produces roughly two additional third-cheque months. Keep the custom
+      // P3 contribution in the annualized payoff estimate.
+      const regular = getExtraDebtContributionPerPaycheque();
+      const third = getExtraDebtContributionForPaycheque(3);
+      return Math.round(((24 * regular) + (2 * third)) / 12 * 100) / 100;
     }
 
     function updateExtraPayoff(val) {
@@ -5597,7 +5976,7 @@ Bonus"></textarea></div>
     }
 
     function moveDebtPriority(debtId, direction) {
-      const debts = state.accounts.filter(a => a.type === 'debt');
+      const debts = state.accounts.filter(a => a.type === 'debt' && !a.archived);
       const idx = debts.findIndex(d => d.id === debtId);
       const newIdx = idx + direction;
       if (newIdx < 0 || newIdx >= debts.length) return;
@@ -5626,7 +6005,7 @@ Bonus"></textarea></div>
       const container = document.getElementById('debt-upcoming-bills-list');
       const fundSelect = document.getElementById('debt-fund-account');
       container.innerHTML = ''; const previousFundAccount = fundSelect.value; fundSelect.innerHTML = '';
-      state.accounts.filter(a => a.type === 'asset').forEach(a => {
+      state.accounts.filter(a => a.type === 'asset' && !a.archived).forEach(a => {
         fundSelect.innerHTML += `<option value="${a.id}">${a.name} (${formatFinancial(a.balance)})</option>`;
       });
       if (previousFundAccount && state.accounts.some(a => a.id === previousFundAccount && a.type === 'asset')) fundSelect.value = previousFundAccount;
@@ -5640,7 +6019,7 @@ Bonus"></textarea></div>
       }
       upcomingDebts.forEach(d => {
         const resolved = resolveDebtAccountForBill(d);
-        const debtOptions = state.accounts.filter(a => a.type === 'debt').map(a => `<option value="${a.id}" ${resolved?.id === a.id ? 'selected' : ''}>${a.name}</option>`).join('');
+        const debtOptions = state.accounts.filter(a => a.type === 'debt' && !a.archived).map(a => `<option value="${a.id}" ${resolved?.id === a.id ? 'selected' : ''}>${a.name}</option>`).join('');
         container.innerHTML += `
           <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-2 p-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950 text-xs">
             <div class="min-w-0"><strong>${d.desc}</strong> <span class="text-gray-400">(Due: ${d.date})</span><div class="font-bold text-rose-600 accounting-num mt-1">${formatFinancial(d.amount)}</div></div>
@@ -5728,6 +6107,9 @@ Bonus"></textarea></div>
         // Accrue interest first. A future APR change is prorated across the
         // period using daily simple accrual; actual lender methods may differ.
         items.forEach(item => {
+          item.periodInterest = 0;
+          item.periodMinimumPaid = 0;
+          item.periodExtraPaid = 0;
           if (item.balance <= 0.005) return;
           const interest = calculateDebtInterestForPeriod(item.balance, item.source, periodStart, periodEnd);
           item.balance = Math.round((item.balance + interest) * 100) / 100;
@@ -5751,6 +6133,7 @@ Bonus"></textarea></div>
             item.balance = Math.round((item.balance - applied) * 100) / 100;
             // The full entered minimum is still a cash outflow. Any amount
             // above the interest accrual is not silently treated as principal.
+            item.periodMinimumPaid = minimum;
             periodMinimumPaid += minimum;
             totalPaid += minimum;
             if (item.balance <= 0.005) item.balance = 0;
@@ -5760,6 +6143,7 @@ Bonus"></textarea></div>
             item.balance = Math.round((item.balance - applied) * 100) / 100;
             if (minimum > applied) freedMinimums += minimum - applied;
           }
+          item.periodMinimumPaid = applied;
           periodMinimumPaid += applied;
           totalPaid += applied;
         });
@@ -5781,6 +6165,7 @@ Bonus"></textarea></div>
           const payment = Math.min(item.balance, paymentPool);
           item.balance = Math.round((item.balance - payment) * 100) / 100;
           paymentPool = Math.round((paymentPool - payment) * 100) / 100;
+          item.periodExtraPaid = (Number(item.periodExtraPaid) || 0) + payment;
           periodExtraPaid += payment;
           totalPaid += payment;
         }
@@ -5790,7 +6175,16 @@ Bonus"></textarea></div>
           balance: Math.round(items.reduce((sum, item) => sum + item.balance, 0) * 100) / 100,
           interest: Math.round(periodInterest * 100) / 100,
           minimumPayments: Math.round(periodMinimumPaid * 100) / 100,
-          extraPayments: Math.round(periodExtraPaid * 100) / 100
+          extraPayments: Math.round(periodExtraPaid * 100) / 100,
+          debts: items.map(item => ({
+            id: item.id,
+            name: item.name,
+            endingBalance: Math.round((Number(item.balance) || 0) * 100) / 100,
+            interest: Math.round((Number(item.periodInterest) || 0) * 100) / 100,
+            minimumPayment: Math.round((Number(item.periodMinimumPaid) || 0) * 100) / 100,
+            extraPrincipal: Math.round((Number(item.periodExtraPaid) || 0) * 100) / 100,
+            paymentMethod: item.method
+          }))
         });
 
         if (items.every(item => item.balance <= 0.005)) break;
@@ -5850,8 +6244,67 @@ Bonus"></textarea></div>
       return `Day ${day}${ruleLabel}${next ? ` · Next: ${next.toLocaleDateString(undefined,{month:'short',day:'numeric'})}` : ''}`;
     }
 
+    function simulateDebtPayoffForStrategy(debts, extraMonthly, strategy) {
+      const previous = state.debtStrategy;
+      state.debtStrategy = strategy;
+      try { return simulateDebtPayoff(debts, extraMonthly); }
+      finally { state.debtStrategy = previous; }
+    }
+
+    function renderDebtProjectionTables(debts, extraMonthly, accelerated) {
+      const comparison = document.getElementById('debt-strategy-comparison-rows');
+      if (comparison) {
+        const strategies = [
+          ['Manual', 'custom'],
+          ['Snowball', 'snowball'],
+          ['Avalanche', 'avalanche']
+        ];
+        comparison.innerHTML = strategies.map(([label, key]) => {
+          const result = simulateDebtPayoffForStrategy(debts, extraMonthly, key);
+          let months = '—', interest = '—', date = '—';
+          if (result) {
+            months = result.paidOff ? `${result.months} months` : 'Not projected to clear';
+            interest = formatFinancial(result.interest);
+            if (result.paidOff && result.months > 0) {
+              const target = new Date(); target.setDate(1); target.setMonth(target.getMonth() + result.months);
+              date = target.toLocaleString('default', { month: 'short', year: 'numeric' });
+            } else if (result.paidOff) date = 'Already paid';
+          } else {
+            months = 'Missing inputs';
+          }
+          const isCurrent = (state.debtStrategy || 'custom') === key;
+          return `<tr class="${isCurrent ? 'bg-indigo-50/70 dark:bg-indigo-950/20 font-semibold' : ''}"><td class="px-4 py-3">${label}${isCurrent ? ' · Selected' : ''}</td><td class="px-4 py-3 text-right">${months}</td><td class="px-4 py-3 text-right accounting-num">${interest}</td><td class="px-4 py-3 text-right">${date}</td></tr>`;
+        }).join('');
+      }
+      const rows = document.getElementById('debt-projection-schedule-rows');
+      const note = document.getElementById('debt-projection-schedule-note');
+      const accountRows = document.getElementById('debt-projection-account-rows');
+      const accountNote = document.getElementById('debt-projection-account-note');
+      if (!rows) return;
+      if (!accelerated) {
+        rows.innerHTML = '<tr><td colspan="5" class="px-4 py-5 text-center text-amber-500">Complete the APRs and minimum payments, and schedule any promotional APR changes, to generate a projection.</td></tr>';
+        if (accountRows) accountRows.innerHTML = '<tr><td colspan="6" class="px-3 py-4 text-center text-amber-500">Account-level projections need complete debt inputs.</td></tr>';
+        if (note) note.textContent = 'FinHub does not assume missing minimum payments or unspecified promotional APR changes.';
+        if (accountNote) accountNote.textContent = 'Complete debt balances, APRs, minimum payments and any scheduled promotional rate changes.';
+        return;
+      }
+      if (!accelerated.schedule.length) {
+        rows.innerHTML = '<tr><td colspan="5" class="px-4 py-5 text-center text-gray-400">No outstanding debt to project.</td></tr>';
+        if (accountRows) accountRows.innerHTML = '<tr><td colspan="6" class="px-3 py-4 text-center text-gray-400">No outstanding debt to project.</td></tr>';
+      } else {
+        rows.innerHTML = accelerated.schedule.map(item => `<tr class="border-t border-gray-100 dark:border-gray-800"><td class="px-4 py-3">${item.period}</td><td class="px-4 py-3 text-right font-semibold accounting-num">${formatFinancial(item.balance)}</td><td class="px-4 py-3 text-right accounting-num">${formatFinancial(item.interest)}</td><td class="px-4 py-3 text-right accounting-num">${formatFinancial(item.minimumPayments)}</td><td class="px-4 py-3 text-right accounting-num">${formatFinancial(item.extraPayments)}</td></tr>`).join('');
+        if (accountRows) {
+          accountRows.innerHTML = accelerated.schedule.flatMap(period => (period.debts || []).map(debt => `<tr class="border-t border-gray-100 dark:border-gray-800"><td class="px-3 py-2 whitespace-nowrap">${period.period}</td><td class="px-3 py-2">${escapeHtml(debt.name)}</td><td class="px-3 py-2 text-right accounting-num font-semibold">${formatFinancial(debt.endingBalance)}</td><td class="px-3 py-2 text-right accounting-num">${formatFinancial(debt.interest)}</td><td class="px-3 py-2 text-right accounting-num">${formatFinancial(debt.minimumPayment)}</td><td class="px-3 py-2 text-right accounting-num">${formatFinancial(debt.extraPrincipal)}</td></tr>`)).join('');
+        }
+      }
+      if (note) note.textContent = accelerated.paidOff
+        ? `Showing ${accelerated.schedule.length} projected month(s). Estimated total interest: ${formatFinancial(accelerated.interest)}. Actual lender interest, fees and payment timing may differ.`
+        : 'The selected contribution does not clear all debt within the projection horizon. Review minimums, payment methods and the extra contribution.';
+      if (accountNote) accountNote.textContent = 'Each row is one debt account in one projected month. Minimum and extra amounts are shown separately; interest is accrued using the account’s saved APR schedule.';
+    }
+
     function renderDebtPlanner() {
-      let debts = state.accounts.filter(a => a.type === 'debt');
+      let debts = state.accounts.filter(a => a.type === 'debt' && !a.archived);
       const strategySelect = document.getElementById('debt-strategy');
       const strategy = ['custom', 'snowball', 'avalanche'].includes(state.debtStrategy) ? state.debtStrategy : 'custom';
       if (strategySelect && strategySelect.value !== strategy) strategySelect.value = strategy;
@@ -5867,7 +6320,7 @@ Bonus"></textarea></div>
       const note = document.getElementById('debt-minimum-note');
       if (note) note.innerText = missingMinimums ? `${missingMinimums} account(s) missing a minimum payment` : 'Across all listed debt accounts';
       const extraPerPaycheque = getExtraDebtContributionPerPaycheque();
-      const extra = extraPerPaycheque * 26 / 12;
+      const extra = getExtraDebtContributionMonthlyEquivalent();
       const extraEl = document.getElementById('debt-extra-summary');
       if (extraEl) extraEl.innerText = formatFinancial(extraPerPaycheque);
       const monthlyExtraEl = document.getElementById('debt-extra-summary-monthly');
@@ -5931,6 +6384,7 @@ Bonus"></textarea></div>
         document.getElementById('debt-interest-saved').innerText = baseline.paidOff ? formatFinancial(Math.max(0,baseline.interest-accelerated.interest)) : '—';
         document.getElementById('debt-time-saved').innerText = baseline.paidOff ? `${Math.max(0,baseline.months-accelerated.months)} Months` : '—';
       }
+      renderDebtProjectionTables(debts, extra, accelerated);
       renderDebtPaymentHistory();
       renderDebtUpcomingBills();
     }
@@ -6024,21 +6478,42 @@ Bonus"></textarea></div>
       const rows = (state.transactions || []).filter(t => {
         const payment = t.debtPaymentId ? payments.get(t.debtPaymentId) : null;
         const bill = t.calendarBillId ? (state.calendarBills || []).find(b => b.id === t.calendarBillId) : null;
-        const related = t.debtAccountId === accId || payment?.accountId === accId || (bill && resolveDebtAccountForBill(bill)?.id === accId) || (!t.debtAccountId && !payment && !bill && debt && `${t.vendor || ''} ${t.desc || ''}`.toLowerCase().includes(String(debt.name || '').toLowerCase()));
+        const related = String(t.debtAccountId || '') === String(accId) || String(payment?.accountId || '') === String(accId) || (bill && String(resolveDebtAccountForBill(bill)?.id || '') === String(accId)) || (!t.debtAccountId && !payment && !bill && debt && `${t.vendor || ''} ${t.desc || ''}`.toLowerCase().includes(String(debt.name || '').toLowerCase()));
         if (!related) return false;
         if (from && t.date < from) return false;
         if (to && t.date > to) return false;
-        const isInterest = (Number(t.debtInterestAmount || 0) > 0 && Number(t.debtPrincipalAmount || 0) === 0) || /interest/i.test(`${t.category || ''} ${t.subcategory || ''} ${t.desc || ''} ${t.vendor || ''}`);
-        const label = t.type === 'Debt Payment' ? (isInterest && Number(t.debtPrincipalAmount || 0) === 0 ? 'interest' : 'payment') : (isInterest ? 'interest' : 'other');
+        const isInterest = t.type === 'Interest Charge' || Number(t.debtInterestAmount || 0) > 0 || /interest/i.test(`${t.category || ''} ${t.subcategory || ''} ${t.desc || ''} ${t.vendor || ''}`);
+        const label = t.type === 'Interest Charge' || (t.type === 'Debt Payment' && Number(t.debtPrincipalAmount || 0) === 0) ? 'interest' : (t.type === 'Debt Payment' ? 'payment' : (isInterest ? 'interest' : 'other'));
         if (typeFilter !== 'all' && label !== typeFilter) return false;
         return !query || `${t.vendor || ''} ${t.desc || ''} ${t.category || ''} ${t.subcategory || ''}`.toLowerCase().includes(query);
-      }).sort((a,b) => String(b.date || '').localeCompare(String(a.date || '')));
+      }).sort((a,b) => String(b.date || '').localeCompare(String(a.date || '')) || String(b.id).localeCompare(String(a.id)));
       rows.forEach(t => {
-        const funding = state.accounts.find(a => a.id === t.accountId);
+        const funding = state.accounts.find(a => String(a.id) === String(t.accountId));
+        const payment = t.debtPaymentId ? payments.get(t.debtPaymentId) : (state.debtPayments || []).find(p => String(p.transactionId) === String(t.id));
         const principal = t.debtPrincipalAmount !== undefined ? Number(t.debtPrincipalAmount) : (t.type === 'Debt Payment' ? Number(t.amount) : 0);
-        const isInterestTxn = /interest/i.test(`${t.category || ''} ${t.subcategory || ''} ${t.desc || ''} ${t.vendor || ''}`) || Number(t.debtInterestAmount || 0) > 0;
-        const kind = t.type === 'Debt Payment' ? (principal === 0 && Number(t.amount) > 0 ? 'Interest-only payment' : 'Debt payment') : (isInterestTxn ? 'Interest expense' : (t.type || 'Transaction'));
-        tbody.innerHTML += `<tr><td class="py-3 pr-3 whitespace-nowrap">${t.date || ''}</td><td class="py-3 pr-3">${t.vendor || t.desc || 'Transaction'}<div class="text-[10px] text-gray-400">${t.desc && t.vendor && t.desc !== t.vendor ? t.desc : ''}</div></td><td class="py-3 pr-3">${kind}</td><td class="py-3 pr-3 text-right font-semibold accounting-num">${formatFinancial(t.amount)}</td><td class="py-3 pr-3 text-right accounting-num">${t.type === 'Debt Payment' ? formatFinancial(principal) : '—'}</td><td class="py-3">${funding?.name || '—'}</td></tr>`;
+        const kind = t.type === 'Interest Charge'
+          ? 'Interest charged to balance'
+          : t.type === 'Debt Payment'
+            ? (principal === 0 && Number(t.amount) > 0 ? 'Interest-only payment' : 'Debt payment')
+            : (/interest/i.test(`${t.category || ''} ${t.subcategory || ''} ${t.desc || ''} ${t.vendor || ''}`) ? 'Interest expense' : (t.type || 'Other debt activity'));
+        const treatment = t.type === 'Interest Charge' ? 'Added to liability' : (funding?.type === 'asset' ? funding.name : 'No funding account');
+        let actions = '';
+        if (payment) {
+          actions = `<button onclick="openDebtPaymentModal('${payment.id}')" class="text-indigo-500 hover:text-indigo-400" title="Edit payment"><i class="fa-solid fa-pen"></i></button><button onclick="deleteDebtPayment('${payment.id}')" class="text-rose-500 hover:text-rose-400 ml-2" title="Delete payment"><i class="fa-solid fa-trash"></i></button>`;
+        } else if (t.type === 'Interest Charge') {
+          actions = `<button onclick="openInterestChargeModal('${t.id}')" class="text-indigo-500 hover:text-indigo-400" title="Edit interest charge"><i class="fa-solid fa-pen"></i></button><button onclick="deleteTransaction('${t.id}')" class="text-rose-500 hover:text-rose-400 ml-2" title="Delete interest charge"><i class="fa-solid fa-trash"></i></button>`;
+        } else if (t.calendarBillId) {
+          actions = `<button onclick="toggleCalendarItemPaid('${t.calendarBillId}', event)" class="text-amber-500 hover:text-amber-400" title="Unmark scheduled payment">Unmark</button>`;
+        }
+        tbody.innerHTML += `<tr>
+          <td class="py-3 pr-3 whitespace-nowrap">${escapeHtml(t.date || '')}</td>
+          <td class="py-3 pr-3">${escapeHtml(t.vendor || t.desc || 'Transaction')}<div class="text-[10px] text-gray-400">${t.desc && t.vendor && t.desc !== t.vendor ? escapeHtml(t.desc) : ''}</div></td>
+          <td class="py-3 pr-3">${kind}</td>
+          <td class="py-3 pr-3 text-right font-semibold accounting-num">${formatFinancial(t.amount)}</td>
+          <td class="py-3 pr-3 text-right accounting-num">${t.type === 'Debt Payment' ? formatFinancial(principal) : '—'}</td>
+          <td class="py-3">${escapeHtml(treatment)}</td>
+          <td class="py-3 text-right whitespace-nowrap">${actions}</td>
+        </tr>`;
       });
       document.getElementById('debt-activity-empty')?.classList.toggle('hidden', rows.length > 0);
     }
@@ -6104,68 +6579,211 @@ Bonus"></textarea></div>
       updateDebtPaymentSplit();
     }
 
-    function openDebtPaymentModal() {
+    function openInterestChargeModal(transactionId = '') {
+      const form = document.getElementById('interest-charge-form');
+      form.reset();
+      const select = document.getElementById('interest-charge-debt');
+      const transaction = transactionId ? state.transactions.find(t => String(t.id) === String(transactionId) && t.type === 'Interest Charge') : null;
+      const activeDebts = (state.accounts || []).filter(a => a.type === 'debt' && !a.archived);
+      select.innerHTML = activeDebts.map(a => `<option value="${a.id}">${escapeHtml(a.name)}</option>`).join('');
+      if (!activeDebts.length) {
+        select.innerHTML = '<option value="">No active debt accounts available</option>';
+      }
+      document.getElementById('interest-charge-edit-id').value = transaction?.id || '';
+      document.getElementById('interest-charge-modal-title').textContent = transaction ? 'Edit Interest Charge' : 'Record Interest Charge';
+      if (transaction) {
+        select.value = transaction.debtAccountId || transaction.accountId;
+        document.getElementById('interest-charge-date').value = transaction.date || '';
+        document.getElementById('interest-charge-amount').value = Number(transaction.amount || 0).toFixed(2);
+        document.getElementById('interest-charge-description').value = transaction.desc || transaction.vendor || 'Interest charge';
+      } else {
+        document.getElementById('interest-charge-date').value = new Date().toISOString().slice(0,10);
+        document.getElementById('interest-charge-description').value = 'Monthly interest charge';
+      }
+      document.getElementById('interest-charge-modal').classList.remove('hidden');
+    }
+
+    function closeInterestChargeModal() {
+      document.getElementById('interest-charge-modal').classList.add('hidden');
+    }
+
+    function saveInterestCharge(event) {
+      event.preventDefault();
+      const editId = document.getElementById('interest-charge-edit-id').value;
+      const debtId = document.getElementById('interest-charge-debt').value;
+      const date = document.getElementById('interest-charge-date').value;
+      const amount = Number(document.getElementById('interest-charge-amount').value);
+      const description = document.getElementById('interest-charge-description').value.trim();
+      const debt = state.accounts.find(a => String(a.id) === String(debtId) && a.type === 'debt' && !a.archived);
+      if (!debt || !date || !Number.isFinite(amount) || amount <= 0 || !description) {
+        alert('Choose an active debt account and enter a valid date, description and positive interest amount.');
+        return;
+      }
+      const existing = editId ? state.transactions.find(t => String(t.id) === String(editId) && t.type === 'Interest Charge') : null;
+      if (editId && !existing) { alert('The original interest charge could not be found. No changes were made.'); return; }
+
+      captureUndo(existing ? `Edit interest charge for "${debt.name}"` : `Record interest charge for "${debt.name}"`);
+      if (existing) {
+        const oldDebt = state.accounts.find(a => String(a.id) === String(existing.debtAccountId || existing.accountId) && a.type === 'debt');
+        if (oldDebt) oldDebt.balance = Math.round(((Number(oldDebt.balance) || 0) - (Number(existing.amount) || 0)) * 100) / 100;
+        existing.date = date;
+        existing.desc = description;
+        existing.vendor = debt.name;
+        existing.amount = Math.round(amount * 100) / 100;
+        existing.accountId = debt.id;
+        existing.debtAccountId = debt.id;
+        existing.debtInterestAmount = Math.round(amount * 100) / 100;
+        existing.debtPrincipalAmount = 0;
+        existing.category = 'Debt Service';
+        existing.subcategory = 'Interest expense';
+      } else {
+        const id = `interest_${Date.now()}_${Math.random().toString(36).slice(2,7)}`;
+        state.transactions.unshift({
+          id, date, desc: description, vendor: debt.name, type: 'Interest Charge',
+          category: 'Debt Service', subcategory: 'Interest expense',
+          amount: Math.round(amount * 100) / 100, accountId: debt.id,
+          debtAccountId: debt.id, debtInterestAmount: Math.round(amount * 100) / 100,
+          debtPrincipalAmount: 0, source: 'debt-interest-charge'
+        });
+      }
+      debt.balance = Math.round(((Number(debt.balance) || 0) + amount) * 100) / 100;
+      saveData();
+      closeInterestChargeModal();
+      renderDebtPlanner(); renderDebtPaymentHistory(); renderLedger(); renderDashboard();
+    }
+
+    function openDebtPaymentModal(paymentId = '') {
       document.getElementById('debt-payment-form').reset();
-      document.getElementById('dp-date').value = new Date().toISOString().split('T')[0];
+      const payment = paymentId ? (state.debtPayments || []).find(p => String(p.id) === String(paymentId)) : null;
+      document.getElementById('dp-edit-id').value = payment?.id || '';
+      document.getElementById('dp-date').value = payment?.date || new Date().toISOString().split('T')[0];
       const funding = document.getElementById('dp-funding-account'); funding.innerHTML = '';
-      state.accounts.filter(a => a.type === 'asset').forEach(a => funding.innerHTML += `<option value="${a.id}">${a.name} (${formatFinancial(a.balance)})</option>`);
-      const debt = state.accounts.find(a => a.id === document.getElementById('debt-account-picker').value && a.type === 'debt');
+      state.accounts.filter(a => a.type === 'asset' && !a.archived).forEach(a => funding.innerHTML += `<option value="${a.id}">${a.name} (${formatFinancial(a.balance)})</option>`);
+      const picker = document.getElementById('debt-account-picker');
+      if (payment) picker.value = payment.accountId;
+      const debt = state.accounts.find(a => a.id === (payment?.accountId || picker.value) && a.type === 'debt');
       const targetLabel = document.getElementById('dp-target-debt-name');
       if (targetLabel) targetLabel.textContent = debt ? debt.name : 'Select a debt account first';
-      document.getElementById('dp-principal').dataset.manual = '0';
-      document.getElementById('dp-principal').value = debt?.paymentMethod === 'interest-only' ? '0.00' : debt?.paymentMethod === 'custom' ? '' : '';
-      document.getElementById('dp-interest').value = '0.00';
-      updateDebtPaymentSplit();
+      document.getElementById('dp-desc').value = payment?.desc || '';
+      document.getElementById('dp-amount').value = payment ? Number(payment.amount).toFixed(2) : '';
+      document.getElementById('dp-principal').dataset.manual = payment ? '1' : '0';
+      document.getElementById('dp-principal').value = payment ? Number(payment.principalAmount || 0).toFixed(2) : (debt?.paymentMethod === 'interest-only' ? '0.00' : '');
+      document.getElementById('dp-funding-account').value = payment?.fundingAccountId || funding.value;
+      document.getElementById('dp-interest').value = payment ? Number(payment.interestAmount || 0).toFixed(2) : '0.00';
+      if (!payment) updateDebtPaymentSplit();
+      else updateDebtPaymentSplit();
       document.getElementById('debt-payment-modal').classList.remove('hidden');
     }
     function closeDebtPaymentModal() { document.getElementById('debt-payment-modal').classList.add('hidden'); }
 
     function saveDebtPayment(e) {
       e.preventDefault();
+      const editId = document.getElementById('dp-edit-id').value;
       const accountId = document.getElementById('debt-account-picker').value;
       const fundingAccountId = document.getElementById('dp-funding-account').value;
-      const amount = Math.max(0, Number(document.getElementById('dp-amount').value) || 0);
-      const principalAmount = Math.max(0, Number(document.getElementById('dp-principal').value) || 0);
-      const interestAmount = amount - principalAmount;
-      const debtAcc = state.accounts.find(a => a.id === accountId && a.type === 'debt');
-      const fundingAcc = state.accounts.find(a => a.id === fundingAccountId && a.type === 'asset');
-      if (!debtAcc || !fundingAcc || amount <= 0 || principalAmount > amount + 0.005) { alert('Select the debt being paid, choose an asset funding account, and enter a valid payment split. Principal cannot exceed the total payment.'); return; }
-      if (principalAmount > (Number(debtAcc.balance) || 0) + 0.005) { alert('The principal portion cannot exceed the current outstanding balance. Check the lender statement and adjust the principal amount.'); return; }
+      const amount = Math.round(Math.max(0, Number(document.getElementById('dp-amount').value) || 0) * 100) / 100;
+      const principalAmount = Math.round(Math.max(0, Number(document.getElementById('dp-principal').value) || 0) * 100) / 100;
+      const interestAmount = Math.round((amount - principalAmount) * 100) / 100;
+      const debtAcc = state.accounts.find(a => String(a.id) === String(accountId) && a.type === 'debt');
+      const fundingAcc = state.accounts.find(a => String(a.id) === String(fundingAccountId) && a.type === 'asset' && !a.archived);
+      const oldPayment = editId ? (state.debtPayments || []).find(p => String(p.id) === String(editId)) : null;
+      const oldTransaction = oldPayment ? state.transactions.find(t => String(t.id) === String(oldPayment.transactionId) || String(t.debtPaymentId) === String(oldPayment.id)) : null;
+      if (editId && !oldPayment) { alert('The original debt payment could not be found. No changes were made.'); return; }
+      if (editId && !oldTransaction) { alert('The linked transaction for this debt payment could not be found. No changes were made.'); return; }
+      if (!debtAcc || !fundingAcc || amount <= 0 || principalAmount > amount + 0.005) {
+        alert('Select the debt being paid, choose an active asset funding account, and enter a valid payment split. Principal cannot exceed the total payment.');
+        return;
+      }
+      const oldDebt = oldPayment ? state.accounts.find(a => String(a.id) === String(oldPayment.accountId) && a.type === 'debt') : null;
+      const oldFunding = oldPayment ? state.accounts.find(a => String(a.id) === String(oldPayment.fundingAccountId) && a.type === 'asset') : null;
+      const availablePrincipal = (Number(debtAcc.balance) || 0) + (oldDebt && oldDebt.id === debtAcc.id ? (Number(oldPayment.principalAmount) || 0) : 0);
+      const availableFunding = (Number(fundingAcc.balance) || 0) + (oldFunding && oldFunding.id === fundingAcc.id ? (Number(oldPayment.amount) || 0) : 0);
+      if (principalAmount > availablePrincipal + 0.005) { alert('The principal portion cannot exceed the outstanding debt balance after accounting for the payment being edited.'); return; }
       if (debtAcc.paymentMethod === 'custom' && document.getElementById('dp-principal').value.trim() === '') { alert('Enter the principal portion for this custom payment.'); return; }
-      if (fundingAcc.balance < amount && !confirm('The funding account has less balance than the payment amount. Proceed anyway?')) return;
-      const paymentId = `dp_${Date.now()}_${Math.random().toString(36).slice(2,6)}`;
-      const transactionId = `tx_${paymentId}`;
-      const date = document.getElementById('dp-date').value; const desc = document.getElementById('dp-desc').value;
-      const payment = { id: paymentId, accountId, fundingAccountId, transactionId, date, desc, amount, principalAmount, interestAmount, source: 'debt-payment-log' };
-      captureUndo(`Record debt payment "${desc || 'Debt payment'}"`);
-      state.debtPayments.push(payment);
-      state.transactions.unshift({ id: transactionId, date, desc, vendor: desc, type: 'Debt Payment', category: 'Debt Service', subcategory: principalAmount > 0 ? 'Principal Paydown' : 'Interest Payment', amount, accountId: fundingAccountId, debtPaymentId: paymentId, debtAccountId: accountId, debtPrincipalAmount: principalAmount, debtInterestAmount: interestAmount, source: 'debt-payment-log' });
-      debtAcc.balance = Math.max(0, (Number(debtAcc.balance) || 0) - principalAmount); fundingAcc.balance = (Number(fundingAcc.balance) || 0) - amount;
-      saveData(); closeDebtPaymentModal(); renderDebtPlanner(); renderDebtPaymentHistory(); renderLedger(); renderDashboard();
+      if (availableFunding < amount && !confirm('The funding account has less balance than the payment amount. Proceed anyway?')) return;
+
+      const date = document.getElementById('dp-date').value;
+      const desc = document.getElementById('dp-desc').value.trim();
+      if (!date || !desc) { alert('Enter a payment date and description.'); return; }
+      captureUndo(editId ? `Edit debt payment "${desc || oldPayment.desc || oldPayment.id}"` : `Record debt payment "${desc || 'Debt payment'}"`);
+
+      if (oldPayment) {
+        // Reverse the previous entry first, then apply the corrected payment.
+        if (oldDebt) oldDebt.balance = Math.round(((Number(oldDebt.balance) || 0) + (Number(oldPayment.principalAmount) || 0)) * 100) / 100;
+        if (oldFunding) oldFunding.balance = Math.round(((Number(oldFunding.balance) || 0) + (Number(oldPayment.amount) || 0)) * 100) / 100;
+        oldPayment.accountId = accountId;
+        oldPayment.fundingAccountId = fundingAccountId;
+        oldPayment.date = date;
+        oldPayment.desc = desc;
+        oldPayment.amount = amount;
+        oldPayment.principalAmount = principalAmount;
+        oldPayment.interestAmount = interestAmount;
+        oldTransaction.date = date;
+        oldTransaction.desc = desc;
+        oldTransaction.vendor = desc;
+        oldTransaction.type = 'Debt Payment';
+        oldTransaction.category = 'Debt Service';
+        oldTransaction.subcategory = principalAmount > 0 ? 'Principal Paydown' : 'Interest Payment';
+        oldTransaction.amount = amount;
+        oldTransaction.accountId = fundingAccountId;
+        oldTransaction.debtPaymentId = oldPayment.id;
+        oldTransaction.debtAccountId = accountId;
+        oldTransaction.debtPrincipalAmount = principalAmount;
+        oldTransaction.debtInterestAmount = interestAmount;
+        oldTransaction.source = 'debt-payment-log';
+      } else {
+        const paymentId = `dp_${Date.now()}_${Math.random().toString(36).slice(2,6)}`;
+        const transactionId = `tx_${paymentId}`;
+        const payment = { id: paymentId, accountId, fundingAccountId, transactionId, date, desc, amount, principalAmount, interestAmount, source: 'debt-payment-log' };
+        state.debtPayments.push(payment);
+        state.transactions.unshift({ id: transactionId, date, desc, vendor: desc, type: 'Debt Payment', category: 'Debt Service', subcategory: principalAmount > 0 ? 'Principal Paydown' : 'Interest Payment', amount, accountId: fundingAccountId, debtPaymentId: paymentId, debtAccountId: accountId, debtPrincipalAmount: principalAmount, debtInterestAmount: interestAmount, source: 'debt-payment-log' });
+      }
+
+      debtAcc.balance = Math.max(0, Math.round(((Number(debtAcc.balance) || 0) - principalAmount) * 100) / 100);
+      fundingAcc.balance = Math.round(((Number(fundingAcc.balance) || 0) - amount) * 100) / 100;
+      saveData(); closeDebtPaymentModal(); renderDebtPlanner(); renderDebtPaymentHistory(); renderLedger(); renderDashboard(); renderCalendar();
     }
 
     function deleteDebtPayment(id) {
-      const p = (state.debtPayments || []).find(dp => dp.id === id); if (!p || !confirm('Delete this debt payment and reverse its account balance effects?')) return;
-      captureUndo(`Delete debt payment "${p.desc || p.id}"`);
-      const linked = state.transactions.find(t => t.id === p.transactionId || t.debtPaymentId === id);
-      const debtAcc = state.accounts.find(a => a.id === p.accountId && a.type === 'debt');
-      if (debtAcc) debtAcc.balance = (Number(debtAcc.balance) || 0) + Number(p.principalAmount ?? p.amount ?? 0);
-      if (linked) {
-        const fundingAcc = state.accounts.find(a => a.id === linked.accountId);
-        if (fundingAcc) fundingAcc.balance = (Number(fundingAcc.balance) || 0) + (Number(linked.amount) || 0);
-        state.transactions = state.transactions.filter(t => t.id !== linked.id);
-      } else if (p.fundingAccountId) {
-        const fundingAcc = state.accounts.find(a => a.id === p.fundingAccountId); if (fundingAcc) fundingAcc.balance = (Number(fundingAcc.balance) || 0) + (Number(p.amount) || 0);
+      const payment = (state.debtPayments || []).find(item => String(item.id) === String(id));
+      if (!payment || !confirm('Delete this debt payment and reverse its funding-account and principal balance effects?')) return;
+
+      const linked = state.transactions.find(t => String(t.id) === String(payment.transactionId) || String(t.debtPaymentId) === String(id));
+      const debtAccount = state.accounts.find(a => String(a.id) === String(payment.accountId) && a.type === 'debt');
+      const fundingAccount = state.accounts.find(a => String(a.id) === String(payment.fundingAccountId) && a.type === 'asset');
+      const linkedBill = linked?.calendarBillId
+        ? (state.calendarBills || []).find(b => String(b.id) === String(linked.calendarBillId))
+        : null;
+
+      if (!createLocalSafetyCopy(`Before deleting debt payment "${payment.desc || payment.id}"`)) {
+        alert('FinHub could not create a local safety copy. Export a JSON backup before deleting this payment.');
+        return;
       }
-      state.debtPayments = state.debtPayments.filter(dp => dp.id !== id);
-      saveData(); renderDebtPaymentHistory(); renderDashboard(); renderDebtPlanner(); renderLedger();
+      captureUndo(`Delete debt payment "${payment.desc || payment.id}"`);
+      if (debtAccount) {
+        const principal = Number(payment.principalAmount ?? linked?.debtPrincipalAmount ?? 0) || 0;
+        debtAccount.balance = Math.round(((Number(debtAccount.balance) || 0) + principal) * 100) / 100;
+      }
+      if (fundingAccount) {
+        fundingAccount.balance = Math.round(((Number(fundingAccount.balance) || 0) + (Number(payment.amount) || 0)) * 100) / 100;
+      }
+
+      if (linked) state.transactions = state.transactions.filter(t => String(t.id) !== String(linked.id));
+      state.debtPayments = state.debtPayments.filter(item => String(item.id) !== String(id));
+      if (linkedBill) {
+        linkedBill.paid = false;
+        delete linkedBill.linkedTransactionId;
+      }
+
+      saveData();
+      renderDebtPaymentHistory(); renderDashboard(); renderDebtPlanner(); renderLedger(); renderCalendar(); renderZbbFundingTracker();
     }
 
     function openTransferModal() {
       const from = document.getElementById('transfer-from');
       const to = document.getElementById('transfer-to');
       from.innerHTML = ''; to.innerHTML = '';
-      state.accounts.filter(a => a.type === 'asset' && !a.hidden).forEach(a => {
+      state.accounts.filter(a => a.type === 'asset' && !a.hidden && !a.archived).forEach(a => {
         from.innerHTML += `<option value="${a.id}">${a.name}</option>`;
         to.innerHTML += `<option value="${a.id}">${a.name}</option>`;
       });
@@ -6225,7 +6843,7 @@ Bonus"></textarea></div>
         Object.assign(existing, accountData);
         saveData(); closeAccountModal(); closeAccountDetailModal(); renderDashboard(); renderLedger();
       } else {
-        const newAcc = { id: Date.now().toString(), ...accountData, hidden: false };
+        const newAcc = { id: Date.now().toString(), ...accountData, hidden: false, archived: false };
         captureUndo(`Add Account "${newAcc.name}"`);
         state.accounts.push(newAcc);
         saveData(); closeAccountModal(); renderDashboard(); renderLedger();
@@ -6302,11 +6920,12 @@ Bonus"></textarea></div>
       const tSelect = document.getElementById('tx-type');
       tSelect.innerHTML = ''; state.transactionTypes.forEach(t => tSelect.innerHTML += `<option value="${t}">${t === 'Transfer' ? 'Internal Transfer' : t}</option>`);
       refreshTransactionBucketOptions('');
+      const existingTxForEdit = editId ? state.transactions.find(t => String(t.id) === String(editId)) : null;
       const aSelect = document.getElementById('tx-account');
-      aSelect.innerHTML = ''; state.accounts.forEach(a => aSelect.innerHTML += `<option value="${a.id}">${escapeHtml(a.name)}</option>`);
+      aSelect.innerHTML = ''; state.accounts.filter(a => !a.archived || String(a.id) === String(existingTxForEdit?.accountId || '')).forEach(a => aSelect.innerHTML += `<option value="${a.id}">${escapeHtml(a.name)}${a.archived ? ' (Archived)' : ''}</option>`);
       const transferSelect = document.getElementById('tx-transfer-to');
-      transferSelect.innerHTML = '<option value="">Choose destination account</option>' + state.accounts.filter(a => a.type === 'asset').map(a => `<option value="${a.id}">${escapeHtml(a.name)}</option>`).join('');
-      const debtLinkSelect = document.getElementById('tx-related-debt'); debtLinkSelect.innerHTML = '<option value="">Not linked to a debt account</option>'; state.accounts.filter(a => a.type === 'debt').forEach(a => debtLinkSelect.innerHTML += `<option value="${a.id}">${a.name}</option>`);
+      transferSelect.innerHTML = '<option value="">Choose destination account</option>' + state.accounts.filter(a => a.type === 'asset' && !a.archived).map(a => `<option value="${a.id}">${escapeHtml(a.name)}</option>`).join('');
+      const debtLinkSelect = document.getElementById('tx-related-debt'); debtLinkSelect.innerHTML = '<option value="">Not linked to a debt account</option>'; state.accounts.filter(a => a.type === 'debt' && !a.archived).forEach(a => debtLinkSelect.innerHTML += `<option value="${a.id}">${a.name}</option>`);
       updateSubcategoryDropdown();
 
       document.getElementById('tx-is-split').value = "false";
@@ -6469,6 +7088,8 @@ Bonus"></textarea></div>
         alert('Please use Continue to Debt Payment form. The standard transaction form does not update the liability balance.');
         return;
       }
+      const selectedAccount = state.accounts.find(a => String(a.id) === String(document.getElementById('tx-account').value));
+      if (selectedAccount?.archived && !editId) { alert('This account is archived. Restore it before recording new activity.'); return; }
       const amount = parseFloat(document.getElementById('tx-amount').value) || 0;
       const desc = (document.getElementById('tx-desc').value || '').trim();
       const enteredVendor = (document.getElementById('tx-vendor')?.value || '').trim();
