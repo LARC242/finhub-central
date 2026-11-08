@@ -1001,6 +1001,12 @@
         <div id="vendor-cleanup-rules-list" class="space-y-2"></div>
       </div>
 
+      <!-- STATEMENT IMPORT RULES -->
+      <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-4 shadow-sm">
+        <div class="flex flex-wrap justify-between items-center gap-2 border-b border-gray-200 dark:border-gray-800 pb-3"><div><h3 class="text-md font-bold text-indigo-600 dark:text-indigo-400 theme-text">Statement Import Rules</h3><p class="text-xs text-gray-400 mt-1">Automatically fill transaction type, vendor, category and debt-payment details when a bank description contains a saved phrase. Explicit CSV columns always take priority.</p></div><button onclick="openImportRuleModal()" class="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-semibold theme-bg"><i class="fa-solid fa-plus mr-1"></i>Add import rule</button></div>
+        <div id="statement-import-rules-list" class="space-y-2"></div>
+      </div>
+
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-4 shadow-sm">
           <button onclick="toggleCollapse('sec-advanced-types')" class="w-full flex justify-between items-center text-left">
@@ -1068,15 +1074,39 @@
     </div>
   </div>
 
+  <!-- MODAL: STATEMENT IMPORT RULE -->
+  <div id="import-rule-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-[75]">
+    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto p-6 space-y-4 shadow-2xl">
+      <h3 id="import-rule-modal-title" class="text-lg font-bold">Add Statement Import Rule</h3>
+      <form onsubmit="saveImportRule(event)" class="space-y-3">
+        <input type="hidden" id="import-rule-edit-index" value="-1">
+        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Bank description contains</label><input id="import-rule-match" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" placeholder="e.g. RBC LOC INTEREST"></div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div><label class="block text-xs font-semibold text-gray-500 mb-1">Clean vendor name</label><input id="import-rule-vendor" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" placeholder="e.g. RBC"></div>
+          <div><label class="block text-xs font-semibold text-gray-500 mb-1">FinHub transaction type</label><select id="import-rule-type" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"><option value="">Use statement debit/credit</option><option>Expense</option><option>Income</option><option>Debt Payment</option><option>Transfer</option></select></div>
+          <div><label class="block text-xs font-semibold text-gray-500 mb-1">Category</label><input id="import-rule-category" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" placeholder="e.g. Debt Service"></div>
+          <div><label class="block text-xs font-semibold text-gray-500 mb-1">Subcategory / Payment classification</label><input id="import-rule-subcategory" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" placeholder="e.g. Line of Credit Payment"></div>
+          <div><label class="block text-xs font-semibold text-gray-500 mb-1">Debt account</label><select id="import-rule-debt-account" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"><option value="">No debt account</option></select></div>
+          <div><label class="block text-xs font-semibold text-gray-500 mb-1">Payment classification</label><select id="import-rule-payment-type" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"><option value="">Infer from debt account</option><option>Credit Card Payment</option><option>Line of Credit Payment</option><option>Loan Payment</option><option>Mortgage Payment</option><option>Other Debt Payment</option></select></div>
+          <div><label class="block text-xs font-semibold text-gray-500 mb-1">Debt payment split</label><select id="import-rule-split-mode" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"><option value="">Require Principal / Interest columns</option><option value="interest-only">Interest only (full amount is interest)</option><option value="principal-only">Principal only (full amount is principal)</option></select></div>
+          <div><label class="block text-xs font-semibold text-gray-500 mb-1">Transfer to account (optional)</label><select id="import-rule-transfer-to" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"><option value="">No transfer destination</option></select></div>
+        </div>
+        <p class="text-[10px] text-gray-400">Rules apply only to imported rows whose original bank description contains the phrase. The rule does not change already-matched ledger transactions. Specific values in the CSV override rule defaults.</p>
+        <div class="flex gap-2"><button type="button" onclick="closeImportRuleModal()" class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold">Cancel</button><button type="submit" class="flex-1 py-2 bg-indigo-600 text-white rounded-xl text-sm font-semibold theme-bg">Save rule</button></div>
+      </form>
+    </div>
+  </div>
+
   <!-- MODAL: BANK STATEMENT MATCH & RECONCILIATION -->
   <div id="recon-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center p-3 hidden z-50">
     <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-4xl max-h-[92vh] overflow-y-auto p-5 space-y-4 shadow-2xl">
-      <div class="flex items-start justify-between gap-3"><div><h3 class="text-lg font-bold">Statement Helper · Match & Reconcile</h3><p class="text-xs text-gray-400 mt-1">Import statement rows as a review batch. FinHub suggests matches to manually entered transactions so you can reconcile them without duplicating the ledger.</p></div><button onclick="closeReconciliationModal()" class="text-gray-400"><i class="fa-solid fa-xmark"></i></button></div>
+      <div class="flex items-start justify-between gap-3"><div><h3 class="text-lg font-bold">Statement Helper · Match & Reconcile</h3><p class="text-xs text-gray-400 mt-1">Import statement rows as a review batch. FinHub suggests matches to existing transactions, or imports unmatched rows using optional FinHub columns for type, vendor, category and debt-payment details.</p></div><button onclick="closeReconciliationModal()" class="text-gray-400"><i class="fa-solid fa-xmark"></i></button></div>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div><label class="block text-xs font-semibold text-gray-500 mb-1">Statement account</label><select id="recon-account" onchange="renderStatementBalanceCheck()" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></select></div>
-        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Upload CSV statement</label><div class="flex flex-wrap items-center gap-2"><input id="recon-file" type="file" accept=".csv,text/csv,.txt,text/plain" onchange="loadStatementFile(event)" class="min-w-0 flex-1 text-xs"><button type="button" onclick="downloadStatementTemplate()" class="px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-xs font-semibold"><i class="fa-solid fa-download mr-1"></i>Download CSV template</button></div><p class="text-[10px] text-gray-400 mt-1">Use your bank's CSV directly or download the FinHub template.</p></div>
-        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Statement amount convention</label><select id="recon-sign" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"><option value="negative-expense">Negative = expense, positive = income</option><option value="positive-expense">Positive = expense, negative = income</option></select></div>
+        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Upload CSV statement</label><div class="flex flex-wrap items-center gap-2"><input id="recon-file" type="file" accept=".csv,text/csv,.txt,text/plain" onchange="loadStatementFile(event)" class="min-w-0 flex-1 text-xs"><button type="button" onclick="downloadStatementTemplate()" class="px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-xs font-semibold"><i class="fa-solid fa-download mr-1"></i>Download CSV template</button></div><p class="text-[10px] text-gray-400 mt-1">Use your bank's CSV directly or download the enhanced FinHub template. Optional FinHub columns can be added before upload.</p></div>
+        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Statement amount convention</label><select id="recon-sign" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"><option value="negative-expense" selected>Positive = money in / credit; negative = money out / debit</option><option value="positive-expense">Positive = money out / debit; negative = money in / credit</option></select></div>
       </div>
+      <div class="rounded-xl border border-indigo-200 dark:border-indigo-900 bg-indigo-500/5 p-3 text-[11px] text-gray-500 dark:text-gray-300"><strong class="text-indigo-500">Enhanced CSV supported.</strong> Keep one signed Amount column: positive = money in / credit; negative = money out / debit (default). Optional columns: Type, Vendor, Category, Subcategory, Debt Account, Payment Classification, Principal, Interest and Transfer To Account. Original bank Description is always preserved. Saved import rules fill missing fields; explicit CSV values take priority.</div>
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 border border-gray-200 dark:border-gray-800 rounded-xl p-3">
         <div><label class="block text-xs font-semibold text-gray-500 mb-1">Statement ending date</label><input id="recon-end-date" type="date" onchange="persistStatementBatch();renderStatementBalanceCheck()" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
         <div><label class="block text-xs font-semibold text-gray-500 mb-1">Statement opening balance (optional)</label><input id="recon-opening-balance" type="number" step="0.01" placeholder="Opening balance" oninput="renderStatementBalanceCheck()" onchange="persistStatementBatch()" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
@@ -1729,17 +1759,20 @@ Bonus"></textarea></div>
       return [];
     }
 
-    let state = JSON.parse(localStorage.getItem('finhub_central_v25')) || JSON.parse(localStorage.getItem('finhub_central_v24')) || {
+    // This clean-start build uses a dedicated storage namespace so it cannot
+    // read or overwrite data from an existing FinHub installation.
+    const blankPeriod = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
+    let state = JSON.parse(localStorage.getItem('finhub_blank_central_v1')) || {
       darkMode: true,
       privacyBlur: false,
       appThemeColor: 'indigo',
-      currentYear: 2026,
-      currentMonth: 10,
+      currentYear: new Date().getFullYear(),
+      currentMonth: new Date().getMonth(),
       calendarView: 'monthly',
       ledgerView: 'table',
       selectedPayCycle: 1,
-      selectedZbbPeriod: '2026-11',
-      selectedJointYM: '2026-11',
+      selectedZbbPeriod: blankPeriod,
+      selectedJointYM: blankPeriod,
       extraPayoff: 0,
       debtStrategy: 'custom',
       collapsibles: {
@@ -1758,62 +1791,40 @@ Bonus"></textarea></div>
       dashboardPeriod: 'month',
       accountOrder: { assets: [], debts: [] },
       showHiddenAccounts: true,
-      netWorthSnapshots: [
-        { id: 'snp1', date: '2026-09-01', netWorth: 11800, assets: 15300, debt: 3500 },
-        { id: 'snp2', date: '2026-10-01', netWorth: 12450, assets: 15950, debt: 3500 }
-      ],
-      merchantRules: [
-        { keyword: 'walmart', category: 'Living Expenses', subcategory: 'Groceries' },
-        { keyword: 'hydro', category: 'Housing & Bills', subcategory: 'Rent & Utilities' }
-      ],
+      netWorthSnapshots: [],
+      merchantRules: [],
+      importRules: [],
+      vendorCleanupRules: [],
       transactionTypes: ['Expense', 'Income', 'Debt Payment', 'Transfer'],
+      // Keep a small starter category framework, but no sample budgets or activity.
       categories: [
-        { name: 'Housing & Bills', subcategories: [{ name: 'Rent & Utilities', limit: 1800, rollover: false }] },
-        { name: 'Living Expenses', subcategories: [{ name: 'Groceries', limit: 800, rollover: true }, { name: 'Gas', limit: 250, rollover: true }] },
-        { name: 'Debt Service', subcategories: [{ name: 'Interest expense', limit: 100, rollover: false }, { name: 'Principal Paydown', limit: 250, rollover: false }] }
+        { name: 'Housing & Bills', subcategories: [{ name: 'Rent & Utilities', limit: 0, rollover: false }] },
+        { name: 'Living Expenses', subcategories: [{ name: 'Groceries', limit: 0, rollover: true }, { name: 'Gas', limit: 0, rollover: true }] },
+        { name: 'Debt Service', subcategories: [{ name: 'Interest expense', limit: 0, rollover: false }, { name: 'Principal Paydown', limit: 0, rollover: false }] }
+      ],
+      incomeCategories: [
+        { name: 'Employment Income', subcategories: [] },
+        { name: 'Government Benefits', subcategories: [] },
+        { name: 'Interest & Investment Income', subcategories: [] },
+        { name: 'Reimbursements', subcategories: [] },
+        { name: 'Other Income', subcategories: [] }
       ],
       zbbTemplates: {
-        '2026-11': {
-          incomes: [
-            { id: 'zi1', name: 'Paycheque 1', monthly: 2400, splitMode: 'pct', split: [50, 50, 0] },
-            { id: 'zi2', name: 'Paycheque 2', monthly: 2400, splitMode: 'pct', split: [50, 50, 0] }
-          ],
-          bills: [
-            { id: 'zb1', name: 'Apartment Rent', monthly: 1800, splitMode: 'pct', split: [50, 50, 0] },
-            { id: 'zb2', name: 'Hydro Electric', monthly: 145, splitMode: 'pct', split: [50, 50, 0] }
-          ],
-          variable: [
-            { id: 'zv1', name: 'Groceries & Produce', monthly: 600, splitMode: 'pct', split: [50, 50, 0] },
-            { id: 'zv2', name: 'Gas & Transit', monthly: 250, splitMode: 'pct', split: [50, 50, 0] }
-          ],
-          debts: [
-            { id: 'zd1', name: 'RBC - LOC Minimum', monthly: 100, splitMode: 'pct', split: [50, 50, 0] }
-          ],
-          savings: [
-            { id: 'zs1', name: 'Emergency Fund', monthly: 305, targetBal: 10000, startBal: 2000, targetDate: '2027-12-31', savedBal: 3500, splitMode: 'pct', split: [50, 50, 0] }
-          ]
-        }
+        [blankPeriod]: { incomes: [], bills: [], variable: [], debts: [], savings: [] }
       },
-      accounts: [
-        { id: '1', name: 'RBC Chequing Account', type: 'asset', individualType: 'Chequing', balance: 4250.00, interestRate: 0.05, hidden: false },
-        { id: '2', name: 'High-Interest Savings', type: 'asset', individualType: 'Savings', balance: 12100.00, interestRate: 3.75, hidden: false },
-        { id: '3', name: 'RBC - LOC', type: 'debt', individualType: 'Line of Credit', balance: 3500.00, startBal: 4000.00, apr: 11.99, interestRate: 11.99, minPay: 100, limit: 5000.00, notes: 'Line of credit primary', hidden: false }
-      ],
-      calendarBills: [
-        { id: 'cb1', date: '2026-11-01', desc: 'Apartment Rent', amount: 1800, type: 'expense', accountId: '1', category: 'Housing & Bills', recurring: 'monthly', paid: false },
-        { id: 'cb2', date: '2026-11-06', desc: 'Paycheque 1', amount: 2400, type: 'income', accountId: '1', category: 'Income', recurring: 'biweekly', paid: true },
-        { id: 'cb3', date: '2026-11-20', desc: 'Paycheque 2', amount: 2400, type: 'income', accountId: '1', category: 'Income', recurring: 'biweekly', paid: false },
-        { id: 'cb4', date: '2026-11-15', desc: 'RBC - LOC Minimum', amount: 100, type: 'debt', accountId: '1', category: 'Debt Service', recurring: 'monthly', paid: false }
-      ],
+      zbbTracking: {},
+      zbbPoolTracking: {},
+      variablePoolCategories: ['Living Expenses'],
+      accounts: [],
+      calendarBills: [],
       debtPayments: [],
       transactions: [],
-      jointBills: [
-        { id: 'jb1', ym: '2026-11', name: 'Rent', classification: 'fixed', amount: 2360, splitPct: 50, dueDate: '2026-11-01', notes: 'Primary lease' },
-        { id: 'jb2', ym: '2026-11', name: 'Hydro', classification: 'variable', amount: 150, splitPct: 50, dueDate: '2026-11-15', notes: 'Estimated utility' }
-      ],
-      jointMetaData: {
-        '2026-11': { transfersSent: 0, notes: '' }
-      }
+      jointBills: [],
+      jointMetaData: {},
+      statementReconciliation: { batches: [], groups: [] },
+      // Mark the empty bucket ledger as initialized so starter/demo buckets are not created.
+      sinkingFundLedger: { version: 1, migrationVersion: 1, buckets: [] },
+      lastBackupAt: null
     };
 
     // Migrate optional UI preferences without changing existing financial data.
@@ -1839,6 +1850,7 @@ Bonus"></textarea></div>
     state.statementReconciliation.groups = Array.isArray(state.statementReconciliation.groups) ? state.statementReconciliation.groups : [];
     state.vendorCleanupRules = Array.isArray(state.vendorCleanupRules) ? state.vendorCleanupRules : [];
     state.merchantRules = Array.isArray(state.merchantRules) ? state.merchantRules : [];
+    state.importRules = Array.isArray(state.importRules) ? state.importRules : [];
     // Income buckets are stored separately from expense buckets. Preserve any legacy
     // category labels already used by Income transactions during this additive migration.
     if (!Array.isArray(state.incomeCategories)) {
@@ -1895,11 +1907,11 @@ Bonus"></textarea></div>
 
     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
-    function saveData() { localStorage.setItem('finhub_central_v25', JSON.stringify(state)); }
+    function saveData() { localStorage.setItem('finhub_blank_central_v1', JSON.stringify(state)); }
 
     const BACKUP_REMINDER_DAYS = 7;
-    const BACKUP_REMINDER_SNOOZE_KEY = 'finhub_backup_reminder_snooze_until';
-    const LOCAL_SAFETY_COPY_KEY = 'finhub_central_safety_copy';
+    const BACKUP_REMINDER_SNOOZE_KEY = 'finhub_blank_backup_reminder_snooze_until';
+    const LOCAL_SAFETY_COPY_KEY = 'finhub_blank_central_safety_copy_v1';
 
     function getBackupAgeDays() {
       if (!state.lastBackupAt) return null;
@@ -2022,7 +2034,7 @@ Bonus"></textarea></div>
     function toggleTheme() { state.darkMode = !state.darkMode; initThemeAndBlur(); saveData(); }
 
     function applySidebarState() {
-      const collapsed = localStorage.getItem('finhub_sidebar_collapsed') === 'true';
+      const collapsed = localStorage.getItem('finhub_blank_sidebar_collapsed') === 'true';
       document.body.classList.toggle('sidebar-collapsed', collapsed);
       const icon = document.getElementById('sidebar-collapse-icon');
       if (icon) icon.className = `sidebar-collapse-label fa-solid ${collapsed ? 'fa-angles-right' : 'fa-angles-left'}`;
@@ -2030,7 +2042,7 @@ Bonus"></textarea></div>
     function toggleSidebar() {
       const collapsed = !document.body.classList.contains('sidebar-collapsed');
       document.body.classList.toggle('sidebar-collapsed', collapsed);
-      localStorage.setItem('finhub_sidebar_collapsed', String(collapsed));
+      localStorage.setItem('finhub_blank_sidebar_collapsed', String(collapsed));
       const icon = document.getElementById('sidebar-collapse-icon');
       if (icon) icon.className = `sidebar-collapse-label fa-solid ${collapsed ? 'fa-angles-right' : 'fa-angles-left'}`;
     }
@@ -5383,8 +5395,8 @@ Bonus"></textarea></div>
     }
     function closeReconciliationModal() { document.getElementById('recon-modal').classList.add('hidden'); }
     function downloadStatementTemplate() {
-      const csv='Date,Description,Debit,Credit\r\n';
-      const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='FinHub_Statement_Import_Template.csv';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+      const csv = 'Date,Description,Amount,Type,Vendor,Category,Subcategory,Debt Account,Payment Classification,Principal,Interest,Transfer To Account\r\n';
+      const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='FinHub_Enhanced_Statement_Import_Template.csv';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
     }
     function loadStatementFile(event) {
       const file = event.target.files && event.target.files[0]; if (!file) return;
@@ -5474,7 +5486,7 @@ Bonus"></textarea></div>
       v=v.replace(/[()$,+\s]/g,'').replace(/\b(CR|DR)\b/ig,'').replace(/[A-Z]/ig,'');
       const n=Number(v);return Number.isFinite(n)?(negative?-Math.abs(n):Math.abs(n)):NaN;
     }
-    function statementMatchKey(accountId,direction,amount) { return `${accountId}|${direction}|${Math.round((Number(amount)||0)*100)}`; }
+    function statementMatchKey(accountId,direction,amount) { return `${accountId}|${direction}|${Math.round(Math.abs(Number(amount)||0)*100)}`; }
     function buildStatementMatchIndex() {
       const index=new Map();
       const add=(accountId,direction,t)=>{if(!accountId||!direction)return;const key=statementMatchKey(accountId,direction,t.amount);if(!index.has(key))index.set(key,[]);index.get(key).push(t);};
@@ -5494,7 +5506,7 @@ Bonus"></textarea></div>
       const index=new Map();
       const add=(accountId,direction,t)=>{
         if(!accountId||!direction)return;
-        const key=`${accountId}|${t.date||''}|${direction}|${Math.round((Number(t.amount)||0)*100)}`;
+        const key=`${accountId}|${t.date||''}|${direction}|${Math.round(Math.abs(Number(t.amount)||0)*100)}`;
         if(!index.has(key))index.set(key,[]);
         index.get(key).push(t);
       };
@@ -5554,13 +5566,32 @@ Bonus"></textarea></div>
       const first=parseStatementCSVLine(lines[0]||'').map(x=>x.toLowerCase().replace(/[^a-z]/g,''));
       const hasHeader=first.some(x=>x.includes('date'))&&(first.some(x=>['description','details','payee','memo','merchant','name','narrative','reference'].some(t=>x.includes(t))));
       const header=hasHeader?first:null;
-      const findCol=(tests)=>header?header.findIndex(h=>tests.some(t=>h.includes(t))):-1;
-      const dateCol=findCol(['date']);
-      const descCol=findCol(['description','details','payee','memo','merchant','name','narrative','reference']);
-      const amountCol=findCol(['amount','transactionamount']);
+      const findCol=(aliases)=>header?header.findIndex(h=>aliases.includes(h)):-1;
+      const dateCol=findCol(['date','transactiondate','posteddate']);
+      const descCol=findCol(['description','details','payee','memo','merchant','name','narrative','reference','bankdescription']);
+      const amountCol=findCol(['amount','transactionamount','signedamount']);
       const debitCol=findCol(['debit','withdrawal','moneyout']);
       const creditCol=findCol(['credit','deposit','moneyin']);
+      const typeCol=findCol(['type','finhubtype','transactiontype']);
+      const vendorCol=findCol(['vendor','vendorname','cleanvendor']);
+      const categoryCol=findCol(['category','bucket']);
+      const subcategoryCol=findCol(['subcategory','subcat']);
+      const debtAccountCol=findCol(['debtaccount','debtaccountname','liabilityaccount']);
+      const paymentTypeCol=findCol(['paymentclassification','paymenttype']);
+      const principalCol=findCol(['principal','principalportion']);
+      const interestCol=findCol(['interest','interestportion']);
+      const transferToCol=findCol(['transfertoaccount','destinationaccount']);
       const rows=[];const parseErrors=[];let skipped=0;
+      const cell=(parts,col)=>col>=0?String(parts[col]??'').trim():'';
+      const parseFinHubType=value=>{
+        const v=normalizeStatementText(value);
+        if(!v)return '';
+        if(v==='expense'||v==='spending')return 'Expense';
+        if(v==='income'||v==='deposit')return 'Income';
+        if(v==='debtpayment'||v==='debtservice'||v==='payment')return 'Debt Payment';
+        if(v==='transfer'||v==='accounttransfer')return 'Transfer';
+        return String(value||'').trim();
+      };
       lines.forEach((line,index)=>{
         if(hasHeader&&index===0)return;
         const parts=parseStatementCSVLine(line);
@@ -5580,15 +5611,30 @@ Bonus"></textarea></div>
         }
         if(!Number.isFinite(amountNum)&&hasHeader&&amountCol>=0)amountNum=parseStatementAmount(parts[amountCol]);
         if(!hasHeader&&parts.length>=3)amountNum=parseStatementAmount(parts[parts.length-1]);
-        const positiveExpense=document.getElementById('recon-sign')?.value==='positive-expense';
+        const negativeMeansOutflow=(document.getElementById('recon-sign')?.value||'negative-expense')==='negative-expense';
         if(invalidDebitCredit||!date||!desc||!Number.isFinite(amountNum)||amountNum===0){
           skipped++;
           let reason=invalidDebitCredit?'Both Debit and Credit contain amounts':!date?'Invalid or missing date':!desc?'Missing description':'Missing or invalid amount';
           parseErrors.push(`Line ${index+1}: ${reason}`);
           return;
         }
-        const type=explicitDirection||(positiveExpense?(amountNum>0?'Expense':'Income'):(amountNum<0?'Expense':'Income'));
-        rows.push({id:`st_${Date.now()}_${index}_${Math.random().toString(36).slice(2,7)}`,date,description:desc,amount:Math.abs(amountNum),type,accountId:document.getElementById('recon-account')?.value||'',status:'pending'});
+        const direction=explicitDirection||(negativeMeansOutflow?(amountNum<0?'Expense':'Income'):(amountNum>0?'Expense':'Income'));
+        const accountId=document.getElementById('recon-account')?.value||'';
+        const amount=Math.abs(amountNum);
+        const explicit={
+          type:parseFinHubType(cell(parts,typeCol)),
+          vendor:cell(parts,vendorCol),
+          category:cell(parts,categoryCol),
+          subcategory:cell(parts,subcategoryCol),
+          debtAccount:cell(parts,debtAccountCol),
+          paymentType:cell(parts,paymentTypeCol),
+          principal:cell(parts,principalCol)===''?NaN:parseStatementAmount(cell(parts,principalCol)),
+          interest:cell(parts,interestCol)===''?NaN:parseStatementAmount(cell(parts,interestCol)),
+          transferTo:cell(parts,transferToCol)
+        };
+        const row={id:`st_${Date.now()}_${index}_${Math.random().toString(36).slice(2,7)}`,date,description:desc,amount,signedAmount:amountNum,type:direction,accountId,status:'pending'};
+        applyStatementImportDefaults(row,explicit);
+        rows.push(row);
       });
       if(!rows.length){
         const errorHtml=`<div class="rounded-xl border border-amber-300/50 bg-amber-500/5 p-3 text-xs"><strong>FinHub couldn't read any statement rows.</strong><p class="mt-1">Check that the file has a date, description and amount (or separate debit and credit columns). ${skipped} row(s) were skipped. For pasted data, use Date, Description, Amount with YYYY-MM-DD dates.</p>${parseErrors.slice(0,6).map(x=>`<div class="mt-1 text-[10px]">${escapeHtml(x)}</div>`).join('')}</div>`;
@@ -5623,6 +5669,128 @@ Bonus"></textarea></div>
       if(host&&duplicateCount){const note=document.createElement('p');note.className='text-[10px] text-amber-500';note.textContent=`Flagged ${duplicateCount} possible duplicate row(s), including any repeated rows within this upload. Review them before importing.`;host.prepend(note);}
     }
         let vendorRuleTransactionContext = false;
+
+    function populateImportRuleAccountOptions() {
+      const debtSelect = document.getElementById('import-rule-debt-account');
+      const transferSelect = document.getElementById('import-rule-transfer-to');
+      if (debtSelect) debtSelect.innerHTML = '<option value="">No debt account</option>' + (state.accounts || []).filter(a => a.type === 'debt' && !a.archived).map(a => `<option value="${escapeHtml(a.id)}">${escapeHtml(a.name)}</option>`).join('');
+      if (transferSelect) transferSelect.innerHTML = '<option value="">No transfer destination</option>' + (state.accounts || []).filter(a => a.type === 'asset' && !a.archived).map(a => `<option value="${escapeHtml(a.id)}">${escapeHtml(a.name)}</option>`).join('');
+    }
+    function openImportRuleModal(rowId = '', ruleIndex = -1) {
+      populateImportRuleAccountOptions();
+      const existing = ruleIndex >= 0 ? (state.importRules || [])[ruleIndex] : null;
+      const row = rowId ? (pendingStatementRows || []).find(r => r.id === rowId) : null;
+      document.getElementById('import-rule-edit-index').value = String(ruleIndex);
+      document.getElementById('import-rule-modal-title').textContent = existing ? 'Edit Statement Import Rule' : 'Add Statement Import Rule';
+      document.getElementById('import-rule-match').value = existing?.match || row?.description || '';
+      document.getElementById('import-rule-vendor').value = existing?.vendor || row?.vendor || row?.cleanedVendorName || applyVendorCleanupRules(row?.description || '') || '';
+      document.getElementById('import-rule-type').value = existing?.type || row?.importType || '';
+      document.getElementById('import-rule-category').value = existing?.category || row?.category || '';
+      document.getElementById('import-rule-subcategory').value = existing?.subcategory || row?.subcategory || '';
+      document.getElementById('import-rule-debt-account').value = existing?.debtAccountId || row?.debtAccountId || '';
+      document.getElementById('import-rule-payment-type').value = existing?.paymentType || row?.paymentType || '';
+      document.getElementById('import-rule-split-mode').value = existing?.splitMode || (row?.type === 'Expense' && row?.importType === 'Debt Payment' && Number(row?.interestAmount) === Number(row?.amount) ? 'interest-only' : '');
+      document.getElementById('import-rule-transfer-to').value = existing?.transferToAccountId || row?.transferToAccountId || '';
+      document.getElementById('import-rule-modal').classList.remove('hidden');
+    }
+    function closeImportRuleModal() { document.getElementById('import-rule-modal').classList.add('hidden'); }
+    function saveImportRule(e) {
+      e.preventDefault();
+      const match = document.getElementById('import-rule-match').value.trim();
+      if (!match) return;
+      const rule = {
+        match,
+        vendor: document.getElementById('import-rule-vendor').value.trim(),
+        type: document.getElementById('import-rule-type').value,
+        category: document.getElementById('import-rule-category').value.trim(),
+        subcategory: document.getElementById('import-rule-subcategory').value.trim(),
+        debtAccountId: document.getElementById('import-rule-debt-account').value,
+        paymentType: document.getElementById('import-rule-payment-type').value,
+        splitMode: document.getElementById('import-rule-split-mode').value,
+        transferToAccountId: document.getElementById('import-rule-transfer-to').value
+      };
+      const idx = Number(document.getElementById('import-rule-edit-index').value);
+      captureUndo(idx >= 0 ? 'Edit statement import rule' : 'Add statement import rule');
+      state.importRules = Array.isArray(state.importRules) ? state.importRules : [];
+      if (idx >= 0 && state.importRules[idx]) state.importRules[idx] = rule;
+      else {
+        const normalized = normalizeStatementText(match);
+        const existingIdx = state.importRules.findIndex(r => normalizeStatementText(r.match) === normalized);
+        if (existingIdx >= 0) state.importRules[existingIdx] = rule;
+        else state.importRules.unshift(rule);
+      }
+      saveData(); closeImportRuleModal(); renderSettings();
+    }
+    function deleteImportRule(index) {
+      if (!Number.isInteger(Number(index)) || !state.importRules?.[index]) return;
+      if (!confirm(`Delete the import rule for "${state.importRules[index].match}"?`)) return;
+      captureUndo('Delete statement import rule'); state.importRules.splice(index, 1); saveData(); renderSettings();
+    }
+    function resolveStatementAccount(value, type) {
+      const raw = String(value || '').trim();
+      if (!raw) return null;
+      const normalized = normalizeStatementText(raw);
+      return (state.accounts || []).find(a => a.type === type && (String(a.id) === raw || normalizeStatementText(a.name) === normalized)) || null;
+    }
+    function getStatementImportRule(description) {
+      const normalized = normalizeStatementText(description);
+      return (state.importRules || []).find(rule => {
+        const needle = normalizeStatementText(rule.match);
+        return needle && normalized.includes(needle);
+      }) || null;
+    }
+    function applyStatementImportDefaults(row, explicit = {}) {
+      const rule = getStatementImportRule(row.description);
+      row.importRuleMatch = rule?.match || '';
+      const merchantRule = (state.merchantRules || []).find(r => normalizeStatementText(row.description).includes(normalizeStatementText(r.keyword)));
+      row.vendor = explicit.vendor || rule?.vendor || applyVendorCleanupRules(row.description);
+      row.importType = explicit.type || rule?.type || row.type;
+      row.category = explicit.category || rule?.category || (row.importType === 'Expense' ? (merchantRule?.category || '') : '');
+      row.subcategory = explicit.subcategory || rule?.subcategory || (row.importType === 'Expense' ? (merchantRule?.subcategory || '') : '');
+      const rawDebtAccount = explicit.debtAccount || '';
+      const debtAccount = rawDebtAccount ? resolveStatementAccount(rawDebtAccount, 'debt') : null;
+      row.debtAccountId = debtAccount?.id || rule?.debtAccountId || '';
+      row.paymentType = explicit.paymentType || rule?.paymentType || '';
+      if (row.importType === 'Debt Payment') {
+        row.category = 'Debt Service';
+        if (!row.paymentType) {
+          const debt = (state.accounts || []).find(a => String(a.id) === String(row.debtAccountId));
+          row.paymentType = inferDebtPaymentClassification(debt);
+        }
+        row.subcategory = row.paymentType;
+      }
+      row.transferToAccountId = (explicit.transferTo ? resolveStatementAccount(explicit.transferTo, 'asset')?.id : '') || rule?.transferToAccountId || '';
+      const hasPrincipal = Number.isFinite(explicit.principal);
+      const hasInterest = Number.isFinite(explicit.interest);
+      row.principalAmount = null;
+      row.interestAmount = null;
+      if (hasPrincipal || hasInterest) {
+        row.principalAmount = hasPrincipal ? Math.round(explicit.principal * 100) / 100 : null;
+        row.interestAmount = hasInterest ? Math.round(explicit.interest * 100) / 100 : null;
+        if (row.principalAmount === null) row.principalAmount = Math.round((row.amount - row.interestAmount) * 100) / 100;
+        if (row.interestAmount === null) row.interestAmount = Math.round((row.amount - row.principalAmount) * 100) / 100;
+      } else if (rule?.splitMode === 'interest-only') {
+        row.principalAmount = 0; row.interestAmount = row.amount;
+      } else if (rule?.splitMode === 'principal-only') {
+        row.principalAmount = row.amount; row.interestAmount = 0;
+      }
+      row.importValidationError = '';
+      if (row.importType === 'Debt Payment') {
+        const debt = (state.accounts || []).find(a => String(a.id) === String(row.debtAccountId) && a.type === 'debt');
+        if (row.type !== 'Expense') row.importValidationError = 'Debt Payment must be a debit / money-out row from the selected funding account.';
+        else if (!debt) row.importValidationError = rawDebtAccount ? `Debt account "${rawDebtAccount}" was not found. Use the exact FinHub account name.` : 'Choose a Debt Account column or create an import rule with a debt account.';
+        else if (row.principalAmount === null || row.interestAmount === null) row.importValidationError = 'Add Principal and Interest columns, or set an interest-only / principal-only split in an import rule.';
+        else if (row.principalAmount < 0 || row.interestAmount < 0 || Math.abs((row.principalAmount + row.interestAmount) - row.amount) > 0.01) row.importValidationError = 'Principal plus Interest must equal the payment Amount.';
+        else if (!DEBT_PAYMENT_CLASSIFICATIONS.includes(row.paymentType)) row.importValidationError = 'Choose a valid Payment Classification.';
+      } else if (row.importType === 'Transfer') {
+        if (row.type !== 'Expense') row.importValidationError = 'A transfer import must be a debit / money-out row from the selected source account.';
+        else if (!resolveStatementAccount(row.transferToAccountId, 'asset')) row.importValidationError = 'Choose a valid Transfer To Account.';
+        else if (String(row.transferToAccountId) === String(row.accountId)) row.importValidationError = 'Transfer destination must be different from the statement account.';
+      } else if (!['Expense','Income'].includes(row.importType)) {
+        row.importValidationError = `Unsupported FinHub transaction type: ${row.importType}`;
+      }
+      return row;
+    }
 
     function applyVendorCleanupRules(rawName) {
       const original=String(rawName||'').trim();
@@ -5803,8 +5971,8 @@ Bonus"></textarea></div>
     function manualMatchTotals() {
       const bankRows = pendingStatementRows.filter(r => manualSelectedStatementIds.has(r.id));
       const ledgerRows = (state.transactions||[]).filter(t => manualSelectedTransactionIds.has(t.id));
-      const bankCents = bankRows.reduce((sum,r) => sum + Math.round((Number(r.amount)||0)*100),0);
-      const ledgerCents = ledgerRows.reduce((sum,t) => sum + Math.round((Number(t.amount)||0)*100),0);
+      const bankCents = bankRows.reduce((sum,r) => sum + Math.round(Math.abs(Number(r.amount)||0)*100),0);
+      const ledgerCents = ledgerRows.reduce((sum,t) => sum + Math.round(Math.abs(Number(t.amount)||0)*100),0);
       return {bankRows,ledgerRows,bankCents,ledgerCents,differenceCents:bankCents-ledgerCents};
     }
     function confirmManualStatementMatch() {
@@ -5939,7 +6107,10 @@ Bonus"></textarea></div>
         const status=row.status==='matched'?'Matched':row.status==='imported'?'Imported':row.status==='skipped'?'Skipped':row.status==='duplicate'?'Possible duplicate':suggested?'Suggested match':crossCandidate?'Possible transfer counterpart':'No match found';
         const options=candidatesForRow.map(t=>`<option value="${t.id}" ${suggested&&t.id===suggested.id?'selected':''}>${t.date} · ${escapeHtml(t.vendor||t.desc||'Transaction')} · ${formatFinancial(t.amount)}</option>`).join('');
         const undoButton=row.matchedGroupId?`<button onclick="undoManualStatementMatch('${row.matchedGroupId}')" class="px-2.5 py-1.5 bg-gray-200 dark:bg-gray-800 rounded-lg text-xs">Undo grouped match</button>`:`<button onclick="unlinkStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-gray-200 dark:bg-gray-800 rounded-lg text-xs">Undo match</button>`;
-        return `<div class="border border-gray-200 dark:border-gray-800 rounded-xl p-3 space-y-2"><div class="flex justify-between gap-3"><div class="min-w-0"><div class="font-semibold text-xs">${escapeHtml(row.description)}</div><div class="text-[10px] text-indigo-400">Vendor name: ${escapeHtml(row.cleanedVendorName || applyVendorCleanupRules(row.description))}</div><div class="text-[10px] text-gray-400">${row.date} · ${row.type}</div></div><strong class="text-sm accounting-num whitespace-nowrap">${formatFinancial(row.amount)}</strong></div><div class="flex flex-wrap items-center gap-2"><span class="text-[10px] ${row.status==='matched'?'text-emerald-500':row.status==='duplicate'?'text-amber-500':'text-gray-400'}">${status}</span>${row.status==='pending'&&candidatesForRow.length?`<select id="stmt-match-${row.id}" class="flex-1 min-w-[180px] bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-1 text-xs">${options}</select><button onclick="linkStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-emerald-600 text-white rounded-lg text-xs">Match</button>`:''}${row.status==='pending'?`${crossCandidates.length?`<select id="stmt-transfer-match-${row.id}" class="min-w-[180px] bg-gray-50 dark:bg-gray-950 border border-indigo-300 dark:border-indigo-800 rounded-lg px-2 py-1 text-xs">${crossOptions}</select><button onclick="matchStatementRowAsInternalTransfer('${row.id}',document.getElementById('stmt-transfer-match-${row.id}').value)" class="px-2.5 py-1.5 bg-indigo-600 text-white rounded-lg text-xs">Match as Internal Transfer</button>`:''}<button onclick="openVendorRuleModal('${row.id}')" class="px-2.5 py-1.5 bg-violet-600/15 text-violet-500 rounded-lg text-xs">Clean name / create rule</button><button onclick="importStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-indigo-600 text-white rounded-lg text-xs">Import as new</button><button onclick="skipStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-gray-200 dark:bg-gray-800 rounded-lg text-xs">Skip</button>`:row.status==='duplicate'?`<span class="text-[10px] text-amber-500">${row.duplicateOfRowId?'Duplicates another row in this upload':`Looks like: ${escapeHtml((state.transactions||[]).find(t=>t.id===row.duplicateTransactionId)?.vendor||'an existing transaction')}`}</span><button onclick="allowStatementDuplicate('${row.id}')" class="px-2.5 py-1.5 bg-amber-500/15 text-amber-600 rounded-lg text-xs">Import anyway</button><button onclick="skipStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-gray-200 dark:bg-gray-800 rounded-lg text-xs">Skip</button>`:row.status==='matched'?undoButton:''}</div></div>`;
+        const importSummary = [row.importType || row.type, row.vendor || row.cleanedVendorName || applyVendorCleanupRules(row.description), row.category, row.subcategory, row.debtAccountId ? state.accounts.find(a=>String(a.id)===String(row.debtAccountId))?.name : ''].filter(Boolean).join(' · ');
+        const importWarning = row.importValidationError ? `<div class="rounded-lg bg-amber-500/10 border border-amber-500/20 p-2 text-[10px] text-amber-600">${escapeHtml(row.importValidationError)}</div>` : '';
+        const splitLine = row.importType==='Debt Payment' && row.principalAmount!==null && row.interestAmount!==null ? `<div class="text-[10px] text-gray-400">Principal ${formatFinancial(row.principalAmount)} · Interest ${formatFinancial(row.interestAmount)}${row.paymentType?' · '+escapeHtml(row.paymentType):''}</div>` : '';
+        return `<div class="border border-gray-200 dark:border-gray-800 rounded-xl p-3 space-y-2"><div class="flex justify-between gap-3"><div class="min-w-0"><div class="font-semibold text-xs">${escapeHtml(row.description)}</div><div class="text-[10px] text-indigo-400">Vendor: ${escapeHtml(row.vendor || row.cleanedVendorName || applyVendorCleanupRules(row.description))}</div><div class="text-[10px] text-gray-400">${row.date} · Statement direction: ${row.type==='Expense'?'Debit / money out':'Credit / money in'}</div><div class="text-[10px] text-gray-500 mt-0.5">FinHub import: ${escapeHtml(importSummary)}</div>${splitLine}</div><strong class="text-sm accounting-num whitespace-nowrap">${formatFinancial(row.amount)}</strong></div>${importWarning}<div class="flex flex-wrap items-center gap-2"><span class="text-[10px] ${row.status==='matched'?'text-emerald-500':row.status==='duplicate'?'text-amber-500':'text-gray-400'}">${status}</span>${row.status==='pending'&&candidatesForRow.length?`<select id="stmt-match-${row.id}" class="flex-1 min-w-[180px] bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-1 text-xs">${options}</select><button onclick="linkStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-emerald-600 text-white rounded-lg text-xs">Match</button>`:''}${row.status==='pending'?`${crossCandidates.length?`<select id="stmt-transfer-match-${row.id}" class="min-w-[180px] bg-gray-50 dark:bg-gray-950 border border-indigo-300 dark:border-indigo-800 rounded-lg px-2 py-1 text-xs">${crossOptions}</select><button onclick="matchStatementRowAsInternalTransfer('${row.id}',document.getElementById('stmt-transfer-match-${row.id}').value)" class="px-2.5 py-1.5 bg-indigo-600 text-white rounded-lg text-xs">Match as Internal Transfer</button>`:''}<button onclick="openVendorRuleModal('${row.id}')" class="px-2.5 py-1.5 bg-violet-600/15 text-violet-500 rounded-lg text-xs">Clean vendor</button><button onclick="openImportRuleModal('${row.id}')" class="px-2.5 py-1.5 bg-violet-600/15 text-violet-500 rounded-lg text-xs">Save import rule</button><button onclick="importStatementRow('${row.id}')" ${row.importValidationError?'disabled title="Fix the import details before importing"':''} class="px-2.5 py-1.5 bg-indigo-600 text-white rounded-lg text-xs disabled:opacity-40">Import as new</button><button onclick="skipStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-gray-200 dark:bg-gray-800 rounded-lg text-xs">Skip</button>`:row.status==='duplicate'?`<span class="text-[10px] text-amber-500">${row.duplicateOfRowId?'Duplicates another row in this upload':`Looks like: ${escapeHtml((state.transactions||[]).find(t=>t.id===row.duplicateTransactionId)?.vendor||'an existing transaction')}`}</span><button onclick="allowStatementDuplicate('${row.id}')" class="px-2.5 py-1.5 bg-amber-500/15 text-amber-600 rounded-lg text-xs">Import anyway</button><button onclick="skipStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-gray-200 dark:bg-gray-800 rounded-lg text-xs">Skip</button>`:row.status==='matched'?undoButton:''}</div></div>`;
       }).join('')}</div><div class="flex flex-wrap items-center justify-between gap-2 text-xs text-gray-500"><span>Showing ${pageStart+1}–${Math.min(pageStart+statementPreviewPageSize,pendingStatementRows.length)} of ${pendingStatementRows.length} statement rows · Page ${statementPreviewPage+1} of ${totalPages}</span><div class="flex gap-2"><button onclick="changeStatementPreviewPage(-1)" ${statementPreviewPage===0?'disabled':''} class="px-3 py-1.5 rounded-lg bg-gray-200 dark:bg-gray-800 disabled:opacity-40">Previous</button><button onclick="changeStatementPreviewPage(1)" ${statementPreviewPage>=totalPages-1?'disabled':''} class="px-3 py-1.5 rounded-lg bg-gray-200 dark:bg-gray-800 disabled:opacity-40">Next</button></div></div><div class="text-[10px] text-gray-400">Individual matching uses account, transaction type, amount and a date within one day. Grouped manual matching supports different amounts and dates, but requires equal selected totals.</div>${groupsHtml}`;
       renderStatementBalanceCheck();
     }
@@ -6010,16 +6181,71 @@ Bonus"></textarea></div>
       row.status='pending';delete row.matchedTransactionId;delete row.matchedAsInternalTransfer;delete row.transferMergedInto;delete row.transferMergedOriginalStatus;
       persistStatementBatch();renderLedger();renderStatementPreview();
     }
+    function validateStatementImportRow(row) {
+      if (!row) return 'Statement row not found.';
+      const funding = (state.accounts || []).find(a => String(a.id) === String(row.accountId) && a.type === 'asset' && !a.archived);
+      if (!funding) return 'Choose an active asset account as the statement account.';
+      if (row.importValidationError) return row.importValidationError;
+      if (row.importType === 'Debt Payment') {
+        const debt = (state.accounts || []).find(a => String(a.id) === String(row.debtAccountId) && a.type === 'debt' && !a.archived);
+        if (!debt) return 'The selected debt account is missing or archived.';
+        if (row.type !== 'Expense') return 'A debt payment must be a debit / money-out transaction.';
+        if (Math.abs((Number(row.principalAmount) || 0) + (Number(row.interestAmount) || 0) - Number(row.amount)) > 0.01) return 'Principal plus Interest must equal the payment Amount.';
+      }
+      if (row.importType === 'Transfer') {
+        const destination = (state.accounts || []).find(a => String(a.id) === String(row.transferToAccountId) && a.type === 'asset' && !a.archived);
+        if (!destination || String(destination.id) === String(row.accountId)) return 'Choose a different active asset account as Transfer To Account.';
+        if (row.type !== 'Expense') return 'A transfer import must be a debit / money-out row from the selected source account.';
+      }
+      return '';
+    }
+    function createStatementImportedTransaction(row, now = new Date().toISOString()) {
+      const account = (state.accounts || []).find(a => String(a.id) === String(row.accountId));
+      if (!account) throw new Error('Statement account could not be found.');
+      const importType = row.importType || row.type;
+      let amount = Math.abs(Number(row.amount) || 0);
+      if (importType === 'Expense' && row.type === 'Income') amount = -amount; // A statement credit tagged as Expense is a merchant refund.
+      const transactionId = `tx_stmt_${Date.now()}_${Math.random().toString(36).slice(2,8)}`;
+      const base = {
+        id: transactionId, date: row.date, vendor: row.vendor || row.cleanedVendorName || applyVendorCleanupRules(row.description),
+        desc: row.description, type: importType, amount, accountId: row.accountId,
+        statementMatchId: row.id, reconciled: true, reconciledAt: now, statementDescription: row.description, source: 'statement-import'
+      };
+      if (importType === 'Debt Payment') {
+        const debt = (state.accounts || []).find(a => String(a.id) === String(row.debtAccountId) && a.type === 'debt');
+        const paymentId = `dp_stmt_${Date.now()}_${Math.random().toString(36).slice(2,7)}`;
+        const principal = Math.round((Number(row.principalAmount) || 0) * 100) / 100;
+        const interest = Math.round((Number(row.interestAmount) || 0) * 100) / 100;
+        const paymentType = DEBT_PAYMENT_CLASSIFICATIONS.includes(row.paymentType) ? row.paymentType : inferDebtPaymentClassification(debt);
+        Object.assign(base, {
+          category: 'Debt Service', subcategory: paymentType, paymentType,
+          debtPaymentId: paymentId, debtAccountId: debt.id,
+          debtPrincipalAmount: principal, debtInterestAmount: interest,
+          workflowSource: 'statement-import-debt-payment'
+        });
+        state.debtPayments = Array.isArray(state.debtPayments) ? state.debtPayments : [];
+        state.debtPayments.push({ id: paymentId, accountId: debt.id, fundingAccountId: row.accountId, transactionId, date: row.date, desc: base.desc, amount, principalAmount: principal, interestAmount: interest, paymentType, source: 'statement-import' });
+        debt.balance = Math.max(0, Math.round(((Number(debt.balance) || 0) - principal) * 100) / 100);
+      } else if (importType === 'Transfer') {
+        base.type = 'Transfer'; base.category = 'Transfer'; base.subcategory = '';
+        base.transferToAccountId = row.transferToAccountId;
+        base.reconciledAccountIds = [String(row.accountId)];
+      } else {
+        base.category = row.category || '';
+        base.subcategory = row.subcategory || '';
+      }
+      state.transactions.unshift(base);
+      applyTransactionBalanceEffect(base, 1);
+      row.status = 'imported'; row.matchedTransactionId = transactionId;
+      return base;
+    }
     function importStatementRow(rowId) {
       const row=pendingStatementRows.find(r=>r.id===rowId);if(!row||row.status!=='pending')return;
-      const account=state.accounts.find(a=>a.id===row.accountId);if(!account)return;
+      const validation = validateStatementImportRow(row);
+      if (validation) { alert(`This row needs attention before it can be imported:\n\n${validation}`); return; }
       captureStatementUndo('Import statement transaction');
-      const merchantRule=(state.merchantRules||[]).find(rule=>normalizeStatementText(row.description).includes(normalizeStatementText(rule.keyword)));
-      const transaction={id:`tx_stmt_${Date.now()}_${Math.random().toString(36).slice(2,7)}`,date:row.date,vendor:(row.cleanedVendorName || applyVendorCleanupRules(row.description)),desc:row.description,type:row.type,category:merchantRule?.category||'',subcategory:merchantRule?.subcategory||'',amount:row.amount,accountId:row.accountId,statementMatchId:row.id,reconciled:true,reconciledAt:new Date().toISOString(),source:'statement-import'};
-      state.transactions.unshift(transaction);
-      applyTransactionBalanceEffect(transaction, 1);
-      row.status='imported';row.matchedTransactionId=transaction.id;
-      persistStatementBatch();renderLedger();renderDashboard();renderZbbFundingTracker();renderStatementPreview();
+      createStatementImportedTransaction(row);
+      persistStatementBatch();renderLedger();renderDashboard();renderZbbFundingTracker();renderDebtPlanner();renderDebtPaymentHistory();renderStatementPreview();
     }
     function skipStatementRow(rowId) { const row=pendingStatementRows.find(r=>r.id===rowId);if(row){row.status='skipped';persistStatementBatch();renderStatementPreview();} }
     function allowStatementDuplicate(rowId) { const row=pendingStatementRows.find(r=>r.id===rowId);if(!row||row.status!=='duplicate')return;if(!confirm('Import this row as a separate transaction even though it resembles an existing transaction?'))return;row.status='pending';row.allowDuplicateImport=true;delete row.duplicateTransactionId;persistStatementBatch();renderStatementPreview(); }
@@ -6082,20 +6308,17 @@ Bonus"></textarea></div>
       saveData();renderStatementPreview();renderStatementBalanceCheck();
     }
     function importAllUnmatchedStatementRows() {
-      const matchIndex=buildStatementMatchIndex();const rows=pendingStatementRows.filter(r=>r.status==='pending'&&!findStatementMatches(r,matchIndex).length);
-      if(!rows.length){alert('There are no unmatched, non-duplicate rows ready to import.');return;}
-      if(!confirm(`Import ${rows.length} unmatched transaction(s) into this account?`))return;
+      const matchIndex=buildStatementMatchIndex();
+      const candidates=pendingStatementRows.filter(r=>r.status==='pending'&&!findStatementMatches(r,matchIndex).length);
+      const rows=candidates.filter(r=>!validateStatementImportRow(r));
+      const invalid=candidates.length-rows.length;
+      if(!rows.length){alert(candidates.length?`${invalid} unmatched row(s) need import details corrected before they can be imported.`:'There are no unmatched, non-duplicate rows ready to import.');return;}
+      if(!confirm(`Import ${rows.length} unmatched transaction(s) into this account?${invalid?`\n\n${invalid} row(s) with missing or invalid details will be left in the review batch.`:''}`))return;
       captureStatementUndo('Import statement transaction batch');
       const now=new Date().toISOString();
-      rows.forEach(row=>{
-        const account=state.accounts.find(a=>a.id===row.accountId);if(!account)return;
-        const merchantRule=(state.merchantRules||[]).find(rule=>normalizeStatementText(row.description).includes(normalizeStatementText(rule.keyword)));
-        const transaction={id:`tx_stmt_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,date:row.date,vendor:(row.cleanedVendorName||applyVendorCleanupRules(row.description)),desc:row.description,type:row.type,category:merchantRule?.category||'',subcategory:merchantRule?.subcategory||'',amount:row.amount,accountId:row.accountId,statementMatchId:row.id,reconciled:true,reconciledAt:now,source:'statement-import'};
-        state.transactions.unshift(transaction);
-        applyTransactionBalanceEffect(transaction, 1);
-        row.status='imported';row.matchedTransactionId=transaction.id;
-      });
-      persistStatementBatch();renderLedger();renderDashboard();renderZbbFundingTracker();renderStatementPreview();
+      rows.forEach(row=>createStatementImportedTransaction(row,now));
+      persistStatementBatch();renderLedger();renderDashboard();renderZbbFundingTracker();renderDebtPlanner();renderDebtPaymentHistory();renderStatementPreview();
+      if(invalid) alert(`${invalid} row(s) were left pending because their import details need attention. Open each row to review its warning.`);
     }
 
     function findBillPaymentTransaction(bill) {
@@ -6307,6 +6530,17 @@ Bonus"></textarea></div>
           vendorRulesList.innerHTML += `<div class="flex flex-wrap justify-between items-center gap-2 bg-gray-50 dark:bg-gray-950 p-2.5 rounded-xl text-xs"><div><strong>${escapeHtml(r.match)}</strong> <span class="text-gray-400">→</span> <span class="text-indigo-400 theme-text font-semibold">${escapeHtml(r.replacement)}</span></div><div class="flex gap-3"><button onclick="openVendorRuleModal('',${idx})" class="text-indigo-400" title="Edit cleanup rule"><i class="fa-solid fa-pen"></i></button><button onclick="deleteVendorCleanupRule(${idx})" class="text-rose-500" title="Delete cleanup rule"><i class="fa-solid fa-trash"></i></button></div></div>`;
         });
         if (!(state.vendorCleanupRules||[]).length) vendorRulesList.innerHTML='<p class="text-xs text-gray-400">No vendor cleanup rules yet. Add one when a bank statement uses an inconsistent merchant description.</p>';
+      }
+
+      const importRulesList = document.getElementById('statement-import-rules-list');
+      if (importRulesList) {
+        importRulesList.innerHTML = '';
+        (state.importRules || []).forEach((r, idx) => {
+          const debtName = state.accounts.find(a => String(a.id) === String(r.debtAccountId))?.name || '';
+          const summary = [r.type || 'Auto type', r.vendor || '', r.category || '', r.subcategory || '', debtName, r.splitMode === 'interest-only' ? 'Interest only' : r.splitMode === 'principal-only' ? 'Principal only' : ''].filter(Boolean).join(' · ');
+          importRulesList.innerHTML += `<div class="flex flex-wrap justify-between items-center gap-2 bg-gray-50 dark:bg-gray-950 p-2.5 rounded-xl text-xs"><div class="min-w-0"><strong>${escapeHtml(r.match)}</strong><div class="text-[10px] text-gray-400 mt-1">${escapeHtml(summary || 'No additional defaults')}</div></div><div class="flex gap-3"><button onclick="openImportRuleModal('',${idx})" class="text-indigo-400" title="Edit import rule"><i class="fa-solid fa-pen"></i></button><button onclick="deleteImportRule(${idx})" class="text-rose-500" title="Delete import rule"><i class="fa-solid fa-trash"></i></button></div></div>`;
+        });
+        if (!(state.importRules || []).length) importRulesList.innerHTML = '<p class="text-xs text-gray-400">No statement import rules yet. Create one for a recurring bank description such as RBC LOC INTEREST.</p>';
       }
 
       const catList = document.getElementById('settings-categories-list');
