@@ -734,6 +734,7 @@
         <button type="button" onclick="selectAllFilteredTransactions()" class="px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-xs font-semibold">Select filtered</button>
         <button type="button" onclick="clearLedgerSelection()" class="px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-xs font-semibold">Clear selection</button>
         <button type="button" onclick="openBulkEditModal()" id="ledger-bulk-edit-btn" disabled class="px-3 py-2 rounded-lg bg-indigo-600 text-white text-xs font-semibold disabled:opacity-40 theme-bg">Edit selected</button>
+        <button type="button" onclick="bulkDeleteSelectedTransactions()" id="ledger-bulk-delete-btn" disabled class="px-3 py-2 rounded-lg bg-rose-600 text-white text-xs font-semibold disabled:opacity-40">Delete selected</button>
       </div>
 
       <!-- SEARCHABLE MULTI-SELECT FILTERS -->
@@ -3401,8 +3402,10 @@ Bonus"></textarea></div>
       const count = selectedLedgerIds.size;
       const label = document.getElementById('ledger-selected-count');
       const button = document.getElementById('ledger-bulk-edit-btn');
+      const deleteButton = document.getElementById('ledger-bulk-delete-btn');
       if (label) label.textContent = `${count} selected`;
       if (button) button.disabled = count === 0;
+      if (deleteButton) deleteButton.disabled = count === 0;
     }
     function toggleLedgerTransactionSelection(id, checked) {
       if (checked) selectedLedgerIds.add(id); else selectedLedgerIds.delete(id);
@@ -3414,6 +3417,62 @@ Bonus"></textarea></div>
       renderLedger();
     }
     function clearLedgerSelection() { selectedLedgerIds.clear(); renderLedger(); }
+    function bulkDeleteSelectedTransactions() {
+      const ids = Array.from(selectedLedgerIds).filter(id => state.transactions.some(t => String(t.id) === String(id)));
+      if (!ids.length) { selectedLedgerIds.clear(); updateLedgerSelectionUI(); return; }
+      const rows = ids.map(id => state.transactions.find(t => String(t.id) === String(id))).filter(Boolean);
+      const linkedBills = rows.filter(t => t.calendarBillId).length;
+      const linkedDebtPayments = rows.filter(t => t.debtPaymentId).length;
+      const internalTransfers = rows.filter(t => t.type === 'Transfer' && t.transferToAccountId).length;
+      const details = [
+        linkedBills ? `${linkedBills} linked scheduled bill/income item(s) will be marked unpaid` : '',
+        linkedDebtPayments ? `${linkedDebtPayments} linked debt payment record(s) will be reversed and removed` : '',
+        internalTransfers ? `${internalTransfers} internal transfer(s) will be reversed in both accounts` : ''
+      ].filter(Boolean);
+      const warning = details.length ? `\n\nAlso: ${details.join('; ')}.` : '';
+      if (!confirm(`Permanently delete ${rows.length} selected transaction${rows.length === 1 ? '' : 's'}? Account balances will be adjusted to reverse their effects.${warning}\n\nThis cannot be undone unless you use FinHub Undo.`)) return;
+      captureUndo('Bulk delete transactions');
+      const deletedIds = new Set(ids.map(String));
+      let deleted = 0;
+      rows.forEach(t => {
+        const idx = state.transactions.findIndex(x => String(x.id) === String(t.id));
+        if (idx < 0) return;
+        const acc = state.accounts.find(a => String(a.id) === String(t.accountId));
+        if (t.type === 'Transfer' && t.transferToAccountId) {
+          const target = state.accounts.find(a => String(a.id) === String(t.transferToAccountId));
+          if (acc) acc.balance = (Number(acc.balance) || 0) + (Number(t.amount) || 0);
+          if (target) target.balance = (Number(target.balance) || 0) - (Number(t.amount) || 0);
+        } else if (acc) {
+          if (t.type === 'Income' || (t.type === 'Transfer' && t.externalTransferDirection === 'in')) acc.balance = (Number(acc.balance) || 0) - (Number(t.amount) || 0);
+          else acc.balance = (Number(acc.balance) || 0) + (Number(t.amount) || 0);
+        }
+        if (t.debtPaymentId) {
+          const debtPayment = (state.debtPayments || []).find(p => String(p.id) === String(t.debtPaymentId));
+          if (debtPayment) {
+            const debtAcc = state.accounts.find(a => String(a.id) === String(debtPayment.accountId) && a.type === 'debt');
+            if (debtAcc) debtAcc.balance = (Number(debtAcc.balance) || 0) + (Number(t.amount) || 0);
+            state.debtPayments = state.debtPayments.filter(p => String(p.id) !== String(debtPayment.id));
+          }
+        }
+        if (t.calendarBillId) {
+          const linkedBill = (state.calendarBills || []).find(b => String(b.id) === String(t.calendarBillId));
+          if (linkedBill) {
+            if (linkedBill.type === 'debt') {
+              const debtAccount = resolveDebtAccountForBill(linkedBill);
+              if (debtAccount) debtAccount.balance = (Number(debtAccount.balance) || 0) + (Number(t.debtPrincipalAmount ?? t.amount) || 0);
+            }
+            linkedBill.paid = false;
+            delete linkedBill.linkedTransactionId;
+          }
+        }
+        state.transactions.splice(idx, 1);
+        deleted++;
+      });
+      selectedLedgerIds.clear();
+      saveData();
+      renderLedger(); renderDashboard(); renderCalendar(); renderZbbFundingTracker(); renderDebtPlanner();
+      alert(`Deleted ${deleted} transaction${deleted === 1 ? '' : 's'}. Account balances and linked scheduled items were adjusted.`);
+    }
     function openBulkEditModal() {
       const ids = Array.from(selectedLedgerIds).filter(id => state.transactions.some(t => String(t.id) === String(id)));
       if (!ids.length) { selectedLedgerIds.clear(); updateLedgerSelectionUI(); return; }
@@ -3561,24 +3620,41 @@ Bonus"></textarea></div>
       if (typeValue === 'Transfer' && transferMode === 'match') {
         const reservedDestinationIds = new Set();
         const issues = [];
-        valid.forEach(sourceTx => {
+        for (const sourceTx of valid) {
           const match = bulkFindExistingTransferCounterpart(sourceTx, transferToAccountId, reservedDestinationIds);
+          let counterpart = null;
           if (match.status === 'unique') {
-            const counterpart = match.candidates[0];
+            counterpart = match.candidates[0];
+          } else if (match.status === 'ambiguous') {
+            const sourceLabel = `${sourceTx.date || 'No date'} · ${sourceTx.vendor || sourceTx.desc || 'Outgoing transaction'} · ${formatFinancial(sourceTx.amount)}`;
+            const options = match.candidates.map((candidate, index) => {
+              const date = candidate.date || 'No date';
+              const description = candidate.vendor || candidate.desc || candidate.statementDescription || 'Incoming transaction';
+              const account = state.accounts.find(a => String(a.id) === String(candidate.accountId))?.name || 'Destination account';
+              const reconciled = candidate.reconciled || candidate.statementMatchId || candidate.statementMatchGroupId ? ' · Reconciled' : '';
+              return `${index + 1}. ${date} · ${description} · ${account} · ${formatFinancial(candidate.amount)}${reconciled}`;
+            });
+            const choice = prompt(`More than one possible destination transaction was found for:\n${sourceLabel}\n\nChoose the matching transaction by entering its number:\n\n${options.join('\n')}\n\nEnter 1-${options.length}, or choose Cancel to stop without making changes.`);
+            if (choice === null) return;
+            const selectedIndex = Number.parseInt(choice, 10) - 1;
+            if (!Number.isInteger(selectedIndex) || selectedIndex < 0 || selectedIndex >= match.candidates.length) {
+              alert('That selection was not valid. No changes were made. Please try again and enter one of the listed numbers.');
+              return;
+            }
+            counterpart = match.candidates[selectedIndex];
+          } else {
+            issues.push(`${sourceTx.vendor || sourceTx.desc || 'Transaction'} (${sourceTx.date || 'no date'}, ${formatFinancial(sourceTx.amount)}): ${match.status === 'invalid' ? 'source must be an outgoing Expense or an existing transfer to the selected destination' : 'no matching destination Income transaction'}`);
+          }
+          if (counterpart) {
             reservedDestinationIds.add(String(counterpart.id));
             transferPairs.push({source:sourceTx,destination:counterpart});
-          } else {
-            issues.push(`${sourceTx.vendor || sourceTx.desc || 'Transaction'} (${sourceTx.date || 'no date'}, ${formatFinancial(sourceTx.amount)}): ${match.status === 'ambiguous' ? `${match.candidates.length} possible destination matches` : match.status === 'invalid' ? 'source must be an Expense' : 'no matching destination Income transaction'}`);
           }
-        });
+        }
         if (issues.length) {
-          alert(`FinHub couldn't safely pair every selected transaction. No changes were made.
-
-${issues.slice(0,8).join('\n')}${issues.length>8?`\n…and ${issues.length-8} more.`:''}\n\nSelect only outgoing Expense transactions and make sure each has exactly one matching Income transaction in the destination account with the same amount and a date within one day.`);
+          alert(`FinHub couldn't safely pair every selected transaction. No changes were made.\n\n${issues.slice(0,8).join('\n')}${issues.length>8?`\n…and ${issues.length-8} more.`:''}\n\nFor each outgoing transaction, make sure there is a corresponding Income transaction in the destination account with the same amount and a date within one day. If more than one candidate exists, FinHub will now let you choose the correct one.`);
           return;
         }
       }
-
       let bulkTypeRows = valid;
       if (typeValue) {
         const protectedRows = valid.filter(t => t.calendarBillId || t.debtPaymentId || (t.transferToAccountId && !(typeValue==='Transfer' && transferMode==='match' && String(t.transferToAccountId)===String(transferToAccountId))));
