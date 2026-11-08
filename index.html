@@ -396,8 +396,14 @@
 
       <!-- UPCOMING CASH FLOW -->
       <div data-dashboard-block="upcoming" class="dashboard-block bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
-        <div class="p-5 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between gap-3"><div><h3 class="font-bold text-md"><i class="fa-solid fa-calendar-days text-indigo-500 mr-2"></i>Upcoming Bills & Paydays</h3><p class="text-xs text-gray-400 mt-1">Your next scheduled cash-flow items.</p></div><div class="dashboard-order-controls"></div></div>
-        <div id="dashboard-upcoming-list" class="p-4 space-y-2"></div>
+        <div class="p-5 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between gap-3">
+          <button type="button" onclick="toggleCollapse('sec-dashboard-upcoming')" class="flex-1 flex items-center justify-between gap-3 text-left hover:opacity-80 transition-opacity">
+            <div><h3 class="font-bold text-md"><i class="fa-solid fa-calendar-days text-indigo-500 mr-2"></i>Upcoming Bills & Paydays</h3><p class="text-xs text-gray-400 mt-1">Live from the Bill & Income Calendar. Select an item to open it in the calendar.</p></div>
+            <i id="sec-dashboard-upcoming-icon" class="fa-solid fa-chevron-down text-gray-400 transition-transform"></i>
+          </button>
+          <div class="dashboard-order-controls"></div>
+        </div>
+        <div id="sec-dashboard-upcoming-content" class="p-4 space-y-2"><div id="dashboard-upcoming-list"></div></div>
       </div>
 
       <!-- VARIABLE SPENDING BUDGETS -->
@@ -1677,7 +1683,8 @@ Bonus"></textarea></div>
         'sec-variable-budgets': false,
         'sec-upcoming-bills': false,
         'sec-debt-upcoming': false,
-        'sec-debt-priority': false
+        'sec-debt-priority': false,
+        'sec-dashboard-upcoming': false
       },
       dashboardPeriod: 'month',
       accountOrder: { assets: [], debts: [] },
@@ -1742,6 +1749,7 @@ Bonus"></textarea></div>
 
     // Migrate optional UI preferences without changing existing financial data.
     state.collapsibles = state.collapsibles || {};
+    if (state.collapsibles['sec-dashboard-upcoming'] === undefined) state.collapsibles['sec-dashboard-upcoming'] = false;
     if (state.collapsibles['sec-networth-chart'] === undefined) state.collapsibles['sec-networth-chart'] = true;
     if (state.collapsibles['sec-spending-chart'] === undefined) state.collapsibles['sec-spending-chart'] = true;
     if (state.collapsibles['sec-extra-charts'] === undefined) state.collapsibles['sec-extra-charts'] = true;
@@ -2100,12 +2108,47 @@ Bonus"></textarea></div>
     }
 
     function renderDashboardUpcoming() {
-      const host=document.getElementById('dashboard-upcoming-list'); if(!host) return;
-      const today=new Date(); today.setHours(0,0,0,0);
-      const todayStr=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
-      const items=(state.calendarBills||[]).filter(b=>!b.paid && b.date>=todayStr).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,6);
-      if(!items.length){host.innerHTML='<p class="text-xs text-gray-400">No upcoming unpaid bills or income items. Add items in the Bill & Income Calendar.</p>';return;}
-      host.innerHTML=items.map(b=>{const income=b.type==='income';const label=income?'Income':b.type==='debt'?'Debt payment':'Bill';return `<div class="flex flex-wrap items-center justify-between gap-2 p-3 rounded-xl bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 text-xs"><div class="min-w-0"><div class="font-semibold truncate">${b.desc||label}</div><div class="text-gray-400">${b.date} · ${label}</div></div><div class="font-bold accounting-num ${income?'text-emerald-500':'text-rose-500'}">${formatFinancial(b.amount,!income)}</div></div>`;}).join('');
+      const host = document.getElementById('dashboard-upcoming-list');
+      if (!host) return;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+      // The Bill & Income Calendar is the single source of truth. Recurrence
+      // roots marked deleted are hidden metadata and must never appear here.
+      const items = (Array.isArray(state.calendarBills) ? state.calendarBills : [])
+        .filter(b => b && !b.recurrenceOccurrenceDeleted && !b.paid &&
+          typeof b.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(b.date) && b.date >= todayStr &&
+          ['expense', 'income', 'debt'].includes(b.type))
+        .sort((a, b) => String(a.date).localeCompare(String(b.date)))
+        .slice(0, 6);
+      if (!items.length) {
+        host.innerHTML = '<p class="text-xs text-gray-400">No upcoming unpaid bills or income items. Add items in the Bill & Income Calendar.</p>';
+        return;
+      }
+      host.innerHTML = items.map(b => {
+        const income = b.type === 'income';
+        const label = income ? 'Payday / Income' : b.type === 'debt' ? 'Debt payment' : 'Bill';
+        return `<div class="flex flex-wrap items-center justify-between gap-2 p-3 rounded-xl bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 text-xs">
+          <div class="min-w-0"><div class="font-semibold truncate">${escapeHtml(b.desc || b.vendor || label)}</div><div class="text-gray-400">${escapeHtml(b.date)} · ${label}</div></div>
+          <div class="flex items-center gap-3"><div class="font-bold accounting-num ${income ? 'text-emerald-500' : 'text-rose-500'}">${formatFinancial(b.amount, !income)}</div>
+          <button type="button" onclick="openDashboardCalendarItem('${escapeHtml(b.id)}')" class="text-indigo-500 hover:text-indigo-400 font-semibold whitespace-nowrap" title="Open this item in the Bill & Income Calendar">Open in calendar <i class="fa-solid fa-arrow-up-right-from-square ml-1"></i></button></div>
+        </div>`;
+      }).join('');
+    }
+
+    function openDashboardCalendarItem(billId) {
+      const item = (state.calendarBills || []).find(b => String(b.id) === String(billId) && !b.recurrenceOccurrenceDeleted);
+      if (!item || !/^\d{4}-\d{2}-\d{2}$/.test(String(item.date || ''))) {
+        renderDashboardUpcoming();
+        return;
+      }
+      const [year, month] = item.date.split('-').map(Number);
+      state.currentYear = year;
+      state.currentMonth = month - 1;
+      state.calendarView = 'monthly';
+      saveData();
+      switchTab('calendar');
+      editCalendarItem(item.id);
     }
     function applyDashboardOrder() {
       const section=document.getElementById('tab-dashboard'); if(!section) return;
@@ -2113,7 +2156,7 @@ Bonus"></textarea></div>
       const order=Array.isArray(state.dashboardOrder)?state.dashboardOrder:[];
       blocks.sort((a,b)=>{const ai=order.indexOf(a.dataset.dashboardBlock),bi=order.indexOf(b.dataset.dashboardBlock);return (ai<0?999:ai)-(bi<0?999:bi);}).forEach(block=>section.appendChild(block));
       blocks.forEach(block=>{
-        let controls=block.querySelector(':scope > .dashboard-order-controls');
+        let controls=block.querySelector('.dashboard-order-controls');
         if(!controls){controls=document.createElement('div');controls.className='dashboard-order-controls';block.appendChild(controls);}
         controls.innerHTML='';
         const up=document.createElement('button');up.type='button';up.title='Move dashboard block up';up.textContent='↑';up.addEventListener('click',()=>moveDashboardBlock(block.dataset.dashboardBlock,-1));
@@ -6946,11 +6989,14 @@ Bonus"></textarea></div>
         const treatment = t.type === 'Interest Charge' ? 'Added to liability' : (funding?.type === 'asset' ? funding.name : 'No funding account');
         let actions = '';
         if (payment) {
-          actions = `<button onclick="openDebtPaymentModal('${payment.id}')" class="text-indigo-500 hover:text-indigo-400" title="Edit payment"><i class="fa-solid fa-pen"></i></button><button onclick="deleteDebtPayment('${payment.id}')" class="text-rose-500 hover:text-rose-400 ml-2" title="Delete payment"><i class="fa-solid fa-trash"></i></button>`;
+          // Open the actual ledger transaction for vendor/category edits, while
+          // retaining a separate route for principal, interest and funding edits.
+          actions = `<button onclick="openTransactionModal('${escapeHtml(t.id)}')" class="text-indigo-500 hover:text-indigo-400 font-semibold" title="Open original transaction for editing"><i class="fa-solid fa-pen mr-1"></i>Edit transaction</button><button onclick="openDebtPaymentModal('${escapeHtml(payment.id)}')" class="text-sky-500 hover:text-sky-400 ml-2" title="Edit payment split and funding account">Payment details</button><button onclick="deleteDebtPayment('${escapeHtml(payment.id)}')" class="text-rose-500 hover:text-rose-400 ml-2" title="Delete payment"><i class="fa-solid fa-trash"></i></button>`;
         } else if (t.type === 'Interest Charge') {
-          actions = `<button onclick="openInterestChargeModal('${t.id}')" class="text-indigo-500 hover:text-indigo-400" title="Edit interest charge"><i class="fa-solid fa-pen"></i></button><button onclick="deleteTransaction('${t.id}')" class="text-rose-500 hover:text-rose-400 ml-2" title="Delete interest charge"><i class="fa-solid fa-trash"></i></button>`;
-        } else if (t.calendarBillId) {
-          actions = `<button onclick="toggleCalendarItemPaid('${t.calendarBillId}', event)" class="text-amber-500 hover:text-amber-400" title="Unmark scheduled payment">Unmark</button>`;
+          actions = `<button onclick="openInterestChargeModal('${escapeHtml(t.id)}')" class="text-indigo-500 hover:text-indigo-400 font-semibold" title="Open the linked interest transaction for editing"><i class="fa-solid fa-pen mr-1"></i>Edit transaction</button><button onclick="deleteTransaction('${escapeHtml(t.id)}')" class="text-rose-500 hover:text-rose-400 ml-2" title="Delete interest charge"><i class="fa-solid fa-trash"></i></button>`;
+        } else {
+          actions = `<button onclick="openTransactionModal('${escapeHtml(t.id)}')" class="text-indigo-500 hover:text-indigo-400 font-semibold" title="Open original transaction for editing"><i class="fa-solid fa-pen mr-1"></i>Edit transaction</button>`;
+          if (t.calendarBillId) actions += `<button onclick="toggleCalendarItemPaid('${escapeHtml(t.calendarBillId)}', event)" class="text-amber-500 hover:text-amber-400 ml-2" title="Unmark scheduled payment">Unmark</button>`;
         }
         tbody.innerHTML += `<tr>
           <td class="py-3 pr-3 whitespace-nowrap">${escapeHtml(t.date || '')}</td>
@@ -7880,6 +7926,7 @@ Bonus"></textarea></div>
       if (state.collapsibles['sec-spending-chart'] === undefined) state.collapsibles['sec-spending-chart'] = true;
       if (state.collapsibles['sec-extra-charts'] === undefined) state.collapsibles['sec-extra-charts'] = true;
       if (state.collapsibles['sec-snapshots'] === undefined) state.collapsibles['sec-snapshots'] = true;
+      if (state.collapsibles['sec-dashboard-upcoming'] === undefined) state.collapsibles['sec-dashboard-upcoming'] = false;
       state.dashboardPeriod = state.dashboardPeriod || 'month';
       state.dashboardOrder = Array.isArray(state.dashboardOrder) ? state.dashboardOrder : ['accounts','summary','spending','upcoming','networth','trends','budgets','snapshots'];
       state.spendingChartLevel = state.spendingChartLevel || 'category';
