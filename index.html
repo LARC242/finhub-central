@@ -6310,6 +6310,15 @@ Bonus"></textarea></div>
 
     function renderStatementPreview() {
       const host=document.getElementById('recon-preview'); if(!host)return;
+      // Repair pending rows saved by an earlier build so stale Reversal warnings
+      // do not survive a reload or block the Import as new action.
+      let normalizedLegacyRows = false;
+      (pendingStatementRows || []).forEach(row => {
+        const before = row?.importType;
+        normalizeStoredStatementImportRow(row);
+        if (before !== row?.importType) normalizedLegacyRows = true;
+      });
+      if (normalizedLegacyRows) persistStatementBatch();
       const activeGroups=(state.statementReconciliation?.groups||[]).filter(g=>g.active!==false);
       const groupsHtml=activeGroups.length?`<section class="border border-gray-200 dark:border-gray-800 rounded-xl p-3 space-y-2"><h4 class="font-bold text-sm">Saved grouped matches</h4>${activeGroups.map(g=>{const account=state.accounts.find(a=>a.id===g.accountId);return `<div class="flex flex-wrap justify-between items-center gap-2 border-t border-gray-100 dark:border-gray-800 pt-2"><div class="min-w-0"><div class="text-xs font-semibold">${escapeHtml(account?.name||'Account')} · ${g.bankRows?.length||0} bank row(s) ↔ ${g.transactionIds?.length||0} FinHub transaction(s)</div><div class="text-[10px] text-gray-400">${g.matchedAt?new Date(g.matchedAt).toLocaleString():''} · ${formatFinancial(g.total||0)}</div></div><button onclick="undoManualStatementMatch('${g.id}')" class="px-2.5 py-1.5 bg-gray-200 dark:bg-gray-800 rounded-lg text-xs">Undo group</button></div>`;}).join('')}</section>`:'';
       if(!pendingStatementRows.length){host.innerHTML=groupsHtml||'<p class="text-xs text-gray-400">No statement rows loaded. Upload a CSV or paste statement rows to begin. Saved review batches and grouped matches will appear here.</p>';return;}
@@ -6414,8 +6423,23 @@ Bonus"></textarea></div>
       row.status='pending';delete row.matchedTransactionId;delete row.matchedAsInternalTransfer;delete row.transferMergedInto;delete row.transferMergedOriginalStatus;
       persistStatementBatch();renderLedger();renderStatementPreview();
     }
+    function normalizeStoredStatementImportRow(row) {
+      if (!row) return row;
+      // Older saved review batches may have been created before the Reversal
+      // import mapping existed. Normalize those persisted rows as well as new CSV rows.
+      const rawType = String(row.importType || '').trim().toLowerCase();
+      const normalizedCategory = normalizeStatementText(row.category || '');
+      if (rawType === 'reversal' && normalizedCategory === normalizeStatementText('Debt Payment')) {
+        row.importType = 'Debt Payment Reversal';
+        row.category = 'Debt Payment';
+        row.subcategory = row.paymentType || row.subcategory || '';
+        if (row.importValidationError === 'Unsupported FinHub transaction type: Reversal') row.importValidationError = '';
+      }
+      return row;
+    }
     function validateStatementImportRow(row) {
       if (!row) return 'Statement row not found.';
+      normalizeStoredStatementImportRow(row);
       const funding = (state.accounts || []).find(a => String(a.id) === String(row.accountId) && a.type === 'asset' && !a.archived);
       if (!funding) return 'Choose an active asset account as the statement account.';
       if (row.importValidationError) return row.importValidationError;
