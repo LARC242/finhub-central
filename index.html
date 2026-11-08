@@ -5998,7 +5998,9 @@ Bonus"></textarea></div>
         else if (!isReversal && row.type !== 'Expense') row.importValidationError = 'Debt Payment must be a debit / money-out row from the selected funding account.';
         else if (!debt) row.importValidationError = rawDebtAccount ? `Debt account "${rawDebtAccount}" was not found. Use the exact FinHub account name.` : 'Choose a Debt Account column or create an import rule with a debt account.';
         else if (row.principalAmount === null || row.interestAmount === null) row.importValidationError = 'Add Principal and Interest columns, or set an interest-only / principal-only split in an import rule.';
-        else if (row.principalAmount < 0 || row.interestAmount < 0 || Math.abs((row.principalAmount + row.interestAmount) - row.amount) > 0.01) row.importValidationError = 'Principal plus Interest must equal the payment Amount.';
+        else if (isReversal
+          ? (row.principalAmount > 0 || row.interestAmount > 0 || Math.abs((Math.abs(row.principalAmount) + Math.abs(row.interestAmount)) - Math.abs(row.amount)) > 0.01)
+          : (row.principalAmount < 0 || row.interestAmount < 0 || Math.abs((row.principalAmount + row.interestAmount) - row.amount) > 0.01)) row.importValidationError = isReversal ? 'For a debt payment reversal, Principal and Interest must be zero or negative, and their absolute values must equal the incoming Amount.' : 'Principal plus Interest must equal the payment Amount.';
         else if (!DEBT_PAYMENT_CLASSIFICATIONS.includes(row.paymentType)) row.importValidationError = 'Choose a valid Debt Payment subcategory.';
       } else if (row.importType === 'Interest Charge') {
         row.importValidationError = 'An Interest Charge increases a liability without a cash funding-account transaction. Record it through Debt → Record Interest Charge. If the interest was paid from chequing, import it as Type Debt, Category Debt Payment, with Principal 0 and Interest equal to the full payment.';
@@ -6454,7 +6456,11 @@ Bonus"></textarea></div>
           const remaining = Math.max(0, Math.abs(Number(original.amount)||0) - getTransactionReversedAmount(original.id));
           if (Number(row.amount) > remaining + 0.009) return `This reversal exceeds the original payment's remaining reversible amount of $${remaining.toFixed(2)}.`;
         }
-        if (Math.abs((Number(row.principalAmount) || 0) + (Number(row.interestAmount) || 0) - Number(row.amount)) > 0.01) return 'Principal plus Interest must equal the payment Amount.';
+        const principalForCheck = Number(row.principalAmount) || 0;
+        const interestForCheck = Number(row.interestAmount) || 0;
+        if (row.importType === 'Debt Payment Reversal') {
+          if (principalForCheck > 0 || interestForCheck > 0 || Math.abs(Math.abs(principalForCheck) + Math.abs(interestForCheck) - Math.abs(Number(row.amount))) > 0.01) return 'For a debt payment reversal, Principal and Interest must be zero or negative, and their absolute values must equal the incoming Amount.';
+        } else if (Math.abs(principalForCheck + interestForCheck - Number(row.amount)) > 0.01) return 'Principal plus Interest must equal the payment Amount.';
       }
       if (row.importType === 'Transfer') {
         if (row.type === 'Expense') {
@@ -6485,8 +6491,10 @@ Bonus"></textarea></div>
       if (importType === 'Interest Charge') throw new Error('Interest Charges must be entered through Debt → Record Interest Charge; they are not cash transactions from an asset statement.');
       if (importType === 'Debt Payment Reversal') {
         const debt = (state.accounts || []).find(a => String(a.id) === String(row.debtAccountId) && a.type === 'debt');
-        const principal = Math.round((Number(row.principalAmount) || 0) * 100) / 100;
-        const interest = Math.round((Number(row.interestAmount) || 0) * 100) / 100;
+        // CSV reversal components are signed negative to reverse the original payment.
+        // Store their positive magnitudes internally; the reversal engine applies the opposite balance/reporting effects.
+        const principal = Math.round(Math.abs(Number(row.principalAmount) || 0) * 100) / 100;
+        const interest = Math.round(Math.abs(Number(row.interestAmount) || 0) * 100) / 100;
         Object.assign(base, { category: 'Debt Payment', subcategory: row.paymentType || inferDebtPaymentClassification(debt), paymentType: row.paymentType || inferDebtPaymentClassification(debt), debtAccountId: debt.id, debtPrincipalAmount: principal, debtInterestAmount: interest, workflowSource: 'statement-import-debt-payment-reversal', isReversal: true, reversalOfTransactionId: row.reversalOfTransactionId || '', reversalOriginalType: 'Debt Payment', reversalOriginalSource: row.reversalOfTransactionId ? ((state.transactions || []).find(t=>String(t.id)===String(row.reversalOfTransactionId))?.source || '') : '' });
       } else if (importType === 'Debt Payment') {
         const debt = (state.accounts || []).find(a => String(a.id) === String(row.debtAccountId) && a.type === 'debt');
