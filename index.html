@@ -3794,7 +3794,7 @@ Bonus"></textarea></div>
 
     const LEDGER_FILTERS = [
       ['date','Date'],['vendor','Vendor'],['desc','Description'],['type','Type'],
-      ['category','Bucket'],['subcategory','Subcategory'],['account','Account'],['amount','Amount'],['reconciliation','Status']
+      ['category','Bucket'],['subcategory','Subcategory'],['account','Account'],['transferRoute','Transfer Account'],['amount','Amount'],['reconciliation','Status']
     ];
     let ledgerFilterSelections = {};
     let ledgerFilterSearchTerms = {};
@@ -3808,6 +3808,11 @@ Bonus"></textarea></div>
       if (key === 'category') return t.category || '(Uncategorized)';
       if (key === 'subcategory') return t.subcategory || '(No subcategory)';
       if (key === 'account') return acc ? acc.name : '(No account)';
+      if (key === 'transferRoute') {
+        if (t.type !== 'Transfer' || !t.transferToAccountId) return '';
+        const destination = state.accounts.find(a => String(a.id) === String(t.transferToAccountId));
+        return `${acc ? acc.name : '(No account)'} → ${destination ? destination.name : '(Unknown account)'}`;
+      }
       if (key === 'amount') return (Number(t.amount) || 0).toFixed(2);
       if (key === 'reconciliation') return t.reconciled ? 'Reconciled' : 'Unreconciled';
       return '';
@@ -3853,7 +3858,9 @@ Bonus"></textarea></div>
             ...(state.accounts || []).map(a => String(a.name || '(Unnamed account)')),
             ...(state.transactions || []).filter(t => !state.accounts.some(a => String(a.id) === String(t.accountId))).map(() => '(No account)')
           ]
-        : (state.transactions || []).map(t => ledgerFilterValue(t,key));
+        : key === 'transferRoute'
+          ? (state.transactions || []).filter(t => t.type === 'Transfer' && t.transferToAccountId).map(t => ledgerFilterValue(t,key))
+          : (state.transactions || []).map(t => ledgerFilterValue(t,key));
       const values = [...new Set(filterValues)].filter(Boolean).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true,sensitivity:'base'}));
       const filtered = values.filter(v => v.toLowerCase().includes(query));
       const selected = new Set(ledgerFilterSelections[key] || []);
@@ -3936,31 +3943,8 @@ Bonus"></textarea></div>
         for (const [filterKey] of LEDGER_FILTERS) {
           const value = ledgerFilterValue(t, filterKey);
           const selected = ledgerFilterSelections[filterKey] || [];
-          const searchTerm = ledgerFilterSearchTerms[filterKey] || '';
-
-          // An internal transfer belongs to both its source and destination
-          // accounts for filtering, even though it is stored as one transaction.
-          if (filterKey === 'account') {
-            const sourceAccount = state.accounts.find(a => String(a.id) === String(t.accountId));
-            const destinationAccount = t.transferToAccountId
-              ? state.accounts.find(a => String(a.id) === String(t.transferToAccountId))
-              : null;
-            const accountNames = [
-              sourceAccount ? String(sourceAccount.name) : '(No account)',
-              ...(destinationAccount ? [String(destinationAccount.name)] : [])
-            ];
-            if (selected.length && !accountNames.some(name => selected.includes(name))) return false;
-            if (searchTerm) {
-              const normalizedTerm = searchTerm.toLowerCase().replace(/[,$]/g, '').replace(/[()]/g, '');
-              const matchesAccount = accountNames.some(name =>
-                name.toLowerCase().replace(/[,$]/g, '').replace(/[()]/g, '').includes(normalizedTerm)
-              );
-              if (!matchesAccount) return false;
-            }
-            continue;
-          }
-
           if (selected.length && !selected.includes(value)) return false;
+          const searchTerm = ledgerFilterSearchTerms[filterKey] || '';
           if (searchTerm) {
             const normalizedValue = String(value).toLowerCase().replace(/[,$]/g, '').replace(/[()]/g, '');
             const normalizedTerm = searchTerm.toLowerCase().replace(/[,$]/g, '').replace(/[()]/g, '');
