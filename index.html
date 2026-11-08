@@ -3846,7 +3846,15 @@ Bonus"></textarea></div>
       if (!activeLedgerFilter) return;
       const key = activeLedgerFilter;
       const query = (document.getElementById('ledger-filter-search')?.value || '').trim().toLowerCase();
-      const values = [...new Set((state.transactions || []).map(t => ledgerFilterValue(t,key)))].filter(Boolean).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true,sensitivity:'base'}));
+      // Account filter must list every account, including hidden/excluded-from-totals
+      // accounts and accounts that do not have any transactions yet.
+      const filterValues = key === 'account'
+        ? [
+            ...(state.accounts || []).map(a => String(a.name || '(Unnamed account)')),
+            ...(state.transactions || []).filter(t => !state.accounts.some(a => String(a.id) === String(t.accountId))).map(() => '(No account)')
+          ]
+        : (state.transactions || []).map(t => ledgerFilterValue(t,key));
+      const values = [...new Set(filterValues)].filter(Boolean).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true,sensitivity:'base'}));
       const filtered = values.filter(v => v.toLowerCase().includes(query));
       const selected = new Set(ledgerFilterSelections[key] || []);
       const options = filtered.map(value => `<label class="flex items-center gap-2 py-1.5 text-xs cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 rounded px-1"><input type="checkbox" ${selected.has(value)?'checked':''} onchange="toggleLedgerFilterValue('${key}',this.value,this.checked)" value="${escapeHtml(value)}" class="accent-indigo-600"><span class="min-w-0 break-words">${escapeHtml(value)}</span></label>`).join('');
