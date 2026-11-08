@@ -1486,7 +1486,8 @@ Bonus"></textarea></div>
         </div>
         <div id="tx-debt-payment-guidance" class="hidden rounded-xl border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30 p-3 space-y-2">
           <div class="text-xs font-bold text-amber-800 dark:text-amber-200">Complete the Debt Payment details</div>
-          <p class="text-[11px] text-amber-800 dark:text-amber-200">A debt payment reduces the funding account by the full payment and reduces the liability by the principal portion. When editing an existing bank-paid Expense, FinHub will convert that same transaction instead of creating a duplicate.</p>
+          <p class="text-[11px] text-amber-800 dark:text-amber-200">For an existing bank-imported payment, keep Account set to the chequing or savings account the money came from. Under Additional details, choose the liability being paid. Continue converts that original transaction in place—same transaction ID and no duplicate bank withdrawal.</p>
+          <p class="text-[10px] text-amber-800 dark:text-amber-200">In the next screen, enter the actual principal and interest split. For an interest-only RBC LOC payment, use $0 principal and the full payment as interest.</p>
           <button type="button" onclick="openDebtPaymentFromTransaction()" class="w-full px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold">Continue to Debt Payment details</button>
         </div>
         <details class="rounded-lg border border-gray-200 dark:border-gray-800 px-3 py-2">
@@ -7446,7 +7447,11 @@ Bonus"></textarea></div>
         oldTransaction.debtAccountId = accountId;
         oldTransaction.debtPrincipalAmount = principalAmount;
         oldTransaction.debtInterestAmount = interestAmount;
-        oldTransaction.source = 'debt-payment-log';
+        // Keep the transaction's original entry source (e.g. statement-import).
+        // Track the debt workflow separately so converting/editing an imported
+        // transaction does not erase where the transaction originally came from.
+        oldTransaction.workflowSource = 'debt-payment-log';
+        if (!oldTransaction.source) oldTransaction.source = 'debt-payment-log';
         payment = oldPayment;
         paymentTransaction = oldTransaction;
         applyTransactionBalanceEffect(paymentTransaction, 1);
@@ -7460,7 +7465,9 @@ Bonus"></textarea></div>
           ...conversionTransaction,
           date, desc, vendor: desc, type: 'Debt Payment', category: 'Debt Service', subcategory: paymentType,
           paymentType, amount, accountId: fundingAccountId, debtPaymentId: paymentId, debtAccountId: accountId,
-          debtPrincipalAmount: principalAmount, debtInterestAmount: interestAmount, source: 'debt-payment-log'
+          debtPrincipalAmount: principalAmount, debtInterestAmount: interestAmount,
+          // Preserve whether this began as a bank-statement import or manual entry.
+          source: conversionTransaction.source || 'debt-payment-log', workflowSource: 'debt-payment-log'
         };
         const transactionIndex = state.transactions.findIndex(t => String(t.id) === String(conversionTransaction.id));
         state.transactions[transactionIndex] = paymentTransaction;
