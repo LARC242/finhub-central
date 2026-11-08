@@ -603,7 +603,7 @@
           <h2 class="text-2xl font-bold">Debt Payoff & Repayment Schedule</h2>
           <p class="text-sm text-gray-500 dark:text-gray-400">Minimum payment schedules, upcoming bills, and payoff acceleration</p>
         </div>
-        <select id="debt-strategy" onchange="renderDebtPlanner()" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-1.5 text-xs">
+        <select id="debt-strategy" onchange="setDebtStrategy(this.value)" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-1.5 text-xs">
           <option value="custom">Manual Priority Order</option>
           <option value="snowball">Lowest Balance First (Snowball)</option>
           <option value="avalanche">Highest APR First (Avalanche)</option>
@@ -641,8 +641,12 @@
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label class="block text-xs font-semibold text-gray-500 mb-1">Extra Monthly Debt Contribution: <strong id="extra-payoff-val" class="text-indigo-400 theme-text">$0 / mo</strong></label>
-            <input type="range" id="sim-extra-slider" min="0" max="1000" step="25" value="0" onchange="updateExtraPayoff(this.value)" class="w-full accent-indigo-600 cursor-pointer">
+            <label class="block text-xs font-semibold text-gray-500 mb-1">Extra Debt Contribution Per Paycheque</label>
+            <div class="flex items-center gap-3">
+              <div class="relative flex-1 max-w-xs"><span class="absolute left-3 top-2.5 text-xs text-gray-400">$</span><input type="number" id="sim-extra-per-pay" min="0" step="0.01" value="0.00" onchange="updateExtraPayoff(this.value)" class="w-full pl-7 pr-3 py-2 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-bold accounting-num"></div>
+              <strong id="extra-payoff-val" class="text-indigo-400 theme-text text-xs">$0.00 / paycheque</strong>
+            </div>
+            <p class="text-[10px] text-gray-400 mt-2">Monthly equivalent: <strong id="debt-extra-monthly-equivalent" class="accounting-num">$0.00</strong> (per-paycheque amount × 26 ÷ 12).</p>
           </div>
           <div class="text-xs space-y-1 text-gray-400 flex flex-col justify-center">
             <div>Interest Saved Under Current Strategy: <strong id="debt-interest-saved" class="text-emerald-400 font-bold">$0.00</strong></div>
@@ -654,7 +658,7 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
         <div class="bg-white dark:bg-gray-900 p-4 rounded-2xl border border-gray-200 dark:border-gray-800"><div class="text-[10px] uppercase tracking-wide text-gray-500">Total debt</div><div id="debt-total-bal" class="text-xl font-bold text-rose-600 dark:text-rose-400 accounting-num">$ - </div></div>
         <div class="bg-white dark:bg-gray-900 p-4 rounded-2xl border border-gray-200 dark:border-gray-800"><div class="text-[10px] uppercase tracking-wide text-gray-500">Known monthly minimums</div><div id="debt-monthly-minimums" class="text-xl font-bold accounting-num">$ - </div><div id="debt-minimum-note" class="text-[10px] text-gray-400">Across listed debt accounts</div></div>
-        <div class="bg-white dark:bg-gray-900 p-4 rounded-2xl border border-gray-200 dark:border-gray-800"><div class="text-[10px] uppercase tracking-wide text-gray-500">Extra monthly payoff</div><div id="debt-extra-summary" class="text-xl font-bold text-emerald-600 accounting-num">$0.00</div><div class="text-[10px] text-gray-400">In addition to minimums</div></div>
+        <div class="bg-white dark:bg-gray-900 p-4 rounded-2xl border border-gray-200 dark:border-gray-800"><div class="text-[10px] uppercase tracking-wide text-gray-500">Extra per-paycheque contribution</div><div id="debt-extra-summary" class="text-xl font-bold text-emerald-600 accounting-num">$0.00</div><div class="text-[10px] text-gray-400">Monthly equivalent: <span id="debt-extra-summary-monthly" class="accounting-num">$0.00</span></div></div>
       </div>
 
       <div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
@@ -1032,8 +1036,16 @@
           <div><label class="block text-xs font-semibold text-gray-500 mb-1">Current Balance ($)</label><input type="number" step="0.01" id="ed-balance" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
         </div>
         <div class="grid grid-cols-2 gap-3">
-          <div><label class="block text-xs font-semibold text-gray-500 mb-1">APR Interest Rate (%)</label><input type="number" step="0.01" id="ed-apr" value="19.99" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
-          <div><label class="block text-xs font-semibold text-gray-500 mb-1">Monthly Minimum Payment ($)</label><input type="number" step="0.01" id="ed-minpay" value="50" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
+          <div><label class="block text-xs font-semibold text-gray-500 mb-1">Current APR (%)</label><input type="number" min="0" step="0.01" id="ed-apr" value="19.99" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
+          <div><label class="block text-xs font-semibold text-gray-500 mb-1">Current Monthly Minimum ($)</label><input type="number" min="0" step="0.01" id="ed-minpay" value="50" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
+        </div>
+        <div class="rounded-xl border border-indigo-200 dark:border-indigo-900 bg-indigo-50/60 dark:bg-indigo-950/20 p-3 space-y-2">
+          <div class="text-xs font-semibold text-indigo-700 dark:text-indigo-300">Promotional or scheduled APR change (optional)</div>
+          <div class="grid grid-cols-2 gap-3">
+            <div><label class="block text-[10px] text-gray-500 mb-1">New APR (%)</label><input type="number" min="0" step="0.01" id="ed-apr-after-change" placeholder="e.g. 26.99" class="w-full bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-2 text-sm"></div>
+            <div><label class="block text-[10px] text-gray-500 mb-1">Effective date</label><input type="date" id="ed-apr-change-date" class="w-full bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-2 text-sm"></div>
+          </div>
+          <p class="text-[10px] text-gray-500">Enter both fields to include a future rate change in payoff estimates. Leave both blank when the APR is not scheduled to change.</p>
         </div>
         <div><label class="block text-xs font-semibold text-gray-500 mb-1">Typical Payment Method</label><select id="ed-payment-method" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"><option value="principal-interest">Principal + interest (default full payment to principal unless split entered)</option><option value="interest-only">Interest-only (no principal reduction)</option><option value="principal-only">Principal-only</option><option value="custom">Custom split when recording payment</option></select></div>
         <div class="grid grid-cols-2 gap-3">
@@ -1390,7 +1402,7 @@ Bonus"></textarea></div>
         <div><label class="block text-xs font-semibold text-gray-500 mb-1">Description</label><input type="text" id="dp-desc" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" placeholder="Principal Payment"></div>
         <div><label class="block text-xs font-semibold text-gray-500 mb-1">Total payment ($)</label><input type="number" step="0.01" min="0.01" id="dp-amount" required oninput="updateDebtPaymentSplit()" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
         <div class="grid grid-cols-2 gap-3"><div><label class="block text-xs font-semibold text-gray-500 mb-1">Principal portion ($)</label><input type="number" step="0.01" min="0" id="dp-principal" required oninput="this.dataset.manual='1';updateDebtPaymentSplit()" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div><div><label class="block text-xs font-semibold text-gray-500 mb-1">Interest portion ($)</label><input type="number" id="dp-interest" readonly class="w-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div></div>
-        <p class="text-[10px] text-gray-400">Only the principal portion reduces the debt balance. Interest is included in the total cash payment.</p>
+        <p id="dp-split-help" class="text-[10px] text-gray-400">Only the principal portion reduces the debt balance. Interest is included in the total cash payment.</p>
         <div><label class="block text-xs font-semibold text-gray-500 mb-1">Paid From</label><select id="dp-funding-account" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></select></div>
         <div class="flex space-x-3 pt-3"><button type="button" onclick="closeDebtPaymentModal()" class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold">Cancel</button><button type="submit" class="flex-1 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-sm font-semibold">Record</button></div>
       </form>
@@ -3679,7 +3691,7 @@ Bonus"></textarea></div>
           const debtPayment = (state.debtPayments || []).find(p => String(p.id) === String(t.debtPaymentId));
           if (debtPayment) {
             const debtAcc = state.accounts.find(a => String(a.id) === String(debtPayment.accountId) && a.type === 'debt');
-            if (debtAcc) debtAcc.balance = (Number(debtAcc.balance) || 0) + (Number(t.amount) || 0);
+            if (debtAcc) debtAcc.balance = (Number(debtAcc.balance) || 0) + (Number(t.debtPrincipalAmount ?? debtPayment.principalAmount ?? debtPayment.amount ?? t.amount ?? 0) || 0);
             state.debtPayments = state.debtPayments.filter(p => String(p.id) !== String(debtPayment.id));
           }
         }
@@ -5237,7 +5249,7 @@ Bonus"></textarea></div>
           const debtPayment = (state.debtPayments || []).find(p => p.id === t.debtPaymentId);
           if (debtPayment) {
             const debtAcc = state.accounts.find(a => a.id === debtPayment.accountId && a.type === 'debt');
-            if (debtAcc) debtAcc.balance = (Number(debtAcc.balance) || 0) + (Number(t.amount) || 0);
+            if (debtAcc) debtAcc.balance = (Number(debtAcc.balance) || 0) + (Number(t.debtPrincipalAmount ?? debtPayment.principalAmount ?? debtPayment.amount ?? t.amount ?? 0) || 0);
             state.debtPayments = state.debtPayments.filter(p => p.id !== debtPayment.id);
           }
         }
@@ -5487,14 +5499,88 @@ Bonus"></textarea></div>
       saveData(); renderSettings(); renderLedger(); renderDashboard(); renderZbbFundingTracker();
     }
 
-    function updateExtraPayoff(val) {
-      const nextValue = parseFloat(val) || 0;
-      if (Number(state.extraPayoff || 0) !== nextValue) {
-        captureUndo('Change extra monthly debt payoff');
-        state.extraPayoff = nextValue;
+    function getExtraDebtContributionPerPaycheque() {
+      if (state.extraPayoffPerPaycheque !== undefined && state.extraPayoffPerPaycheque !== null && Number.isFinite(Number(state.extraPayoffPerPaycheque))) {
+        return Math.max(0, Number(state.extraPayoffPerPaycheque) || 0);
       }
-      document.getElementById('extra-payoff-val').innerText = `$${state.extraPayoff} / mo`;
+      // Backward compatibility: older versions stored one monthly amount.
+      return Math.max(0, (Number(state.extraPayoff) || 0) * 12 / 26);
+    }
+
+    function getExtraDebtContributionMonthlyEquivalent() {
+      return getExtraDebtContributionPerPaycheque() * 26 / 12;
+    }
+
+    function updateExtraPayoff(val) {
+      const raw = String(val ?? '').trim();
+      const nextValue = raw === '' ? 0 : Number(raw);
+      if (!Number.isFinite(nextValue) || nextValue < 0) {
+        alert('Enter a valid extra contribution per paycheque (zero or more).');
+        const input = document.getElementById('sim-extra-per-pay');
+        if (input) input.value = getExtraDebtContributionPerPaycheque().toFixed(2);
+        return;
+      }
+      const normalized = Math.round(nextValue * 100) / 100;
+      if (Math.abs(getExtraDebtContributionPerPaycheque() - normalized) >= 0.005) {
+        captureUndo('Change extra debt contribution per paycheque');
+        state.extraPayoffPerPaycheque = normalized;
+        // Keep the former monthly property populated for older versions and integrations.
+        state.extraPayoff = Math.round((normalized * 26 / 12) * 100) / 100;
+      }
       saveData(); renderDebtPlanner();
+    }
+
+    function debtDateOnly(value) {
+      const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value || ''));
+      if (!match) return null;
+      const year = Number(match[1]), month = Number(match[2]) - 1, day = Number(match[3]);
+      const date = new Date(year, month, day);
+      return Number.isFinite(date.getTime()) && date.getFullYear() === year && date.getMonth() === month && date.getDate() === day ? date : null;
+    }
+
+    function debtHasUnscheduledAprChangeNote(debt) {
+      const noteMentionsChange = /\d+(?:\.\d+)?%.*\b(?:returns?|reverts?|increases?|changes?)\b|\b(?:returns?|reverts?|increases?|changes?)\b.*\d+(?:\.\d+)?%/i.test(String(debt?.notes || ''));
+      const hasFutureRate = debt?.aprAfterChange !== undefined && debt?.aprAfterChange !== null && debt?.aprAfterChange !== '';
+      const hasFutureDate = !!debt?.aprChangeDate;
+      return noteMentionsChange && !hasFutureRate && !hasFutureDate;
+    }
+
+    function getDebtAPRAtDate(debt, date) {
+      const currentAPR = Number(debt.apr);
+      const futureAPR = debt.aprAfterChange === undefined || debt.aprAfterChange === null || debt.aprAfterChange === ''
+        ? null : Number(debt.aprAfterChange);
+      const changeDate = debtDateOnly(debt.aprChangeDate);
+      if (futureAPR !== null && Number.isFinite(futureAPR) && changeDate && date >= changeDate) return futureAPR;
+      return currentAPR;
+    }
+
+    function calculateDebtInterestForPeriod(balance, debt, periodStart, periodEnd) {
+      const days = Math.max(0, Math.round((periodEnd - periodStart) / 86400000));
+      if (!days || balance <= 0) return 0;
+      const futureAPR = debt.aprAfterChange === undefined || debt.aprAfterChange === null || debt.aprAfterChange === ''
+        ? null : Number(debt.aprAfterChange);
+      const changeDate = debtDateOnly(debt.aprChangeDate);
+      const currentAPR = Number(debt.apr);
+      let interest = 0;
+      if (futureAPR !== null && Number.isFinite(futureAPR) && changeDate && changeDate > periodStart && changeDate < periodEnd) {
+        const daysBefore = Math.max(0, Math.round((changeDate - periodStart) / 86400000));
+        const daysAfter = days - daysBefore;
+        interest = balance * ((currentAPR * daysBefore) + (futureAPR * daysAfter)) / 100 / 365;
+      } else {
+        const annualRate = futureAPR !== null && Number.isFinite(futureAPR) && changeDate && changeDate <= periodStart
+          ? futureAPR : currentAPR;
+        interest = balance * annualRate / 100 * days / 365;
+      }
+      return Math.round(interest * 100) / 100;
+    }
+
+    function setDebtStrategy(value) {
+      const allowed = ['custom', 'snowball', 'avalanche'];
+      if (!allowed.includes(value)) return;
+      if (state.debtStrategy !== value) captureUndo('Change debt payoff strategy');
+      state.debtStrategy = value;
+      saveData();
+      renderDebtPlanner();
     }
 
     function moveDebtPriority(debtId, direction) {
@@ -5573,35 +5659,149 @@ Bonus"></textarea></div>
     }
 
     function simulateDebtPayoff(debts, extraMonthly) {
-      const valid = debts.filter(d => Number.isFinite(Number(d.apr)) && d.apr >= 0 && Number.isFinite(Number(d.minPay)) && d.minPay > 0 && d.balance > 0);
-      if (!valid.length || valid.length !== debts.filter(d => d.balance > 0).length) return null;
-      let items = valid.map(d => ({ id:d.id, balance:Math.max(0,Number(d.balance)||0), apr:Number(d.apr), min:Number(d.minPay)||0 }));
-      let totalInterest = 0, months = 0;
-      const strategy = document.getElementById('debt-strategy')?.value || 'custom';
-      while (items.some(x => x.balance > 0.005) && months < 1200) {
-        months++;
-        items.forEach(x => { const interest = x.balance * (x.apr / 100 / 12); x.balance += interest; totalInterest += interest; });
-        // Treat all minimums plus the extra amount as the monthly payment pool.
-        // If an account needs less than its minimum to clear, the unused amount rolls to the next debt.
-        let paymentPool = items.reduce((sum,x)=>sum+x.min,0) + Math.max(0, Number(extraMonthly)||0);
-        items.forEach(x => {
-          if (x.balance <= 0 || paymentPool <= 0) return;
-          const payment = Math.min(x.balance, x.min, paymentPool);
-          x.balance -= payment; paymentPool -= payment;
-        });
-        let ordered = [...items].filter(x=>x.balance>0.005);
-        if (strategy === 'snowball') ordered.sort((a,b)=>a.balance-b.balance);
-        else if (strategy === 'avalanche') ordered.sort((a,b)=>b.apr-a.apr);
-        else { const ids = (state.accounts||[]).filter(a=>a.type==='debt').map(a=>a.id); ordered.sort((a,b)=>ids.indexOf(a.id)-ids.indexOf(b.id)); }
-        for (const x of ordered) {
-          if (paymentPool <= 0) break;
-          const payment = Math.min(x.balance, paymentPool);
-          x.balance -= payment; paymentPool -= payment;
+      const activeDebts = (debts || []).filter(debt => (Number(debt.balance) || 0) > 0.005);
+      if (!activeDebts.length) return { months: 0, paidOff: true, interest: 0, schedule: [], monthlyMinimums: 0, totalPaid: 0 };
+
+      // A valid estimate requires a current APR and a known positive minimum
+      // for every debt with a balance. A future APR requires both rate and date.
+      const invalid = activeDebts.some(debt => {
+        const apr = debt.apr === '' || debt.apr === null || debt.apr === undefined ? NaN : Number(debt.apr);
+        const minimum = debt.minPay === '' || debt.minPay === null || debt.minPay === undefined ? NaN : Number(debt.minPay);
+        const hasFutureRate = debt.aprAfterChange !== undefined && debt.aprAfterChange !== null && debt.aprAfterChange !== '';
+        const hasFutureDate = !!debt.aprChangeDate;
+        return !Number.isFinite(apr) || apr < 0 || !Number.isFinite(minimum) || minimum <= 0 ||
+          hasFutureRate !== hasFutureDate ||
+          (hasFutureRate && (!Number.isFinite(Number(debt.aprAfterChange)) || Number(debt.aprAfterChange) < 0 || !debtDateOnly(debt.aprChangeDate))) ||
+          debtHasUnscheduledAprChangeNote(debt);
+      });
+      if (invalid) return null;
+
+      const items = activeDebts.map(debt => ({
+        id: String(debt.id),
+        name: debt.name || 'Debt account',
+        source: debt,
+        balance: Math.max(0, Number(debt.balance) || 0),
+        apr: Number(debt.apr),
+        minimum: Number(debt.minPay),
+        method: debt.paymentMethod || 'principal-interest'
+      }));
+
+      const strategy = state.debtStrategy || document.getElementById('debt-strategy')?.value || 'custom';
+      const extra = Math.max(0, Number(extraMonthly) || 0);
+      const periodStartInitial = new Date();
+      periodStartInitial.setHours(0, 0, 0, 0);
+      let periodStart = periodStartInitial;
+      let totalInterest = 0;
+      let totalPaid = 0;
+      let months = 0;
+      const schedule = [];
+
+      function nextMonthlyDate(date) {
+        const next = new Date(date.getFullYear(), date.getMonth() + 1, date.getDate());
+        if (next.getMonth() !== (date.getMonth() + 1) % 12) {
+          return new Date(date.getFullYear(), date.getMonth() + 2, 0);
         }
-        if (items.every(x=>x.balance<=0.005)) break;
-        if (months===1200) return null;
+        return next;
       }
-      return { months, interest:totalInterest };
+
+      while (items.some(item => item.balance > 0.005) && months < 1200) {
+        months++;
+        const periodEnd = nextMonthlyDate(periodStart);
+        let periodInterest = 0;
+        let periodMinimumPaid = 0;
+        let periodExtraPaid = 0;
+        let freedMinimums = 0;
+
+        // Accrue interest first. A future APR change is prorated across the
+        // period using daily simple accrual; actual lender methods may differ.
+        items.forEach(item => {
+          if (item.balance <= 0.005) return;
+          const interest = calculateDebtInterestForPeriod(item.balance, item.source, periodStart, periodEnd);
+          item.balance = Math.round((item.balance + interest) * 100) / 100;
+          item.periodInterest = interest;
+          periodInterest += interest;
+        });
+        totalInterest += periodInterest;
+
+        // Apply each account's required minimum. Interest-only accounts use
+        // their entered minimum as the cash payment but never reduce principal
+        // through that minimum; extra contributions can reduce their balance.
+        items.forEach(item => {
+          const minimum = item.minimum;
+          if (item.balance <= 0.005) {
+            freedMinimums += minimum;
+            return;
+          }
+          let applied = 0;
+          if (item.method === 'interest-only') {
+            applied = Math.min(item.periodInterest || 0, minimum, item.balance);
+            item.balance = Math.round((item.balance - applied) * 100) / 100;
+            // The full entered minimum is still a cash outflow. Any amount
+            // above the interest accrual is not silently treated as principal.
+            periodMinimumPaid += minimum;
+            totalPaid += minimum;
+            if (item.balance <= 0.005) item.balance = 0;
+            return;
+          } else {
+            applied = Math.min(item.balance, minimum);
+            item.balance = Math.round((item.balance - applied) * 100) / 100;
+            if (minimum > applied) freedMinimums += minimum - applied;
+          }
+          periodMinimumPaid += applied;
+          totalPaid += applied;
+        });
+
+        // Extra principal and unused conventional minimums flow to the chosen
+        // payoff priority. The per-paycheque input is annualized elsewhere.
+        let paymentPool = extra + freedMinimums;
+        const ordered = items.filter(item => item.balance > 0.005);
+        if (strategy === 'snowball') {
+          ordered.sort((a, b) => a.balance - b.balance || a.name.localeCompare(b.name));
+        } else if (strategy === 'avalanche') {
+          ordered.sort((a, b) => getDebtAPRAtDate(b.source, periodStart) - getDebtAPRAtDate(a.source, periodStart) || a.name.localeCompare(b.name));
+        } else {
+          const accountOrder = (state.accounts || []).filter(account => account.type === 'debt').map(account => String(account.id));
+          ordered.sort((a, b) => accountOrder.indexOf(a.id) - accountOrder.indexOf(b.id));
+        }
+        for (const item of ordered) {
+          if (paymentPool <= 0.005) break;
+          const payment = Math.min(item.balance, paymentPool);
+          item.balance = Math.round((item.balance - payment) * 100) / 100;
+          paymentPool = Math.round((paymentPool - payment) * 100) / 100;
+          periodExtraPaid += payment;
+          totalPaid += payment;
+        }
+
+        schedule.push({
+          period: `${periodEnd.getFullYear()}-${String(periodEnd.getMonth() + 1).padStart(2, '0')}`,
+          balance: Math.round(items.reduce((sum, item) => sum + item.balance, 0) * 100) / 100,
+          interest: Math.round(periodInterest * 100) / 100,
+          minimumPayments: Math.round(periodMinimumPaid * 100) / 100,
+          extraPayments: Math.round(periodExtraPaid * 100) / 100
+        });
+
+        if (items.every(item => item.balance <= 0.005)) break;
+        if (months === 1200) {
+          return {
+            months: null,
+            paidOff: false,
+            interest: Math.round(totalInterest * 100) / 100,
+            schedule,
+            monthlyMinimums: items.reduce((sum, item) => sum + item.minimum, 0),
+            totalPaid: Math.round(totalPaid * 100) / 100
+          };
+        }
+        periodStart = periodEnd;
+      }
+
+      return {
+        months,
+        paidOff: true,
+        interest: Math.round(totalInterest * 100) / 100,
+        schedule,
+        monthlyMinimums: items.reduce((sum, item) => sum + item.minimum, 0),
+        totalPaid: Math.round(totalPaid * 100) / 100
+      };
     }
 
     function debtDueDayOfMonth(debt) {
@@ -5639,21 +5839,32 @@ Bonus"></textarea></div>
 
     function renderDebtPlanner() {
       let debts = state.accounts.filter(a => a.type === 'debt');
-      const strategy = document.getElementById('debt-strategy').value;
+      const strategySelect = document.getElementById('debt-strategy');
+      const strategy = ['custom', 'snowball', 'avalanche'].includes(state.debtStrategy) ? state.debtStrategy : 'custom';
+      if (strategySelect && strategySelect.value !== strategy) strategySelect.value = strategy;
       if (strategy === 'snowball') debts.sort((a,b) => (Number(a.balance)||0) - (Number(b.balance)||0));
       if (strategy === 'avalanche') debts.sort((a,b) => (Number(b.apr)||0) - (Number(a.apr)||0));
 
       const totalBal = debts.reduce((s, d) => s + (Number(d.balance)||0), 0);
-      const knownMinimums = debts.filter(d => Number.isFinite(Number(d.minPay)) && d.minPay !== '' && Number(d.minPay) >= 0).reduce((s,d)=>s+Number(d.minPay),0);
-      const missingMinimums = debts.filter(d => d.minPay === undefined || d.minPay === null || d.minPay === '').length;
+      const knownMinimums = debts.filter(d => (Number(d.balance) || 0) > 0.005 && Number.isFinite(Number(d.minPay)) && d.minPay !== '' && Number(d.minPay) > 0).reduce((s,d)=>s+Number(d.minPay),0);
+      const missingMinimums = debts.filter(d => (Number(d.balance) || 0) > 0.005 && (d.minPay === undefined || d.minPay === null || d.minPay === '' || !Number.isFinite(Number(d.minPay)) || Number(d.minPay) <= 0)).length;
       document.getElementById('debt-total-bal').innerText = formatFinancial(totalBal);
       const minEl = document.getElementById('debt-monthly-minimums');
       if (minEl) minEl.innerText = formatFinancial(knownMinimums);
       const note = document.getElementById('debt-minimum-note');
       if (note) note.innerText = missingMinimums ? `${missingMinimums} account(s) missing a minimum payment` : 'Across all listed debt accounts';
-      const extra = Number(state.extraPayoff)||0;
+      const extraPerPaycheque = getExtraDebtContributionPerPaycheque();
+      const extra = extraPerPaycheque * 26 / 12;
       const extraEl = document.getElementById('debt-extra-summary');
-      if (extraEl) extraEl.innerText = formatFinancial(extra);
+      if (extraEl) extraEl.innerText = formatFinancial(extraPerPaycheque);
+      const monthlyExtraEl = document.getElementById('debt-extra-summary-monthly');
+      if (monthlyExtraEl) monthlyExtraEl.innerText = formatFinancial(extra);
+      const simulatorInput = document.getElementById('sim-extra-per-pay');
+      if (simulatorInput && document.activeElement !== simulatorInput) simulatorInput.value = extraPerPaycheque.toFixed(2);
+      const simulatorLabel = document.getElementById('extra-payoff-val');
+      if (simulatorLabel) simulatorLabel.innerText = `${formatFinancial(extraPerPaycheque)} / paycheque`;
+      const monthlyEquivalentLabel = document.getElementById('debt-extra-monthly-equivalent');
+      if (monthlyEquivalentLabel) monthlyEquivalentLabel.innerText = formatFinancial(extra);
 
       const overview = document.getElementById('debt-overview-rows');
       const foot = document.getElementById('debt-overview-foot');
@@ -5661,9 +5872,15 @@ Bonus"></textarea></div>
         overview.innerHTML = '';
         debts.forEach(d => {
           const missing = [];
-          if (d.apr === undefined || d.apr === null || d.apr === '') missing.push('APR');
-          if (d.minPay === undefined || d.minPay === null || d.minPay === '') missing.push('Minimum');
-          if (!debtDueDayOfMonth(d)) missing.push('Due day');
+          const hasBalance = (Number(d.balance) || 0) > 0.005;
+          if (hasBalance && (d.apr === undefined || d.apr === null || d.apr === '' || !Number.isFinite(Number(d.apr)) || Number(d.apr) < 0)) missing.push('APR');
+          if (hasBalance && (d.minPay === undefined || d.minPay === null || d.minPay === '' || !Number.isFinite(Number(d.minPay)) || Number(d.minPay) <= 0)) missing.push('Minimum');
+          const hasFutureRate = d.aprAfterChange !== undefined && d.aprAfterChange !== null && d.aprAfterChange !== '';
+          const hasFutureDate = !!d.aprChangeDate;
+          if (hasFutureRate !== hasFutureDate) missing.push('APR change details');
+          if (hasFutureRate && (!Number.isFinite(Number(d.aprAfterChange)) || !debtDateOnly(d.aprChangeDate))) missing.push('APR change details');
+          if (debtHasUnscheduledAprChangeNote(d)) missing.push('APR change note not scheduled');
+          if (hasBalance && !debtDueDayOfMonth(d)) missing.push('Due day');
           const status = missing.length ? `<span class="text-amber-600">Missing: ${missing.join(', ')}</span>` : `<span class="text-emerald-600">Complete</span>`;
           overview.innerHTML += `<tr class="hover:bg-gray-50 dark:hover:bg-gray-950 cursor-pointer" onclick="openDebtDetailModal('${d.id}')"><td class="px-4 py-3 font-semibold">${d.name}</td><td class="px-3 py-3 text-right accounting-num">${formatFinancial(d.balance||0)}</td><td class="px-3 py-3 text-right">${d.apr!==undefined && d.apr!==null && d.apr!=='' ? `${Number(d.apr).toFixed(2)}%` : '—'}</td><td class="px-3 py-3 text-right accounting-num">${d.minPay!==undefined && d.minPay!==null && d.minPay!=='' ? formatFinancial(d.minPay) : '—'}</td><td class="px-3 py-3">${formatDebtDueSchedule(d)}</td><td class="px-3 py-3 text-right accounting-num">${d.limit ? formatFinancial(d.limit) : '—'}</td><td class="px-4 py-3">${status}</td></tr>`;
         });
@@ -5687,14 +5904,19 @@ Bonus"></textarea></div>
         document.getElementById('debt-interest-saved').innerText = formatFinancial(0);
         document.getElementById('debt-time-saved').innerText = '0 Months';
       } else if (!baseline || !accelerated) {
-        dateEl.innerText = 'Complete APRs and minimums to calculate';
+        dateEl.innerText = 'Complete APRs, minimums and scheduled rate changes to calculate';
+        document.getElementById('debt-interest-saved').innerText = '—';
+        document.getElementById('debt-time-saved').innerText = '—';
+      } else if (!accelerated.paidOff) {
+        dateEl.innerText = 'No debt-free date at this contribution level';
         document.getElementById('debt-interest-saved').innerText = '—';
         document.getElementById('debt-time-saved').innerText = '—';
       } else {
         const futureDate = new Date(); futureDate.setDate(1); futureDate.setMonth(futureDate.getMonth() + accelerated.months);
-        dateEl.innerText = `Estimated Debt-Free: ${futureDate.toLocaleString('default',{month:'short',year:'numeric'})}`;
-        document.getElementById('debt-interest-saved').innerText = formatFinancial(Math.max(0,baseline.interest-accelerated.interest));
-        document.getElementById('debt-time-saved').innerText = `${Math.max(0,baseline.months-accelerated.months)} Months`;
+        const baselineNote = baseline.paidOff ? '' : ' · minimum-only plan does not clear all debt';
+        dateEl.innerText = `Estimated Debt-Free: ${futureDate.toLocaleString('default',{month:'short',year:'numeric'})}${baselineNote}`;
+        document.getElementById('debt-interest-saved').innerText = baseline.paidOff ? formatFinancial(Math.max(0,baseline.interest-accelerated.interest)) : '—';
+        document.getElementById('debt-time-saved').innerText = baseline.paidOff ? `${Math.max(0,baseline.months-accelerated.months)} Months` : '—';
       }
       renderDebtPaymentHistory();
       renderDebtUpcomingBills();
@@ -5706,9 +5928,11 @@ Bonus"></textarea></div>
       document.getElementById('edit-debt-id').value = d.id;
       document.getElementById('ed-name').value = d.name;
       document.getElementById('ed-balance').value = d.balance;
-      document.getElementById('ed-startbal').value = d.startBal || d.balance;
+      document.getElementById('ed-startbal').value = d.startBal ?? d.balance;
       document.getElementById('ed-apr').value = d.apr ?? '';
       document.getElementById('ed-minpay').value = d.minPay ?? '';
+      document.getElementById('ed-apr-after-change').value = d.aprAfterChange ?? '';
+      document.getElementById('ed-apr-change-date').value = d.aprChangeDate || '';
       document.getElementById('ed-due-day').value = debtDueDayOfMonth(d) || '';
       document.getElementById('ed-weekend-rule').value = d.dueWeekendRule || 'none';
       document.getElementById('ed-payment-method').value = d.paymentMethod || 'principal-interest';
@@ -5721,25 +5945,55 @@ Bonus"></textarea></div>
     function saveDebtDetails(e) {
       e.preventDefault();
       const id = document.getElementById('edit-debt-id').value;
-      const d = state.accounts.find(a => a.id === id);
-      if (d) {
-        captureUndo(`Edit debt details for "${d.name}"`);
-        d.name = document.getElementById('ed-name').value;
-        d.balance = parseFloat(document.getElementById('ed-balance').value) || 0;
-        d.startBal = parseFloat(document.getElementById('ed-startbal').value) || d.balance;
-        const aprInput = document.getElementById('ed-apr').value;
-        const minInput = document.getElementById('ed-minpay').value;
-        const limitInput = document.getElementById('ed-limit').value;
-        d.apr = aprInput === '' ? null : Math.max(0, Number(aprInput));
-        d.minPay = minInput === '' ? null : Math.max(0, Number(minInput));
-        const dueDayInput = document.getElementById('ed-due-day').value;
-        d.dueDay = dueDayInput === '' ? null : Math.min(31, Math.max(1, Number(dueDayInput)));
-        d.dueWeekendRule = document.getElementById('ed-weekend-rule').value || 'none';
-        // Keep any legacy dueDate field untouched for older integrations/backups.
-        d.paymentMethod = document.getElementById('ed-payment-method').value || 'principal-interest';
-        d.limit = limitInput === '' ? 0 : Math.max(0, Number(limitInput));
-        d.notes = document.getElementById('ed-notes').value;
+      const d = state.accounts.find(a => a.id === id && a.type === 'debt');
+      if (!d) { alert('The debt account could not be found.'); return; }
+
+      const name = document.getElementById('ed-name').value.trim();
+      const balanceRaw = document.getElementById('ed-balance').value.trim();
+      const startRaw = document.getElementById('ed-startbal').value.trim();
+      const aprRaw = document.getElementById('ed-apr').value.trim();
+      const minimumRaw = document.getElementById('ed-minpay').value.trim();
+      const futureAprRaw = document.getElementById('ed-apr-after-change').value.trim();
+      const futureDateRaw = document.getElementById('ed-apr-change-date').value;
+      const limitRaw = document.getElementById('ed-limit').value.trim();
+
+      const numericOrNull = raw => raw === '' ? null : Number(raw);
+      const balance = numericOrNull(balanceRaw);
+      const startBalance = numericOrNull(startRaw);
+      const apr = numericOrNull(aprRaw);
+      const minimum = numericOrNull(minimumRaw);
+      const futureApr = numericOrNull(futureAprRaw);
+      const limit = numericOrNull(limitRaw);
+
+      if (!name) { alert('Enter a debt account name.'); return; }
+      if (balance === null || !Number.isFinite(balance) || balance < 0) { alert('Enter a valid current balance of zero or more.'); return; }
+      if (startBalance !== null && (!Number.isFinite(startBalance) || startBalance < 0)) { alert('Enter a valid starting balance of zero or more.'); return; }
+      if (apr !== null && (!Number.isFinite(apr) || apr < 0)) { alert('APR must be zero or greater.'); return; }
+      if (minimum !== null && (!Number.isFinite(minimum) || minimum < 0)) { alert('Minimum payment must be zero or greater.'); return; }
+      if (limit !== null && (!Number.isFinite(limit) || limit < 0)) { alert('Credit limit must be zero or greater.'); return; }
+      if ((futureAprRaw === '') !== (futureDateRaw === '')) { alert('Enter both a future APR and its effective date, or leave both fields blank.'); return; }
+      if (futureApr !== null && (!Number.isFinite(futureApr) || futureApr < 0)) { alert('Future APR must be zero or greater.'); return; }
+      if (futureDateRaw && !debtDateOnly(futureDateRaw)) { alert('Enter a valid effective date for the APR change.'); return; }
+      const nowLocal = new Date();
+      const todayLocal = `${nowLocal.getFullYear()}-${String(nowLocal.getMonth() + 1).padStart(2, '0')}-${String(nowLocal.getDate()).padStart(2, '0')}`;
+      if (futureDateRaw && futureDateRaw < todayLocal) {
+        if (!confirm('The APR change effective date is in the past. Save it anyway?')) return;
       }
+
+      captureUndo(`Edit debt details for "${d.name}"`);
+      d.name = name;
+      d.balance = Math.round(balance * 100) / 100;
+      d.startBal = startBalance === null ? d.balance : Math.round(startBalance * 100) / 100;
+      d.apr = apr;
+      d.minPay = minimum === null ? null : Math.round(minimum * 100) / 100;
+      d.aprAfterChange = futureApr === null ? null : futureApr;
+      d.aprChangeDate = futureDateRaw || null;
+      const dueDayInput = document.getElementById('ed-due-day').value;
+      d.dueDay = dueDayInput === '' ? null : Math.min(31, Math.max(1, Number(dueDayInput)));
+      d.dueWeekendRule = document.getElementById('ed-weekend-rule').value || 'none';
+      d.paymentMethod = document.getElementById('ed-payment-method').value || 'principal-interest';
+      d.limit = limit === null ? 0 : Math.round(limit * 100) / 100;
+      d.notes = document.getElementById('ed-notes').value;
       saveData(); closeDebtDetailModal(); renderDebtPlanner(); renderDashboard();
     }
 
@@ -5780,9 +6034,24 @@ Bonus"></textarea></div>
       const total = Math.max(0, Number(document.getElementById('dp-amount').value) || 0);
       const principalInput = document.getElementById('dp-principal');
       const debt = state.accounts.find(a => a.id === document.getElementById('debt-account-picker').value);
-      if (principalInput.dataset.manual !== '1') principalInput.value = debt?.paymentMethod === 'interest-only' ? '0.00' : total.toFixed(2);
+      const method = debt?.paymentMethod || 'principal-interest';
+      if (principalInput.dataset.manual !== '1') {
+        if (method === 'interest-only') principalInput.value = '0.00';
+        else if (method === 'custom') principalInput.value = '';
+        else principalInput.value = total.toFixed(2);
+      }
       const principal = Math.min(total, Math.max(0, Number(principalInput.value) || 0));
       document.getElementById('dp-interest').value = (total - principal).toFixed(2);
+      const help = document.getElementById('dp-split-help');
+      if (help) {
+        help.textContent = method === 'interest-only'
+          ? 'Interest-only default: $0 goes to principal. Enter a principal amount only when the lender confirms that part of this payment reduces the balance.'
+          : method === 'principal-only'
+            ? 'Principal-only default: the full payment is assigned to principal. Adjust only when the lender statement shows otherwise.'
+            : method === 'custom'
+              ? 'Custom split: enter the actual principal portion from the lender statement. The remainder is recorded as interest.'
+              : 'Principal + interest: the default assigns the full payment to principal. Adjust the principal portion to match the lender statement; the remainder is interest.';
+      }
     }
     function openDebtPaymentModal() {
       document.getElementById('debt-payment-form').reset();
@@ -5790,9 +6059,10 @@ Bonus"></textarea></div>
       const funding = document.getElementById('dp-funding-account'); funding.innerHTML = '';
       state.accounts.filter(a => a.type === 'asset').forEach(a => funding.innerHTML += `<option value="${a.id}">${a.name} (${formatFinancial(a.balance)})</option>`);
       const debt = state.accounts.find(a => a.id === document.getElementById('debt-account-picker').value);
-      document.getElementById('dp-principal').value = debt?.paymentMethod === 'interest-only' ? '0.00' : '';
       document.getElementById('dp-principal').dataset.manual = '0';
+      document.getElementById('dp-principal').value = debt?.paymentMethod === 'interest-only' ? '0.00' : debt?.paymentMethod === 'custom' ? '' : '';
       document.getElementById('dp-interest').value = '0.00';
+      updateDebtPaymentSplit();
       document.getElementById('debt-payment-modal').classList.remove('hidden');
     }
     function closeDebtPaymentModal() { document.getElementById('debt-payment-modal').classList.add('hidden'); }
@@ -5807,6 +6077,7 @@ Bonus"></textarea></div>
       const debtAcc = state.accounts.find(a => a.id === accountId && a.type === 'debt');
       const fundingAcc = state.accounts.find(a => a.id === fundingAccountId && a.type === 'asset');
       if (!debtAcc || !fundingAcc || amount <= 0 || principalAmount > amount + 0.005) { alert('Select both accounts and enter a valid payment split. Principal cannot exceed the total payment.'); return; }
+      if (debtAcc.paymentMethod === 'custom' && document.getElementById('dp-principal').value.trim() === '') { alert('Enter the principal portion for this custom payment.'); return; }
       if (fundingAcc.balance < amount && !confirm('The funding account has less balance than the payment amount. Proceed anyway?')) return;
       const paymentId = `dp_${Date.now()}_${Math.random().toString(36).slice(2,6)}`;
       const transactionId = `tx_${paymentId}`;
