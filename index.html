@@ -5969,61 +5969,49 @@ ${acc.name}`);
       const rows=[];
       const add=(date,desc,amt,type)=>{if(date&&desc&&Number.isFinite(amt)&&Math.abs(amt)>0)rows.push({id:`pdf_${Date.now()}_${rows.length}_${Math.random().toString(36).slice(2,6)}`,date,description:desc.trim(),amount:Math.abs(amt),signedAmount:type==='Income'?Math.abs(amt):-Math.abs(amt),type,accountId:document.getElementById('recon-account')?.value||'',status:'pending'});};
       if(bank==='rbc'){
-        // RBC statements use three independently positioned amount columns. Find the
-        // table header on each page, then classify each amount by the nearest header
-        // centre. This avoids assuming that a page's columns start at the same x value.
+        // Parse RBC activity from raw PDF text-item coordinates. Do not depend on
+        // exact rounded baselines: dates, descriptions and amounts can sit on
+        // slightly different baselines, especially on continuation pages.
         let activeDate='',pendingDesc='';
         const moneyText=v=>/^[+-]?\$?\s*\(?\d[\d,]*\.\d{2}\)?-?$/.test(String(v||'').trim());
+        const labelOf=value=>{const t=String(value||'').trim().replace(/\s+/g,' ').toLowerCase();if(/^withdrawals\b/.test(t))return 'withdrawals';if(/^deposits\b/.test(t))return 'deposits';if(/^balance\b/.test(t))return 'balance';return '';};
         for(const page of pages){
-          const source=(page.rows||[]).flatMap(r=>r.items||[]);
-          // RBC repeats the activity-table headings on continuation pages, but PDF.js
-          // may split the labels/currency suffix into separate runs and place their
-          // baselines a few points apart. Detect the three labels by prefix and choose
-          // the closest same-row triplet instead of requiring exact text/baseline matches.
-          const labelOf=(value)=>{const t=String(value||'').trim().replace(/\s+/g,' ').toLowerCase();if(/^withdrawals\b/.test(t))return 'withdrawals';if(/^deposits\b/.test(t))return 'deposits';if(/^balance\b/.test(t))return 'balance';return '';};
+          const source=(page.rows||[]).flatMap(r=>r.items||[]).filter(it=>String(it.str||'').trim());
+          // Cluster by baseline with a small tolerance rather than Math.round(y).
+          const sorted=source.slice().sort((a,b)=>Number(b.transform?.[5]||0)-Number(a.transform?.[5]||0)||Number(a.transform?.[4]||0)-Number(b.transform?.[4]||0));
+          const lines=[];
+          for(const it of sorted){const y=Number(it.transform?.[5]||0);let line=lines.find(v=>Math.abs(v.y-y)<=2.25);if(!line){line={y,items:[]};lines.push(line);}line.items.push(it);line.y=line.items.reduce((n,v)=>n+Number(v.transform?.[5]||0),0)/line.items.length;}
+          lines.sort((a,b)=>b.y-a.y);
           const headerItems=source.filter(v=>labelOf(v.str));
-          let header=null,bestHeaderScore=Infinity;
-          for(const w of headerItems.filter(v=>labelOf(v.str)==='withdrawals')){
-            for(const d of headerItems.filter(v=>labelOf(v.str)==='deposits')){
-              for(const b of headerItems.filter(v=>labelOf(v.str)==='balance')){
-                const wy=Number(w.transform?.[5]||0),dy=Number(d.transform?.[5]||0),by=Number(b.transform?.[5]||0);
-                const wx=Number(w.transform?.[4]||0),dx=Number(d.transform?.[4]||0),bx=Number(b.transform?.[4]||0);
-                const spread=Math.max(wy,dy,by)-Math.min(wy,dy,by);
-                if(!(wx<dx&&dx<bx)||spread>12)continue;
-                const score=spread+Math.abs(wy-dy)+Math.abs(dy-by);
-                if(score<bestHeaderScore){bestHeaderScore=score;header={y:(wy+dy+by)/3,w,d,b};}
-              }
-            }
+          let header=null,best=Infinity;
+          for(const w of headerItems.filter(v=>labelOf(v.str)==='withdrawals'))for(const d of headerItems.filter(v=>labelOf(v.str)==='deposits'))for(const b of headerItems.filter(v=>labelOf(v.str)==='balance')){
+            const wy=Number(w.transform?.[5]||0),dy=Number(d.transform?.[5]||0),by=Number(b.transform?.[5]||0),wx=Number(w.transform?.[4]||0),dx=Number(d.transform?.[4]||0),bx=Number(b.transform?.[4]||0);
+            const spread=Math.max(wy,dy,by)-Math.min(wy,dy,by);if(!(wx<dx&&dx<bx)||spread>14)continue;
+            const score=spread+Math.abs(wy-dy)+Math.abs(dy-by);if(score<best){best=score;header={y:(wy+dy+by)/3,w,d,b};}
           }
           if(!header)continue;
           const center=v=>Number(v.transform?.[4]||0)+Math.max(0,Number(v.width||0))/2;
-          const columnCenters=[{type:'Expense',x:center(header.w)},{type:'Income',x:center(header.d)},{type:'Balance',x:center(header.b)}];
-          const descriptionLimit=Number(header.w.transform?.[4]||0)-24;
-          // pdfRowsFromItems has already grouped text runs by their PDF baseline.
-          // Reuse those rows rather than regrouping individual glyph runs: the latter
-          // can merge adjacent RBC rows and lose valid withdrawal amounts.
-          const lines=(page.rows||[]).filter(line=>Number(line.y||0)<=header.y+10).sort((a,b)=>b.y-a.y);
+          const wc=center(header.w),dc=center(header.d),bc=center(header.b);
+          const leftLimit=(Number(header.w.transform?.[4]||0)+Number(header.w.transform?.[4]||0)+Number(header.w.width||0))/2;
+          const col1=(wc+dc)/2,col2=(dc+bc)/2;
           for(const line of lines){
+            if(line.y>header.y+10)continue;
             const items=line.items.slice().sort((a,b)=>Number(a.transform?.[4]||0)-Number(b.transform?.[4]||0));
-            const left=items.filter(it=>Number(it.transform?.[4]||0)<descriptionLimit).map(it=>it.str||'').join(' ').replace(/\s+/g,' ').trim();
-            const dateMatch=left.match(/(\d{1,2}\s+[A-Za-z]{3})\b/);
+            const left=items.filter(it=>Number(it.transform?.[4]||0)<col1).map(it=>it.str||'').join(' ').replace(/\s+/g,' ').trim();
+            const dateMatch=left.match(/\b(\d{1,2}\s+[A-Za-z]{3})\b/);
             if(dateMatch)activeDate=pdfDateValue(dateMatch[1],year);
             let desc=dateMatch?left.slice(dateMatch.index+dateMatch[0].length).trim():left;
             if(/^(Date|Description|Withdrawals|Deposits|Balance|Details of your account activity|continued|Page\s+\d|Opening Balance|Closing Balance)/i.test(desc))desc='';
-            const amounts=items.filter(it=>moneyText(it.str)&&Number(it.transform?.[4]||0)>=Number(header.w.transform?.[4]||0)-16&&Number(it.transform?.[4]||0)<Number(header.b.transform?.[4]||0)-12).map(it=>{
-              const x=center(it);let closest=columnCenters[0],distance=Infinity;
-              for(const c of columnCenters){const delta=Math.abs(x-c.x);if(delta<distance){distance=delta;closest=c;}}
-              return {item:it,column:closest.type};
-            }).filter(v=>v.column!=='Balance');
+            const amounts=[];
+            for(const it of items){
+              const x=Number(it.transform?.[4]||0);if(x<Number(header.w.transform?.[4]||0)-8||x>=Number(header.b.transform?.[4]||0)-8||!moneyText(it.str))continue;
+              const cx=center(it);if(cx<col1)amounts.push({item:it,column:'Expense'});else if(cx<col2)amounts.push({item:it,column:'Income'});
+            }
             if(amounts.length&&activeDate){
               const description=[pendingDesc,desc].filter(Boolean).join(' ').replace(/\s+/g,' ').trim();
-              if(description&&!/^(Opening|Closing) Balance/i.test(description)){
-                for(const entry of amounts){const amount=pdfAmount(entry.item.str);if(Number.isFinite(amount)&&amount>0)add(activeDate,description,amount,entry.column);}
-              }
+              if(description&&!/^(Opening|Closing) Balance/i.test(description))for(const entry of amounts){const amount=pdfAmount(entry.item.str);if(Number.isFinite(amount)&&amount>0)add(activeDate,description,amount,entry.column);}
               pendingDesc='';
-            }else if(desc){
-              pendingDesc=(pendingDesc+' '+desc).replace(/\s+/g,' ').trim();
-            }
+            }else if(desc&&!/^(Opening|Closing) Balance/i.test(desc))pendingDesc=(pendingDesc+' '+desc).replace(/\s+/g,' ').trim();
           }
         }
         return rows;
