@@ -2080,6 +2080,7 @@ Bonus"></textarea></div>
       netWorthSnapshots: [],
       merchantRules: [],
       importRules: [],
+      statementCsvMappings: {},
       vendorCleanupRules: [],
       transactionTypes: [...STANDARD_TRANSACTION_TYPES],
       // Editable expense buckets. Debt-specific classifications live separately below.
@@ -2134,6 +2135,7 @@ Bonus"></textarea></div>
     state.vendorCleanupRules = Array.isArray(state.vendorCleanupRules) ? state.vendorCleanupRules : [];
     state.merchantRules = Array.isArray(state.merchantRules) ? state.merchantRules : [];
     state.importRules = Array.isArray(state.importRules) ? state.importRules : [];
+    state.statementCsvMappings = state.statementCsvMappings && typeof state.statementCsvMappings === 'object' ? state.statementCsvMappings : {};
     // Income buckets are stored separately from expense buckets. Preserve any legacy
     // category labels already used by Income transactions during this additive migration.
     if (!Array.isArray(state.incomeCategories)) {
@@ -6047,6 +6049,22 @@ Bonus"></textarea></div>
       });
       return matched;
     }
+    function renderStatementColumnMapper(headers, signature) {
+      const host=document.getElementById('recon-preview'); if(!host)return;
+      const fields=[['date','Date',true],['description','Description',true],['amount','Signed amount',false],['debit','Debit / withdrawal',false],['credit','Credit / deposit',false],['type','FinHub type',false],['vendor','Vendor',false],['category','Category',false],['subcategory','Subcategory',false],['debtAccount','Debt account',false],['principal','Principal',false],['interest','Interest',false],['transferTo','Transfer destination',false]];
+      const options='<option value="">— Not mapped —</option>'+headers.map((h,i)=>`<option value="${i}">${escapeHtml(h||`Column ${i+1}`)}</option>`).join('');
+      const saved=state.statementCsvMappings?.[signature]||{};
+      const aliases={date:['date','transactiondate','posteddate','bookingdate'],description:['description','details','payee','memo','merchant','name','narrative','reference','bankdescription'],amount:['amount','transactionamount','signedamount'],debit:['debit','withdrawal','moneyout'],credit:['credit','deposit','moneyin'],type:['type','finhubtype','transactiontype'],vendor:['vendor','vendorname','cleanvendor'],category:['category','bucket'],subcategory:['subcategory','subcat'],debtAccount:['debtaccount','debtaccountname','liabilityaccount'],principal:['principal','principalportion'],interest:['interest','interestportion'],transferTo:['transfertoaccount','destinationaccount']};
+      host.innerHTML=`<div class="rounded-xl border border-indigo-300/50 bg-indigo-500/5 p-3 space-y-3"><div><strong class="text-sm">Map your CSV columns</strong><p class="text-[10px] text-gray-500 mt-1">FinHub couldn't confidently identify the required columns. Choose which bank columns match each field. This mapping will be saved for this CSV layout.</p></div><div class="grid grid-cols-1 sm:grid-cols-2 gap-2">${fields.map(([key,label,required])=>{let guess=saved[key];if(guess===undefined)guess=headers.findIndex(h=>aliases[key].includes(String(h||'').toLowerCase().replace(/[^a-z]/g,'')));return `<label class="text-[11px] font-semibold text-gray-500">${label}${required?' *':''}<select id="csv-map-${key}" class="mt-1 w-full bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-2 text-xs">${options}</select></label>`}).join('')}</div><div class="flex justify-end"><button type="button" onclick="saveStatementColumnMapping('${signature}')" class="px-3 py-2 rounded-lg bg-indigo-600 text-white text-xs font-semibold">Save mapping & parse</button></div></div>`;
+      fields.forEach(([key])=>{const el=document.getElementById(`csv-map-${key}`);let guess=saved[key];if(guess===undefined)guess=headers.findIndex(h=>aliases[key].includes(String(h||'').toLowerCase().replace(/[^a-z]/g,'')));if(el&&guess!==undefined&&guess>=0)el.value=String(guess);});
+    }
+    function saveStatementColumnMapping(signature) {
+      const keys=['date','description','amount','debit','credit','type','vendor','category','subcategory','debtAccount','principal','interest','transferTo'];
+      const mapping={};keys.forEach(key=>{const value=document.getElementById(`csv-map-${key}`)?.value;if(value!=='')mapping[key]=Number(value);});
+      if(mapping.date===undefined||mapping.description===undefined||(mapping.amount===undefined&&(mapping.debit===undefined||mapping.credit===undefined))){alert('Map Date, Description, and either Signed Amount or both Debit and Credit before continuing.');return;}
+      state.statementCsvMappings[signature]=mapping;saveData();processReconciliation('csv');
+    }
+
     function processReconciliation(source='paste') {
       if (pendingStatementRows.length && !confirm('Replace the current review batch? Its review history will be cleared from the active batch. Previously imported or reconciled transactions will remain in your ledger.')) return;
       const area=document.getElementById('recon-paste-area');
@@ -6055,23 +6073,27 @@ Bonus"></textarea></div>
       if(!raw){if(host)host.innerHTML='<p class="text-xs text-amber-500">Choose a CSV file or paste statement rows first.</p>';return;}
       const lines=raw.replace(/^\uFEFF/,'').split(/\r?\n/).filter(line=>line.trim());
       const first=parseStatementCSVLine(lines[0]||'').map(x=>x.toLowerCase().replace(/[^a-z]/g,''));
-      const hasHeader=first.some(x=>x.includes('date'))&&(first.some(x=>['description','details','payee','memo','merchant','name','narrative','reference'].some(t=>x.includes(t))));
+      const hasHeader=first.some(x=>x.includes('date'))&&lines.length>1;
       const header=hasHeader?first:null;
-      const findCol=(aliases)=>header?header.findIndex(h=>aliases.includes(h)):-1;
-      const dateCol=findCol(['date','transactiondate','posteddate']);
-      const descCol=findCol(['description','details','payee','memo','merchant','name','narrative','reference','bankdescription']);
-      const amountCol=findCol(['amount','transactionamount','signedamount']);
-      const debitCol=findCol(['debit','withdrawal','moneyout']);
-      const creditCol=findCol(['credit','deposit','moneyin']);
-      const typeCol=findCol(['type','finhubtype','transactiontype']);
-      const vendorCol=findCol(['vendor','vendorname','cleanvendor']);
-      const categoryCol=findCol(['category','bucket']);
-      const subcategoryCol=findCol(['subcategory','subcat']);
-      const debtAccountCol=findCol(['debtaccount','debtaccountname','liabilityaccount']);
-      const paymentTypeCol=findCol(['paymentclassification','paymenttype']);
-      const principalCol=findCol(['principal','principalportion']);
-      const interestCol=findCol(['interest','interestportion']);
-      const transferToCol=findCol(['transfertoaccount','destinationaccount']);
+      const displayHeaders=hasHeader?parseStatementCSVLine(lines[0]||''):[];
+      const signature=header?header.join('|'):'';
+      const savedMap=signature?(state.statementCsvMappings?.[signature]||{}):{};
+      const findCol=(key,aliases)=>savedMap[key]!==undefined?Number(savedMap[key]):(header?header.findIndex(h=>aliases.includes(h)):-1);
+      const dateCol=findCol('date',['date','transactiondate','posteddate','bookingdate']);
+      const descCol=findCol('description',['description','details','payee','memo','merchant','name','narrative','reference','bankdescription']);
+      const amountCol=findCol('amount',['amount','transactionamount','signedamount']);
+      const debitCol=findCol('debit',['debit','withdrawal','moneyout']);
+      const creditCol=findCol('credit',['credit','deposit','moneyin']);
+      const typeCol=findCol('type',['type','finhubtype','transactiontype']);
+      const vendorCol=findCol('vendor',['vendor','vendorname','cleanvendor']);
+      const categoryCol=findCol('category',['category','bucket']);
+      const subcategoryCol=findCol('subcategory',['subcategory','subcat']);
+      const debtAccountCol=findCol('debtAccount',['debtaccount','debtaccountname','liabilityaccount']);
+      const paymentTypeCol=header?header.findIndex(h=>['paymentclassification','paymenttype'].includes(h)):-1;
+      const principalCol=findCol('principal',['principal','principalportion']);
+      const interestCol=findCol('interest',['interest','interestportion']);
+      const transferToCol=findCol('transferTo',['transfertoaccount','destinationaccount']);
+      if(header&&(dateCol<0||descCol<0||(amountCol<0&&(debitCol<0||creditCol<0)))){renderStatementColumnMapper(displayHeaders,signature);return;}
       const rows=[];const parseErrors=[];let skipped=0;
       const cell=(parts,col)=>col>=0?String(parts[col]??'').trim():'';
       const parseFinHubType=value=>{
@@ -6204,6 +6226,7 @@ Bonus"></textarea></div>
       const idx = Number(document.getElementById('import-rule-edit-index').value);
       captureUndo(idx >= 0 ? 'Edit statement import rule' : 'Add statement import rule');
       state.importRules = Array.isArray(state.importRules) ? state.importRules : [];
+    state.statementCsvMappings = state.statementCsvMappings && typeof state.statementCsvMappings === 'object' ? state.statementCsvMappings : {};
       if (idx >= 0 && state.importRules[idx]) state.importRules[idx] = rule;
       else {
         const normalized = normalizeStatementText(match);
@@ -7344,13 +7367,12 @@ Bonus"></textarea></div>
 
     function applySmartMerchantRules(desc) {
       if (document.getElementById('tx-type')?.value !== 'Expense') return;
-      const d = desc.toLowerCase();
-      const rule = (state.merchantRules || []).find(r => d.includes(r.keyword));
-      if (rule) {
-        document.getElementById('tx-category').value = rule.category;
-        updateSubcategoryDropdown();
-        document.getElementById('tx-subcategory').value = rule.subcategory;
-      }
+      const d=normalizeStatementText(desc);
+      const rule=(state.merchantRules||[]).filter(r=>normalizeStatementText(r.keyword)&&d.includes(normalizeStatementText(r.keyword))).sort((a,b)=>normalizeStatementText(b.keyword).length-normalizeStatementText(a.keyword).length)[0];
+      if(!rule)return;
+      const category=document.getElementById('tx-category');const subcategory=document.getElementById('tx-subcategory');
+      const changed=category.value!==rule.category||subcategory.value!==(rule.subcategory||'');
+      if(changed){category.value=rule.category;updateSubcategoryDropdown();subcategory.value=rule.subcategory||'';}
     }
 
     function openCategoryModal(editIdx = -1) {
@@ -8566,6 +8588,7 @@ Bonus"></textarea></div>
       const categorySelect = document.getElementById('tx-category');
       const selectedType = typeSelect?.value || '';
       let selectedCategory = categorySelect?.value || '';
+      if(selectedType==='Expense') applySmartMerchantRules(document.getElementById('tx-vendor')?.value||'');
       const isTransfer = selectedType === 'Transfer';
       const isDebt = selectedType === 'Debt';
       const isReversal = selectedType === 'Reversal';
@@ -8805,11 +8828,16 @@ Bonus"></textarea></div>
         if (state.lastUsedAccountId && state.accounts.some(a => a.id === state.lastUsedAccountId)) {
           document.getElementById('tx-account').value = state.lastUsedAccountId;
         }
-        const lastBucket = document.getElementById('tx-type').value === 'Income' ? state.lastUsedIncomeCategory : state.lastUsedCategory;
+        const newType=document.getElementById('tx-type').value;
+        const lastBucket = newType === 'Income' ? state.lastUsedIncomeCategory : state.lastUsedCategory;
         if (lastBucket && getTransactionBuckets().some(c => c.name === lastBucket)) {
           document.getElementById('tx-category').value = lastBucket;
           updateSubcategoryDropdown();
+          const lastSub=newType==='Income'?state.lastUsedIncomeSubcategory:state.lastUsedSubcategory;
+          if(lastSub && [...document.getElementById('tx-subcategory').options].some(o=>o.value===lastSub)) document.getElementById('tx-subcategory').value=lastSub;
         }
+        if(state.lastUsedTransferToAccountId && [...document.getElementById('tx-transfer-to').options].some(o=>o.value===String(state.lastUsedTransferToAccountId))) document.getElementById('tx-transfer-to').value=String(state.lastUsedTransferToAccountId);
+        if(state.lastUsedDebtTargetId && document.getElementById('tx-debt-target') && [...document.getElementById('tx-debt-target').options].some(o=>o.value===String(state.lastUsedDebtTargetId))) document.getElementById('tx-debt-target').value=String(state.lastUsedDebtTargetId);
       }
       document.getElementById('transaction-modal').classList.remove('hidden');
     }
@@ -9060,11 +9088,12 @@ Bonus"></textarea></div>
 
         if (!editId) {
           const normalize = value => String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-          const possibleDuplicate = (state.transactions || []).find(t =>
-            t.date === date && t.accountId === accountId && t.type === type &&
-            Math.abs(Number(t.amount) - amount) < 0.005 &&
-            normalize(t.vendor) === normalize(vendor)
-          );
+          const enteredIdentity=normalize(vendor||desc);
+          const possibleDuplicate = enteredIdentity && (state.transactions || []).find(t => {
+            const existingIdentity=normalize(t.vendor||t.desc);
+            return t.date===date && String(t.accountId)===String(accountId) && t.type===type &&
+              Math.abs(Number(t.amount)-amount)<0.005 && existingIdentity===enteredIdentity;
+          });
           if (possibleDuplicate && !confirm(`A similar transaction already exists (${possibleDuplicate.date}, ${possibleDuplicate.vendor || possibleDuplicate.desc}, ${formatFinancial(possibleDuplicate.amount)}). Add another anyway?`)) return;
         }
         if (editId && !state.transactions.some(t => String(t.id) === String(editId))) {
@@ -9074,7 +9103,9 @@ Bonus"></textarea></div>
         captureUndo(editId ? 'Edit transaction' : 'Add transaction');
 
         state.lastUsedAccountId = accountId;
-        if (category) { if (type === 'Income') state.lastUsedIncomeCategory = category; else state.lastUsedCategory = category; }
+        if (category) { if (type === 'Income') {state.lastUsedIncomeCategory=category;state.lastUsedIncomeSubcategory=subcategory||'';} else {state.lastUsedCategory=category;state.lastUsedSubcategory=subcategory||'';} }
+        if(type==='Transfer'&&transferToAccountId)state.lastUsedTransferToAccountId=transferToAccountId;
+        const debtTargetId=document.getElementById('tx-debt-target')?.value;if(type==='Debt Payment'&&debtTargetId)state.lastUsedDebtTargetId=debtTargetId;
 
         if (editId) {
           const idx = state.transactions.findIndex(t => String(t.id) === String(editId));
