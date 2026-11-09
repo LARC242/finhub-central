@@ -5905,18 +5905,31 @@ Bonus"></textarea></div>
       });
       return window.finHubPdfJsLoading;
     }
-    function pdfStatementDateAtStart(line) {
-      const m = String(line||'').trim().match(/^((?:\d{4}[-/]\d{1,2}[-/]\d{1,2})|(?:\d{1,2}[-/]\d{1,2}[-/]\d{2,4})|(?:\d{1,2}\s+[A-Za-z]{3,9}\s+\d{2,4}))\s+(.+)$/);
-      if (!m) return null;
-      const date = statementDate(m[1]);
-      return date ? {date, remainder:m[2]} : null;
+    function pdfStatementDateAtStart(line, statementYear=null) {
+      const value=String(line||'').trim();
+      // Some bank PDFs split the date into separate text items (for example, "Oct" + "3").
+      const monthMatch=value.match(/^([A-Za-z]{3,9})\s+(\d{1,2})(?:,?\s+(\d{4}))?\s+(.+)$/);
+      if(monthMatch) {
+        const monthNames=['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+        const month=monthNames.indexOf(monthMatch[1].slice(0,3).toLowerCase())+1;
+        const year=Number(monthMatch[3]||statementYear);
+        const day=Number(monthMatch[2]);
+        if(month&&year>=2000&&year<=2100) {
+          const date=statementDate(`${year}-${month}-${day}`);
+          if(date)return {date,remainder:monthMatch[4]};
+        }
+      }
+      const m=value.match(/^((?:\d{4}[-/]\d{1,2}[-/]\d{1,2})|(?:\d{1,2}[-/]\d{1,2}[-/]\d{2,4})|(?:\d{1,2}\s+[A-Za-z]{3,9}\s+\d{2,4}))\s+(.+)$/);
+      if(!m)return null;
+      const date=statementDate(m[1]);
+      return date?{date,remainder:m[2]}:null;
     }
     function pdfMoneyTokens(value) {
       const re = /\(?-?\$?\d{1,3}(?:,\d{3})*(?:\.\d{2})\)?-?(?:\s*(?:CR|DR))?|\(?-?\$?\d+(?:\.\d{2})\)?-?(?:\s*(?:CR|DR))?/gi;
       return [...String(value||'').matchAll(re)].map(m=>({text:m[0].trim(),index:m.index,length:m[0].length}));
     }
-    function parsePdfStatementLine(lineText, lineItems=[], directionColumns=null) {
-      const dated = pdfStatementDateAtStart(lineText);
+    function parsePdfStatementLine(lineText, lineItems=[], directionColumns=null, statementYear=null) {
+      const dated = pdfStatementDateAtStart(lineText,statementYear);
       if (!dated) return null;
       const tokens = pdfMoneyTokens(dated.remainder);
       if (!tokens.length) return null;
@@ -5956,9 +5969,13 @@ Bonus"></textarea></div>
         const bytes=await file.arrayBuffer();
         const pdf=await pdfjs.getDocument({data:bytes}).promise;
         const extracted=[];
+        let statementYear=null;
         for(let pageNo=1;pageNo<=pdf.numPages;pageNo++) {
           const page=await pdf.getPage(pageNo);
           const content=await page.getTextContent();
+          const pageText=content.items.map(item=>item.str||'').join(' ');
+          const yearMatch=pageText.match(/\b(?:19|20)\d{2}\b/);
+          if(!statementYear&&yearMatch)statementYear=Number(yearMatch[0]);
           const lines=[];
           for(const item of content.items) {
             if(!item.str || !item.str.trim()) continue;
@@ -5980,9 +5997,9 @@ Bonus"></textarea></div>
           });
         }
         const rows=[];
-        extracted.forEach(line=>{const row=parsePdfStatementLine(line.text,line.items,line.directionColumns);if(row)rows.push(row);});
+        extracted.forEach(line=>{const row=parsePdfStatementLine(line.text,line.items,line.directionColumns,statementYear);if(row)rows.push(row);});
         if(!rows.length) {
-          if(host) host.innerHTML='<div class="rounded-xl border border-amber-300/50 bg-amber-500/5 p-3 text-xs"><strong>FinHub could not identify transaction rows in this PDF.</strong><p class="mt-1">This first PDF importer supports text-based statements with transaction dates at the start of each row and an amount at the end. Scanned/image-only PDFs and unusual layouts need OCR or a bank CSV export. No transactions were imported.</p></div>';
+          if(host) host.innerHTML='<div class="rounded-xl border border-amber-300/50 bg-amber-500/5 p-3 text-xs"><strong>FinHub could not identify transaction rows in this PDF.</strong><p class="mt-1">This PDF layout could not be parsed. FinHub supports selectable-text statements with recognizable dates and debit/credit columns; scanned/image-only PDFs need OCR. No transactions were imported.</p></div>';
           return;
         }
         const csv=['Date,Description,Amount',...rows.map(r=>[r.date,r.description,r.amount].map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(','))].join('\r\n');
