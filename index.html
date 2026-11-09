@@ -9125,25 +9125,24 @@ Bonus"></textarea></div>
       [...header.children].forEach(th=>{
         const key=th.dataset.colKey;
         if(!key||key==='actions')return;
-        // Bind the handle to the physical column position, not a second label lookup.
-        // This keeps the handle, header and colgroup aligned after user reordering.
-        const columnIndex=th.cellIndex;
+        th.style.position='relative';
+        th.style.userSelect='none';
         const grip=document.createElement('span');
         grip.className='ledger-resize-handle';
         grip.dataset.resizeKey=key;
         grip.title='Drag to resize '+key+' column';
         grip.setAttribute('aria-label','Resize '+key+' column');
-        grip.style.cssText='position:absolute;right:-1px;top:0;bottom:0;width:18px;cursor:col-resize;touch-action:none;z-index:50;pointer-events:auto;background:linear-gradient(to right,transparent 42%,rgba(99,102,241,.65) 42%,rgba(99,102,241,.65) 58%,transparent 58%);';
-        th.style.position='relative';
-        th.style.userSelect='none';
+        // An 8px invisible hit area stays entirely inside its own header cell.
+        // Only a hairline divider appears on hover, so the table remains visually seamless.
+        grip.style.cssText='position:absolute;right:0;top:0;bottom:0;width:8px;cursor:col-resize;touch-action:none;z-index:2;pointer-events:auto;background:transparent;border-right:1px solid rgba(148,163,184,.10);box-sizing:border-box;';
+        grip.addEventListener('pointerenter',()=>{grip.style.borderRightColor='rgba(148,163,184,.32)';});
+        grip.addEventListener('pointerleave',()=>{if(!grip.dataset.dragging)grip.style.borderRightColor='rgba(148,163,184,.10)';});
         grip.addEventListener('pointerdown',e=>{
           e.preventDefault();
           e.stopPropagation();
           const liveColgroup=table.querySelector('colgroup[data-ledger-columns]');
-          const col=liveColgroup?.children[columnIndex];
+          const col=[...(liveColgroup?.children||[])].find(c=>c.dataset.colKey===key);
           if(!col)return;
-          const actualKey=col.dataset.colKey;
-          if(!actualKey)return;
           const startX=e.clientX;
           const startWidth=parseFloat(col.style.width)||th.getBoundingClientRect().width;
           const applyWidth=raw=>{
@@ -9163,14 +9162,18 @@ Bonus"></textarea></div>
             window.removeEventListener('pointercancel',cancel,true);
             document.body.style.cursor='';
             document.body.style.userSelect='';
+            delete grip.dataset.dragging;
+            grip.style.borderRightColor='rgba(148,163,184,.10)';
           };
           const finish=ev=>{
             const width=applyWidth(startWidth+ev.clientX-startX);
-            ledgerPrefs().widths[actualKey]=width;
+            ledgerPrefs().widths[key]=width;
             saveData();
             cleanup();
           };
           const cancel=()=>cleanup();
+          grip.dataset.dragging='true';
+          grip.style.borderRightColor='rgba(148,163,184,.45)';
           document.body.style.cursor='col-resize';
           document.body.style.userSelect='none';
           window.addEventListener('pointermove',move,true);
