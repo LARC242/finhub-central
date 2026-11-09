@@ -3201,7 +3201,7 @@ Bonus"></textarea></div>
         <div class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-3"><div class="text-[10px] uppercase font-semibold text-gray-500">Opening balance${hasSavedOpeningBalance ? ' · saved' : ' · derived'}</div><div class="flex items-center gap-2 mt-2"><span class="text-xs text-gray-500">$</span><input id="acc-opening-balance-input" type="number" step="0.01" value="${Number(openingBalance).toFixed(2)}" class="min-w-0 w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1.5 text-sm font-bold accounting-num" /></div><button onclick="saveAccountOpeningBalance()" class="mt-2 w-full px-2 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-semibold theme-bg">Save opening balance</button><div class="text-[9px] text-gray-400 mt-1">As of the start of this account's recorded activity. Saving adjusts the current balance by the same difference; it does not create a transaction.</div></div>
         <div class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-3"><div class="text-[10px] uppercase font-semibold text-gray-500">${balanceLabel}</div><div class="text-base font-bold accounting-num mt-1">${formatFinancial(currentBalance)}</div></div>
         <div class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-3"><div class="text-[10px] uppercase font-semibold text-gray-500">Activity records</div><div class="text-base font-bold mt-1">${activity.length}</div></div>
-        <div class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-3"><div class="text-[10px] uppercase font-semibold text-gray-500">Calculated ending balance</div><div class="text-base font-bold mt-1 accounting-num">${formatFinancial(calculatedEndingBalance)}</div><div class="text-[9px] ${Math.abs(balanceDifference) < 0.005 ? 'text-emerald-600' : 'text-amber-600'} mt-1">${Math.abs(balanceDifference) < 0.005 ? 'Matches current balance' : `Difference vs current: ${formatFinancial(balanceDifference)}`}</div>${acc.type === 'debt' && hasSavedOpeningBalance && Math.abs(balanceDifference) >= 0.005 ? `<button type="button" onclick="syncLiabilityBalanceToActivity('${String(acc.id).replace(/'/g, '&#39;')}')" class="mt-2 w-full px-2 py-1.5 rounded-lg bg-amber-600 text-white text-xs font-semibold">Sync balance to activity</button><div class="text-[9px] text-gray-400 mt-1">Updates the saved balance to the opening balance plus recorded activity. No transactions are created.</div>` : ''}</div>`;
+        <div class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-3"><div class="text-[10px] uppercase font-semibold text-gray-500">Calculated ending balance</div><div class="text-base font-bold mt-1 accounting-num">${formatFinancial(calculatedEndingBalance)}</div><div class="text-[9px] ${Math.abs(balanceDifference) < 0.005 ? 'text-emerald-600' : 'text-amber-600'} mt-1">${Math.abs(balanceDifference) < 0.005 ? 'Matches current balance' : `Difference vs current: ${formatFinancial(balanceDifference)}`}</div>${hasSavedOpeningBalance && Math.abs(balanceDifference) >= 0.005 ? `<button type="button" onclick="syncAccountBalanceToActivity('${String(acc.id).replace(/'/g, '&#39;')}')" class="mt-2 w-full px-2 py-1.5 rounded-lg bg-amber-600 text-white text-xs font-semibold">Sync balance to activity</button><div class="text-[9px] text-gray-400 mt-1">Updates the saved balance to the opening balance plus recorded activity. No transactions are created.</div>` : ''}</div>`;
 
       rows.innerHTML = `<tr class="bg-indigo-50/70 dark:bg-indigo-950/30"><td class="px-4 py-3 whitespace-nowrap">—</td><td class="px-4 py-3 font-semibold">Opening balance <span class="text-[10px] font-normal text-gray-500">(${hasSavedOpeningBalance ? 'saved opening balance' : 'derived until saved'})</span></td><td class="px-4 py-3">Opening balance</td><td class="px-4 py-3 text-right accounting-num">—</td><td class="px-4 py-3 text-right font-bold accounting-num">${formatFinancial(runningBalance)}</td></tr>`;
       if (!activity.length) {
@@ -3225,22 +3225,33 @@ Bonus"></textarea></div>
       document.getElementById('account-detail-modal').classList.remove('hidden');
     }
 
-    function syncLiabilityBalanceToActivity(accId) {
-      const acc = state.accounts.find(a => String(a.id) === String(accId) && a.type === 'debt');
+    function syncAccountBalanceToActivity(accId) {
+      const acc = state.accounts.find(a => String(a.id) === String(accId));
       if (!acc || !accountHasSavedOpeningBalance(acc)) return;
       const activity = getAccountActivityEntries(acc);
       const totalChanges = activity.reduce((sum, entry) => sum + (Number(entry.change) || 0), 0);
       const opening = Number(acc.openingBalance) || 0;
       const calculated = Math.round((opening + totalChanges) * 100) / 100;
       const current = Math.round((Number(acc.balance) || 0) * 100) / 100;
-      if (Math.abs(calculated - current) < 0.005) { alert('This liability balance already matches its recorded activity.'); return; }
+      if (Math.abs(calculated - current) < 0.005) {
+        alert('This account balance already matches its recorded activity.');
+        return;
+      }
       const difference = Math.round((calculated - current) * 100) / 100;
-      if (!confirm(`Update ${acc.name} from ${formatFinancial(current)} to ${formatFinancial(calculated)} using its saved opening balance and ${activity.length} recorded activity entries? This changes only the account balance; it does not add, remove, or edit transactions.`)) return;
+      const accountKind = acc.type === 'debt' ? 'liability' : 'asset';
+      if (!confirm(`Update ${acc.name} (${accountKind}) from ${formatFinancial(current)} to ${formatFinancial(calculated)} using its saved opening balance and ${activity.length} recorded activity entries? This changes only the saved account balance. It does not add, remove, or edit transactions.`)) return;
       captureUndo(`Sync ${acc.name} balance to recorded activity`);
       acc.balance = calculated;
+      acc.balanceLastReconciledFromActivityAt = new Date().toISOString();
+      acc.balanceLastReconciledDifference = difference;
       saveData();
       renderDashboard();
       openAccountDetail(acc.id);
+    }
+
+    // Backward-compatible alias for older buttons or saved UI fragments.
+    function syncLiabilityBalanceToActivity(accId) {
+      return syncAccountBalanceToActivity(accId);
     }
 
     function saveAccountOpeningBalance() {
