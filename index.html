@@ -876,7 +876,7 @@
           <div><h3 class="font-bold">Debt Account Activity</h3><p class="text-xs text-gray-500">Linked payments and other transactions associated with the selected debt.</p></div>
           <div class="flex flex-wrap gap-2">
             <select id="debt-account-picker" onchange="renderDebtPaymentHistory()" class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-1.5 text-xs"></select>
-            <button onclick="openDebtPaymentModal()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold"><i class="fa-solid fa-plus mr-1"></i> Log Payment</button>
+            <button onclick="openDebtPaymentEntry()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold"><i class="fa-solid fa-plus mr-1"></i> Log Payment</button>
           </div>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-4 gap-2">
@@ -1723,7 +1723,7 @@ Bonus"></textarea></div>
         <div><label class="block text-xs font-semibold text-gray-500 mb-1">Description</label><input type="text" id="dp-desc" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" placeholder="Debt payment"></div>
         <div><label class="block text-xs font-semibold text-gray-500 mb-1">Total payment ($)</label><input type="number" step="0.01" min="0.01" id="dp-amount" required oninput="updateDebtPaymentSplit()" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
         <div class="grid grid-cols-2 gap-3"><div><label class="block text-xs font-semibold text-gray-500 mb-1">Principal portion ($)</label><input type="number" step="0.01" min="0" id="dp-principal" required oninput="this.dataset.manual='1';updateDebtPaymentSplit()" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div><div><label class="block text-xs font-semibold text-gray-500 mb-1">Interest portion ($)</label><input type="number" id="dp-interest" readonly class="w-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div></div>
-        <p id="dp-split-help" class="text-[10px] text-gray-400">Enter the split from your lender statement. If interest was already recorded separately with Record Interest Charge, do not include it again here; keep the full payment in the principal portion. Otherwise, enter the actual principal and interest split. Only principal reduces the debt balance, and the interest portion is reported as an expense.</p>
+        <p id="dp-split-help" class="text-[10px] text-gray-400">Enter the principal shown on your lender statement. The remaining amount is treated as interest; only principal reduces the debt balance.</p>
         <div>
           <label class="block text-xs font-semibold text-gray-500 mb-1">Funding account — money comes from here</label>
           <select id="dp-funding-account" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></select>
@@ -8140,6 +8140,39 @@ Bonus"></textarea></div>
       saveData();
       closeInterestChargeModal();
       renderDebtPlanner(); renderDebtPaymentHistory(); renderLedger(); renderDashboard();
+    }
+
+    // New debt payments are entered in the main transaction workspace; the legacy modal remains for editing historical payment records.
+    function openDebtPaymentEntry() {
+      const picker = document.getElementById('debt-account-picker');
+      const selectedDebtId = picker?.value || '';
+      openTransactionModal();
+      const type = document.getElementById('tx-type');
+      if (type) { type.value = 'Debt'; }
+      updateTransactionTypeFields();
+      const category = document.getElementById('tx-category');
+      if (category) {
+        refreshTransactionBucketOptions('Debt Payment');
+        category.value = 'Debt Payment';
+      }
+      updateSubcategoryDropdown();
+      const debtTarget = document.getElementById('tx-debt-target');
+      if (debtTarget) {
+        debtTarget.innerHTML = (state.accounts || []).filter(a => a.type === 'debt' && !a.archived).map(a => `<option value="${a.id}">${escapeHtml(a.name)}</option>`).join('');
+        if (selectedDebtId && [...debtTarget.options].some(o => String(o.value) === String(selectedDebtId))) debtTarget.value = selectedDebtId;
+      }
+      const paymentType = document.getElementById('tx-debt-payment-type');
+      const debt = state.accounts.find(a => String(a.id) === String(debtTarget?.value));
+      if (paymentType) { paymentType.innerHTML = DEBT_PAYMENT_CLASSIFICATIONS.map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join(''); paymentType.value = inferDebtPaymentClassification(debt); }
+      const funding = document.getElementById('tx-account');
+      if (funding && (!funding.value || !state.accounts.some(a => String(a.id) === String(funding.value) && a.type === 'asset'))) {
+        const firstAsset = state.accounts.find(a => a.type === 'asset' && !a.archived); if (firstAsset) funding.value = firstAsset.id;
+      }
+      const amount = document.getElementById('tx-amount'); if (amount) amount.value = '';
+      const principal = document.getElementById('tx-debt-principal'); if (principal) { principal.value = debt?.paymentMethod === 'interest-only' ? '0.00' : ''; principal.dataset.initialized = '1'; }
+      updateInlineDebtSplit(false);
+      const vendor = document.getElementById('tx-vendor'); if (vendor) { vendor.value = ''; vendor.placeholder = 'e.g. Monthly loan payment'; }
+      document.getElementById('tx-modal-title').textContent = 'Log Debt Payment';
     }
 
     function openDebtPaymentModal(paymentId = '') {
