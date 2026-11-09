@@ -62,7 +62,10 @@
     /* Expense Tracker remains a true table and scrolls horizontally on narrow screens. */
     #ledger-table-container { max-width:100%; overflow-x:auto !important; overflow-y:visible; -webkit-overflow-scrolling:touch; }
     #ledger-table-container table { min-width:1400px; width:100%; }
-    #ledger-table-container th, #ledger-table-container td { white-space:nowrap; }
+    #ledger-table-container th, #ledger-table-container td { white-space:normal; overflow-wrap:anywhere; word-break:normal; vertical-align:top; }
+    #ledger-table-container th { position:relative; }
+    #ledger-table-container tbody#ledger-rows td { overflow:hidden; text-overflow:ellipsis; }
+    #ledger-table-container tbody#ledger-rows td button, #ledger-table-container tbody#ledger-rows td a { max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
     /* Compact Expense Tracker density: tighter rows and slightly smaller type. */
     #ledger-table-container thead th { padding:.5rem .65rem !important; font-size:.64rem !important; line-height:1.15 !important; }
     #ledger-table-container tbody#ledger-rows td { padding:.42rem .65rem !important; font-size:.72rem !important; line-height:1.2 !important; }
@@ -9544,8 +9547,9 @@ Bonus"></textarea></div>
       const p=ledgerPrefs(),table=document.querySelector('#ledger-table-container table');if(!table)return;
       const header=table.querySelector('thead tr:first-child'),body=table.querySelector('tbody#ledger-rows');if(!header||!body)return;
       const keyForLabel=label=>(ledgerCols.find(x=>x[0]===String(label).trim())||[])[1];
-      // Rebuild the visible DOM order from stable column keys before assigning widths.
-      const headerMap=new Map([...header.children].map(th=>[th.dataset.colKey||keyForLabel(th.textContent),th]));
+      const keyForHeader=th=>{if(th.dataset.colKey)return th.dataset.colKey;const clone=th.cloneNode(true);clone.querySelectorAll('button,.ledger-resize-handle').forEach(el=>el.remove());return keyForLabel(clone.textContent);};
+      // Resolve header keys without including filter-button glyphs, then map body cells by their labels.
+      const headerMap=new Map([...header.children].map(th=>[keyForHeader(th),th]).filter(([key])=>key));
       const rowMaps=[...body.rows].map(row=>({row,map:new Map([...row.cells].map(td=>[keyForLabel(td.dataset.label),td]))}));
       p.order.forEach(key=>{const th=headerMap.get(key);if(th)header.appendChild(th);});
       rowMaps.forEach(({row,map})=>p.order.forEach(key=>{const td=map.get(key);if(td)row.appendChild(td);}));
@@ -9554,7 +9558,7 @@ Bonus"></textarea></div>
       table.querySelectorAll('colgroup[data-ledger-columns]').forEach(el=>el.remove());
       const defaults={date:125,vendor:150,description:190,type:130,bucket:135,subcategory:145,account:160,amount:115,running:145,actions:105};
       const widthFor=key=>Math.max(64,Math.min(520,Number(p.widths[key])||defaults[key]||120));
-      [...header.children].forEach(th=>{const key=keyForLabel(th.textContent);th.dataset.colKey=key||'';th.style.display=p.hidden.includes(key)?'none':'';});
+      [...header.children].forEach(th=>{const key=keyForHeader(th);th.dataset.colKey=key||'';th.style.display=p.hidden.includes(key)?'none':'';});
       [...body.rows].forEach(row=>[...row.cells].forEach(td=>{const key=keyForLabel(td.dataset.label);td.style.display=p.hidden.includes(key)?'none':'';}));
       const totalWidth=p.order.reduce((sum,key)=>sum+widthFor(key),0);
       table.style.tableLayout='fixed';table.style.width=totalWidth+'px';table.style.minWidth=totalWidth+'px';table.style.maxWidth='none';
@@ -9562,7 +9566,7 @@ Bonus"></textarea></div>
         const key=th.dataset.colKey;if(!key)return;
         const width=widthFor(key)+'px';
         th.style.width=width;th.style.minWidth=width;th.style.maxWidth=width;th.style.boxSizing='border-box';
-        [...body.rows].forEach(row=>{const td=row.cells[index];if(td){td.style.width=width;td.style.minWidth=width;td.style.maxWidth=width;td.style.boxSizing='border-box';}});
+        [...body.rows].forEach(row=>{const td=[...row.cells].find(cell=>keyForLabel(cell.dataset.label)===key);if(td){td.style.width=width;td.style.minWidth=width;td.style.maxWidth=width;td.style.boxSizing='border-box';}});
       });
       addLedgerColumnResizeHandles(header);
     }
@@ -9580,10 +9584,10 @@ Bonus"></textarea></div>
         grip.addEventListener('pointerleave',()=>{if(!grip.dataset.dragging)grip.style.borderRightColor='rgba(148,163,184,.10)';});
         grip.addEventListener('pointerdown',e=>{
           e.preventDefault();e.stopPropagation();
-          // Capture the actual rendered cell index, not a separately looked-up column.
-          const columnIndex=th.cellIndex;
-          const cells=()=>[...header.children].map((cell,index)=>index===columnIndex?cell:null).filter(Boolean);
-          const columnCells=()=>[...table.querySelectorAll('tbody#ledger-rows tr')].map(row=>row.cells[columnIndex]).filter(Boolean);
+          // Resolve the target column by its stable key so reordered/hidden columns cannot shift the resize target.
+          const cells=()=>[...header.children].filter(cell=>cell.dataset.colKey===key);
+          const columnCells=()=>[...table.querySelectorAll('tbody#ledger-rows tr')].flatMap(row=>[...row.cells].filter(cell=>keyForLedgerCell(cell)===key));
+          const keyForLedgerCell=cell=>(ledgerCols.find(x=>x[0]===String(cell.dataset.label||'').trim())||[])[1];
           const startX=e.clientX;
           const startWidth=Math.round(th.getBoundingClientRect().width)||Math.max(64,Number(ledgerPrefs().widths[key])||125);
           const applyWidth=raw=>{
