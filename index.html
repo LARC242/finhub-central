@@ -1023,10 +1023,16 @@
           <h3 class="text-md font-bold text-indigo-600 dark:text-indigo-400 theme-text"><i class="fa-solid fa-cloud-arrow-up mr-2"></i>Backup & Transfer Between Devices</h3>
           <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Move your FinHub data between your laptop, phone, or tablet using a backup file. Save the exported file somewhere both devices can access, such as Google Drive or iCloud.</p>
         </div>
-        <div class="flex flex-col sm:flex-row gap-3">
-          <button onclick="exportData()" class="flex-1 px-4 py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl text-sm font-semibold text-white shadow-md theme-bg"><i class="fa-solid fa-download mr-2"></i>Export JSON Backup</button>
-          <button onclick="document.getElementById('backup-import-file').click()" class="flex-1 px-4 py-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl text-sm font-semibold"><i class="fa-solid fa-upload mr-2"></i>Import Backup</button>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <button onclick="saveLatestBackup()" class="px-4 py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl text-sm font-semibold text-white shadow-md theme-bg"><i class="fa-solid fa-floppy-disk mr-2"></i>Save / Update Latest Backup</button>
+          <button onclick="exportDatedArchive()" class="px-4 py-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl text-sm font-semibold"><i class="fa-solid fa-box-archive mr-2"></i>Save Dated Archive</button>
+          <button onclick="document.getElementById('backup-import-file').click()" class="px-4 py-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl text-sm font-semibold"><i class="fa-solid fa-upload mr-2"></i>Import Backup</button>
           <input id="backup-import-file" type="file" accept=".json,.xlsx,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" class="hidden" onchange="importData(event)">
+        </div>
+        <div class="rounded-xl bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 p-3 space-y-2">
+          <div class="flex items-center justify-between gap-2"><strong class="text-xs">Latest backup destination</strong><span id="backup-destination-status" class="text-[10px] text-gray-500">Not selected yet</span></div>
+          <p class="text-[11px] text-gray-500 dark:text-gray-400">Choose where <strong>FinHub_LATEST_BACKUP.json</strong> lives. In supported browsers, FinHub can remember that file and ask permission to overwrite it on future backups. Otherwise, it downloads a fresh copy and you choose the save location in your browser.</p>
+          <p id="backup-file-details" class="text-[10px] text-gray-500">No backup file connected.</p>
         </div>
         <div id="backup-status" class="w-full text-right text-[10px] text-gray-400">No exported backup recorded yet</div>
         <div class="rounded-xl bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-900 p-3 space-y-2">
@@ -9240,25 +9246,110 @@ Bonus"></textarea></div>
       return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}_${pad(date.getHours())}-${pad(date.getMinutes())}-${pad(date.getSeconds())}`;
     }
 
-    function exportData() {
-      const backupDate = new Date();
-      state.lastBackupAt = backupDate.toISOString();
+    const BACKUP_HANDLE_DB = 'finhub_backup_handles_v1';
+    const BACKUP_HANDLE_STORE = 'handles';
+    const LATEST_BACKUP_HANDLE_KEY = 'latest-json-backup';
+
+    function openBackupHandleDb() {
+      return new Promise((resolve, reject) => {
+        if (!('indexedDB' in window)) return reject(new Error('Browser storage for the backup location is unavailable.'));
+        const request = indexedDB.open(BACKUP_HANDLE_DB, 1);
+        request.onupgradeneeded = () => { if (!request.result.objectStoreNames.contains(BACKUP_HANDLE_STORE)) request.result.createObjectStore(BACKUP_HANDLE_STORE); };
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error || new Error('Could not open backup location storage.'));
+      });
+    }
+    async function storeLatestBackupHandle(handle) {
+      const db = await openBackupHandleDb();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(BACKUP_HANDLE_STORE, 'readwrite');
+        tx.objectStore(BACKUP_HANDLE_STORE).put(handle, LATEST_BACKUP_HANDLE_KEY);
+        tx.oncomplete = () => { db.close(); resolve(); };
+        tx.onerror = () => { db.close(); reject(tx.error || new Error('Could not remember the backup file.')); };
+      });
+    }
+    async function getLatestBackupHandle() {
+      const db = await openBackupHandleDb();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(BACKUP_HANDLE_STORE, 'readonly');
+        const req = tx.objectStore(BACKUP_HANDLE_STORE).get(LATEST_BACKUP_HANDLE_KEY);
+        req.onsuccess = () => { const value = req.result || null; db.close(); resolve(value); };
+        req.onerror = () => { db.close(); reject(req.error || new Error('Could not retrieve the saved backup location.')); };
+      });
+    }
+    function updateBackupDestinationStatus(name, connected) {
+      const status = document.getElementById('backup-destination-status');
+      const details = document.getElementById('backup-file-details');
+      if (status) { status.textContent = connected ? 'File connected' : 'Not selected'; status.className = `text-[10px] ${connected ? 'text-emerald-600' : 'text-gray-500'}`; }
+      if (details) details.textContent = connected ? `Connected file: ${name}. Future updates may ask you to grant write permission.` : 'No backup file connected.';
+    }
+    async function refreshBackupDestinationStatus() {
+      try { const handle = await getLatestBackupHandle(); updateBackupDestinationStatus(handle?.name || '', !!handle); }
+      catch (_) { updateBackupDestinationStatus('', false); }
+    }
+    function buildBackupBlob() {
+      return new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+    }
+    async function writeBackupToHandle(handle, blob) {
+      const permission = await handle.queryPermission({ mode: 'readwrite' });
+      const granted = permission === 'granted' ? 'granted' : await handle.requestPermission({ mode: 'readwrite' });
+      if (granted !== 'granted') throw new Error('Write permission was not granted. No backup file was changed.');
+      const writable = await handle.createWritable();
+      await writable.write(blob);
+      await writable.close();
+    }
+    function recordSuccessfulBackup() {
+      state.lastBackupAt = new Date().toISOString();
       saveData();
       localStorage.removeItem(BACKUP_REMINDER_SNOOZE_KEY);
-      // The browser confirms the export was requested, but it cannot confirm
-      // where the user saved the downloaded file.
-      const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `finhub_backup_${getLocalBackupTimestamp(backupDate)}.json`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
       renderBackupStatus();
       checkBackupReminder();
     }
+    async function saveLatestBackup() {
+      const blob = buildBackupBlob();
+      try {
+        if (window.showSaveFilePicker) {
+          let handle = null;
+          try { handle = await getLatestBackupHandle(); } catch (_) {}
+          if (handle) {
+            try {
+              await writeBackupToHandle(handle, blob);
+              recordSuccessfulBackup();
+              updateBackupDestinationStatus(handle.name, true);
+              alert(`Latest backup updated successfully: ${handle.name}`);
+              return;
+            } catch (err) {
+              if (err?.name === 'AbortError') return;
+              // If the remembered file cannot be written, offer a fresh location selection below.
+            }
+          }
+          const selected = await window.showSaveFilePicker({
+            suggestedName: 'FinHub_LATEST_BACKUP.json',
+            types: [{ description: 'FinHub JSON backup', accept: { 'application/json': ['.json'] } }]
+          });
+          await writeBackupToHandle(selected, blob);
+          try { await storeLatestBackupHandle(selected); } catch (err) { console.warn('Backup saved, but its location could not be remembered.', err); }
+          recordSuccessfulBackup();
+          updateBackupDestinationStatus(selected.name, true);
+          alert(`Latest backup saved successfully: ${selected.name}`);
+          return;
+        }
+        downloadBlob(blob, 'FinHub_LATEST_BACKUP.json');
+        recordSuccessfulBackup();
+        alert('The backup download has started. Choose your FinHub Backups folder in the save dialog, or check your browser Downloads settings. This browser cannot remember and overwrite the selected file automatically.');
+      } catch (err) {
+        if (err?.name === 'AbortError') return;
+        alert(`FinHub could not save the backup: ${err?.message || err}`);
+      }
+    }
+    function exportDatedArchive() {
+      const archiveDate = new Date();
+      const blob = buildBackupBlob();
+      downloadBlob(blob, `FinHub_ARCHIVE_${getLocalBackupTimestamp(archiveDate)}.json`);
+      recordSuccessfulBackup();
+    }
+    // Backward-compatible entry point used by the reminder banner.
+    function exportData() { saveLatestBackup(); }
 
     let pendingBackupImport = null;
 
@@ -9540,6 +9631,7 @@ Bonus"></textarea></div>
     switchTab('dashboard');
     renderBackupStatus();
     checkBackupReminder();
+    refreshBackupDestinationStatus();
     renderLocalSafetyCopyStatus();
     setInterval(checkBackupReminder, 60 * 60 * 1000);
   
