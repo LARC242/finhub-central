@@ -432,7 +432,7 @@
           <i id="sec-spending-chart-icon" class="fa-solid fa-chevron-down text-gray-400 transition-transform"></i>
         </button>
         <div id="sec-spending-chart-content" class="p-5 border-t border-gray-200 dark:border-gray-800">
-          <div class="flex flex-wrap justify-between items-center gap-2 mb-4"><label class="text-xs text-gray-500">Breakdown <select id="spending-chart-level" onchange="renderSpendingCategoryChart()" class="ml-2 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1"><option value="category">By bucket</option><option value="subcategory">By subcategory</option></select></label><span id="spending-chart-total" class="text-xs font-semibold accounting-num"></span></div><div id="spending-category-chart" class="grid grid-cols-1 md:grid-cols-2 gap-5 items-center"></div>
+          <div class="flex flex-wrap justify-between items-center gap-2 mb-4"><label class="text-xs text-gray-500">Breakdown <select id="spending-chart-level" onchange="renderSpendingCategoryChart()" class="ml-2 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1"><option value="category">By bucket</option><option value="subcategory" selected>By subcategory</option></select></label><span id="spending-chart-total" class="text-xs font-semibold accounting-num"></span></div><div id="spending-category-chart" class="grid grid-cols-1 md:grid-cols-2 gap-5 items-center"></div>
           <div id="spending-category-detail" class="hidden mt-5 pt-4 border-t border-gray-200 dark:border-gray-800"></div>
         </div>
       </div>
@@ -1611,16 +1611,20 @@ Bonus"></textarea></div>
           </div>
           <select id="tx-type" onchange="updateTransactionTypeFields()" class="hidden" aria-hidden="true" tabindex="-1"></select>
         </div>
-        <div id="tx-amount-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Total Amount ($)</label><input type="number" step="0.01" id="tx-amount" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
+        <div id="tx-amount-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Total Amount ($)</label><input type="number" step="0.01" id="tx-amount" oninput="updateInlineDebtSplit(false)" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
         <div id="tx-interest-charge-guidance" class="hidden rounded-xl border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30 p-3 space-y-1">
           <div class="text-xs font-bold text-amber-800 dark:text-amber-200">Interest added to a debt balance</div>
           <p class="text-[11px] text-amber-800 dark:text-amber-200">Choose the liability account in the Account field. Saving records interest expense and increases that debt balance. If the interest was paid from chequing or savings, use Category “Debt Payment” instead and enter $0 principal with the full payment as interest.</p>
         </div>
-        <div id="tx-debt-payment-guidance" class="hidden rounded-xl border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30 p-3 space-y-2">
-          <div class="text-xs font-bold text-amber-800 dark:text-amber-200">Complete the Debt Payment details</div>
-          <p class="text-[11px] text-amber-800 dark:text-amber-200">For an existing bank-imported payment, keep Account set to the chequing or savings account the money came from. Under Additional details, choose the liability being paid. Continue converts that original transaction in place—same transaction ID and no duplicate bank withdrawal.</p>
-          <p class="text-[10px] text-amber-800 dark:text-amber-200">In the next screen, enter the actual principal and interest split. For an interest-only RBC LOC payment, use $0 principal and the full payment as interest.</p>
-          <button type="button" onclick="openDebtPaymentFromTransaction()" class="w-full px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold">Continue to Debt Payment details</button>
+        <div id="tx-debt-payment-fields" class="hidden rounded-xl border border-gray-200 dark:border-gray-800 p-3 space-y-3">
+          <div class="text-xs font-semibold text-gray-700 dark:text-gray-200">Debt payment breakdown</div>
+          <div><label class="block text-xs font-semibold text-gray-500 mb-1">Debt account being paid</label><select id="tx-debt-target" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></select></div>
+          <div class="grid grid-cols-2 gap-3">
+            <div><label class="block text-xs font-semibold text-gray-500 mb-1">Principal ($)</label><input type="number" min="0" step="0.01" id="tx-debt-principal" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" oninput="updateInlineDebtSplit(true)"></div>
+            <div><label class="block text-xs font-semibold text-gray-500 mb-1">Interest ($)</label><input type="number" min="0" step="0.01" id="tx-debt-interest" readonly class="w-full bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
+          </div>
+          <label class="block text-xs font-semibold text-gray-500">Payment classification<select id="tx-debt-payment-type" class="mt-1 w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></select></label>
+          <p class="text-[10px] text-gray-400">Interest is calculated as total payment less principal. Enter the principal shown on the lender statement.</p>
         </div>
         <details class="rounded-lg border border-gray-200 dark:border-gray-800 px-3 py-2">
           <summary class="cursor-pointer text-xs font-semibold text-gray-500">Additional details (optional)</summary>
@@ -8406,6 +8410,19 @@ Bonus"></textarea></div>
       if (!isDebt && selectedCategory === 'Debt Payment' || !isDebt && selectedCategory === 'Interest Charge') selectedCategory = '';
       const isDebtPayment = isDebt && selectedCategory === 'Debt Payment';
       const isInterestCharge = isDebt && selectedCategory === 'Interest Charge';
+      if (isDebtPayment) {
+        const target = document.getElementById('tx-debt-target');
+        const prior = target?.value || document.getElementById('tx-related-debt')?.value || '';
+        if (target) {
+          target.innerHTML = (state.accounts || []).filter(a=>a.type==='debt' && !a.archived).map(a=>`<option value="${a.id}">${escapeHtml(a.name)}</option>`).join('');
+          if (prior && [...target.options].some(o=>o.value===String(prior))) target.value=String(prior);
+        }
+        const paymentType = document.getElementById('tx-debt-payment-type');
+        if (paymentType && !paymentType.options.length) paymentType.innerHTML = DEBT_PAYMENT_CLASSIFICATIONS.map(v=>`<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('');
+        const principal = document.getElementById('tx-debt-principal');
+        if (principal && principal.dataset.initialized !== '1') { const debt=state.accounts.find(a=>String(a.id)===String(target?.value)); principal.value=debt?.paymentMethod==='interest-only'?'0.00':''; principal.dataset.initialized='1'; }
+        updateInlineDebtSplit(false);
+      }
       document.querySelectorAll('.tx-kind-card').forEach(card=>card.classList.toggle('active',card.dataset.txKind===selectedType));
       document.getElementById('tx-spending-panel')?.classList.toggle('hidden',isTransfer);
       const vendorWrap=document.getElementById('tx-vendor')?.closest('div'); vendorWrap?.classList.toggle('hidden',isTransfer);
@@ -8414,26 +8431,25 @@ Bonus"></textarea></div>
       renderTransactionAnalytics();
       const submitButton = document.querySelector('#transaction-form button[type="submit"]');
       const transferWrap = document.getElementById('tx-transfer-destination-wrap');
-      const debtPaymentGuidance = document.getElementById('tx-debt-payment-guidance');
+      const debtPaymentGuidance = document.getElementById('tx-debt-payment-fields');
       const interestGuidance = document.getElementById('tx-interest-charge-guidance');
       transferWrap?.classList.toggle('hidden', !isTransfer);
       debtPaymentGuidance?.classList.toggle('hidden', !isDebtPayment);
       interestGuidance?.classList.toggle('hidden', !isInterestCharge);
       if (submitButton) {
-        submitButton.disabled = isDebtPayment;
-        submitButton.classList.toggle('opacity-50', isDebtPayment);
-        submitButton.classList.toggle('cursor-not-allowed', isDebtPayment);
-        submitButton.textContent = isInterestCharge ? 'Save Interest Charge' : isDebtPayment ? 'Continue to Debt Payment' : 'Save Transaction';
-        submitButton.title = isDebtPayment ? 'Use Continue to Debt Payment details so FinHub updates the funding and liability balances together.' : '';
+        submitButton.disabled = false;
+        submitButton.classList.remove('opacity-50','cursor-not-allowed');
+        submitButton.textContent = isInterestCharge ? 'Save Interest Charge' : isDebtPayment ? 'Save Debt Payment' : 'Save Transaction';
+        submitButton.title = '';
       }
       const additionalDetails = document.querySelector('#transaction-form > details');
-      if (additionalDetails && isDebtPayment) additionalDetails.open = true;
+      
       const relatedWrap = document.getElementById('tx-related-debt-wrap');
       relatedWrap?.classList.toggle('hidden', !isDebt || isInterestCharge || isTransfer);
       const relatedDebtLabel = document.querySelector('label[for="tx-related-debt"]') || document.querySelector('#tx-related-debt')?.previousElementSibling;
       if (relatedDebtLabel) relatedDebtLabel.textContent = isDebtPayment ? 'Debt Account Being Paid' : 'Related Debt Account';
       const relatedDebtHelp = document.getElementById('tx-related-debt-help');
-      if (relatedDebtHelp) relatedDebtHelp.textContent = isDebtPayment ? 'Choose the liability account being paid, then continue to the dedicated payment form.' : 'Link interest expenses or other activity to a debt account.';
+      if (relatedDebtHelp) relatedDebtHelp.textContent = isDebtPayment ? 'Choose the liability account being paid.' : 'Link interest expenses or other activity to a debt account.';
       const accountLabel = document.getElementById('tx-account-label');
       if (accountLabel) accountLabel.textContent = isTransfer ? 'Account From' : isDebtPayment ? 'Paid From (chequing / savings)' : isInterestCharge ? 'Debt Account Receiving Charge' : 'Account';
       const addBucketButton = document.getElementById('tx-add-bucket-btn');
@@ -8733,6 +8749,47 @@ Bonus"></textarea></div>
       renderSettings();
     }
 
+    function updateInlineDebtSplit(manual=false) {
+      const total=Math.max(0,Number(document.getElementById('tx-amount')?.value)||0);
+      const principal=document.getElementById('tx-debt-principal');
+      const interest=document.getElementById('tx-debt-interest');
+      if (!principal || !interest) return;
+      if (!manual && !principal.value) { const debt=state.accounts.find(a=>String(a.id)===String(document.getElementById('tx-debt-target')?.value)); if(debt?.paymentMethod==='interest-only') principal.value='0.00'; }
+      const p=Math.min(total,Math.max(0,Number(principal.value)||0));
+      interest.value=Math.max(0,total-p).toFixed(2);
+    }
+
+    function saveInlineDebtPayment(e) {
+      const editId=document.getElementById('tx-edit-id').value;
+      const existing=editId?state.transactions.find(t=>String(t.id)===String(editId)):null;
+      if(editId && !existing){alert('The original transaction could not be found. No changes were made.');return;}
+      if(existing?.debtPaymentId){alert('This transaction is already linked to a debt payment. Edit it from Debt Payment History.');return;}
+      if(existing && (existing.type!=='Expense' || existing.calendarBillId)){alert('Only an unlinked bank-paid Expense can be converted in place.');return;}
+      const target=document.getElementById('tx-debt-target');
+      const funding=document.getElementById('tx-account');
+      const debt=state.accounts.find(a=>String(a.id)===String(target?.value)&&a.type==='debt');
+      const fundingAcc=state.accounts.find(a=>String(a.id)===String(funding?.value)&&a.type==='asset'&&!a.archived);
+      const amount=Math.round((Number(document.getElementById('tx-amount').value)||0)*100)/100;
+      const principal=Math.round((Number(document.getElementById('tx-debt-principal').value)||0)*100)/100;
+      if(!debt || !fundingAcc || amount<=0 || principal>amount){alert('Choose a debt account and an asset funding account, and enter a valid principal amount no greater than the total payment.');return;}
+      const picker=document.getElementById('debt-account-picker');
+      picker.innerHTML=(state.accounts||[]).filter(a=>a.type==='debt'&&!a.archived).map(a=>`<option value="${a.id}">${escapeHtml(a.name)}</option>`).join('');
+      picker.value=debt.id;
+      document.getElementById('dp-edit-id').value='';
+      document.getElementById('dp-existing-tx-id').value=existing?String(existing.id):'';
+      document.getElementById('dp-date').value=document.getElementById('tx-date').value;
+      const vendor=document.getElementById('tx-vendor').value.trim();
+      document.getElementById('dp-desc').value=vendor || document.getElementById('tx-desc').value.trim() || 'Debt payment';
+      document.getElementById('dp-amount').value=amount.toFixed(2);
+      document.getElementById('dp-principal').dataset.manual='1';
+      document.getElementById('dp-principal').value=principal.toFixed(2);
+      document.getElementById('dp-funding-account').innerHTML=(state.accounts||[]).filter(a=>a.type==='asset'&&!a.archived).map(a=>`<option value="${a.id}">${escapeHtml(a.name)}</option>`).join('');
+      document.getElementById('dp-funding-account').value=fundingAcc.id;
+      document.getElementById('dp-payment-type').value=document.getElementById('tx-debt-payment-type').value || inferDebtPaymentClassification(debt);
+      document.getElementById('dp-interest').value=(amount-principal).toFixed(2);
+      saveDebtPayment({preventDefault(){}});
+    }
+
     function saveTransaction(e) {
       e.preventDefault();
       const editId = document.getElementById('tx-edit-id').value;
@@ -8741,10 +8798,7 @@ Bonus"></textarea></div>
       const visibleType = document.getElementById('tx-type').value;
       const selectedCategory = document.getElementById('tx-category').value;
       const type = internalTransactionType(visibleType, selectedCategory);
-      if (type === 'Debt Payment') {
-        alert('Please use Continue to Debt Payment details. FinHub will create or convert the linked payment record and apply both balance effects correctly.');
-        return;
-      }
+      if (type === 'Debt Payment') { saveInlineDebtPayment(e); return; }
       const selectedAccount = state.accounts.find(a => String(a.id) === String(document.getElementById('tx-account').value));
       if (type === 'Interest Charge' && selectedAccount?.type !== 'debt') { alert('For an Interest Charge, choose the liability account whose balance is increasing. If the interest is being paid from chequing or savings, use Debt → Debt Payment with $0 principal and the full amount as interest.'); return; }
       if (selectedAccount?.archived && !editId) { alert('This account is archived. Restore it before recording new activity.'); return; }
