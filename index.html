@@ -290,6 +290,30 @@
     .dark .tx-analytics-donut:after{background:#030712}
     @media(max-width:900px){.tx-workspace-form{grid-template-columns:minmax(0,1fr)}.tx-workspace-form>#tx-entry-fields,.tx-workspace-form>#tx-spending-panel,.tx-workspace-form>#split-tx-fields,.tx-workspace-form>div.flex.space-x-3{grid-column:1;grid-row:auto}.tx-workspace-form>#tx-spending-panel{order:5}.tx-analytics-chart{grid-template-columns:120px minmax(0,1fr)}}
 
+
+    /* Ocean Pop refresh: stronger colour presence with translucent surfaces and accessible contrast. */
+    body[data-finhub-theme="oceanpop"] { --op-aqua:0,251,234; --op-lime:216,255,118; --op-pink:255,38,135; --op-navy:19,42,68; background:linear-gradient(135deg,rgba(0,251,234,.13),rgba(216,255,118,.12) 48%,rgba(255,38,135,.08)),#eaf8f7 !important; }
+    body[data-finhub-theme="oceanpop"] .tab-content h2, body[data-finhub-theme="oceanpop"] .tab-content h3, body[data-finhub-theme="oceanpop"] .tab-content h4 { color:#132a44 !important; }
+    body[data-finhub-theme="oceanpop"] .tab-content h2 { text-decoration:underline; text-decoration-color:rgba(255,38,135,.55); text-decoration-thickness:3px; text-underline-offset:7px; }
+    body[data-finhub-theme="oceanpop"] .tab-content .bg-white, body[data-finhub-theme="oceanpop"] .tab-content .bg-gray-50 { background-color:rgba(0,251,234,.075) !important; border-color:rgba(8,127,131,.28) !important; }
+    body[data-finhub-theme="oceanpop"] .tab-content .bg-gray-100 { background-color:rgba(216,255,118,.28) !important; }
+    body[data-finhub-theme="oceanpop"] .tab-content button.theme-bg, body[data-finhub-theme="oceanpop"] .tab-content .theme-bg { background:linear-gradient(115deg,#087f83,#132a44) !important; color:#fff !important; }
+    body[data-finhub-theme="oceanpop"] .tab-content .text-indigo-600, body[data-finhub-theme="oceanpop"] .tab-content .text-indigo-500, body[data-finhub-theme="oceanpop"] .tab-content .theme-text { color:#087f83 !important; }
+    body[data-finhub-theme="oceanpop"] .tab-content .text-rose-600, body[data-finhub-theme="oceanpop"] .tab-content .text-rose-500 { color:#c51665 !important; }
+    body[data-finhub-theme="oceanpop"] .tab-content .text-emerald-600, body[data-finhub-theme="oceanpop"] .tab-content .text-emerald-500 { color:#386b12 !important; }
+    body[data-finhub-theme="oceanpop"] .tab-content input, body[data-finhub-theme="oceanpop"] .tab-content select, body[data-finhub-theme="oceanpop"] .tab-content textarea { background-color:rgba(255,255,255,.82) !important; color:#132a44 !important; border-color:rgba(8,127,131,.42) !important; }
+    body[data-finhub-theme="oceanpop"] .tab-content input:focus, body[data-finhub-theme="oceanpop"] .tab-content select:focus, body[data-finhub-theme="oceanpop"] .tab-content textarea:focus { outline:2px solid rgba(255,38,135,.48); outline-offset:1px; }
+    body[data-finhub-theme="oceanpop"] .tab-content summary { background:linear-gradient(100deg,rgba(0,251,234,.13),rgba(216,255,118,.20),rgba(255,38,135,.09)); }
+    body[data-finhub-theme="oceanpop"] .tab-content .border { border-color:rgba(8,127,131,.27) !important; }
+    html.dark body[data-finhub-theme="oceanpop"] { background:radial-gradient(ellipse at 5% 0%,rgba(0,251,234,.14),transparent 42%),radial-gradient(ellipse at 95% 10%,rgba(255,38,135,.12),transparent 38%),#101d2d !important; }
+    html.dark body[data-finhub-theme="oceanpop"] .tab-content h2, html.dark body[data-finhub-theme="oceanpop"] .tab-content h3, html.dark body[data-finhub-theme="oceanpop"] .tab-content h4 { color:#e9f7f5 !important; }
+    html.dark body[data-finhub-theme="oceanpop"] .tab-content .bg-white, html.dark body[data-finhub-theme="oceanpop"] .tab-content .bg-gray-50 { background-color:rgba(0,189,180,.105) !important; border-color:rgba(0,251,234,.23) !important; }
+    html.dark body[data-finhub-theme="oceanpop"] .tab-content .bg-gray-100 { background-color:rgba(216,255,118,.12) !important; }
+    html.dark body[data-finhub-theme="oceanpop"] .tab-content .text-indigo-600, html.dark body[data-finhub-theme="oceanpop"] .tab-content .text-indigo-500, html.dark body[data-finhub-theme="oceanpop"] .tab-content .theme-text { color:#52e8dc !important; }
+    html.dark body[data-finhub-theme="oceanpop"] .tab-content .text-rose-600, html.dark body[data-finhub-theme="oceanpop"] .tab-content .text-rose-500 { color:#ff78b5 !important; }
+    html.dark body[data-finhub-theme="oceanpop"] .tab-content .text-emerald-600, html.dark body[data-finhub-theme="oceanpop"] .tab-content .text-emerald-500 { color:#d8ff76 !important; }
+    html.dark body[data-finhub-theme="oceanpop"] .tab-content input, html.dark body[data-finhub-theme="oceanpop"] .tab-content select, html.dark body[data-finhub-theme="oceanpop"] .tab-content textarea { background-color:rgba(19,42,68,.78) !important; color:#f1fbfa !important; border-color:rgba(0,251,234,.32) !important; }
+    html.dark body[data-finhub-theme="oceanpop"] .tab-content summary { background:linear-gradient(100deg,rgba(0,251,234,.13),rgba(216,255,118,.09),rgba(255,38,135,.11)); }
   </style>
 </head>
 <body id="app-body" class="bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 min-h-screen flex flex-col md:flex-row transition-colors duration-200 relative">
@@ -849,9 +873,11 @@
         </div>
       </div>
 
-      <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-4 shadow-sm">
+      <details id="debt-simulator-details" class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm" open>
+        <summary class="list-none cursor-pointer p-5 flex items-center justify-between gap-3"><span><span class="block text-md font-bold text-indigo-600 dark:text-indigo-400 theme-text"><i class="fa-solid fa-bolt mr-2"></i>Debt Payoff Acceleration Simulator</span><span class="block text-xs text-gray-400 mt-1">Adjust extra payments and review estimated savings</span></span><i class="fa-solid fa-chevron-down text-gray-400"></i></summary>
+        <div class="p-6 pt-0 space-y-4">
         <div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-800 pb-3">
-          <h3 class="text-md font-bold text-indigo-600 dark:text-indigo-400 theme-text"><i class="fa-solid fa-bolt mr-2"></i>Debt Payoff Acceleration Simulator</h3>
+          <h3 class="text-md font-bold text-indigo-600 dark:text-indigo-400 theme-text">Simulator controls</h3>
           <span id="debt-sim-payoff-date" class="text-sm font-bold text-emerald-500">Estimated Payoff: Calculating...</span>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -868,7 +894,8 @@
             <div>Time Saved: <strong id="debt-time-saved" class="text-indigo-400 font-bold theme-text">0 Months</strong></div>
           </div>
         </div>
-      </div>
+        </div>
+      </details>
 
       <div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
         <div class="p-5 border-b border-gray-200 dark:border-gray-800">
@@ -947,6 +974,9 @@
         </div>
       </div>
 
+      <details id="ledger-workspace-details" class="bg-transparent" open>
+        <summary class="list-none cursor-pointer flex items-center justify-between gap-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 shadow-sm mb-3"><span><span class="block text-sm font-bold text-indigo-600 dark:text-indigo-400 theme-text"><i class="fa-solid fa-receipt mr-2"></i>Expense Tracker Workspace</span><span class="block text-xs text-gray-400 mt-1">Transactions, scheduled bills, reconciliation and month-end close</span></span><i class="fa-solid fa-chevron-down text-gray-400"></i></summary>
+        <div class="space-y-6">
       <!-- UPCOMING SCHEDULED BILLS -->
       <div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
         <button onclick="toggleCollapse('sec-upcoming-bills')" class="w-full p-5 flex justify-between items-center text-left border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
@@ -1047,6 +1077,8 @@
         <h3 class="text-md font-bold text-indigo-600 dark:text-indigo-400 theme-text">Posted Transaction History by Date</h3>
         <div id="ledger-calendar-grid" class="grid grid-cols-7 gap-2"></div>
       </div>
+        </div>
+      </details>
     </section>
 
     <!-- TAB 7: SETTINGS & CUSTOMIZATION -->
@@ -1067,6 +1099,7 @@
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <button onclick="saveLatestBackup()" class="px-4 py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl text-sm font-semibold text-white shadow-md theme-bg"><i class="fa-solid fa-floppy-disk mr-2"></i>Save / Update Latest Backup</button>
+          <button onclick="saveBackupAs()" class="px-4 py-3 bg-cyan-100 dark:bg-cyan-950/40 hover:bg-cyan-200 dark:hover:bg-cyan-900/60 text-cyan-900 dark:text-cyan-100 rounded-xl text-sm font-semibold border border-cyan-300/70 dark:border-cyan-800"><i class="fa-solid fa-file-arrow-down mr-2"></i>Save As…</button>
           <button onclick="exportDatedArchive()" class="px-4 py-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl text-sm font-semibold"><i class="fa-solid fa-box-archive mr-2"></i>Save Dated Archive</button>
           <button onclick="document.getElementById('backup-import-file').click()" class="px-4 py-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl text-sm font-semibold"><i class="fa-solid fa-upload mr-2"></i>Import Backup</button>
           <input id="backup-import-file" type="file" accept=".json,.xlsx,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" class="hidden" onchange="importData(event)">
@@ -9559,6 +9592,32 @@ ${acc.name}`);
         alert(`FinHub could not save the backup: ${err?.message || err}`);
       }
     }
+    async function saveBackupAs() {
+      const defaultName = `FinHub_${getLocalBackupTimestamp(new Date())}.json`;
+      const blob = buildBackupBlob();
+      try {
+        if (window.showSaveFilePicker) {
+          const handle = await window.showSaveFilePicker({
+            suggestedName: defaultName,
+            types: [{ description: 'FinHub JSON backup', accept: { 'application/json': ['.json'] } }]
+          });
+          await writeBackupToHandle(handle, blob);
+          recordSuccessfulBackup();
+          alert(`Separate backup saved as: ${handle.name}\n\nYour connected Latest Backup file was not changed.`);
+          return;
+        }
+        const chosen = window.prompt('Name this separate FinHub backup (the .json extension will be added if needed):', defaultName);
+        if (!chosen || !chosen.trim()) return;
+        const filename = chosen.trim().toLowerCase().endsWith('.json') ? chosen.trim() : `${chosen.trim()}.json`;
+        downloadBlob(blob, filename);
+        recordSuccessfulBackup();
+        alert(`Your separate backup download has started: ${filename}\n\nYour connected Latest Backup file was not changed.`);
+      } catch (err) {
+        if (err?.name === 'AbortError') return;
+        alert(`FinHub could not create the separate backup: ${err?.message || err}`);
+      }
+    }
+
     function exportDatedArchive() {
       const archiveDate = new Date();
       const blob = buildBackupBlob();
@@ -9958,7 +10017,7 @@ ${acc.name}`);
     function renderYearEndClose(){const year=Number(document.getElementById('year-end-period')?.value)||new Date().getFullYear(),d=yearEndMetrics(year),sum=document.getElementById('year-end-summary'),list=document.getElementById('year-end-checklist');if(!sum||!list)return;sum.innerHTML=[['Transactions',d.tx.length],['Income',formatFinancial(d.income)],['Expenses',formatFinancial(d.expenses)],['Monthly closes',`${d.closed}/12 completed`]].map(x=>`<div class="p-2 bg-gray-50 dark:bg-gray-950 rounded"><div class="text-gray-500">${x[0]}</div><b>${x[1]}</b></div>`).join('');list.innerHTML=[`Monthly close coverage: ${d.closed} of 12 months have completed snapshots`,`Unmatched transactions: ${d.unmatched} · <button onclick="openYearUnmatched(${year})" class="text-indigo-600 underline">View transactions</button>`,`Review final balances for ${d.accounts.length} active accounts and liabilities`,`Review annual income, expenses, debt principal/interest, transfers and outstanding items`,`Save a full JSON backup before completing year-end`].map(x=>`<div class="p-2 border rounded">${x}</div>`).join('');const hist=document.getElementById('year-end-history');const snap=state.yearEndSnapshots?.[year];if(hist)hist.innerHTML=snap?`Saved ${year} snapshot: <strong>${escapeHtml(snap.status)}</strong> · ${new Date(snap.closedAt).toLocaleDateString()}`:'No year-end snapshot saved for this year.';}
     function openYearUnmatched(year){window.closeLedgerFilterPeriod=String(year);window.closeLedgerFilterOnlyUnmatched=true;switchTab('ledger');}
     function completeYearEndClose(){const year=Number(document.getElementById('year-end-period')?.value)||new Date().getFullYear(),d=yearEndMetrics(year);if(!confirm(`${d.closed}/12 monthly closes completed and ${d.unmatched} transactions are unmatched. Save the ${year} year-end snapshot anyway?`))return;state.yearEndSnapshots=state.yearEndSnapshots||{};state.yearEndSnapshots[year]={year,closedAt:new Date().toISOString(),status:d.closed===12&&!d.unmatched?'completed':'incomplete',income:d.income,expenses:d.expenses,transactionCount:d.tx.length,unmatched:d.unmatched,monthlyCloseCoverage:d.closed,accountBalances:d.accounts.map(a=>({id:a.id,name:a.name,balance:Number(a.balance)||0,statementBalance:a.actualBalance??null}))};saveData();renderYearEndClose();alert('Year-end snapshot saved. Continue in the same FinHub file; do not re-enter opening balances.');}
-    document.addEventListener('DOMContentLoaded',()=>{const up=document.getElementById('dashboard-upcoming-month');if(up&&!up.value){const n=new Date();up.value=`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}`;}renderDashboardUpcoming();const m=document.getElementById('monthly-close-period');if(m&&!m.value)m.value=new Date().toISOString().slice(0,7);const y=document.getElementById('year-end-period');if(y&&!y.value)y.value=new Date().getFullYear();renderMonthlyClose();renderYearEndClose();applyLedgerColumns();});
+    document.addEventListener('DOMContentLoaded',()=>{['debt-simulator-details','ledger-workspace-details'].forEach(id=>{const el=document.getElementById(id);if(!el)return;const key='finhub-collapse-'+id;const saved=localStorage.getItem(key);if(saved!==null)el.open=saved==='open';el.addEventListener('toggle',()=>localStorage.setItem(key,el.open?'open':'closed'));});const up=document.getElementById('dashboard-upcoming-month');if(up&&!up.value){const n=new Date();up.value=`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}`;}renderDashboardUpcoming();const m=document.getElementById('monthly-close-period');if(m&&!m.value)m.value=new Date().toISOString().slice(0,7);const y=document.getElementById('year-end-period');if(y&&!y.value)y.value=new Date().getFullYear();renderMonthlyClose();renderYearEndClose();applyLedgerColumns();});
 
 </script>
   <div id="backup-import-preview-modal" class="hidden fixed inset-0 z-[110] bg-black/70 items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="backup-preview-title">
