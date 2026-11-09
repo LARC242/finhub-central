@@ -5976,11 +5976,15 @@ ${acc.name}`);
         const moneyText=v=>/^[+-]?\$?\s*\(?\d[\d,]*\.\d{2}\)?-?$/.test(String(v||'').trim());
         for(const page of pages){
           const source=(page.rows||[]).flatMap(r=>r.items||[]);
-          const headers=source.filter(v=>/^(Withdrawals|Deposits|Balance)$/i.test(String(v.str||'').trim()));
+          // RBC labels are commonly emitted by PDF.js with their currency suffix
+          // as part of the same text item (for example, "Withdrawals ($)").
+          // Accept both forms; exact-label matching silently rejected every page.
+          const headerLabel=(value)=>String(value||'').trim().replace(/\s+/g,' ').match(/^(Withdrawals|Deposits|Balance)(?:\s*\(\$\))?$/i)?.[1]||'';
+          const headers=source.filter(v=>headerLabel(v.str));
           let header=null;
-          for(const w of headers.filter(v=>/^Withdrawals$/i.test(String(v.str||'').trim()))){
+          for(const w of headers.filter(v=>headerLabel(v.str).toLowerCase()==='withdrawals')){
             const y=Number(w.transform?.[5]||0);
-            const near=name=>headers.find(v=>new RegExp('^'+name+'$','i').test(String(v.str||'').trim())&&Math.abs(Number(v.transform?.[5]||0)-y)<=4);
+            const near=name=>headers.find(v=>headerLabel(v.str).toLowerCase()===name.toLowerCase()&&Math.abs(Number(v.transform?.[5]||0)-y)<=4);
             const d=near('Deposits'),b=near('Balance');
             if(d&&b){header={y,w,d,b};break;}
           }
