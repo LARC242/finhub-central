@@ -135,27 +135,36 @@
     html.dark body[data-finhub-theme="neutral"] .bg-gray-950,
     html.dark body[data-finhub-theme="neutral"] .bg-gray-900 { background-color:#27231e !important; }
 
-    body[data-finhub-theme="colorful"] { background:#f0edf7 !important; color:#302b40; }
-    html.dark body[data-finhub-theme="colorful"] { background:#191727 !important; color:#eeeafa; }
+    /* Rose Garden: playful blush, berry and lavender palette with coordinated dark mode. */
+    body[data-finhub-theme="colorful"] { background:#fff1f5 !important; color:#49313d; }
     body[data-finhub-theme="colorful"] aside,
     body[data-finhub-theme="colorful"] .tab-content .bg-white,
     body[data-finhub-theme="colorful"] #transaction-modal > div,
     body[data-finhub-theme="colorful"] #bulk-edit-modal > div,
     body[data-finhub-theme="colorful"] #vendor-rule-modal > div,
-    body[data-finhub-theme="colorful"] #recon-modal > div { background-color:#fbfaff !important; border-color:#ddd5ee !important; }
+    body[data-finhub-theme="colorful"] #recon-modal > div { background-color:#fffafd !important; border-color:#f1cbd9 !important; }
+    html.dark body[data-finhub-theme="colorful"] { background:#21151e !important; color:#f8eaf1 !important; }
     html.dark body[data-finhub-theme="colorful"] aside,
     html.dark body[data-finhub-theme="colorful"] .tab-content .bg-white,
     html.dark body[data-finhub-theme="colorful"] #transaction-modal > div,
     html.dark body[data-finhub-theme="colorful"] #bulk-edit-modal > div,
     html.dark body[data-finhub-theme="colorful"] #vendor-rule-modal > div,
-    html.dark body[data-finhub-theme="colorful"] #recon-modal > div { background-color:#252139 !important; border-color:#454064 !important; }
-    body[data-finhub-theme="colorful"] .theme-bg { background-color:#7658bd !important; }
-    body[data-finhub-theme="colorful"] .theme-text { color:#7658bd !important; }
-    html.dark body[data-finhub-theme="colorful"] .theme-text { color:#b7a3f0 !important; }
+    html.dark body[data-finhub-theme="colorful"] #recon-modal > div { background-color:#30202c !important; border-color:#59394d !important; }
+    body[data-finhub-theme="colorful"] .theme-bg { background-color:#c34f7b !important; }
+    body[data-finhub-theme="colorful"] .theme-text { color:#a83e6a !important; }
+    html.dark body[data-finhub-theme="colorful"] .theme-text { color:#f0a3c2 !important; }
     body[data-finhub-theme="colorful"] .bg-gray-50,
-    body[data-finhub-theme="colorful"] .bg-gray-100 { background-color:#f0edf8 !important; }
+    body[data-finhub-theme="colorful"] .bg-gray-100 { background-color:#fff0f5 !important; }
     html.dark body[data-finhub-theme="colorful"] .bg-gray-950,
-    html.dark body[data-finhub-theme="colorful"] .bg-gray-900 { background-color:#1e1b31 !important; }
+    html.dark body[data-finhub-theme="colorful"] .bg-gray-900 { background-color:#261a24 !important; }
+    body[data-finhub-theme="colorful"] #brand-logo,
+    body[data-finhub-theme="colorful"] .nav-btn[style*="background-color"] { background-color:#c34f7b !important; }
+    body[data-finhub-theme="colorful"] input,
+    body[data-finhub-theme="colorful"] select,
+    body[data-finhub-theme="colorful"] textarea { border-color:#e8b9cb !important; }
+    html.dark body[data-finhub-theme="colorful"] input,
+    html.dark body[data-finhub-theme="colorful"] select,
+    html.dark body[data-finhub-theme="colorful"] textarea { border-color:#68465a !important; }
 
     body[data-finhub-theme="silver"] #brand-logo, body[data-finhub-theme="silver"] .nav-btn[style*="background-color"] { background-color:#536474 !important; }
     body[data-finhub-theme="neutral"] #brand-logo, body[data-finhub-theme="neutral"] .nav-btn[style*="background-color"] { background-color:#88745d !important; }
@@ -170,7 +179,7 @@
     html.dark body[data-finhub-theme]:not([data-finhub-theme="classic"]) { color:#e5e7eb !important; color-scheme:dark; }
     html.dark body[data-finhub-theme="silver"] { --preset-surface:#222b35; --preset-panel:#293542; --preset-border:#3b4856; --preset-muted:#a9b6c4; }
     html.dark body[data-finhub-theme="neutral"] { --preset-surface:#302c26; --preset-panel:#39342c; --preset-border:#51483d; --preset-muted:#c5b9a8; }
-    html.dark body[data-finhub-theme="colorful"] { --preset-surface:#252139; --preset-panel:#302a49; --preset-border:#454064; --preset-muted:#c3b9e2; }
+    html.dark body[data-finhub-theme="colorful"] { --preset-surface:#30202c; --preset-panel:#3a2634; --preset-border:#59394d; --preset-muted:#d9b8c8; }
     html.dark body[data-finhub-theme]:not([data-finhub-theme="classic"]) aside,
     html.dark body[data-finhub-theme]:not([data-finhub-theme="classic"]) .tab-content .bg-white,
     html.dark body[data-finhub-theme]:not([data-finhub-theme="classic"]) .tab-content .bg-gray-50,
@@ -961,7 +970,7 @@
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 class="text-2xl font-bold">Categories, Merchant Rules & Branding</h2>
-          <p class="text-sm text-gray-500 dark:text-gray-400">Configure auto-categorization rules, accent colors, and limits</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400">Configure categories, automation, accounts, backups, and appearance</p>
         </div>
         <button onclick="openCategoryModal()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-xl text-xs font-semibold text-white shadow-md theme-bg"><i class="fa-solid fa-plus mr-1"></i> Add Spending Bucket</button>
       </div>
@@ -1015,43 +1024,9 @@
           <button type="button" onclick="setVisualTheme('classic')" class="text-left rounded-xl border border-gray-200 dark:border-gray-700 p-3 hover:ring-2 ring-indigo-400"><span class="block h-7 rounded-lg mb-2" style="background:linear-gradient(90deg,#f3f4f6 50%,#4f46e5 50%)"></span><strong class="text-xs">Classic</strong><span class="block text-[10px] text-gray-400">Original FinHub look</span></button>
           <button type="button" onclick="setVisualTheme('silver')" class="text-left rounded-xl border border-gray-200 dark:border-gray-700 p-3 hover:ring-2 ring-slate-400"><span class="block h-7 rounded-lg mb-2" style="background:linear-gradient(90deg,#e7ebef 50%,#536474 50%)"></span><strong class="text-xs">Silver Bengal</strong><span class="block text-[10px] text-gray-400">Silver, charcoal, icy blue</span></button>
           <button type="button" onclick="setVisualTheme('neutral')" class="text-left rounded-xl border border-gray-200 dark:border-gray-700 p-3 hover:ring-2 ring-amber-700"><span class="block h-7 rounded-lg mb-2" style="background:linear-gradient(90deg,#eee9e1 50%,#88745d 50%)"></span><strong class="text-xs">Warm Neutral</strong><span class="block text-[10px] text-gray-400">Ivory, cream, taupe</span></button>
-          <button type="button" onclick="setVisualTheme('colorful')" class="text-left rounded-xl border border-gray-200 dark:border-gray-700 p-3 hover:ring-2 ring-violet-400"><span class="block h-7 rounded-lg mb-2" style="background:linear-gradient(90deg,#f0edf7 33%,#7658bd 33% 66%,#43a6a0 66%)"></span><strong class="text-xs">Colourful Modern</strong><span class="block text-[10px] text-gray-400">Purple, teal, coral accents</span></button>
+          <button type="button" onclick="setVisualTheme('colorful')" class="text-left rounded-xl border border-gray-200 dark:border-gray-700 p-3 hover:ring-2 ring-violet-400"><span class="block h-7 rounded-lg mb-2" style="background:linear-gradient(90deg,#fff1f5 30%,#c34f7b 30% 55%,#b69ad8 55% 78%,#e7a0b7 78%)"></span><strong class="text-xs">Rose Garden</strong><span class="block text-[10px] text-gray-400">Blush, berry, lavender & plum</span></button>
         </div>
         <p id="active-visual-theme-label" class="text-[10px] text-gray-500">Current theme: Classic</p>
-      </div>
-
-      <!-- COLOR THEME SELECTOR -->
-      <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-3 shadow-sm">
-        <h3 class="text-md font-bold">Accent Color</h3>
-        <p class="text-xs text-gray-400">Select an accent color palette to customize your FinHub interface</p>
-        <div class="flex flex-wrap items-center gap-3 pt-2">
-          <button type="button" title="Indigo" onclick="setAppThemeColor('indigo')" class="w-8 h-8 rounded-full bg-indigo-600 hover:ring-2 ring-indigo-400"></button>
-          <button type="button" title="Emerald" onclick="setAppThemeColor('emerald')" class="w-8 h-8 rounded-full bg-emerald-600 hover:ring-2 ring-emerald-400"></button>
-          <button type="button" title="Violet" onclick="setAppThemeColor('violet')" class="w-8 h-8 rounded-full bg-violet-600 hover:ring-2 ring-violet-400"></button>
-          <button type="button" title="Rose" onclick="setAppThemeColor('rose')" class="w-8 h-8 rounded-full bg-rose-600 hover:ring-2 ring-rose-400"></button>
-          <button type="button" title="Amber" onclick="setAppThemeColor('amber')" class="w-8 h-8 rounded-full bg-amber-600 hover:ring-2 ring-amber-400"></button>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-gray-200 dark:border-gray-800">
-          <div class="space-y-2">
-            <label class="block text-xs font-semibold text-gray-500">Custom accent color</label>
-            <div class="flex items-center gap-2">
-              <input id="custom-accent-picker" type="color" value="#4f46e5" aria-label="Choose accent color" onchange="setCustomAppColor('accent',this.value)" class="h-10 w-14 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent p-1">
-              <input id="custom-accent-hex" type="text" value="" placeholder="#4F46E5" maxlength="7" onchange="setCustomAppColor('accent',this.value)" class="min-w-0 flex-1 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm font-mono">
-            </div>
-            <p class="text-[10px] text-gray-400">Enter a six-digit hex code or use the color picker.</p>
-          </div>
-          <div class="space-y-2">
-            <label class="block text-xs font-semibold text-gray-500">Custom page background</label>
-            <div class="flex items-center gap-2">
-              <input id="custom-background-picker" type="color" value="#030712" aria-label="Choose page background color" onchange="setCustomAppColor('background',this.value)" class="h-10 w-14 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent p-1">
-              <input id="custom-background-hex" type="text" value="" placeholder="#030712" maxlength="7" onchange="setCustomAppColor('background',this.value)" class="min-w-0 flex-1 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm font-mono">
-            </div>
-            <p class="text-[10px] text-gray-400">Changes the page canvas behind the cards. Cards keep their light/dark surfaces.</p>
-          </div>
-        </div>
-        <div class="flex justify-end">
-          <button type="button" onclick="resetCustomAppColors()" class="px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-xs font-semibold">Reset custom colors</button>
-        </div>
       </div>
 
       <!-- MERCHANT AUTO-TAGGING RULES -->
@@ -2039,7 +2014,7 @@ Bonus"></textarea></div>
     if (state.collapsibles['sec-extra-charts'] === undefined) state.collapsibles['sec-extra-charts'] = true;
     if (state.collapsibles['sec-snapshots'] === undefined) state.collapsibles['sec-snapshots'] = true;
     state.dashboardPeriod = state.dashboardPeriod || 'month';
-    state.dashboardOrder = Array.isArray(state.dashboardOrder) ? state.dashboardOrder : ['accounts','summary','spending','upcoming','networth','trends','budgets','snapshots'];
+    state.dashboardOrder = Array.isArray(state.dashboardOrder) ? state.dashboardOrder : ['summary','accounts','networth','snapshots','spending','trends','debt-health','upcoming','budgets'];
     state.spendingChartLevel = state.spendingChartLevel || 'category';
     state.dashboardCustomRange = state.dashboardCustomRange || {start:'',end:''};
     state.accountOrder = state.accountOrder || { assets: [], debts: [] };
@@ -2260,7 +2235,7 @@ Bonus"></textarea></div>
       const chosen = FINHUB_VISUAL_THEMES.includes(theme) ? theme : 'classic';
       document.getElementById('app-body')?.setAttribute('data-finhub-theme', chosen);
       const label = document.getElementById('active-visual-theme-label');
-      if (label) label.textContent = `Current theme: ${{classic:'Classic',silver:'Silver Bengal',neutral:'Warm Neutral',colorful:'Colourful Modern'}[chosen]}`;
+      if (label) label.textContent = `Current theme: ${{classic:'Classic',silver:'Silver Bengal',neutral:'Warm Neutral',colorful:'Rose Garden'}[chosen]}`;
     }
     function setVisualTheme(theme) {
       if (!FINHUB_VISUAL_THEMES.includes(theme)) return;
@@ -2500,9 +2475,22 @@ Bonus"></textarea></div>
     }
     function applyDashboardOrder() {
       const section=document.getElementById('tab-dashboard'); if(!section) return;
+      section.querySelectorAll('.dashboard-group-heading').forEach(el=>el.remove());
       const blocks=[...section.querySelectorAll('[data-dashboard-block]')];
       const order=Array.isArray(state.dashboardOrder)?state.dashboardOrder:[];
-      blocks.sort((a,b)=>{const ai=order.indexOf(a.dataset.dashboardBlock),bi=order.indexOf(b.dataset.dashboardBlock);return (ai<0?999:ai)-(bi<0?999:bi);}).forEach(block=>section.appendChild(block));
+      const groupFor={summary:'position',accounts:'position',networth:'position',snapshots:'position',spending:'performance',trends:'performance','debt-health':'performance',upcoming:'coming',budgets:'health'};
+      const groupMeta={position:['Financial Position','Your balances, assets, liabilities and net worth'],performance:['Monthly Performance','Income, spending and debt movement over time'],coming:["What’s Coming Up",'Upcoming income and bills from your calendar'],health:['Budget Health','How your spending is tracking against your plan']};
+      blocks.sort((a,b)=>{const ai=order.indexOf(a.dataset.dashboardBlock),bi=order.indexOf(b.dataset.dashboardBlock);return (ai<0?999:ai)-(bi<0?999:bi);});
+      let previousGroup='';
+      blocks.forEach(block=>{
+        const group=groupFor[block.dataset.dashboardBlock]||'other';
+        if(group!==previousGroup){
+          const heading=document.createElement('div'); heading.className='dashboard-group-heading pt-3 pb-1';
+          heading.innerHTML=`<h3 class="text-lg font-bold tracking-tight">${groupMeta[group]?.[0]||'More'}</h3><p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">${groupMeta[group]?.[1]||''}</p>`;
+          section.appendChild(heading); previousGroup=group;
+        }
+        section.appendChild(block);
+      });
       blocks.forEach(block=>{
         let controls=block.querySelector('.dashboard-order-controls');
         if(!controls){controls=document.createElement('div');controls.className='dashboard-order-controls';block.appendChild(controls);}
@@ -2518,7 +2506,7 @@ Bonus"></textarea></div>
         block.ondrop=e=>{e.preventDefault();const dragged=e.dataTransfer.getData('text/dashboard-block');if(dragged&&dragged!==block.dataset.dashboardBlock)reorderDashboardBlocks(dragged,block.dataset.dashboardBlock);};
       });
     }
-    function resetDashboardOrder(){state.dashboardOrder=['accounts','summary','spending','upcoming','networth','trends','budgets','snapshots'];saveData();applyDashboardOrder();}
+    function resetDashboardOrder(){state.dashboardOrder=['summary','accounts','networth','snapshots','spending','trends','debt-health','upcoming','budgets'];saveData();applyDashboardOrder();}
     function moveDashboardBlock(id,delta){const ids=[...document.querySelectorAll('#tab-dashboard [data-dashboard-block]')].map(x=>x.dataset.dashboardBlock);const i=ids.indexOf(id),j=i+delta;if(i<0||j<0||j>=ids.length)return;[ids[i],ids[j]]=[ids[j],ids[i]];state.dashboardOrder=ids;saveData();applyDashboardOrder();}
     function reorderDashboardBlocks(from,to){const ids=[...document.querySelectorAll('#tab-dashboard [data-dashboard-block]')].map(x=>x.dataset.dashboardBlock);const i=ids.indexOf(from),j=ids.indexOf(to);if(i<0||j<0)return;ids.splice(j,0,ids.splice(i,1)[0]);state.dashboardOrder=ids;saveData();applyDashboardOrder();}
 
@@ -8940,7 +8928,7 @@ Bonus"></textarea></div>
       if (state.collapsibles['sec-snapshots'] === undefined) state.collapsibles['sec-snapshots'] = true;
       if (state.collapsibles['sec-dashboard-upcoming'] === undefined) state.collapsibles['sec-dashboard-upcoming'] = false;
       state.dashboardPeriod = state.dashboardPeriod || 'month';
-      state.dashboardOrder = Array.isArray(state.dashboardOrder) ? state.dashboardOrder : ['accounts','summary','spending','upcoming','networth','trends','budgets','snapshots'];
+      state.dashboardOrder = Array.isArray(state.dashboardOrder) ? state.dashboardOrder : ['summary','accounts','networth','snapshots','spending','trends','debt-health','upcoming','budgets'];
       state.spendingChartLevel = state.spendingChartLevel || 'category';
       state.dashboardCustomRange = state.dashboardCustomRange || { start: '', end: '' };
       state.accountOrder = state.accountOrder || { assets: [], debts: [] };
@@ -9108,60 +9096,47 @@ Bonus"></textarea></div>
       rowMaps.forEach(({row,map})=>p.order.forEach(key=>{const td=map.get(key);if(td)row.appendChild(td);}));
       let colgroup=table.querySelector('colgroup[data-ledger-columns]');if(!colgroup){colgroup=document.createElement('colgroup');colgroup.dataset.ledgerColumns='true';table.insertBefore(colgroup,table.firstChild);}
       const defaults={date:125,vendor:150,description:190,type:130,bucket:135,subcategory:145,account:160,amount:115,running:145,actions:105};
-      colgroup.innerHTML=p.order.map(key=>{const width=Math.max(64,Math.min(520,Number(p.widths[key])||defaults[key]||120));return `<col data-col-key="${key}" style="width:${width}px">`;}).join('');
+      const widthFor=key=>Math.max(64,Math.min(520,Number(p.widths[key])||defaults[key]||120));
+      colgroup.innerHTML=p.order.map(key=>`<col data-col-key="${key}" style="width:${widthFor(key)}px">`).join('');
       [...header.children].forEach(th=>{const key=keyForLabel(th.textContent);th.style.display=p.hidden.includes(key)?'none':'';th.dataset.colKey=key||'';});
       [...body.rows].forEach(row=>[...row.cells].forEach(td=>{const key=keyForLabel(td.dataset.label);td.style.display=p.hidden.includes(key)?'none':'';}));
-      table.style.tableLayout='fixed';table.style.width='max(100%, 1100px)';
-      // Apply widths to the actual header and matching body cells as well as COL.
-      // This avoids browsers redistributing a COL width to an adjacent column.
-      p.order.forEach(key=>{const width=Math.max(64,Math.min(520,Number(p.widths[key])||defaults[key]||120));const th=header.querySelector(`th[data-col-key="${key}"]`);if(th){th.style.width=width+'px';th.style.minWidth=width+'px';th.style.maxWidth=width+'px';}body.querySelectorAll(`td[data-label="${ledgerCols.find(x=>x[1]===key)?.[0]||''}"]`).forEach(td=>{td.style.width=width+'px';td.style.minWidth=width+'px';td.style.maxWidth=width+'px';});});
+      // Keep the table exactly as wide as the sum of its columns. A 100% table width
+      // makes the browser redistribute spare/shortage width across unrelated columns.
+      table.style.tableLayout='fixed';
+      const totalWidth=p.order.reduce((sum,key)=>sum+widthFor(key),0);
+      table.style.width=totalWidth+'px';table.style.minWidth=totalWidth+'px';table.style.maxWidth='none';
+      [...header.children].forEach(th=>{const key=th.dataset.colKey;if(key){th.style.width=widthFor(key)+'px';th.style.minWidth='0';th.style.maxWidth='none';}});
+      [...body.rows].forEach(row=>[...row.cells].forEach(td=>{const key=keyForLabel(td.dataset.label);if(key){td.style.width='auto';td.style.minWidth='0';td.style.maxWidth='none';}}));
       addLedgerColumnResizeHandles(header);
     }
     function addLedgerColumnResizeHandles(header){
-      [...header.querySelectorAll('.ledger-resize-handle')].forEach(el=>el.remove());
-      [...header.children].forEach((th,index)=>{
+      header.querySelectorAll('.ledger-resize-handle').forEach(el=>el.remove());
+      [...header.children].forEach(th=>{
         const key=th.dataset.colKey;
         if(!key||key==='actions')return;
-        th.style.position='relative';
-        th.style.userSelect='none';
-        th.style.zIndex='auto';
+        th.style.position='relative';th.style.userSelect='none';
         const grip=document.createElement('span');
-        grip.className='ledger-resize-handle';
-        grip.title='Drag to resize '+key+' column';
-        grip.setAttribute('aria-label','Resize '+key+' column');
-        grip.style.cssText='position:absolute;right:-1px;top:0;bottom:0;width:14px;cursor:col-resize;touch-action:none;z-index:20;pointer-events:auto;background:linear-gradient(to right,transparent 35%,rgba(99,102,241,.35) 35%,rgba(99,102,241,.35) 65%,transparent 65%);';
+        grip.className='ledger-resize-handle';grip.dataset.resizeKey=key;
+        grip.title='Drag to resize '+key+' column';grip.setAttribute('aria-label','Resize '+key+' column');
+        grip.style.cssText='position:absolute;right:0;top:0;bottom:0;width:16px;cursor:col-resize;touch-action:none;z-index:30;pointer-events:auto;background:linear-gradient(to right,transparent 42%,rgba(99,102,241,.55) 42%,rgba(99,102,241,.55) 58%,transparent 58%);';
         grip.addEventListener('pointerdown',e=>{
           e.preventDefault();e.stopPropagation();
-          const table=header.closest('table');
-          const col=table?.querySelector(`colgroup[data-ledger-columns] col[data-col-key="${key}"]`);
+          const table=header.closest('table');const col=table?.querySelector(`colgroup[data-ledger-columns] col[data-col-key="${key}"]`);
           if(!table||!col)return;
-          const startX=e.clientX;
-          const startWidth=th.getBoundingClientRect().width;
-          const min=64,max=520;
-          const applyWidth=width=>{
-            const w=Math.max(min,Math.min(max,Math.round(width)));
-            col.style.width=w+'px';col.style.minWidth=w+'px';
-            th.style.width=w+'px';th.style.minWidth=w+'px';th.style.maxWidth=w+'px';
-            const label=ledgerCols.find(x=>x[1]===key)?.[0];
-            if(label) table.querySelectorAll(`tbody#ledger-rows td[data-label="${label}"]`).forEach(td=>{td.style.width=w+'px';td.style.minWidth=w+'px';td.style.maxWidth=w+'px';});
+          const startX=e.clientX;const startWidth=parseFloat(col.style.width)||th.getBoundingClientRect().width;
+          const widthFor=k=>{const c=table.querySelector(`colgroup[data-ledger-columns] col[data-col-key="${k}"]`);return parseFloat(c?.style.width)||0;};
+          const applyWidth=raw=>{
+            const w=Math.max(64,Math.min(520,Math.round(raw)));col.style.width=w+'px';
+            th.style.width=w+'px';
+            const total=[...table.querySelectorAll('colgroup[data-ledger-columns] col')].reduce((sum,c)=>sum+(parseFloat(c.style.width)||0),0);
+            table.style.width=total+'px';table.style.minWidth=total+'px';
             return w;
           };
-          const move=ev=>applyWidth(startWidth+ev.clientX-startX);
-          const finish=ev=>{
-            const w=applyWidth(startWidth+ev.clientX-startX);
-            ledgerPrefs().widths[key]=w;saveData();
-            window.removeEventListener('pointermove',move,true);
-            window.removeEventListener('pointerup',finish,true);
-            window.removeEventListener('pointercancel',cancel,true);
-          };
-          const cancel=()=>{
-            window.removeEventListener('pointermove',move,true);
-            window.removeEventListener('pointerup',finish,true);
-            window.removeEventListener('pointercancel',cancel,true);
-          };
-          window.addEventListener('pointermove',move,true);
-          window.addEventListener('pointerup',finish,true);
-          window.addEventListener('pointercancel',cancel,true);
+          const move=ev=>{applyWidth(startWidth+ev.clientX-startX);};
+          const cleanup=()=>{window.removeEventListener('pointermove',move,true);window.removeEventListener('pointerup',finish,true);window.removeEventListener('pointercancel',cancel,true);};
+          const finish=ev=>{const w=applyWidth(startWidth+ev.clientX-startX);ledgerPrefs().widths[key]=w;saveData();cleanup();};
+          const cancel=()=>cleanup();
+          window.addEventListener('pointermove',move,true);window.addEventListener('pointerup',finish,true);window.addEventListener('pointercancel',cancel,true);
         });
         th.appendChild(grip);
       });
