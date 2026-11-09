@@ -8,6 +8,8 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script>
+    // Declare ledger column metadata before startup rendering can invoke applyLedgerColumns().
+    var ledgerCols=[['Date','date'],['Vendor','vendor'],['Description','description'],['Type','type'],['Bucket','bucket'],['Subcategory','subcategory'],['Account','account'],['Amount','amount'],['Running Balance','running'],['Actions','actions']];
     tailwind.config = { darkMode: 'class', theme: { extend: {} } }
   </script>
   <style>
@@ -9076,7 +9078,6 @@ Bonus"></textarea></div>
   
     function updateSplitRemainderPreview(){const total=Number(document.getElementById('tx-amount')?.value)||0;const extra=[...document.querySelectorAll('.split-amt-input')].reduce((a,e)=>a+(Number(e.value)||0),0);const a=document.getElementById('split-extra-total'),b=document.getElementById('split-remainder-total');if(a)a.textContent=formatFinancial(extra);if(b)b.textContent=extra>total?'Over allocated: '+formatFinancial(extra-total):formatFinancial(Math.max(0,total-extra));}
     document.addEventListener('input',e=>{if(e.target.matches('#tx-amount,.split-amt-input'))updateSplitRemainderPreview();});
-    const ledgerCols=[['Date','date'],['Vendor','vendor'],['Description','description'],['Type','type'],['Bucket','bucket'],['Subcategory','subcategory'],['Account','account'],['Amount','amount'],['Running Balance','running'],['Actions','actions']];
     function ledgerPrefs(){
       state.ledgerColumnPrefs=state.ledgerColumnPrefs||{hidden:[],order:ledgerCols.map(x=>x[1]),widths:{}};
       const p=state.ledgerColumnPrefs;
