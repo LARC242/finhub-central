@@ -5969,47 +5969,45 @@ ${acc.name}`);
       const rows=[];
       const add=(date,desc,amt,type)=>{if(date&&desc&&Number.isFinite(amt)&&Math.abs(amt)>0)rows.push({id:`pdf_${Date.now()}_${rows.length}_${Math.random().toString(36).slice(2,6)}`,date,description:desc.trim(),amount:Math.abs(amt),signedAmount:type==='Income'?Math.abs(amt):-Math.abs(amt),type,accountId:document.getElementById('recon-account')?.value||'',status:'pending'});};
       if(bank==='rbc'){
-        // RBC uses separate, right-aligned withdrawal, deposit and balance columns.
-        // Determine the column boundaries from each page's own header positions: RBC
-        // shifts the continuation-page table horizontally, so fixed x cut-offs fail.
+        // RBC statements use three independently positioned amount columns. Find the
+        // table header on each page, then classify each amount by the nearest header
+        // centre. This avoids assuming that a page's columns start at the same x value.
         let activeDate='',pendingDesc='';
+        const moneyText=v=>/^[+-]?\$?\s*\(?\d[\d,]*\.\d{2}\)?-?$/.test(String(v||'').trim());
         for(const page of pages){
           const source=(page.rows||[]).flatMap(r=>r.items||[]);
-          const headerX=(needle,minX=0)=>{const it=source.find(v=>new RegExp(needle,'i').test(v.str||'')&&Number(v.transform?.[4]||0)>=minX);return it?Number(it.transform?.[4]||0):null;};
-          const wx=headerX('Withdrawals',180), dx=headerX('Deposits',250), bx=headerX('Balance',450);
-          if(wx==null||dx==null||bx==null)continue;
-          const splitX=(wx+dx)/2;
-          const amountLeft=wx-28, amountRight=bx-8;
-          const sorted=source.slice().sort((a,b)=>(b.transform?.[5]||0)-(a.transform?.[5]||0));
-          const lines=[];
-          for(const item of sorted){
-            const y=Number(item.transform?.[5]||0);
-            // A slightly wider baseline tolerance keeps amounts and descriptions
-            // together when PDF text runs have different font metrics.
-            let line=lines.find(entry=>Math.abs(entry.y-y)<=3.8);
-            if(!line){line={y,items:[]};lines.push(line);}
-            line.items.push(item);
+          const headers=source.filter(v=>/^(Withdrawals|Deposits|Balance)$/i.test(String(v.str||'').trim()));
+          let header=null;
+          for(const w of headers.filter(v=>/^Withdrawals$/i.test(String(v.str||'').trim()))){
+            const y=Number(w.transform?.[5]||0);
+            const near=name=>headers.find(v=>new RegExp('^'+name+'$','i').test(String(v.str||'').trim())&&Math.abs(Number(v.transform?.[5]||0)-y)<=4);
+            const d=near('Deposits'),b=near('Balance');
+            if(d&&b){header={y,w,d,b};break;}
           }
-          lines.sort((a,b)=>b.y-a.y);
+          if(!header)continue;
+          const center=v=>Number(v.transform?.[4]||0)+Math.max(0,Number(v.width||0))/2;
+          const columnCenters=[{type:'Expense',x:center(header.w)},{type:'Income',x:center(header.d)},{type:'Balance',x:center(header.b)}];
+          const descriptionLimit=Number(header.w.transform?.[4]||0)-24;
+          // pdfRowsFromItems has already grouped text runs by their PDF baseline.
+          // Reuse those rows rather than regrouping individual glyph runs: the latter
+          // can merge adjacent RBC rows and lose valid withdrawal amounts.
+          const lines=(page.rows||[]).filter(line=>Number(line.y||0)<=header.y+2).sort((a,b)=>b.y-a.y);
           for(const line of lines){
-            const items=line.items.slice().sort((a,b)=>(a.transform?.[4]||0)-(b.transform?.[4]||0));
-            const left=items.filter(it=>Number(it.transform?.[4]||0)<amountLeft).map(it=>it.str||'').join(' ').replace(/\s+/g,' ').trim();
-            const dateMatch=left.match(/^\s*(\d{1,2}\s+[A-Za-z]{3})\b/);
+            const items=line.items.slice().sort((a,b)=>Number(a.transform?.[4]||0)-Number(b.transform?.[4]||0));
+            const left=items.filter(it=>Number(it.transform?.[4]||0)<descriptionLimit).map(it=>it.str||'').join(' ').replace(/\s+/g,' ').trim();
+            const dateMatch=left.match(/(\d{1,2}\s+[A-Za-z]{3})\b/);
             if(dateMatch)activeDate=pdfDateValue(dateMatch[1],year);
-            let desc=left.replace(/^\s*\d{1,2}\s+[A-Za-z]{3}\s*/,'').trim();
-            // Ignore page furniture and table headings; preserve wrapped transaction descriptions.
+            let desc=dateMatch?left.slice(dateMatch.index+dateMatch[0].length).trim():left;
             if(/^(Date|Description|Withdrawals|Deposits|Balance|Details of your account activity|continued|Page\s+\d|Opening Balance|Closing Balance)/i.test(desc))desc='';
-            const amountItems=items.filter(it=>{
-              const x=Number(it.transform?.[4]||0), str=String(it.str||'').trim();
-              return x>=amountLeft&&x<amountRight&&/\d[\d,]*\.\d{2}-?$/.test(str);
-            });
-            if(amountItems.length&&activeDate){
+            const amounts=items.filter(it=>moneyText(it.str)&&Number(it.transform?.[4]||0)>=Number(header.w.transform?.[4]||0)-16&&Number(it.transform?.[4]||0)<Number(header.b.transform?.[4]||0)-12).map(it=>{
+              const x=center(it);let closest=columnCenters[0],distance=Infinity;
+              for(const c of columnCenters){const delta=Math.abs(x-c.x);if(delta<distance){distance=delta;closest=c;}}
+              return {item:it,column:closest.type};
+            }).filter(v=>v.column!=='Balance');
+            if(amounts.length&&activeDate){
               const description=[pendingDesc,desc].filter(Boolean).join(' ').replace(/\s+/g,' ').trim();
               if(description&&!/^(Opening|Closing) Balance/i.test(description)){
-                amountItems.forEach(it=>{
-                  const amount=pdfAmount(it.str);
-                  if(Number.isFinite(amount)&&amount>0)add(activeDate,description,amount,Number(it.transform?.[4]||0)<splitX?'Expense':'Income');
-                });
+                for(const entry of amounts){const amount=pdfAmount(entry.item.str);if(Number.isFinite(amount)&&amount>0)add(activeDate,description,amount,entry.column);}
               }
               pendingDesc='';
             }else if(desc){
