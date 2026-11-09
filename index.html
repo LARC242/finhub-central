@@ -9115,11 +9115,14 @@ Bonus"></textarea></div>
     }
     function addLedgerColumnResizeHandles(header){
       [...header.querySelectorAll('.ledger-resize-handle')].forEach(el=>el.remove());
-      [...header.children].forEach(th=>{
+      [...header.children].forEach((th,index)=>{
         const key=th.dataset.colKey;if(!key||key==='actions')return;
-        th.style.position='relative';th.style.userSelect='none';
+        th.style.position='relative';th.style.userSelect='none';th.style.isolation='isolate';
+        // Earlier columns must paint above the following header so the resize
+        // grip at their right edge remains clickable (notably Subcategory | Account).
+        th.style.zIndex=String(30-index);
         const grip=document.createElement('span');grip.className='ledger-resize-handle';grip.title='Drag to resize column';grip.setAttribute('aria-label','Resize '+key+' column');
-        grip.style.cssText='position:absolute;right:0;top:0;height:100%;width:9px;cursor:col-resize;touch-action:none;z-index:5;border-right:2px solid rgba(99,102,241,.22);border-left:1px dotted rgba(99,102,241,.35);';
+        grip.style.cssText='position:absolute;right:-5px;top:0;height:100%;width:16px;cursor:col-resize;touch-action:none;z-index:30;pointer-events:auto;background:linear-gradient(to right,transparent 35%,rgba(99,102,241,.10) 35%,rgba(99,102,241,.10) 48%,transparent 48%);';
         grip.addEventListener('pointerdown',e=>{
           e.preventDefault();e.stopPropagation();const startX=e.clientX,startWidth=th.getBoundingClientRect().width,p=ledgerPrefs();grip.setPointerCapture?.(e.pointerId);
           const move=ev=>{const width=Math.max(64,Math.min(520,Math.round(startWidth+ev.clientX-startX)));const col=header.closest('table')?.querySelector(`col[data-col-key="${key}"]`);if(col)col.style.width=width+'px';};
