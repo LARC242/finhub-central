@@ -251,7 +251,7 @@
 <body id="app-body" class="bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 min-h-screen flex flex-col md:flex-row transition-colors duration-200 relative">
 
   <!-- UNDO TOAST NOTIFICATION -->
-  <div id="undo-toast" class="fixed bottom-4 left-4 z-50 hidden transition-all"><button type="button" onclick="executeUndo()" aria-label="Undo last action" title="Undo last action" class="w-9 h-9 inline-flex items-center justify-center rounded-full bg-gray-900 dark:bg-gray-700 text-white shadow-lg border border-gray-600 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-400"><i class="fa-solid fa-rotate-left text-sm"></i></button></div>
+  <div id="undo-toast" class="fixed bottom-4 left-4 z-50 hidden transition-all"><button type="button" onclick="executeUndo()" aria-label="Undo last action" title="Undo last action (available for 5 seconds)" class="w-9 h-9 inline-flex items-center justify-center rounded-full bg-gray-900 dark:bg-gray-700 text-white shadow-lg border border-gray-600 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-400"><i class="fa-solid fa-rotate-left text-sm"></i></button></div>
 
   <!-- Sidebar Nav -->
   <aside id="finhub-sidebar" class="finhub-sidebar w-full md:w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex-shrink-0 flex flex-col justify-between">
@@ -3478,8 +3478,10 @@ Bonus"></textarea></div>
     function permanentlyDeleteArchivedAccountById(id) {
       const acc=(state.accounts||[]).find(a=>String(a.id)===String(id)&&a.archived);
       if(!acc)return;
-      const linked=(state.transactions||[]).filter(t=>String(t.accountId||'')===String(id)||String(t.transferToAccountId||'')===String(id)||String(t.debtAccountId||'')===String(id));
-      const linkedIds=new Set(linked.map(t=>String(t.id)));
+      const ownedTransactions=(state.transactions||[]).filter(t=>String(t.accountId||'')===String(id));
+      const crossLinkedTransactions=(state.transactions||[]).filter(t=>String(t.accountId||'')!==String(id)&&(String(t.transferToAccountId||'')===String(id)||String(t.debtAccountId||'')===String(id)));
+      const linked=[...ownedTransactions,...crossLinkedTransactions];
+      const linkedIds=new Set(ownedTransactions.map(t=>String(t.id)));
       const debtPayments=(state.debtPayments||[]).filter(p=>String(p.accountId||'')===String(id)||String(p.debtAccountId||'')===String(id)||linked.some(t=>String(t.debtPaymentId||'')===String(p.id)));
       const batches=state.statementReconciliation||{};
       const batchCount=[...(batches.batches||[])].filter(b=>String(b.accountId||'')===String(id)).length + ((batches.activeBatch&&String(batches.activeBatch.accountId||'')===String(id))?1:0);
@@ -3487,11 +3489,12 @@ Bonus"></textarea></div>
 
 This will permanently remove:
 • The account and its balances/opening-balance history
-• ${linked.length} linked transaction(s)
+• ${ownedTransactions.length} transaction(s) belonging to this account
+• ${crossLinkedTransactions.length} transaction(s) on other accounts that will be kept but unlinked from this account
 • ${debtPayments.length} linked debt-payment record(s)
 • ${batchCount} statement reconciliation batch(es)
 
-This cannot be undone from FinHub. A local safety copy will be created first. Transactions involving other accounts may also be removed.`;
+Transactions recorded on other accounts will not be deleted merely because they reference this account. A local safety copy will be created first.`;
       if(!confirm(message))return;
       const typed=prompt(`Type the account name exactly to confirm permanent deletion:
 ${acc.name}`);
@@ -3499,6 +3502,20 @@ ${acc.name}`);
       if(!createLocalSafetyCopy(`Before permanently deleting archived account "${acc.name}"`)){alert('FinHub could not create a local safety copy. Export a JSON backup before deleting this account.');return;}
       captureUndo(`Permanently delete archived account "${acc.name}"`);
       state.transactions=(state.transactions||[]).filter(t=>!linkedIds.has(String(t.id)));
+      // Preserve transactions owned by other accounts; remove only their links
+      // to the account being deleted so their cash activity remains in history.
+      crossLinkedTransactions.forEach(t=>{
+        if(String(t.transferToAccountId||'')===String(id)){
+          delete t.transferToAccountId;
+          delete t.transferOriginSnapshot;
+          delete t.transferAddedSideAccountId;
+          delete t.transferAddedSideRowId;
+          delete t.transferAddedSideDirection;
+          if(Array.isArray(t.transferStatementMatches)) t.transferStatementMatches=t.transferStatementMatches.filter(m=>String(m.accountId||'')!==String(id));
+          if(Array.isArray(t.reconciledAccountIds)) t.reconciledAccountIds=t.reconciledAccountIds.filter(accountId=>String(accountId)!==String(id));
+        }
+        if(String(t.debtAccountId||'')===String(id)) delete t.debtAccountId;
+      });
       state.debtPayments=(state.debtPayments||[]).filter(p=>!debtPayments.some(x=>String(x.id)===String(p.id)));
       state.calendarBills=(state.calendarBills||[]).filter(b=>String(b.accountId||'')!==String(id)&&String(b.debtAccountId||'')!==String(id));
       if(state.statementReconciliation){
@@ -3509,7 +3526,10 @@ ${acc.name}`);
       state.accounts=state.accounts.filter(a=>String(a.id)!==String(id));
       if(window.currentEditingAccountId&&String(window.currentEditingAccountId)===String(id))closeAccountDetailModal();
       saveData();renderDashboard();renderLedger();renderDebtPlanner();renderSettings();
-      alert(`"${acc.name}" and its linked history have been permanently deleted.`);
+      // Restart the discreet undo window after the destructive action has fully
+      // completed. A blocking success alert here would freeze the five-second
+      // timer and make the undo control disappear before the user could use it.
+      renderUndoToast();
     }
 
     function confirmDeleteAccountFromModal() {
