@@ -5855,7 +5855,7 @@ Bonus"></textarea></div>
     }
     function openReconciliationModal() {
       const sel = document.getElementById('recon-account');
-      sel.innerHTML = (state.accounts||[]).filter(a=>a.type==='asset').map(a=>`<option value="${a.id}">${escapeHtml(a.name)}</option>`).join('');
+      sel.innerHTML = (state.accounts||[]).filter(a=>['asset','debt'].includes(a.type)).map(a=>`<option value="${a.id}">${escapeHtml(a.name)}${a.type==='debt'?' · Liability':''}</option>`).join('');
       const saved = state.statementReconciliation?.activeBatch;
       if (saved && Array.isArray(saved.rows) && saved.rows.length) {
         pendingStatementRows = saved.rows;
@@ -5919,6 +5919,11 @@ Bonus"></textarea></div>
           if(date)return {date,remainder:monthMatch[4]};
         }
       }
+      const dayMonth=value.match(/^(\d{1,2})\s+([A-Za-z]{3,9})\s+(.+)$/);
+      if(dayMonth && statementYear) {
+        const date=statementDate(`${dayMonth[1]} ${dayMonth[2]} ${statementYear}`);
+        if(date)return {date,remainder:dayMonth[3]};
+      }
       const m=value.match(/^((?:\d{4}[-/]\d{1,2}[-/]\d{1,2})|(?:\d{1,2}[-/]\d{1,2}[-/]\d{2,4})|(?:\d{1,2}\s+[A-Za-z]{3,9}\s+\d{2,4}))\s+(.+)$/);
       if(!m)return null;
       const date=statementDate(m[1]);
@@ -5928,16 +5933,16 @@ Bonus"></textarea></div>
       const re = /\(?-?\$?\d{1,3}(?:,\d{3})*(?:\.\d{2})\)?-?(?:\s*(?:CR|DR))?|\(?-?\$?\d+(?:\.\d{2})\)?-?(?:\s*(?:CR|DR))?/gi;
       return [...String(value||'').matchAll(re)].map(m=>({text:m[0].trim(),index:m.index,length:m[0].length}));
     }
-    function parsePdfStatementLine(lineText, lineItems=[], directionColumns=null, statementYear=null) {
+    function parsePdfStatementLine(lineText, lineItems=[], directionColumns=null, statementYear=null, inheritedDate='') {
       const dated = pdfStatementDateAtStart(lineText,statementYear);
-      if (!dated) return null;
-      const tokens = pdfMoneyTokens(dated.remainder);
+      const date = dated?.date || inheritedDate;
+      const remainder = dated ? dated.remainder : String(lineText||'').trim();
+      if (!date || !remainder) return null;
+      const tokens = pdfMoneyTokens(remainder);
       if (!tokens.length) return null;
-      // Many bank layouts end each row with Amount; Balance. Use the first
-      // monetary value after the description; never treat the running balance as activity.
       const amountToken = tokens[0];
       const rawAmount = amountToken.text;
-      const prefix = dated.remainder.slice(0, amountToken.index).trim();
+      const prefix = remainder.slice(0, amountToken.index).trim();
       if (!prefix) return null;
       let amount = parseStatementAmount(rawAmount);
       if (!Number.isFinite(amount) || amount === 0) return null;
@@ -5947,18 +5952,27 @@ Bonus"></textarea></div>
       if (hasDebitMarker || explicitlyNegative) amount = -Math.abs(amount);
       else if (hasCreditMarker) amount = Math.abs(amount);
       else {
-        // Unsigned PDF amounts are only safe when a Debit/Credit column heading
-        // identifies the amount's column. Otherwise skip rather than invert cash flow.
         const amountItem = lineItems.find(item => pdfMoneyTokens(item.text).length);
         if (!directionColumns || !amountItem) return null;
         const debitDistance=Math.abs(amountItem.x-directionColumns.debitX);
         const creditDistance=Math.abs(amountItem.x-directionColumns.creditX);
-        if (Math.min(debitDistance,creditDistance)>45 || Math.abs(debitDistance-creditDistance)<4) return null;
+        if (Math.min(debitDistance,creditDistance)>55 || Math.abs(debitDistance-creditDistance)<4) return null;
         amount = debitDistance<creditDistance ? -Math.abs(amount) : Math.abs(amount);
       }
       const description = prefix.replace(/\s+/g,' ').replace(/[|•]+$/,'').trim();
       if (!description || /^(opening balance|closing balance|balance forward|total|continued)$/i.test(description)) return null;
-      return {date:dated.date,description,amount};
+      return {date,description,amount};
+    }
+    function parsePdfVisaLine(lineText, statementYear) {
+      // Scotiabank Visa: reference, transaction date, posting date, description, amount.
+      // Credits/payments are printed with a trailing minus sign (e.g. 48.58-).
+      const m=String(lineText||'').trim().match(/^\d{3}\s+([A-Za-z]{3,9})\s+(\d{1,2})\s+([A-Za-z]{3,9})\s+(\d{1,2})\s+(.+?)\s+(\(?-?\$?\d[\d,]*\.\d{2}\)?-?)$/);
+      if(!m)return null;
+      const date=statementDate(`${m[1]} ${m[2]} ${statementYear}`);
+      const amount=parseStatementAmount(m[6]);
+      const description=m[5].replace(/\s+/g,' ').trim();
+      if(!date||!description||!Number.isFinite(amount)||!amount)return null;
+      return {date,description,amount,visa:true};
     }
     async function importPdfStatement(file) {
       const host=document.getElementById('recon-preview');
@@ -5969,13 +5983,14 @@ Bonus"></textarea></div>
         const bytes=await file.arrayBuffer();
         const pdf=await pdfjs.getDocument({data:bytes}).promise;
         const extracted=[];
-        let statementYear=null;
+        let statementYear=null, isVisa=false;
         for(let pageNo=1;pageNo<=pdf.numPages;pageNo++) {
           const page=await pdf.getPage(pageNo);
           const content=await page.getTextContent();
           const pageText=content.items.map(item=>item.str||'').join(' ');
-          const yearMatch=pageText.match(/\b(?:19|20)\d{2}\b/);
-          if(!statementYear&&yearMatch)statementYear=Number(yearMatch[0]);
+          if(/Visa\s*\*?\s*Card|Visa Card/i.test(pageText) && /TRANS\.\s*POST|Transactions since your last statement/i.test(pageText))isVisa=true;
+          const yearMatch=pageText.match(/(?:Statement Period|From)\s*[:]?\s*[A-Za-z]{3,9}\s+\d{1,2},?\s+((?:19|20)\d{2})/i)||pageText.match(/\b((?:19|20)\d{2})\b/);
+          if(!statementYear&&yearMatch)statementYear=Number(yearMatch[1]||yearMatch[0]);
           const lines=[];
           for(const item of content.items) {
             if(!item.str || !item.str.trim()) continue;
@@ -5987,25 +6002,44 @@ Bonus"></textarea></div>
           lines.sort((a,b)=>b.y-a.y).forEach(line=>line.items.sort((a,b)=>a.x-b.x));
           let directionColumns=null;
           for(const line of lines) {
-            const debit=line.items.find(item=>/\b(debit|withdrawal|money out)\b/i.test(item.text));
-            const credit=line.items.find(item=>/\b(credit|deposit|money in)\b/i.test(item.text));
+            const debit=line.items.find(item=>/\b(debit|withdrawal|withdrawn|money out)\b/i.test(item.text));
+            const credit=line.items.find(item=>/\b(credit|deposit|deposited|money in)\b/i.test(item.text));
             if(debit&&credit&&Math.abs(debit.x-credit.x)>15) { directionColumns={debitX:debit.x,creditX:credit.x}; break; }
           }
           lines.forEach(line=>{
             const text=line.items.map(x=>x.text).join(' ').replace(/\s+/g,' ').trim();
-            if(text) extracted.push({text,items:line.items,directionColumns});
+            if(text) extracted.push({text,items:line.items,directionColumns,pageNo});
           });
         }
         const rows=[];
-        extracted.forEach(line=>{const row=parsePdfStatementLine(line.text,line.items,line.directionColumns,statementYear);if(row)rows.push(row);});
+        if(isVisa) {
+          extracted.forEach(line=>{const row=parsePdfVisaLine(line.text,statementYear);if(row)rows.push(row);});
+        } else {
+          let currentDate='';
+          extracted.forEach(line=>{
+            const dated=pdfStatementDateAtStart(line.text,statementYear);
+            if(dated) currentDate=dated.date;
+            const row=parsePdfStatementLine(line.text,line.items,line.directionColumns,statementYear,currentDate);
+            if(row) {
+              // Skip opening/closing balance rows and statement summary lines.
+              if(/^(opening balance|closing balance|balance forward)$/i.test(row.description))return;
+              rows.push(row);
+            } else if(!dated && currentDate && rows.length && !pdfMoneyTokens(line.text).length &&
+              !/^(date|description|transactions?|activity details|continued|page \d|opening balance|closing balance)/i.test(line.text.trim())) {
+              // Some statements put merchant/reference detail on a separate text line.
+              const detail=line.text.replace(/\s+/g,' ').trim();
+              if(detail && detail.length<100) rows[rows.length-1].description += ` ${detail}`;
+            }
+          });
+        }
         if(!rows.length) {
-          if(host) host.innerHTML='<div class="rounded-xl border border-amber-300/50 bg-amber-500/5 p-3 text-xs"><strong>FinHub could not identify transaction rows in this PDF.</strong><p class="mt-1">This PDF layout could not be parsed. FinHub supports selectable-text statements with recognizable dates and debit/credit columns; scanned/image-only PDFs need OCR. No transactions were imported.</p></div>';
+          if(host) host.innerHTML='<div class="rounded-xl border border-amber-300/50 bg-amber-500/5 p-3 text-xs"><strong>FinHub could not identify transaction rows in this PDF.</strong><p class="mt-1">This PDF layout could not be parsed. Supported formats include selectable-text EQ Bank, RBC and Scotiabank chequing statements, plus Scotiabank Visa transaction tables. Scanned/image-only PDFs need OCR. No transactions were imported.</p></div>';
           return;
         }
         const csv=['Date,Description,Amount',...rows.map(r=>[r.date,r.description,r.amount].map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(','))].join('\r\n');
         document.getElementById('recon-paste-area').value=csv;
         processReconciliation('pdf');
-        if(host) {const note=document.createElement('p');note.className='text-[10px] text-emerald-600';note.textContent=`Extracted ${rows.length} possible transaction row(s) from ${pdf.numPages} PDF page(s). Review every row below before importing; PDF layouts can vary.`;host.prepend(note);}
+        if(host) {const note=document.createElement('p');note.className='text-[10px] text-emerald-600';note.textContent=`Extracted ${rows.length} possible transaction row(s) from ${pdf.numPages} PDF page(s). ${isVisa?'Visa purchases and credits use the card-balance sign convention. ':''}Review every row below before importing.`;host.prepend(note);}
       } catch(error) {
         if(host) host.innerHTML=`<p class="text-xs text-rose-500">${escapeHtml(error?.message||'FinHub could not read this PDF. No transactions were imported.')}</p>`;
       }
@@ -6038,7 +6072,8 @@ Bonus"></textarea></div>
       const closingRaw = document.getElementById('recon-closing-balance')?.value;
       const hasOpening = openingRaw !== undefined && openingRaw !== null && String(openingRaw).trim() !== '';
       const hasClosing = closingRaw !== undefined && closingRaw !== null && String(closingRaw).trim() !== '';
-      const netActivity = pendingStatementRows.reduce((sum,row) => sum + (row.type === 'Income' ? 1 : -1) * (Number(row.amount) || 0), 0);
+      const selectedAccount=(state.accounts||[]).find(a=>String(a.id)===String(accountId));
+      const netActivity = pendingStatementRows.reduce((sum,row) => sum + (selectedAccount?.type==='debt' ? (row.type==='Expense'?1:-1) : (row.type==='Income'?1:-1)) * (Number(row.amount)||0), 0);
       const opening = hasOpening ? Number(openingRaw) : null;
       const closing = hasClosing ? Number(closingRaw) : null;
       if ((hasOpening && !Number.isFinite(opening)) || (hasClosing && !Number.isFinite(closing)) || !accountId || !endDate) {
@@ -6088,8 +6123,8 @@ Bonus"></textarea></div>
     }
     function parseStatementAmount(value) {
       let v=String(value??'').trim();if(!v)return NaN;
-      const negative=/^\(.*\)$/.test(v)||/\bDR\b/i.test(v)||/^-/i.test(v);
-      v=v.replace(/[()$,+\s]/g,'').replace(/\b(CR|DR)\b/ig,'').replace(/[A-Z]/ig,'');
+      const negative=/^\(.*\)$/.test(v)||/\bDR\b/i.test(v)||/^-/i.test(v)||/-$/.test(v);
+      v=v.replace(/[()$,+\s]/g,'').replace(/\b(CR|DR)\b/ig,'').replace(/[A-Z]/ig,'').replace(/-$/,'');
       const n=Number(v);return Number.isFinite(n)?(negative?-Math.abs(n):Math.abs(n)):NaN;
     }
     function statementMatchKey(accountId,direction,amount) { return `${accountId}|${direction}|${Math.round(Math.abs(Number(amount)||0)*100)}`; }
@@ -6224,8 +6259,9 @@ Bonus"></textarea></div>
           parseErrors.push(`Line ${index+1}: ${reason}`);
           return;
         }
-        const direction=explicitDirection||(negativeMeansOutflow?(amountNum<0?'Expense':'Income'):(amountNum>0?'Expense':'Income'));
         const accountId=document.getElementById('recon-account')?.value||'';
+        const selectedStatementAccount=(state.accounts||[]).find(a=>String(a.id)===String(accountId));
+        const direction=explicitDirection||(selectedStatementAccount?.type==='debt'?(amountNum>0?'Expense':'Income'):(negativeMeansOutflow?(amountNum<0?'Expense':'Income'):(amountNum>0?'Expense':'Income')));
         const amount=Math.abs(amountNum);
         const explicit={
           type:parseFinHubType(cell(parts,typeCol)),
@@ -6879,8 +6915,9 @@ Bonus"></textarea></div>
     function validateStatementImportRow(row) {
       if (!row) return 'Statement row not found.';
       normalizeStoredStatementImportRow(row);
-      const funding = (state.accounts || []).find(a => String(a.id) === String(row.accountId) && a.type === 'asset' && !a.archived);
-      if (!funding) return 'Choose an active asset account as the statement account.';
+      const statementAccount = (state.accounts || []).find(a => String(a.id) === String(row.accountId) && ['asset','debt'].includes(a.type) && !a.archived);
+      if (!statementAccount) return 'Choose an active asset or liability account as the statement account.';
+      if (statementAccount.type === 'debt' && !['Expense','Income'].includes(row.importType || row.type)) return 'For a credit-card statement, import purchases and credits as Expense or Income rows. Debt payments and transfers must be reconciled from the funding bank account.';
       if (row.importValidationError) return row.importValidationError;
       if (row.importType === 'Debt Payment' || row.importType === 'Debt Payment Reversal') {
         const debt = (state.accounts || []).find(a => String(a.id) === String(row.debtAccountId) && a.type === 'debt' && !a.archived);
