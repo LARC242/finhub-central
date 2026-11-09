@@ -5987,7 +5987,7 @@ ${acc.name}`);
     function pdfAmount(v){let x=String(v||'').replace(/[$,\s]/g,'');if(!x)return NaN;const neg=/^-|-$|\(.*\)$/.test(x);const n=Number(x.replace(/[()\-]/g,''));return Number.isFinite(n)?(neg?-n:n):NaN;}
     function parsePdfStatementRows(pages,bank,year=2026){
       const rows=[];
-      const add=(date,desc,amt,type)=>{if(date&&desc&&Number.isFinite(amt)&&Math.abs(amt)>0)rows.push({id:`pdf_${Date.now()}_${rows.length}_${Math.random().toString(36).slice(2,6)}`,date,description:desc.trim(),amount:Math.abs(amt),signedAmount:type==='Income'?Math.abs(amt):-Math.abs(amt),type,accountId:document.getElementById('recon-account')?.value||'',status:'pending'});};
+      const add=(date,desc,amt,type)=>{if(date&&desc&&Number.isFinite(amt)&&Math.abs(amt)>0)rows.push({id:`pdf_${Date.now()}_${rows.length}_${Math.random().toString(36).slice(2,6)}`,date,description:desc.trim(),amount:Math.abs(amt),signedAmount:type==='Income'?Math.abs(amt):-Math.abs(amt),type,statementColumnType:bank==='rbc'?type:'',accountId:document.getElementById('recon-account')?.value||'',status:'pending'});};
       if(bank==='rbc'){
         // Parse RBC activity from raw PDF text-item coordinates. Do not depend on
         // exact rounded baselines: dates, descriptions and amounts can sit on
@@ -6000,7 +6000,7 @@ ${acc.name}`);
           // Cluster by baseline with a small tolerance rather than Math.round(y).
           const sorted=source.slice().sort((a,b)=>Number(b.transform?.[5]||0)-Number(a.transform?.[5]||0)||Number(a.transform?.[4]||0)-Number(b.transform?.[4]||0));
           const lines=[];
-          for(const it of sorted){const y=Number(it.transform?.[5]||0);let line=lines.find(v=>Math.abs(v.y-y)<=2.25);if(!line){line={y,items:[]};lines.push(line);}line.items.push(it);line.y=line.items.reduce((n,v)=>n+Number(v.transform?.[5]||0),0)/line.items.length;}
+          for(const it of sorted){const y=Number(it.transform?.[5]||0);let line=lines.find(v=>Math.abs(v.y-y)<=3.5);if(!line){line={y,items:[]};lines.push(line);}line.items.push(it);line.y=line.items.reduce((n,v)=>n+Number(v.transform?.[5]||0),0)/line.items.length;}
           lines.sort((a,b)=>b.y-a.y);
           const headerItems=source.filter(v=>labelOf(v.str));
           let header=null,best=Infinity;
@@ -6024,10 +6024,12 @@ ${acc.name}`);
             if(/^(Date|Description|Withdrawals|Deposits|Balance|Details of your account activity|continued|Page\s+\d|Opening Balance|Closing Balance)/i.test(desc))desc='';
             const amounts=[];
             for(const it of items){
-              const x=Number(it.transform?.[4]||0);if(x<Number(header.w.transform?.[4]||0)-8||x>=Number(header.b.transform?.[4]||0)-8||!moneyText(it.str))continue;
-              const cx=center(it);if(cx<col1)amounts.push({item:it,column:'Expense'});else if(cx<col2)amounts.push({item:it,column:'Income'});
+              const x=Number(it.transform?.[4]||0);const cx=center(it);if(cx<Number(header.w.transform?.[4]||0)-8||cx>=Number(header.b.transform?.[4]||0)-8||!moneyText(it.str))continue;
+              if(cx<col1)amounts.push({item:it,column:'Expense'});else if(cx<col2)amounts.push({item:it,column:'Income'});
             }
             if(amounts.length&&activeDate){
+              // The amount's horizontal centre is authoritative: RBC's table columns
+              // shift between pages, and amount text can begin just left of its column.
               const description=[pendingDesc,desc].filter(Boolean).join(' ').replace(/\s+/g,' ').trim();
               if(description&&!/^(Opening|Closing) Balance/i.test(description))for(const entry of amounts){const amount=pdfAmount(entry.item.str);if(Number.isFinite(amount)&&amount>0)add(activeDate,description,amount,entry.column);}
               pendingDesc='';
@@ -6454,7 +6456,10 @@ ${acc.name}`);
       row.importRuleMatch = rule?.match || '';
       const merchantRule = (state.merchantRules || []).find(r => normalizeStatementText(row.description).includes(normalizeStatementText(r.keyword)));
       row.vendor = explicit.vendor || rule?.vendor || applyVendorCleanupRules(row.description);
-      const requestedType = explicit.type || rule?.type || row.type;
+      // For RBC PDFs, the statement's debit/credit column is authoritative. A saved
+      // merchant rule may add category/account details, but must not flip money-in
+      // to money-out (or vice versa). Explicit review edits still take precedence.
+      const requestedType = explicit.type || (row.statementColumnType ? ((rule?.type === 'Transfer' || rule?.type === row.type) ? rule.type : row.type) : (rule?.type || row.type));
       const requestedCategory = explicit.category || rule?.category || '';
       const requestedSubcategory = explicit.subcategory || rule?.subcategory || '';
       row.importType = internalTransactionType(requestedType, requestedCategory);
@@ -6476,8 +6481,8 @@ ${acc.name}`);
         row.category = 'Interest Charge';
         row.subcategory = 'Interest Expense';
       }
-      row.transferToAccountId = (explicit.transferTo ? resolveStatementAccount(explicit.transferTo, 'asset')?.id : '') || rule?.transferToAccountId || '';
-      row.transferFromAccountId = (explicit.transferFrom ? resolveStatementAccount(explicit.transferFrom, 'asset')?.id : '') || rule?.transferFromAccountId || row.transferFromAccountId || '';
+      row.transferToAccountId = (explicit.transferTo ? resolveStatementAccount(explicit.transferTo, 'asset')?.id : '') || (row.statementColumnType === 'Income' ? '' : (rule?.transferToAccountId || ''));
+      row.transferFromAccountId = (explicit.transferFrom ? resolveStatementAccount(explicit.transferFrom, 'asset')?.id : '') || (row.statementColumnType === 'Expense' ? '' : (rule?.transferFromAccountId || row.transferFromAccountId || ''));
       const hasPrincipal = Number.isFinite(explicit.principal);
       const hasInterest = Number.isFinite(explicit.interest);
       row.principalAmount = null;
