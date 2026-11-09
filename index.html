@@ -162,7 +162,58 @@
     body[data-finhub-theme="neutral"] input, body[data-finhub-theme="neutral"] select, body[data-finhub-theme="neutral"] textarea,
     body[data-finhub-theme="colorful"] input, body[data-finhub-theme="colorful"] select, body[data-finhub-theme="colorful"] textarea { border-color:rgba(120,130,145,.38) !important; }
 
-      .sidebar-collapsed .nav-section-label { display:none; }
+  
+    /* Dark-mode harmonization for every preset theme: retain each preset's accent,
+       but use coordinated dark surfaces and readable neutral text throughout. */
+    html.dark body[data-finhub-theme]:not([data-finhub-theme="classic"]) { color:#e5e7eb !important; color-scheme:dark; }
+    html.dark body[data-finhub-theme="silver"] { --preset-surface:#222b35; --preset-panel:#293542; --preset-border:#3b4856; --preset-muted:#a9b6c4; }
+    html.dark body[data-finhub-theme="neutral"] { --preset-surface:#302c26; --preset-panel:#39342c; --preset-border:#51483d; --preset-muted:#c5b9a8; }
+    html.dark body[data-finhub-theme="colorful"] { --preset-surface:#252139; --preset-panel:#302a49; --preset-border:#454064; --preset-muted:#c3b9e2; }
+    html.dark body[data-finhub-theme]:not([data-finhub-theme="classic"]) aside,
+    html.dark body[data-finhub-theme]:not([data-finhub-theme="classic"]) .tab-content .bg-white,
+    html.dark body[data-finhub-theme]:not([data-finhub-theme="classic"]) .tab-content .bg-gray-50,
+    html.dark body[data-finhub-theme]:not([data-finhub-theme="classic"]) .tab-content .bg-gray-100,
+    html.dark body[data-finhub-theme]:not([data-finhub-theme="classic"]) .tab-content .bg-slate-50,
+    html.dark body[data-finhub-theme]:not([data-finhub-theme="classic"]) .tab-content .bg-slate-100,
+    html.dark body[data-finhub-theme]:not([data-finhub-theme="classic"]) #transaction-modal > div,
+    html.dark body[data-finhub-theme]:not([data-finhub-theme="classic"]) #bulk-edit-modal > div,
+    html.dark body[data-finhub-theme]:not([data-finhub-theme="classic"]) #vendor-rule-modal > div,
+    html.dark body[data-finhub-theme]:not([data-finhub-theme="classic"]) #recon-modal > div {
+      background-color:var(--preset-surface) !important; border-color:var(--preset-border) !important; color:#e5e7eb !important;
+    }
+    html.dark body[data-finhub-theme]:not([data-finhub-theme="classic"]) .bg-gray-50,
+    html.dark body[data-finhub-theme]:not([data-finhub-theme="classic"]) .bg-gray-100,
+    html.dark body[data-finhub-theme]:not([data-finhub-theme="classic"]) .bg-slate-50,
+    html.dark body[data-finhub-theme]:not([data-finhub-theme="classic"]) .bg-slate-100,
+    html.dark body[data-finhub-theme]:not([data-finhub-theme="classic"]) .bg-white\/50,
+    html.dark body[data-finhub-theme]:not([data-finhub-theme="classic"]) .bg-white\/70 { background-color:var(--preset-panel) !important; }
+    html.dark body[data-finhub-theme]:not([data-finhub-theme="classic"]) .text-gray-900,
+    html.dark body[data-finhub-theme]:not([data-finhub-theme="classic"]) .text-gray-800,
+    html.dark body[data-finhub-theme]:not([data-finhub-theme="classic"]) .text-gray-700,
+    html.dark body[data-finhub-theme]:not([data-finhub-theme="classic"]) .text-slate-900,
+    html.dark body[data-finhub-theme]:not([data-finhub-theme="classic"]) .text-slate-800,
+    html.dark body[data-finhub-theme]:not([data-finhub-theme="classic"]) .text-slate-700 { color:#e5e7eb !important; }
+    html.dark body[data-finhub-theme]:not([data-finhub-theme="classic"]) .text-gray-600,
+    html.dark body[data-finhub-theme]:not([data-finhub-theme="classic"]) .text-gray-500,
+    html.dark body[data-finhub-theme]:not([data-finhub-theme="classic"]) .text-slate-600,
+    html.dark body[data-finhub-theme]:not([data-finhub-theme="classic"]) .text-slate-500 { color:var(--preset-muted) !important; }
+    html.dark body[data-finhub-theme]:not([data-finhub-theme="classic"]) [class*="border-gray-"],
+    html.dark body[data-finhub-theme]:not([data-finhub-theme="classic"]) [class*="border-slate-"] { border-color:var(--preset-border) !important; }
+    html.dark body[data-finhub-theme]:not([data-finhub-theme="classic"]) input,
+    html.dark body[data-finhub-theme]:not([data-finhub-theme="classic"]) select,
+    html.dark body[data-finhub-theme]:not([data-finhub-theme="classic"]) textarea {
+      background-color:var(--preset-panel) !important; color:#f3f4f6 !important; border-color:var(--preset-border) !important;
+    }
+    html.dark body[data-finhub-theme]:not([data-finhub-theme="classic"]) input::placeholder,
+    html.dark body[data-finhub-theme]:not([data-finhub-theme="classic"]) textarea::placeholder { color:#9ca3af !important; }
+    html.dark body[data-finhub-theme]:not([data-finhub-theme="classic"]) table thead { background-color:var(--preset-panel) !important; }
+    html.dark body[data-finhub-theme]:not([data-finhub-theme="classic"]) table tbody tr:hover { background-color:rgba(148,163,184,.08) !important; }
+    html.dark body[data-finhub-theme]:not([data-finhub-theme="classic"]) .shadow,
+    html.dark body[data-finhub-theme]:not([data-finhub-theme="classic"]) .shadow-sm,
+    html.dark body[data-finhub-theme]:not([data-finhub-theme="classic"]) .shadow-md { box-shadow:0 8px 24px rgba(0,0,0,.22) !important; }
+    html.dark body[data-finhub-theme]:not([data-finhub-theme="classic"]) .theme-text { filter:brightness(1.12); }
+
+    .sidebar-collapsed .nav-section-label { display:none; }
   </style>
 </head>
 <body id="app-body" class="bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 min-h-screen flex flex-col md:flex-row transition-colors duration-200 relative">
