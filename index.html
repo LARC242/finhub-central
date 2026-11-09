@@ -900,9 +900,13 @@
       </div>
 
       <!-- TABLE VIEW CONTAINER -->
-      <div class="flex flex-wrap justify-end gap-2 mb-2"><button type="button" onclick="openLedgerColumnSettings()" class="px-3 py-2 border rounded-lg text-xs">Columns</button><button type="button" onclick="exportLedgerCsv()" class="px-3 py-2 bg-emerald-600 text-white rounded-lg text-xs">Export CSV</button></div><div id="ledger-column-settings" class="hidden p-3 mb-2 border rounded-lg"><div id="ledger-column-options" class="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs"></div></div>
+      <div class="flex flex-wrap justify-end gap-2 mb-2"><button type="button" onclick="openLedgerColumnSettings()" class="px-3 py-2 border rounded-lg text-xs">Columns</button><button type="button" onclick="exportLedgerCsv()" class="px-3 py-2 bg-emerald-600 text-white rounded-lg text-xs">Export CSV</button></div><div id="ledger-column-settings" class="hidden p-4 mb-3 border border-indigo-200 dark:border-indigo-900 rounded-xl bg-indigo-50/50 dark:bg-indigo-950/20">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-3"><div><h4 class="text-sm font-bold">Customize transaction columns</h4><p class="text-xs text-gray-500 mt-1">Show or hide fields, drag to reorder, and resize columns by dragging a header edge.</p></div><button type="button" onclick="closeLedgerColumnSettings()" class="px-3 py-1.5 border rounded-lg text-xs">Done</button></div>
+        <div id="ledger-column-options" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 text-xs"></div>
+        <div class="flex justify-end mt-3"><button type="button" onclick="resetLedgerColumnWidths()" class="text-xs text-indigo-600 dark:text-indigo-400 underline">Reset column widths</button></div>
+      </div>
       <div id="ledger-table-container" class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-x-auto overflow-y-visible shadow-sm custom-scrollbar">
-        <table class="w-full text-left text-sm">
+        <table class="w-full text-left text-sm" style="min-width:1100px">
           <thead class="bg-gray-50 dark:bg-gray-950 text-xs uppercase border-b border-gray-200 dark:border-gray-800 text-gray-500">
             <tr>
               <th class="px-4 py-3">Date</th><th class="px-4 py-3">Vendor</th><th class="px-4 py-3">Description</th><th class="px-4 py-3">Type</th><th class="px-4 py-3">Bucket</th><th class="px-4 py-3">Subcategory</th><th class="px-4 py-3">Account</th><th class="px-4 py-3 text-right">Amount</th><th class="px-4 py-3 text-right">Running Balance</th><th class="px-4 py-3 text-center">Actions</th>
@@ -5532,6 +5536,8 @@ Bonus"></textarea></div>
         });
       }
 
+      // Reapply saved column order, visibility and widths after every ledger render.
+      applyLedgerColumns();
       // Drop stale selections for transactions that no longer exist.
       selectedLedgerIds = new Set(Array.from(selectedLedgerIds).filter(id => state.transactions.some(t => t.id === id)));
       updateLedgerSelectionUI();
@@ -9071,11 +9077,56 @@ Bonus"></textarea></div>
     function updateSplitRemainderPreview(){const total=Number(document.getElementById('tx-amount')?.value)||0;const extra=[...document.querySelectorAll('.split-amt-input')].reduce((a,e)=>a+(Number(e.value)||0),0);const a=document.getElementById('split-extra-total'),b=document.getElementById('split-remainder-total');if(a)a.textContent=formatFinancial(extra);if(b)b.textContent=extra>total?'Over allocated: '+formatFinancial(extra-total):formatFinancial(Math.max(0,total-extra));}
     document.addEventListener('input',e=>{if(e.target.matches('#tx-amount,.split-amt-input'))updateSplitRemainderPreview();});
     const ledgerCols=[['Date','date'],['Vendor','vendor'],['Description','description'],['Type','type'],['Bucket','bucket'],['Subcategory','subcategory'],['Account','account'],['Amount','amount'],['Running Balance','running'],['Actions','actions']];
-    function ledgerPrefs(){state.ledgerColumnPrefs=state.ledgerColumnPrefs||{hidden:[],order:ledgerCols.map(x=>x[1])};state.ledgerColumnPrefs.order=[...new Set([...(state.ledgerColumnPrefs.order||[]).filter(k=>ledgerCols.some(x=>x[1]===k)),...ledgerCols.map(x=>x[1])])];return state.ledgerColumnPrefs;}
-    function openLedgerColumnSettings(){const p=ledgerPrefs(),host=document.getElementById('ledger-column-options');host.innerHTML=p.order.map(key=>{const [label]=ledgerCols.find(x=>x[1]===key);return `<label draggable="true" data-col-key="${key}" class="flex gap-2 items-center cursor-move border rounded p-2"><i class="fa-solid fa-grip-vertical text-gray-400"></i><input type="checkbox" ${key==='vendor'?'checked disabled':p.hidden.includes(key)?'':'checked'} onchange="toggleLedgerColumn('${key}',this.checked)">${label}</label>`}).join('');host.querySelectorAll('[draggable=true]').forEach(el=>{el.addEventListener('dragstart',e=>e.dataTransfer.setData('text/plain',el.dataset.colKey));el.addEventListener('dragover',e=>e.preventDefault());el.addEventListener('drop',e=>{e.preventDefault();moveLedgerColumn(e.dataTransfer.getData('text/plain'),el.dataset.colKey);openLedgerColumnSettings();});});document.getElementById('ledger-column-settings').classList.remove('hidden');}
-    function moveLedgerColumn(from,to){const p=ledgerPrefs(),a=p.order.indexOf(from),b=p.order.indexOf(to);if(a<0||b<0)return;p.order.splice(a,1);p.order.splice(b,0,from);saveData();applyLedgerColumns();}
-    function toggleLedgerColumn(key,show){const p=ledgerPrefs();p.hidden=show?p.hidden.filter(x=>x!==key):[...p.hidden,key];saveData();applyLedgerColumns();}
-    function applyLedgerColumns(){const p=ledgerPrefs(),table=document.querySelector('#ledger-table-container table');if(!table)return;const header=table.querySelector('thead tr:first-child'),body=table.querySelector('tbody#ledger-rows');if(!header||!body)return;const labels=ledgerCols;const keyFor=th=>{const label=th.textContent.trim();return (labels.find(x=>x[0]===label)||[])[1];};const oldHeaders=[...header.children],oldKeys=oldHeaders.map(keyFor),headerMap=new Map(oldHeaders.map((el,i)=>[oldKeys[i],el]));p.order.forEach(k=>{const el=headerMap.get(k);if(el)header.appendChild(el);});[...body.rows].forEach(row=>{const cells=[...row.cells],map=new Map(oldKeys.map((k,i)=>[k,cells[i]]));p.order.forEach(k=>{const cell=map.get(k);if(cell)row.appendChild(cell);});});const newKeys=p.order;[...header.children].forEach((el,i)=>{el.style.display=p.hidden.includes(newKeys[i])?'none':'';});[...body.rows].forEach(row=>[...row.cells].forEach((cell,i)=>cell.style.display=p.hidden.includes(newKeys[i])?'none':''));}
+    function ledgerPrefs(){
+      state.ledgerColumnPrefs=state.ledgerColumnPrefs||{hidden:[],order:ledgerCols.map(x=>x[1]),widths:{}};
+      const p=state.ledgerColumnPrefs;
+      p.hidden=Array.isArray(p.hidden)?p.hidden:[];
+      p.order=[...new Set([...(Array.isArray(p.order)?p.order:[]).filter(k=>ledgerCols.some(x=>x[1]===k)),...ledgerCols.map(x=>x[1])])];
+      p.widths=p.widths&&typeof p.widths==='object'?p.widths:{};
+      return p;
+    }
+    function openLedgerColumnSettings(){
+      const panel=document.getElementById('ledger-column-settings'),host=document.getElementById('ledger-column-options');
+      if(!panel||!host){console.error('FinHub: column settings panel is missing.');return;}
+      const p=ledgerPrefs();
+      host.innerHTML=p.order.map(key=>{const col=ledgerCols.find(x=>x[1]===key);if(!col)return '';const [label]=col;return `<label draggable="true" data-col-key="${key}" class="flex gap-2 items-center cursor-move border border-gray-200 dark:border-gray-700 rounded-lg p-2 bg-white dark:bg-gray-900"><i class="fa-solid fa-grip-vertical text-gray-400"></i><input type="checkbox" ${key==='vendor'?'checked disabled':p.hidden.includes(key)?'':'checked'} onchange="toggleLedgerColumn('${key}',this.checked)"><span>${label}</span></label>`}).join('');
+      host.querySelectorAll('[draggable="true"]').forEach(el=>{el.addEventListener('dragstart',e=>{e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',el.dataset.colKey);});el.addEventListener('dragover',e=>{e.preventDefault();e.dataTransfer.dropEffect='move';});el.addEventListener('drop',e=>{e.preventDefault();moveLedgerColumn(e.dataTransfer.getData('text/plain'),el.dataset.colKey);openLedgerColumnSettings();});});
+      panel.classList.remove('hidden');
+    }
+    function closeLedgerColumnSettings(){document.getElementById('ledger-column-settings')?.classList.add('hidden');}
+    function moveLedgerColumn(from,to){const p=ledgerPrefs(),a=p.order.indexOf(from),b=p.order.indexOf(to);if(a<0||b<0||a===b)return;p.order.splice(a,1);p.order.splice(b,0,from);saveData();applyLedgerColumns();}
+    function toggleLedgerColumn(key,show){if(key==='vendor'&&!show)return;const p=ledgerPrefs();p.hidden=show?p.hidden.filter(x=>x!==key):[...new Set([...p.hidden,key])];saveData();applyLedgerColumns();}
+    function resetLedgerColumnWidths(){ledgerPrefs().widths={};saveData();applyLedgerColumns();}
+    function applyLedgerColumns(){
+      const p=ledgerPrefs(),table=document.querySelector('#ledger-table-container table');if(!table)return;
+      const header=table.querySelector('thead tr:first-child'),body=table.querySelector('tbody#ledger-rows');if(!header||!body)return;
+      const keyForLabel=label=>(ledgerCols.find(x=>x[0]===String(label).trim())||[])[1];
+      const headerMap=new Map([...header.children].map(th=>[keyForLabel(th.textContent),th]));
+      const rowMaps=[...body.rows].map(row=>({row,map:new Map([...row.cells].map(td=>[keyForLabel(td.dataset.label),td]))}));
+      p.order.forEach(key=>{const th=headerMap.get(key);if(th)header.appendChild(th);});
+      rowMaps.forEach(({row,map})=>p.order.forEach(key=>{const td=map.get(key);if(td)row.appendChild(td);}));
+      let colgroup=table.querySelector('colgroup[data-ledger-columns]');if(!colgroup){colgroup=document.createElement('colgroup');colgroup.dataset.ledgerColumns='true';table.insertBefore(colgroup,table.firstChild);}
+      colgroup.innerHTML=p.order.map(key=>`<col data-col-key="${key}" style="width:${Math.max(64,Math.min(520,Number(p.widths[key])||({date:125,vendor:150,description:190,type:130,bucket:135,subcategory:145,account:160,amount:115,running:145,actions:105}[key]))) }px">`).join('');
+      [...header.children].forEach(th=>{const key=keyForLabel(th.textContent);th.style.display=p.hidden.includes(key)?'none':'';th.dataset.colKey=key||'';});
+      [...body.rows].forEach(row=>[...row.cells].forEach(td=>{const key=keyForLabel(td.dataset.label);td.style.display=p.hidden.includes(key)?'none':'';}));
+      table.style.tableLayout='fixed';table.style.width='max(100%, 1100px)';
+      addLedgerColumnResizeHandles(header);
+    }
+    function addLedgerColumnResizeHandles(header){
+      [...header.querySelectorAll('.ledger-resize-handle')].forEach(el=>el.remove());
+      [...header.children].forEach(th=>{
+        const key=th.dataset.colKey;if(!key||key==='actions')return;
+        th.style.position='relative';th.style.userSelect='none';
+        const grip=document.createElement('span');grip.className='ledger-resize-handle';grip.title='Drag to resize column';grip.setAttribute('aria-label','Resize '+key+' column');
+        grip.style.cssText='position:absolute;right:0;top:0;height:100%;width:9px;cursor:col-resize;touch-action:none;z-index:5;border-right:2px solid rgba(99,102,241,.22);border-left:1px dotted rgba(99,102,241,.35);';
+        grip.addEventListener('pointerdown',e=>{
+          e.preventDefault();e.stopPropagation();const startX=e.clientX,startWidth=th.getBoundingClientRect().width,p=ledgerPrefs();grip.setPointerCapture?.(e.pointerId);
+          const move=ev=>{const width=Math.max(64,Math.min(520,Math.round(startWidth+ev.clientX-startX)));const col=header.closest('table')?.querySelector(`col[data-col-key="${key}"]`);if(col)col.style.width=width+'px';};
+          const finish=ev=>{const width=Math.max(64,Math.min(520,Math.round(startWidth+ev.clientX-startX)));p.widths[key]=width;saveData();document.removeEventListener('pointermove',move);document.removeEventListener('pointerup',finish);document.removeEventListener('pointercancel',finish);};
+          document.addEventListener('pointermove',move);document.addEventListener('pointerup',finish);document.addEventListener('pointercancel',finish);
+        });th.appendChild(grip);
+      });
+    }
 
     function exportLedgerCsv(){const table=document.querySelector('#ledger-table-container table');if(!table)return;const rows=[...table.querySelectorAll('tr')].filter(r=>r.cells.length);const csv=rows.map(r=>[...r.cells].map(c=>'"'+c.innerText.trim().replace(/"/g,'""')+'"').join(',')).join('\r\n');const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='FinHub_Expense_Tracker.csv';a.click();URL.revokeObjectURL(url);}
     function closePeriod(){return document.getElementById('monthly-close-period')?.value||new Date().toISOString().slice(0,7);}
