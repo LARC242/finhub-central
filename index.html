@@ -2596,17 +2596,18 @@ Bonus"></textarea></div>
       varGrid.innerHTML = '';
       const currentMonth = getDashboardDateRange('month');
       let limitedBudgetCount = 0;
-      state.categories.forEach(bucket => {
-        (bucket.subcategories || []).forEach(sub => {
+      const limitedSubcategories = (state.categories || []).flatMap(bucket =>
+        (bucket.subcategories || [])
+          .filter(sub => sub.limit !== undefined && sub.limit !== null && sub.limit !== '' && Number.isFinite(Number(sub.limit)) && Number(sub.limit) > 0)
+          .map(sub => ({ bucket, sub, limit: Number(sub.limit) }))
+      );
+      limitedSubcategories.forEach(({ bucket, sub, limit }) => {
           const spent = state.transactions
             .filter(t => t.date >= currentMonth.start && t.date <= currentMonth.end)
             .flatMap(t => getExpenseReportingComponents(t))
             .filter(component => component.category === bucket.name && component.subcategory === sub.name)
             .reduce((sum, component) => sum + (Number(component.amount) || 0), 0);
           const budgetSpent = Math.max(0, spent);
-          const limit = Number(sub.limit) || 0;
-          // Dashboard performance is only meaningful for categories with an actual budget limit.
-          if (limit <= 0) return;
           limitedBudgetCount++;
           const pct = Math.min(100, Math.round((budgetSpent / limit) * 100));
           const statusClass = budgetSpent > limit ? 'text-rose-500 bg-rose-50 dark:bg-rose-950/40 border-rose-200' : pct > 85 ? 'text-amber-500 bg-amber-50 dark:bg-amber-950/40 border-amber-200' : 'text-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200';
@@ -2617,7 +2618,6 @@ Bonus"></textarea></div>
               <div class="min-w-0"><div class="w-full bg-gray-200 dark:bg-gray-800 h-1.5 rounded-full overflow-hidden"><div class="h-full ${budgetSpent > limit && limit > 0 ? 'bg-rose-500' : 'bg-indigo-600'}" style="width: ${pct}%"></div></div></div>
               <div class="flex items-center sm:justify-end gap-2 text-[10px] whitespace-nowrap"><span class="font-semibold accounting-num">${formatFinancial(budgetSpent, true)} / ${limit > 0 ? formatFinancial(limit) : 'No limit'}</span><span class="font-semibold uppercase px-1.5 py-0.5 rounded border">${statusText}</span></div>
             </div>`;
-        });
       });
       if (!limitedBudgetCount) {
         varGrid.innerHTML = '<div class="text-xs text-gray-400 py-3 text-center">No spending limits set yet. Add limits in Budget Setup to see category performance here.</div>';
@@ -9118,50 +9118,33 @@ Bonus"></textarea></div>
       addLedgerColumnResizeHandles(header);
     }
     function addLedgerColumnResizeHandles(header){
-      [...header.querySelectorAll('.ledger-resize-handle')].forEach(el=>el.remove());
-      [...header.children].forEach((th,index)=>{
+      header.querySelectorAll('.ledger-resize-handle').forEach(el=>el.remove());
+      [...header.children].forEach(th=>{
         const key=th.dataset.colKey;
         if(!key||key==='actions')return;
-        th.style.position='relative';
-        th.style.userSelect='none';
-        th.style.zIndex='auto';
+        th.style.position='relative';th.style.userSelect='none';
         const grip=document.createElement('span');
-        grip.className='ledger-resize-handle';
-        grip.title='Drag to resize '+key+' column';
-        grip.setAttribute('aria-label','Resize '+key+' column');
-        grip.style.cssText='position:absolute;right:-1px;top:0;bottom:0;width:14px;cursor:col-resize;touch-action:none;z-index:20;pointer-events:auto;background:linear-gradient(to right,transparent 35%,rgba(99,102,241,.35) 35%,rgba(99,102,241,.35) 65%,transparent 65%);';
+        grip.className='ledger-resize-handle';grip.dataset.resizeKey=key;
+        grip.title='Drag to resize '+key+' column';grip.setAttribute('aria-label','Resize '+key+' column');
+        grip.style.cssText='position:absolute;right:0;top:0;bottom:0;width:16px;cursor:col-resize;touch-action:none;z-index:30;pointer-events:auto;background:linear-gradient(to right,transparent 42%,rgba(99,102,241,.55) 42%,rgba(99,102,241,.55) 58%,transparent 58%);';
         grip.addEventListener('pointerdown',e=>{
           e.preventDefault();e.stopPropagation();
-          const table=header.closest('table');
-          const col=table?.querySelector(`colgroup[data-ledger-columns] col[data-col-key="${key}"]`);
+          const table=header.closest('table');const col=table?.querySelector(`colgroup[data-ledger-columns] col[data-col-key="${key}"]`);
           if(!table||!col)return;
-          const startX=e.clientX;
-          const startWidth=th.getBoundingClientRect().width;
-          const min=64,max=520;
-          const applyWidth=width=>{
-            const w=Math.max(min,Math.min(max,Math.round(width)));
-            col.style.width=w+'px';col.style.minWidth=w+'px';
-            th.style.width=w+'px';th.style.minWidth=w+'px';th.style.maxWidth=w+'px';
-            const label=ledgerCols.find(x=>x[1]===key)?.[0];
-            if(label) table.querySelectorAll(`tbody#ledger-rows td[data-label="${label}"]`).forEach(td=>{td.style.width=w+'px';td.style.minWidth=w+'px';td.style.maxWidth=w+'px';});
+          const startX=e.clientX;const startWidth=parseFloat(col.style.width)||th.getBoundingClientRect().width;
+          const widthFor=k=>{const c=table.querySelector(`colgroup[data-ledger-columns] col[data-col-key="${k}"]`);return parseFloat(c?.style.width)||0;};
+          const applyWidth=raw=>{
+            const w=Math.max(64,Math.min(520,Math.round(raw)));col.style.width=w+'px';
+            th.style.width=w+'px';
+            const total=[...table.querySelectorAll('colgroup[data-ledger-columns] col')].reduce((sum,c)=>sum+(parseFloat(c.style.width)||0),0);
+            table.style.width=total+'px';table.style.minWidth=total+'px';
             return w;
           };
-          const move=ev=>applyWidth(startWidth+ev.clientX-startX);
-          const finish=ev=>{
-            const w=applyWidth(startWidth+ev.clientX-startX);
-            ledgerPrefs().widths[key]=w;saveData();
-            window.removeEventListener('pointermove',move,true);
-            window.removeEventListener('pointerup',finish,true);
-            window.removeEventListener('pointercancel',cancel,true);
-          };
-          const cancel=()=>{
-            window.removeEventListener('pointermove',move,true);
-            window.removeEventListener('pointerup',finish,true);
-            window.removeEventListener('pointercancel',cancel,true);
-          };
-          window.addEventListener('pointermove',move,true);
-          window.addEventListener('pointerup',finish,true);
-          window.addEventListener('pointercancel',cancel,true);
+          const move=ev=>{applyWidth(startWidth+ev.clientX-startX);};
+          const cleanup=()=>{window.removeEventListener('pointermove',move,true);window.removeEventListener('pointerup',finish,true);window.removeEventListener('pointercancel',cancel,true);};
+          const finish=ev=>{const w=applyWidth(startWidth+ev.clientX-startX);ledgerPrefs().widths[key]=w;saveData();cleanup();};
+          const cancel=()=>cleanup();
+          window.addEventListener('pointermove',move,true);window.addEventListener('pointerup',finish,true);window.addEventListener('pointercancel',cancel,true);
         });
         th.appendChild(grip);
       });
