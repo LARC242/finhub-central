@@ -61,6 +61,12 @@
     #ledger-table-container { max-width:100%; overflow-x:auto !important; overflow-y:visible; -webkit-overflow-scrolling:touch; }
     #ledger-table-container table { min-width:1400px; width:100%; }
     #ledger-table-container th, #ledger-table-container td { white-space:nowrap; }
+    /* Compact Expense Tracker density: tighter rows and slightly smaller type. */
+    #ledger-table-container thead th { padding:.5rem .65rem !important; font-size:.64rem !important; line-height:1.15 !important; }
+    #ledger-table-container tbody#ledger-rows td { padding:.42rem .65rem !important; font-size:.72rem !important; line-height:1.2 !important; }
+    #ledger-table-container tbody#ledger-rows td button,
+    #ledger-table-container tbody#ledger-rows td input,
+    #ledger-table-container tbody#ledger-rows td select { font-size:.68rem !important; }
     @media(max-width:640px) {
       main { min-width:0; }
       #ledger-table-container { overflow-x:auto !important; border-radius:.9rem; }
@@ -403,7 +409,10 @@
           </button>
           <div class="dashboard-order-controls"></div>
         </div>
-        <div id="sec-dashboard-upcoming-content" class="p-4 space-y-2"><div id="dashboard-upcoming-list"></div></div>
+        <div id="sec-dashboard-upcoming-content" class="p-4 space-y-2">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-3"><span class="text-xs text-gray-500">Show scheduled income and bills for:</span><input type="month" id="dashboard-upcoming-month" onchange="renderDashboardUpcoming()" class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-1.5 text-xs font-semibold"></div>
+          <div id="dashboard-upcoming-list"></div>
+        </div>
       </div>
 
       <!-- VARIABLE SPENDING BUDGETS -->
@@ -840,6 +849,7 @@
       </div>
 
       <!-- TABLE VIEW CONTAINER -->
+      <div class="flex flex-wrap justify-end gap-2 mb-2"><button type="button" onclick="openLedgerColumnSettings()" class="px-3 py-2 border rounded-lg text-xs">Columns</button><button type="button" onclick="exportLedgerCsv()" class="px-3 py-2 bg-emerald-600 text-white rounded-lg text-xs">Export CSV</button></div><div id="ledger-column-settings" class="hidden p-3 mb-2 border rounded-lg"><div id="ledger-column-options" class="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs"></div></div>
       <div id="ledger-table-container" class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-x-auto overflow-y-visible shadow-sm custom-scrollbar">
         <table class="w-full text-left text-sm">
           <thead class="bg-gray-50 dark:bg-gray-950 text-xs uppercase border-b border-gray-200 dark:border-gray-800 text-gray-500">
@@ -881,6 +891,7 @@
         <div class="overflow-x-auto"><table class="w-full text-left text-xs"><thead class="text-gray-500 bg-gray-50 dark:bg-gray-950"><tr><th class="px-3 py-2">Account</th><th class="px-3 py-2 text-right">FinHub balance</th><th class="px-3 py-2 text-right">Statement balance</th><th class="px-3 py-2 text-right">Variance</th><th class="px-3 py-2">Last reconciled</th><th class="px-3 py-2 text-right">Review</th></tr></thead><tbody id="reconciliation-overview-rows"></tbody></table></div>
       </div>
 
+      <div class="bg-white dark:bg-gray-900 rounded-2xl border p-4 space-y-3"><div class="flex flex-wrap justify-between gap-2"><div><h3 class="text-sm font-bold">Monthly Close</h3><p class="text-xs text-gray-500">Review month-end activity and save a snapshot. This does not lock transactions.</p></div><input id="monthly-close-period" type="month" class="border rounded-lg px-2 py-1 text-xs"><button onclick="renderMonthlyClose()" class="border rounded-lg px-3 py-1 text-xs">Review</button></div><div id="monthly-close-summary" class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs"></div><div id="monthly-close-checklist" class="space-y-2 text-xs"></div><button onclick="completeMonthlyClose()" class="px-3 py-2 bg-indigo-600 text-white rounded-lg text-xs">Save monthly close snapshot</button><div id="monthly-close-history" class="text-xs text-gray-500"></div></div>
       <!-- CALENDAR VIEW CONTAINER -->
       <div id="ledger-calendar-container" class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-4 shadow-sm hidden">
         <h3 class="text-md font-bold text-indigo-600 dark:text-indigo-400 theme-text">Posted Transaction History by Date</h3>
@@ -1567,7 +1578,7 @@ Bonus"></textarea></div>
             <span class="text-xs font-bold text-indigo-400 theme-text">Split Line Items</span>
             <button type="button" onclick="addSplitTxRow()" class="text-xs bg-gray-200 dark:bg-gray-800 px-2 py-1 rounded font-semibold">+ Add Split Row</button>
           </div>
-          <div id="split-rows-container" class="space-y-2"></div>
+          <div id="split-rows-container" class="space-y-2"></div><div class="text-xs rounded-lg bg-indigo-50 dark:bg-indigo-950/30 p-3">Additional splits: <strong id="split-extra-total">$0.00</strong> · Remaining to original bucket: <strong id="split-remainder-total">—</strong></div>
         </div>
 
         <div class="flex space-x-3 pt-3 pb-1 sticky bottom-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 mt-2"><button type="button" onclick="closeTransactionModal()" class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold">Cancel</button><button type="submit" class="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold theme-bg">Save Transaction</button></div>
@@ -2389,22 +2400,23 @@ Bonus"></textarea></div>
     function renderDashboardUpcoming() {
       const host = document.getElementById('dashboard-upcoming-list');
       if (!host) return;
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-      // The Bill & Income Calendar is the single source of truth. Recurrence
-      // roots marked deleted are hidden metadata and must never appear here.
+      const monthInput = document.getElementById('dashboard-upcoming-month');
+      const now = new Date();
+      if (monthInput && !monthInput.value) monthInput.value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+      const selectedMonth = monthInput?.value || `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+      // Calendar remains the single source of truth; this filter only changes display.
       const items = (Array.isArray(state.calendarBills) ? state.calendarBills : [])
         .filter(b => b && !b.recurrenceOccurrenceDeleted && !b.paid &&
-          typeof b.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(b.date) && b.date >= todayStr &&
+          typeof b.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(b.date) && b.date.startsWith(selectedMonth) &&
           ['expense', 'income', 'debt'].includes(b.type))
-        .sort((a, b) => String(a.date).localeCompare(String(b.date)))
-        .slice(0, 6);
+        .sort((a, b) => String(a.date).localeCompare(String(b.date)));
       if (!items.length) {
-        host.innerHTML = '<p class="text-xs text-gray-400">No upcoming unpaid bills or income items. Add items in the Bill & Income Calendar.</p>';
+        host.innerHTML = `<p class="text-xs text-gray-400">No unpaid bills or income scheduled for ${escapeHtml(selectedMonth)}. Change the month to view another period.</p>`;
         return;
       }
-      host.innerHTML = items.map(b => {
+      const incomeTotal = items.filter(b=>b.type==='income').reduce((sum,b)=>sum+(Number(b.amount)||0),0);
+      const billTotal = items.filter(b=>b.type!=='income').reduce((sum,b)=>sum+(Number(b.amount)||0),0);
+      host.innerHTML = `<div class="grid grid-cols-3 gap-2 mb-3 text-xs"><div class="rounded-lg bg-emerald-50 dark:bg-emerald-950/20 p-2"><div class="text-gray-500">Expected income</div><strong class="text-emerald-600">${formatFinancial(incomeTotal)}</strong></div><div class="rounded-lg bg-rose-50 dark:bg-rose-950/20 p-2"><div class="text-gray-500">Bills & debt</div><strong class="text-rose-600">${formatFinancial(billTotal,true)}</strong></div><div class="rounded-lg bg-gray-50 dark:bg-gray-950 p-2"><div class="text-gray-500">Net scheduled</div><strong>${formatFinancial(incomeTotal-billTotal)}</strong></div></div>` + items.map(b => {
         const income = b.type === 'income';
         const label = income ? 'Payday / Income' : b.type === 'debt' ? 'Debt payment' : 'Bill';
         return `<div class="flex flex-wrap items-center justify-between gap-2 p-3 rounded-xl bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 text-xs">
@@ -3731,16 +3743,20 @@ Bonus"></textarea></div>
           `;
         });
         if (sectionKey === 'variable') {
+          const archived = (state.archivedVariableBuckets || []);
+          const archiveMarkup = `<div class="mt-4 border-t border-gray-200 dark:border-gray-800 pt-3"><div class="flex items-center justify-between gap-2 mb-2"><div class="text-xs font-semibold"><i class="fa-solid fa-box-archive mr-1 text-amber-500"></i>Archived variable buckets</div><span class="text-[10px] text-gray-400">${archived.length} archived</span></div>${archived.length ? archived.map((bucket,index)=>`<div class="flex items-center justify-between gap-2 p-2 mb-1 rounded-lg bg-gray-50 dark:bg-gray-950 text-xs"><div><strong>${escapeHtml(bucket.name || 'Unnamed bucket')}</strong><div class="text-[10px] text-gray-400">Archived ${bucket.archivedAt ? new Date(bucket.archivedAt).toLocaleDateString() : 'previously'}</div></div><button type="button" onclick="restoreVariableBucket(${index})" class="px-2.5 py-1.5 rounded-lg bg-emerald-600 text-white font-semibold"><i class="fa-solid fa-rotate-left mr-1"></i>Restore</button></div>`).join('') : '<p class="text-[10px] text-gray-400">No archived buckets. Deleted buckets with history can be restored here.</p>'}</div>`;
           const allocated = variablePoolState.allocated;
           const unallocated = variablePoolState.poolBudget - allocated;
           const over = unallocated < -0.0001;
-          container.insertAdjacentHTML('beforeend', `<div class="mt-3 p-3 rounded-xl border ${over ? 'border-rose-300 bg-rose-50 dark:bg-rose-950/20' : 'border-indigo-200 bg-indigo-50/60 dark:bg-indigo-950/20'}"><div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs"><div><div class="text-gray-500">Total budgeted pool</div><strong class="text-base accounting-num">${formatFinancial(variablePoolState.poolBudget)}</strong></div><div><div class="text-gray-500">Allocated to buckets</div><strong class="text-base accounting-num">${formatFinancial(allocated)}</strong></div><div><div class="text-gray-500">${over ? 'Overallocated' : 'Unallocated'}</div><strong class="text-base accounting-num ${over ? 'text-rose-600' : 'text-emerald-600'}">${formatFinancial(Math.abs(unallocated))}</strong></div></div><div class="mt-2 h-2 rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden"><div class="h-full ${over ? 'bg-rose-500' : 'bg-indigo-500'}" style="width:${Math.min(100, variablePoolState.poolBudget > 0 ? allocated / variablePoolState.poolBudget * 100 : 0)}%"></div></div><div class="flex justify-end mt-2"><button onclick="resetVariablePoolAllocations(${cycle})" class="text-[10px] text-indigo-600 dark:text-indigo-400 hover:underline">Reset to original planned splits</button></div>${over ? '<p class="text-[10px] text-rose-600 mt-2">Your saved allocations exceed the current pool. Reduce one or more buckets before continuing.</p>' : ''}</div>`);
+          container.insertAdjacentHTML('beforeend', `<div class="mt-3 p-3 rounded-xl border ${over ? 'border-rose-300 bg-rose-50 dark:bg-rose-950/20' : 'border-indigo-200 bg-indigo-50/60 dark:bg-indigo-950/20'}"><div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs"><div><div class="text-gray-500">Total budgeted pool</div><strong class="text-base accounting-num">${formatFinancial(variablePoolState.poolBudget)}</strong></div><div><div class="text-gray-500">Allocated to buckets</div><strong class="text-base accounting-num">${formatFinancial(allocated)}</strong></div><div><div class="text-gray-500">${over ? 'Overallocated' : 'Unallocated'}</div><strong class="text-base accounting-num ${over ? 'text-rose-600' : 'text-emerald-600'}">${formatFinancial(Math.abs(unallocated))}</strong></div></div><div class="mt-2 h-2 rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden"><div class="h-full ${over ? 'bg-rose-500' : 'bg-indigo-500'}" style="width:${Math.min(100, variablePoolState.poolBudget > 0 ? allocated / variablePoolState.poolBudget * 100 : 0)}%"></div></div><div class="flex justify-end mt-2"><button onclick="resetVariablePoolAllocations(${cycle})" class="text-[10px] text-indigo-600 dark:text-indigo-400 hover:underline">Reset to original planned splits</button></div>${over ? '<p class="text-[10px] text-rose-600 mt-2">Your saved allocations exceed the current pool. Reduce one or more buckets before continuing.</p>' : ''}</div>${archiveMarkup}`);
         }
       };
 
       renderSection('zbb-income-list', zbb.incomes, 'income', 'text-emerald-600 dark:text-emerald-400');
       renderSection('zbb-bills-list', zbb.bills, 'bill', 'text-rose-600 dark:text-rose-400');
       renderSection('zbb-variable-list', zbb.variable, 'variable', 'text-amber-600 dark:text-amber-400');
+      const variableHost = document.getElementById('zbb-variable-list');
+      if (variableHost) variableHost.querySelectorAll('[data-zbb-id]').forEach(node => { const row=node.parentElement; if(row && !row.querySelector('[data-zbb-action="delete-variable"]')) { const b=document.createElement('button'); b.type='button'; b.dataset.zbbAction='delete-variable'; b.dataset.zbbId=node.dataset.zbbId; b.className='ml-2 text-rose-500'; b.title='Delete or archive'; b.innerHTML='<i class="fa-solid fa-xmark"></i>'; row.appendChild(b); } });
       const variableListEl = document.getElementById('zbb-variable-list');
       if (variableListEl && !variableListEl.dataset.zbbHandlersAttached) {
         variableListEl.dataset.zbbHandlersAttached = '1';
@@ -4111,22 +4127,30 @@ Bonus"></textarea></div>
       const list = Array.isArray(zbb[listName]) ? zbb[listName] : [];
       const item = list.find(i => String(i.id) === key);
       if (!item) { alert('This budget item could not be found. The planner has been refreshed.'); renderZbbPlanner(); return; }
-      if (!confirm(`Delete "${item.name}" from this paycheque budget?`)) return;
-      captureUndo(`Delete ${type} budget item`);
+      const hasHistory = type === 'variable' && Object.values(state.zbbPoolTracking || {}).some(periodRecords => Object.values(periodRecords || {}).some(rec => rec && rec.variableAllocations && Object.prototype.hasOwnProperty.call(rec.variableAllocations, key)));
+      if (!confirm(hasHistory ? `"${item.name}" has historical allocations. Archive it from future budgets and preserve history?` : `Delete "${item.name}" from this paycheque budget?`)) return;
+      captureUndo(`${hasHistory ? 'Archive' : 'Delete'} ${type} budget item`);
       zbb[listName] = list.filter(i => String(i.id) !== key);
-      if (type === 'variable') {
-        // Remove the category's stored allocation from every period/cycle, not just the visible one.
-        Object.values(state.zbbPoolTracking || {}).forEach(periodRecords => {
-          Object.values(periodRecords || {}).forEach(rec => {
-            if (rec && rec.variableAllocations && Object.prototype.hasOwnProperty.call(rec.variableAllocations, key)) {
-              delete rec.variableAllocations[key];
-            }
-          });
-        });
-      }
+      if (type === 'variable' && hasHistory) { state.archivedVariableBuckets = state.archivedVariableBuckets || []; state.archivedVariableBuckets.push({...item, archivedAt:new Date().toISOString()}); }
+      // Historical allocation records are intentionally retained.
       saveData();
       closeZbbItemModal();
       renderZbbPlanner();
+    }
+
+    function restoreVariableBucket(index) {
+      const archived = state.archivedVariableBuckets || [];
+      const bucket = archived[index];
+      if (!bucket) { alert('That archived bucket could not be found.'); renderZbbPlanner(); return; }
+      const zbb = getActiveZbbTemplate();
+      zbb.variable = zbb.variable || [];
+      if (zbb.variable.some(item => String(item.id) === String(bucket.id))) { alert('A bucket with this ID is already active.'); return; }
+      if (!confirm(`Restore "${bucket.name}" to the active variable spending buckets? It will be available for future allocations; no money will be added to the current paycheque.`)) return;
+      captureUndo(`Restore variable spending bucket "${bucket.name}"`);
+      const restored = {...bucket}; delete restored.archivedAt;
+      zbb.variable.push(restored);
+      state.archivedVariableBuckets.splice(index, 1);
+      saveData(); renderZbbPlanner();
     }
 
     function changeMonth(delta) {
@@ -5496,6 +5520,8 @@ Bonus"></textarea></div>
     const statementPreviewPageSize = 50;
     let manualCandidatePage = 0;
     const manualCandidatePageSize = 50;
+      applyLedgerColumns();
+
     function statementBatchRange(rows) {
       const dates=(rows||[]).map(r=>r.date).filter(Boolean).sort();
       return {startDate:dates[0]||'',endDate:dates[dates.length-1]||''};
@@ -8434,6 +8460,7 @@ Bonus"></textarea></div>
           <button type="button" onclick="document.getElementById('${rowId}').remove()" class="text-rose-500 text-xs px-1"><i class="fa-solid fa-trash"></i></button>
         </div>
       `;
+      container.querySelectorAll('.split-amt-input').forEach(input=>input.addEventListener('input',updateSplitRemainderPreview)); updateSplitRemainderPreview();
     }
 
     function closeTransactionModal() { document.getElementById('transaction-modal').classList.add('hidden'); }
@@ -8578,24 +8605,18 @@ Bonus"></textarea></div>
           applyTransactionBalanceEffect(updated, 1);
         } else { alert('The transaction could not be found.'); return; }
       } else if (isSplit && !editId) {
+        const rows = [...document.querySelectorAll('#split-rows-container > div')];
+        const extras = rows.map(r => ({parts:(r.querySelector('.split-cat-select').value || '').split('::'), amount:Math.round((Number(r.querySelector('.split-amt-input').value)||0)*100)/100})).filter(x=>x.amount>0);
+        const extraTotal=Math.round(extras.reduce((a,x)=>a+x.amount,0)*100)/100;
+        const total=Math.round((Number(amount)||0)*100)/100;
+        if(extraTotal-total>0.005){alert('Additional split lines cannot exceed the original transaction amount.');return;}
+        const remainder=Math.round((total-extraTotal)*100)/100;
+        const originalCategory=document.getElementById('tx-category').value, originalSubcategory=document.getElementById('tx-subcategory').value;
+        if(remainder>0&&!originalCategory){alert('Choose the original bucket to receive the remaining amount.');return;}
         captureUndo('Add split transaction');
-        const rows = document.querySelectorAll('#split-rows-container > div');
-        rows.forEach(r => {
-          const val = r.querySelector('.split-cat-select').value;
-          const catSub = val ? val.split('::') : ['', ''];
-          const amt = parseFloat(r.querySelector('.split-amt-input').value) || 0;
-          if (amt > 0) {
-            const splitTransaction = {
-              id: Date.now().toString() + Math.random(),
-              date, desc, vendor, type, source: 'manual-entry',
-              category: catSub[0] || '',
-              subcategory: catSub[1] || '',
-              amount: amt, accountId
-            };
-            state.transactions.unshift(splitTransaction);
-            applyTransactionBalanceEffect(splitTransaction, 1);
-          }
-        });
+        const allocations=[...extras.map(x=>({category:x.parts[0]||'',subcategory:x.parts[1]||'',amount:x.amount})),...(remainder>0?[{category:originalCategory,subcategory:originalSubcategory,amount:remainder}]:[])];
+        const groupId=`split_${Date.now()}_${Math.random().toString(36).slice(2,7)}`;
+        allocations.forEach((x,i)=>{const tx={id:Date.now().toString()+Math.random(),date,desc,vendor,type,source:'manual-entry',category:x.category,subcategory:x.subcategory,amount:x.amount,accountId,splitGroupId:groupId,splitRemainder:i===allocations.length-1&&remainder>0};state.transactions.unshift(tx);applyTransactionBalanceEffect(tx,1);});
       } else {
         const category = type === 'Interest Charge' ? 'Interest Charge' : document.getElementById('tx-category').value;
         const subcategory = type === 'Interest Charge' ? 'Interest Expense' : document.getElementById('tx-subcategory').value;
@@ -8995,7 +9016,25 @@ Bonus"></textarea></div>
     checkBackupReminder();
     renderLocalSafetyCopyStatus();
     setInterval(checkBackupReminder, 60 * 60 * 1000);
-  </script>
+  
+    function updateSplitRemainderPreview(){const total=Number(document.getElementById('tx-amount')?.value)||0;const extra=[...document.querySelectorAll('.split-amt-input')].reduce((a,e)=>a+(Number(e.value)||0),0);const a=document.getElementById('split-extra-total'),b=document.getElementById('split-remainder-total');if(a)a.textContent=formatFinancial(extra);if(b)b.textContent=extra>total?'Over allocated: '+formatFinancial(extra-total):formatFinancial(Math.max(0,total-extra));}
+    document.addEventListener('input',e=>{if(e.target.matches('#tx-amount,.split-amt-input'))updateSplitRemainderPreview();});
+    const ledgerCols=[['Date','date'],['Vendor','vendor'],['Description','description'],['Type','type'],['Bucket','bucket'],['Subcategory','subcategory'],['Account','account'],['Amount','amount'],['Running Balance','running'],['Actions','actions']];
+    function ledgerPrefs(){state.ledgerColumnPrefs=state.ledgerColumnPrefs||{hidden:[],order:ledgerCols.map(x=>x[1])};state.ledgerColumnPrefs.order=[...new Set([...(state.ledgerColumnPrefs.order||[]).filter(k=>ledgerCols.some(x=>x[1]===k)),...ledgerCols.map(x=>x[1])])];return state.ledgerColumnPrefs;}
+    function openLedgerColumnSettings(){const p=ledgerPrefs(),host=document.getElementById('ledger-column-options');host.innerHTML=p.order.map(key=>{const [label]=ledgerCols.find(x=>x[1]===key);return `<label draggable="true" data-col-key="${key}" class="flex gap-2 items-center cursor-move border rounded p-2"><i class="fa-solid fa-grip-vertical text-gray-400"></i><input type="checkbox" ${key==='vendor'?'checked disabled':p.hidden.includes(key)?'':'checked'} onchange="toggleLedgerColumn('${key}',this.checked)">${label}</label>`}).join('');host.querySelectorAll('[draggable=true]').forEach(el=>{el.addEventListener('dragstart',e=>e.dataTransfer.setData('text/plain',el.dataset.colKey));el.addEventListener('dragover',e=>e.preventDefault());el.addEventListener('drop',e=>{e.preventDefault();moveLedgerColumn(e.dataTransfer.getData('text/plain'),el.dataset.colKey);openLedgerColumnSettings();});});document.getElementById('ledger-column-settings').classList.remove('hidden');}
+    function moveLedgerColumn(from,to){const p=ledgerPrefs(),a=p.order.indexOf(from),b=p.order.indexOf(to);if(a<0||b<0)return;p.order.splice(a,1);p.order.splice(b,0,from);saveData();applyLedgerColumns();}
+    function toggleLedgerColumn(key,show){const p=ledgerPrefs();p.hidden=show?p.hidden.filter(x=>x!==key):[...p.hidden,key];saveData();applyLedgerColumns();}
+    function applyLedgerColumns(){const p=ledgerPrefs(),table=document.querySelector('#ledger-table-container table');if(!table)return;const header=table.querySelector('thead tr:first-child'),body=table.querySelector('tbody#ledger-rows');if(!header||!body)return;const labels=ledgerCols;const keyFor=th=>{const label=th.textContent.trim();return (labels.find(x=>x[0]===label)||[])[1];};const oldHeaders=[...header.children],oldKeys=oldHeaders.map(keyFor),headerMap=new Map(oldHeaders.map((el,i)=>[oldKeys[i],el]));p.order.forEach(k=>{const el=headerMap.get(k);if(el)header.appendChild(el);});[...body.rows].forEach(row=>{const cells=[...row.cells],map=new Map(oldKeys.map((k,i)=>[k,cells[i]]));p.order.forEach(k=>{const cell=map.get(k);if(cell)row.appendChild(cell);});});const newKeys=p.order;[...header.children].forEach((el,i)=>{el.style.display=p.hidden.includes(newKeys[i])?'none':'';});[...body.rows].forEach(row=>[...row.cells].forEach((cell,i)=>cell.style.display=p.hidden.includes(newKeys[i])?'none':''));}
+
+    function exportLedgerCsv(){const table=document.querySelector('#ledger-table-container table');if(!table)return;const rows=[...table.querySelectorAll('tr')].filter(r=>r.cells.length);const csv=rows.map(r=>[...r.cells].map(c=>'"'+c.innerText.trim().replace(/"/g,'""')+'"').join(',')).join('\r\n');const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='FinHub_Expense_Tracker.csv';a.click();URL.revokeObjectURL(url);}
+    function closePeriod(){return document.getElementById('monthly-close-period')?.value||new Date().toISOString().slice(0,7);}
+    function closeMetrics(period){const tx=(state.transactions||[]).filter(t=>String(t.date||'').slice(0,7)===period),accounts=(state.accounts||[]).filter(a=>!a.archived),unrec=accounts.filter(a=>!a.lastReconciledAt||String(a.lastReconciledAt).slice(0,7)!==period),income=tx.filter(t=>t.type==='Income').reduce((s,t)=>s+(Number(t.amount)||0),0),expense=tx.reduce((s,t)=>s+getExpenseReportingComponents(t).reduce((a,c)=>a+(Number(c.amount)||0),0),0),unmatched=tx.filter(t=>!t.reconciled&&!t.statementMatchId&&!t.statementMatchGroupId).length;return {tx,accounts,unrec,income,expense,unmatched};}
+    function renderMonthlyClose(){const p=closePeriod(),d=closeMetrics(p),sum=document.getElementById('monthly-close-summary'),list=document.getElementById('monthly-close-checklist');if(!sum||!list)return;sum.innerHTML=[['Transactions',d.tx.length],['Income',formatFinancial(d.income)],['Expenses',formatFinancial(d.expense)],['Unmatched',d.unmatched]].map(x=>`<div class="p-2 bg-gray-50 dark:bg-gray-950 rounded"><div class="text-gray-500">${x[0]}</div><b>${x[1]}</b></div>`).join('');list.innerHTML=[`Account reconciliation: ${d.unrec.length} account(s) not reconciled in this month`,`Transaction review: ${d.unmatched} unmatched transaction(s)`,`Budget review: compare actuals with the paycheque plan`,`Carry-forward: confirm each paycheque's carry-forward/reset choice`].map(x=>`<div class="p-2 border rounded">${x}</div>`).join('');renderMonthlyCloseHistory();}
+    function completeMonthlyClose(){const p=closePeriod(),d=closeMetrics(p);if((d.unrec.length||d.unmatched)&&!confirm(`${d.unrec.length} accounts and ${d.unmatched} transactions still need review. Save as an incomplete snapshot?`))return;if(!confirm(`Save the ${p} month-end snapshot? This does not lock transactions.`))return;state.monthlyCloseSnapshots=state.monthlyCloseSnapshots||{};state.monthlyCloseSnapshots[p]={period:p,closedAt:new Date().toISOString(),status:d.unrec.length||d.unmatched?'incomplete':'completed',income:d.income,expenses:d.expense,transactionCount:d.tx.length,unmatched:d.unmatched,accountBalances:d.accounts.map(a=>({id:a.id,name:a.name,balance:Number(a.balance)||0,statementBalance:a.actualBalance??null}))};saveData();renderMonthlyCloseHistory();alert('Monthly snapshot saved.');}
+    function renderMonthlyCloseHistory(){const el=document.getElementById('monthly-close-history');if(!el)return;const items=Object.values(state.monthlyCloseSnapshots||{}).sort((a,b)=>b.period.localeCompare(a.period));el.innerHTML=items.length?'<b>Saved snapshots</b><br>'+items.map(x=>`${x.period}: ${x.status} · ${new Date(x.closedAt).toLocaleDateString()}`).join('<br>'):'No monthly snapshots saved.';}
+    document.addEventListener('DOMContentLoaded',()=>{const up=document.getElementById('dashboard-upcoming-month');if(up&&!up.value){const n=new Date();up.value=`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}`;}renderDashboardUpcoming();const m=document.getElementById('monthly-close-period');if(m&&!m.value)m.value=new Date().toISOString().slice(0,7);renderMonthlyClose();applyLedgerColumns();});
+
+</script>
   <div id="backup-import-preview-modal" class="hidden fixed inset-0 z-[110] bg-black/70 items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="backup-preview-title">
     <div class="w-full max-w-xl bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-2xl overflow-hidden">
       <div class="p-5 border-b border-gray-200 dark:border-gray-800 flex items-start justify-between gap-3">
