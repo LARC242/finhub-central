@@ -5969,38 +5969,51 @@ ${acc.name}`);
       const rows=[];
       const add=(date,desc,amt,type)=>{if(date&&desc&&Number.isFinite(amt)&&Math.abs(amt)>0)rows.push({id:`pdf_${Date.now()}_${rows.length}_${Math.random().toString(36).slice(2,6)}`,date,description:desc.trim(),amount:Math.abs(amt),signedAmount:type==='Income'?Math.abs(amt):-Math.abs(amt),type,accountId:document.getElementById('recon-account')?.value||'',status:'pending'});};
       if(bank==='rbc'){
-        // Re-cluster PDF.js text items by vertical baseline (rather than rounded y buckets).
-        // RBC sometimes positions description and amount text a fraction of a point apart;
-        // integer rounding split those into separate rows and silently omitted withdrawals.
+        // RBC uses separate, right-aligned withdrawal, deposit and balance columns.
+        // Determine the column boundaries from each page's own header positions: RBC
+        // shifts the continuation-page table horizontally, so fixed x cut-offs fail.
+        let activeDate='',pendingDesc='';
         for(const page of pages){
-          const allItems=(page.rows||[]).flatMap(r=>r.items||[]).sort((a,b)=>(b.transform?.[5]||0)-(a.transform?.[5]||0));
+          const source=(page.rows||[]).flatMap(r=>r.items||[]);
+          const headerX=(needle,minX=0)=>{const it=source.find(v=>new RegExp(needle,'i').test(v.str||'')&&Number(v.transform?.[4]||0)>=minX);return it?Number(it.transform?.[4]||0):null;};
+          const wx=headerX('Withdrawals',180), dx=headerX('Deposits',250), bx=headerX('Balance',450);
+          if(wx==null||dx==null||bx==null)continue;
+          const splitX=(wx+dx)/2;
+          const amountLeft=wx-28, amountRight=bx-8;
+          const sorted=source.slice().sort((a,b)=>(b.transform?.[5]||0)-(a.transform?.[5]||0));
           const lines=[];
-          for(const item of allItems){
+          for(const item of sorted){
             const y=Number(item.transform?.[5]||0);
-            let line=lines.find(entry=>Math.abs(entry.y-y)<=2.2);
+            // A slightly wider baseline tolerance keeps amounts and descriptions
+            // together when PDF text runs have different font metrics.
+            let line=lines.find(entry=>Math.abs(entry.y-y)<=3.8);
             if(!line){line={y,items:[]};lines.push(line);}
             line.items.push(item);
           }
           lines.sort((a,b)=>b.y-a.y);
-          let activeDate='',pendingDesc='';
           for(const line of lines){
             const items=line.items.slice().sort((a,b)=>(a.transform?.[4]||0)-(b.transform?.[4]||0));
-            const left=items.filter(it=>(Number(it.transform?.[4]||0))<305).map(it=>it.str||'').join(' ').replace(/\s+/g,' ').trim();
-            const dateMatch=left.match(/^(\d{1,2}\s+[A-Za-z]{3})\b/);
+            const left=items.filter(it=>Number(it.transform?.[4]||0)<amountLeft).map(it=>it.str||'').join(' ').replace(/\s+/g,' ').trim();
+            const dateMatch=left.match(/^\s*(\d{1,2}\s+[A-Za-z]{3})\b/);
             if(dateMatch)activeDate=pdfDateValue(dateMatch[1],year);
-            const desc=left.replace(/^\d{1,2}\s+[A-Za-z]{3}\s*/,'').trim();
-            const amounts=items.map(it=>({item:it,x:Number(it.transform?.[4]||0),amount:pdfAmount(it.str)}))
-              .filter(v=>v.x>=305&&v.x<510&&Number.isFinite(v.amount)&&Math.abs(v.amount)>0&&/\d[\d,]*\.\d{2}-?/.test(v.item.str||''));
-            if(amounts.length&&activeDate){
+            let desc=left.replace(/^\s*\d{1,2}\s+[A-Za-z]{3}\s*/,'').trim();
+            // Ignore page furniture and table headings; preserve wrapped transaction descriptions.
+            if(/^(Date|Description|Withdrawals|Deposits|Balance|Details of your account activity|continued|Page\s+\d|Opening Balance|Closing Balance)/i.test(desc))desc='';
+            const amountItems=items.filter(it=>{
+              const x=Number(it.transform?.[4]||0), str=String(it.str||'').trim();
+              return x>=amountLeft&&x<amountRight&&/\d[\d,]*\.\d{2}-?$/.test(str);
+            });
+            if(amountItems.length&&activeDate){
               const description=[pendingDesc,desc].filter(Boolean).join(' ').replace(/\s+/g,' ').trim();
               if(description&&!/^(Opening|Closing) Balance/i.test(description)){
-                // The amount's x-position is in the withdrawal column (<390) or deposit column (>=390).
-                // A row may contain a separate balance value farther right; exclude it (x >= 510).
-                amounts.forEach(v=>add(activeDate,description,Math.abs(v.amount),v.x>=390?'Income':'Expense'));
+                amountItems.forEach(it=>{
+                  const amount=pdfAmount(it.str);
+                  if(Number.isFinite(amount)&&amount>0)add(activeDate,description,amount,Number(it.transform?.[4]||0)<splitX?'Expense':'Income');
+                });
               }
               pendingDesc='';
-            }else if(desc&&!/^(Date|Description|Details|Opening Balance|Closing Balance|Details of your account activity|continued|Page\s+\d)/i.test(desc)){
-              pendingDesc=(pendingDesc+' '+desc).trim();
+            }else if(desc){
+              pendingDesc=(pendingDesc+' '+desc).replace(/\s+/g,' ').trim();
             }
           }
         }
