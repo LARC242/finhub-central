@@ -9116,20 +9116,46 @@ Bonus"></textarea></div>
     function addLedgerColumnResizeHandles(header){
       [...header.querySelectorAll('.ledger-resize-handle')].forEach(el=>el.remove());
       [...header.children].forEach((th,index)=>{
-        const key=th.dataset.colKey;if(!key||key==='actions')return;
-        th.style.position='relative';th.style.userSelect='none';
-        // Keep each grip fully inside its own header cell. Extending it across
-        // the boundary let the next TH intercept pointer events in some layouts.
-        th.style.zIndex=String(40-index);
-        const grip=document.createElement('span');grip.className='ledger-resize-handle';grip.title='Drag to resize column';grip.setAttribute('aria-label','Resize '+key+' column');
-        grip.style.cssText='position:absolute;right:0;top:0;height:100%;width:14px;cursor:col-resize;touch-action:none;z-index:50;pointer-events:auto;background:linear-gradient(to right,transparent 65%,rgba(99,102,241,.18) 65%,rgba(99,102,241,.18) 82%,transparent 82%);';
+        const key=th.dataset.colKey;
+        if(!key||key==='actions')return;
+        th.style.position='relative';
+        th.style.userSelect='none';
+        // Keep the grab zone entirely inside its own header cell. This avoids
+        // hit-testing conflicts at the Subcategory | Account boundary.
+        th.style.zIndex=key==='subcategory'?'1000':String(100-index);
+        const grip=document.createElement('span');
+        grip.className='ledger-resize-handle';
+        grip.title='Drag to resize '+key;
+        grip.setAttribute('aria-label','Resize '+key+' column');
+        grip.style.cssText='position:absolute;right:0;top:0;bottom:0;width:20px;cursor:col-resize;touch-action:none;z-index:10000;pointer-events:auto;background:linear-gradient(to right,transparent 55%,rgba(99,102,241,.22) 55%,rgba(99,102,241,.22) 68%,transparent 68%);';
         grip.addEventListener('pointerdown',e=>{
-          e.preventDefault();e.stopPropagation();const startX=e.clientX,startWidth=th.getBoundingClientRect().width,p=ledgerPrefs();
+          e.preventDefault();
+          e.stopPropagation();
+          const startX=e.clientX;
+          const startWidth=th.getBoundingClientRect().width;
+          const prefs=ledgerPrefs();
           const col=header.closest('table')?.querySelector(`col[data-col-key="${key}"]`);
-          const move=ev=>{const width=Math.max(64,Math.min(520,Math.round(startWidth+ev.clientX-startX)));if(col)col.style.width=width+'px';};
-          const finish=ev=>{const width=Math.max(64,Math.min(520,Math.round(startWidth+ev.clientX-startX)));p.widths[key]=width;if(col)col.style.width=width+'px';saveData();document.removeEventListener('pointermove',move);document.removeEventListener('pointerup',finish);document.removeEventListener('pointercancel',finish);};
-          document.addEventListener('pointermove',move);document.addEventListener('pointerup',finish);document.addEventListener('pointercancel',finish);
-        });th.appendChild(grip);
+          if(!col)return;
+          const move=ev=>{
+            const width=Math.max(64,Math.min(520,Math.round(startWidth+ev.clientX-startX)));
+            col.style.width=width+'px';
+            col.style.minWidth=width+'px';
+          };
+          const finish=ev=>{
+            const width=Math.max(64,Math.min(520,Math.round(startWidth+ev.clientX-startX)));
+            prefs.widths[key]=width;
+            col.style.width=width+'px';
+            col.style.minWidth=width+'px';
+            saveData();
+            window.removeEventListener('pointermove',move,true);
+            window.removeEventListener('pointerup',finish,true);
+            window.removeEventListener('pointercancel',finish,true);
+          };
+          window.addEventListener('pointermove',move,true);
+          window.addEventListener('pointerup',finish,true);
+          window.addEventListener('pointercancel',finish,true);
+        });
+        th.appendChild(grip);
       });
     }
 
