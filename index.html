@@ -1239,11 +1239,15 @@
       </div>
       <div id="acc-detail-balance-summary" class="grid grid-cols-1 sm:grid-cols-3 gap-2"></div>
       <div id="acc-detail-apr" class="hidden text-xs text-gray-500"></div>
-      <div class="grid grid-cols-1 sm:grid-cols-4 gap-2 bg-gray-50 dark:bg-gray-950 p-3 rounded-xl border border-gray-200 dark:border-gray-800">
-        <input id="acc-activity-search" type="search" oninput="filterAccountActivity()" placeholder="Search description..." class="min-w-0 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-xs">
+      <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-2 bg-gray-50 dark:bg-gray-950 p-3 rounded-xl border border-gray-200 dark:border-gray-800">
+        <input id="acc-activity-search" type="search" oninput="filterAccountActivity()" placeholder="Search all activity..." class="min-w-0 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-xs">
         <select id="acc-activity-type" onchange="filterAccountActivity()" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-2 text-xs"><option value="">All types</option></select>
-        <input id="acc-activity-from" type="date" onchange="filterAccountActivity()" aria-label="From date" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-2 text-xs">
-        <input id="acc-activity-to" type="date" onchange="filterAccountActivity()" aria-label="To date" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-2 text-xs">
+        <input id="acc-activity-from" type="date" onchange="filterAccountActivity()" aria-label="From date" title="From date" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-2 text-xs">
+        <input id="acc-activity-to" type="date" onchange="filterAccountActivity()" aria-label="To date" title="To date" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-2 text-xs">
+        <input id="acc-activity-min" type="number" step="0.01" oninput="filterAccountActivity()" placeholder="Min amount" aria-label="Minimum amount" class="min-w-0 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-2 text-xs">
+        <input id="acc-activity-max" type="number" step="0.01" oninput="filterAccountActivity()" placeholder="Max amount" aria-label="Maximum amount" class="min-w-0 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-2 text-xs">
+        <select id="acc-activity-sort" onchange="filterAccountActivity()" class="col-span-2 sm:col-span-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-2 text-xs"><option value="date-desc">Date: newest first</option><option value="date-asc">Date: oldest first</option><option value="description-asc">Description: A to Z</option><option value="description-desc">Description: Z to A</option><option value="type-asc">Type: A to Z</option><option value="amount-desc">Amount: largest first</option><option value="amount-asc">Amount: smallest first</option></select>
+        <button type="button" onclick="resetAccountActivityFilters()" class="px-3 py-2 rounded-lg text-xs font-semibold border border-gray-200 dark:border-gray-700 hover:bg-white dark:hover:bg-gray-900">Clear filters</button>
       </div>
       <div class="overflow-auto flex-1 min-h-0 custom-scrollbar border border-gray-200 dark:border-gray-800 rounded-xl">
         <table class="w-full text-left text-sm min-w-[760px]">
@@ -3314,7 +3318,8 @@ Bonus"></textarea></div>
         });
       }
       document.getElementById('account-detail-modal').classList.remove('hidden');
-      ['acc-activity-search','acc-activity-from','acc-activity-to'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+      ['acc-activity-search','acc-activity-from','acc-activity-to','acc-activity-min','acc-activity-max'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+      const sortControl=document.getElementById('acc-activity-sort'); if(sortControl) sortControl.value='date-desc';
       if (activityTypeSelect) activityTypeSelect.value='';
       filterAccountActivity();
     }
@@ -3324,8 +3329,12 @@ Bonus"></textarea></div>
       const type=document.getElementById('acc-activity-type')?.value||'';
       const from=document.getElementById('acc-activity-from')?.value||'';
       const to=document.getElementById('acc-activity-to')?.value||'';
+      const minRaw=document.getElementById('acc-activity-min')?.value||'';
+      const maxRaw=document.getElementById('acc-activity-max')?.value||'';
+      const min=minRaw===''?null:Number(minRaw), max=maxRaw===''?null:Number(maxRaw);
+      const sort=document.getElementById('acc-activity-sort')?.value||'date-desc';
       const all=window.currentAccountActivityEntries||[];
-      const entries=all.filter(e => (!search || `${e.description||''} ${e.detail||''} ${e.type||''}`.toLowerCase().includes(search)) && (!type || e.type===type) && (!from || String(e.date||'')>=from) && (!to || String(e.date||'')<=to));
+      const entries=all.filter(e => (!search || `${e.description||''} ${e.detail||''} ${e.type||''}`.toLowerCase().includes(search)) && (!type || e.type===type) && (!from || String(e.date||'')>=from) && (!to || String(e.date||'')<=to) && (min===null || Math.abs(Number(e.change)||0)>=min) && (max===null || Math.abs(Number(e.change)||0)<=max)).sort((a,b)=>{const av=String(a.date||''),bv=String(b.date||'');switch(sort){case'date-asc':return av.localeCompare(bv);case'description-asc':return String(a.description||'').localeCompare(String(b.description||''));case'description-desc':return String(b.description||'').localeCompare(String(a.description||''));case'type-asc':return String(a.type||'').localeCompare(String(b.type||''));case'amount-desc':return Math.abs(Number(b.change)||0)-Math.abs(Number(a.change)||0);case'amount-asc':return Math.abs(Number(a.change)||0)-Math.abs(Number(b.change)||0);default:return bv.localeCompare(av);}});
       const tbody=document.getElementById('acc-detail-rows'); if(!tbody)return;
       const acc=state.accounts.find(a=>String(a.id)===String(window.currentEditingAccountId)); if(!acc)return;
       const total=entries.reduce((sum,e)=>sum+(Number(e.change)||0),0);
@@ -3336,6 +3345,8 @@ Bonus"></textarea></div>
       else entries.forEach(entry=>{ const negative=entry.change<0; const favorable=acc.type==='debt'&&negative; const changeText=entry.change===0?'—':formatFinancial(Math.abs(entry.change),negative); tbody.innerHTML += `<tr class="hover:bg-gray-50 dark:hover:bg-gray-950"><td class="px-4 py-3 whitespace-nowrap">${formatDateMDY(entry.date)}</td><td class="px-4 py-3"><button type="button" onclick="openAccountActivityTransaction('${String(entry.id).replace(/'/g,'&#39;')}')" class="text-left font-medium text-indigo-600 dark:text-indigo-400 hover:underline">${escapeHtml(entry.description||'Transaction')}</button>${entry.detail?`<div class="text-[10px] text-gray-400 mt-0.5">${escapeHtml(entry.detail)}</div>`:''}</td><td class="px-4 py-3">${escapeHtml(entry.type||'')}</td><td class="px-4 py-3 text-right font-semibold accounting-num ${favorable||(!negative&&entry.change>0)?'text-emerald-600':negative?'text-rose-600':'text-gray-400'}">${changeText}</td><td class="px-4 py-3 text-right font-bold accounting-num">${formatFinancial(runningById.get(String(entry.id)) ?? 0)}</td></tr>`; });
       const foot=document.getElementById('acc-detail-foot'); if(foot) foot.innerHTML=`<tr><td colspan="3" class="px-4 py-3">Filtered activity total (${entries.length} records)</td><td class="px-4 py-3 text-right accounting-num">${formatFinancial(Math.abs(total),total<0)}</td><td class="px-4 py-3 text-right accounting-num">${formatFinancial(Number(acc.balance)||0)}</td></tr>`;
     }
+
+    function resetAccountActivityFilters(){['acc-activity-search','acc-activity-from','acc-activity-to','acc-activity-min','acc-activity-max'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});const sort=document.getElementById('acc-activity-sort');if(sort)sort.value='date-desc';const type=document.getElementById('acc-activity-type');if(type)type.value='';filterAccountActivity();}
 
     function syncAccountBalanceToActivity(accId) {
       const acc = state.accounts.find(a => String(a.id) === String(accId));
@@ -5901,21 +5912,43 @@ Bonus"></textarea></div>
     function pdfRowsFromItems(items){const map=new Map();(items||[]).forEach(it=>{const y=Math.round(it.transform?.[5]||0);if(!map.has(y))map.set(y,[]);map.get(y).push(it);});return [...map.entries()].sort((a,b)=>b[0]-a[0]).map(([y,a])=>({y,items:a.sort((x,z)=>(x.transform?.[4]||0)-(z.transform?.[4]||0)),text:a.sort((x,z)=>(x.transform?.[4]||0)-(z.transform?.[4]||0)).map(x=>x.str).join(' ').replace(/\s+/g,' ').trim()})).filter(x=>x.text);}
     function pdfDateValue(v,year){let m=String(v||'').trim().match(/^(\d{1,2})\s+([A-Za-z]{3})$/);const months={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};if(m&&months[m[2].toLowerCase()])return `${year}-${String(months[m[2].toLowerCase()]).padStart(2,'0')}-${String(+m[1]).padStart(2,'0')}`;m=String(v||'').trim().match(/^([A-Za-z]{3})\s+(\d{1,2})$/);if(m&&months[m[1].toLowerCase()])return `${year}-${String(months[m[1].toLowerCase()]).padStart(2,'0')}-${String(+m[2]).padStart(2,'0')}`;return statementDate(v);}
     function pdfAmount(v){let x=String(v||'').replace(/[$,\s]/g,'');if(!x)return NaN;const neg=/^-|-$|\(.*\)$/.test(x);const n=Number(x.replace(/[()\-]/g,''));return Number.isFinite(n)?(neg?-n:n):NaN;}
-    function parsePdfStatementRows(pages,bank,year=2026){const lines=pages.flatMap(p=>p.rows.map(r=>r.text));const rows=[];let activeDate='',activeDesc='';const add=(date,desc,amt,type)=>{if(date&&desc&&Number.isFinite(amt)&&Math.abs(amt)>0)rows.push({id:`pdf_${Date.now()}_${rows.length}_${Math.random().toString(36).slice(2,6)}`,date,description:desc.trim(),amount:Math.abs(amt),signedAmount:type==='Income'?Math.abs(amt):-Math.abs(amt),type,accountId:document.getElementById('recon-account')?.value||'',status:'pending'});};
-      for(const line of lines){let m;
-        if(bank==='visa'){
-          m=line.match(/^\s*\d{3}\s+([A-Za-z]{3}\s+\d{1,2})\s+([A-Za-z]{3}\s+\d{1,2})\s+(.+?)\s+([\d,]+\.\d{2}-?)\s*$/);if(m){const a=pdfAmount(m[4]);add(pdfDateValue(m[2],year),m[3],a,a<0?'Income':'Expense');}continue;
+    function parsePdfStatementRows(pages,bank,year=2026){
+      const rows=[];
+      const add=(date,desc,amt,type)=>{if(date&&desc&&Number.isFinite(amt)&&Math.abs(amt)>0)rows.push({id:`pdf_${Date.now()}_${rows.length}_${Math.random().toString(36).slice(2,6)}`,date,description:desc.trim(),amount:Math.abs(amt),signedAmount:type==='Income'?Math.abs(amt):-Math.abs(amt),type,accountId:document.getElementById('recon-account')?.value||'',status:'pending'});};
+      if(bank==='rbc'){
+        // RBC statements place withdrawals and deposits in distinct x-coordinate columns.
+        // Use PDF.js text positions rather than guessing transaction direction from merchant wording.
+        for(const page of pages){let activeDate='',pendingDesc='';
+          for(const line of page.rows){const items=(line.items||[]).slice().sort((a,b)=>(a.transform?.[4]||0)-(b.transform?.[4]||0));
+            const left=items.filter(it=>(it.transform?.[4]||0)<305).map(it=>it.str||'').join(' ').replace(/\s+/g,' ').trim();
+            const dateMatch=left.match(/^(\d{1,2}\s+[A-Za-z]{3})\b/);if(dateMatch)activeDate=pdfDateValue(dateMatch[1],year);
+            const desc=left.replace(/^\d{1,2}\s+[A-Za-z]{3}\s*/,'').trim();
+            const money=items.filter(it=>{const x=Number(it.transform?.[4]||0);return x>=305&&x<510&&/\d[\d,]*\.\d{2}-?/.test(it.str||'');});
+            if(money.length&&activeDate){
+              const amountItem=money[money.length-1],x=Number(amountItem.transform?.[4]||0),amt=pdfAmount(amountItem.str);
+              const description=[pendingDesc,desc].filter(Boolean).join(' ').replace(/\s+/g,' ').trim();
+              // On this RBC layout the withdrawal column is left of the deposit column.
+              const type=x>=390?'Income':'Expense';
+              if(description&&!/^(Opening|Closing) Balance/i.test(description))add(activeDate,description,Math.abs(amt),type);
+              pendingDesc='';
+            }else if(desc&&!/^(Date|Description|Details|Opening Balance|Closing Balance|Details of your account activity|continued|Page\s+\d)/i.test(desc))pendingDesc=(pendingDesc+' '+desc).trim();
+          }
         }
-        m=bank==='rbc'?line.match(/^\s*(\d{1,2}\s+[A-Za-z]{3})\s+(.*)$/):line.match(/^\s*([A-Za-z]{3}\s+\d{1,2})\s+(.*)$/);
+        return rows;
+      }
+      const lines=pages.flatMap(p=>p.rows.map(r=>r.text));let activeDate='',activeDesc='';
+      for(const line of lines){let m;
+        if(bank==='visa'){m=line.match(/^\s*\d{3}\s+([A-Za-z]{3}\s+\d{1,2})\s+([A-Za-z]{3}\s+\d{1,2})\s+(.+?)\s+([\d,]+\.\d{2}-?)\s*$/);if(m){const a=pdfAmount(m[4]);add(pdfDateValue(m[2],year),m[3],a,a<0?'Income':'Expense');}continue;}
+        m=bank==='eq'?line.match(/^\s*([A-Za-z]{3}\s+\d{1,2})\s+(.*)$/):line.match(/^\s*([A-Za-z]{3}\s+\d{1,2})\s+(.*)$/);
         if(m){activeDate=pdfDateValue(m[1],year);activeDesc=m[2]||'';}else if(activeDate&&line&&!/^(Date|Details|Here's what|continued|Page |Opening Balance|Closing Balance|Activity details|Amounts|Transactions since)/i.test(line)){activeDesc=(activeDesc+' '+line).trim();}else continue;
         const nums=[...line.matchAll(/-?\$?\s?\d[\d,]*\.\d{2}-?/g)];if(!nums.length||!activeDate)continue;
         const desc=activeDesc.replace(/-?\$?\s?\d[\d,]*\.\d{2}-?/g,'').trim();if(!desc||/^(Opening|Closing) Balance/i.test(desc))continue;
-        const amt=pdfAmount(nums[0][0]);let type='Expense';
-        if(bank==='eq'){type=amt<0?'Expense':'Income';}
-        else {if(/Canada Child Benefit|Payroll Deposit|Find & Save|e-Transfer cancel|Online Banking transfer - \d{4}$/i.test(desc))type='Income';}
-        add(activeDate,desc,amt,type);activeDesc='';
-      }return rows;}
-    async function importPdfStatement(file,host){if(host)host.innerHTML='<div class="rounded-xl border border-indigo-300/50 bg-indigo-500/5 p-3 text-xs"><strong>Reading PDF statement…</strong><p class="mt-1">Extracting text and identifying the bank. Nothing is imported yet.</p></div>';try{const lib=await loadPdfJsLibrary();const doc=await lib.getDocument({data:await file.arrayBuffer()}).promise;const pages=[];for(let i=1;i<=doc.numPages;i++){const page=await doc.getPage(i);pages.push({page:i,rows:pdfRowsFromItems((await page.getTextContent()).items)});}const text=pages.flatMap(p=>p.rows.map(r=>r.text)).join('\n');const yearMatch=text.match(/(?:October|September|November|December|January|February|March|April|May|June|July|August)\s+\d{4}|From\s+[A-Za-z]+\s+\d{1,2},?\s+(20\d{2})/i);const year=(yearMatch?.[1]&&/^20/.test(yearMatch[1]))?Number(yearMatch[1]):Number((text.match(/20\d{2}/)||['2026'])[0]);let bank='';if(/Royal Bank of Canada|RBC personal banking/i.test(text))bank='rbc';else if(/Scotiabank.*Visa|Scene\+.*Visa/i.test(text))bank='visa';else if(/Scotiabank|Your Basic Banking account/i.test(text))bank='scotia';else if(/EQ Bank|Equitable Bank|Main Hub Account/i.test(text))bank='eq';if(!bank)throw new Error('Bank not recognized.');const rows=parsePdfStatementRows(pages,bank,year);if(!rows.length)throw new Error('The bank was recognized, but no transaction rows could be confidently extracted. No data was imported.');window._finhubPdfCandidateRows=rows;window._finhubPdfExtractedText=text;if(host){const label={rbc:'RBC chequing',visa:'Scotiabank Visa',scotia:'Scotiabank chequing',eq:'EQ Bank'}[bank];host.innerHTML=`<div class="rounded-xl border border-amber-300/50 bg-amber-500/5 p-3 text-xs space-y-2"><strong>PDF identified: ${label}</strong><p>Extracted ${rows.length} candidate rows from ${doc.numPages} pages. This is a first-pass reader. Check every transaction and compare the statement balances before importing.</p><button type="button" onclick="acceptPdfStatementRows()" class="px-3 py-2 rounded-lg bg-indigo-600 text-white font-semibold">Review extracted transactions</button><button type="button" onclick="showPdfExtractionText()" class="ml-2 px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 font-semibold">Show extracted text</button></div>`;}}catch(e){if(host)host.innerHTML=`<div class="rounded-xl border border-rose-300/50 bg-rose-500/5 p-3 text-xs"><strong>PDF extraction needs attention.</strong><p class="mt-1">${escapeHtml(e.message||'Unable to read this PDF.')}</p><p class="mt-1">No transactions were imported. CSV import remains available.</p></div>`;}}
+        const amt=pdfAmount(nums[0][0]);let type=bank==='eq'?(amt<0?'Expense':'Income'):'Expense';
+        if(bank==='scotia'&&/payroll|deposit|benefit|e-transfer.*received|credit/i.test(desc))type='Income';
+        add(activeDate,desc,Math.abs(amt),type);activeDesc='';
+      }return rows;
+    }
+    async function importPdfStatement(file,host){if(host)host.innerHTML='<div class="rounded-xl border border-indigo-300/50 bg-indigo-500/5 p-3 text-xs"><strong>Reading PDF statement…</strong><p class="mt-1">Extracting text and identifying the bank. Nothing is imported yet.</p></div>';try{const lib=await loadPdfJsLibrary();const doc=await lib.getDocument({data:await file.arrayBuffer()}).promise;const pages=[];for(let i=1;i<=doc.numPages;i++){const page=await doc.getPage(i);pages.push({page:i,rows:pdfRowsFromItems((await page.getTextContent()).items)});}const text=pages.flatMap(p=>p.rows.map(r=>r.text)).join('\n');const yearMatch=text.match(/(?:October|September|November|December|January|February|March|April|May|June|July|August)\s+\d{4}|From\s+[A-Za-z]+\s+\d{1,2},?\s+(20\d{2})/i);const year=(yearMatch?.[1]&&/^20/.test(yearMatch[1]))?Number(yearMatch[1]):Number((text.match(/20\d{2}/)||['2026'])[0]);let bank='';if(/Royal Bank of Canada|RBC personal banking/i.test(text))bank='rbc';else if(/Scotiabank.*Visa|Scene\+.*Visa/i.test(text))bank='visa';else if(/Scotiabank|Your Basic Banking account/i.test(text))bank='scotia';else if(/EQ Bank|Equitable Bank|Main Hub Account/i.test(text))bank='eq';if(!bank)throw new Error('Bank not recognized.');const rows=parsePdfStatementRows(pages,bank,year);if(!rows.length)throw new Error('The bank was recognized, but no transaction rows could be confidently extracted. No data was imported.');if(bank==='rbc'){const flat=text.replace(/\s+/g,' ');const depMatch=flat.match(/Total deposits into your account\s*\+?\s*\$?\s*([\d,]+\.\d{2})/i);const wdMatch=flat.match(/Total withdrawals from your account\s*-?\s*\$?\s*([\d,]+\.\d{2})/i);if(depMatch&&wdMatch){const expectedIncome=Number(depMatch[1].replace(/,/g,'')),expectedExpense=Number(wdMatch[1].replace(/,/g,''));const actualIncome=rows.filter(r=>r.type==='Income').reduce((a,r)=>a+r.amount,0),actualExpense=rows.filter(r=>r.type==='Expense').reduce((a,r)=>a+r.amount,0);if(Math.abs(expectedIncome-actualIncome)>.01||Math.abs(expectedExpense-actualExpense)>.01){if(host)host.innerHTML=`<div class=\"rounded-xl border border-rose-300/50 bg-rose-500/5 p-3 text-xs space-y-1\"><strong>RBC statement totals do not reconcile — import blocked</strong><p>Statement deposits: ${formatFinancial(expectedIncome)} · extracted: ${formatFinancial(actualIncome)}</p><p>Statement withdrawals: ${formatFinancial(expectedExpense)} · extracted: ${formatFinancial(actualExpense)}</p><p class=\"mt-1\">FinHub will not offer these rows for import until the PDF extraction matches both statement totals to the cent. Use the CSV import for this statement in the meantime.</p></div>`;return;}}}window._finhubPdfCandidateRows=rows;window._finhubPdfExtractedText=text;if(host){const label={rbc:'RBC chequing',visa:'Scotiabank Visa',scotia:'Scotiabank chequing',eq:'EQ Bank'}[bank];host.innerHTML=`<div class="rounded-xl border border-amber-300/50 bg-amber-500/5 p-3 text-xs space-y-2"><strong>PDF identified: ${label}</strong><p>Extracted ${rows.length} candidate rows from ${doc.numPages} pages. RBC direction is read from the withdrawal/deposit columns. Review every row and confirm the statement totals before importing; other bank formats still require manual review.</p><button type="button" onclick="acceptPdfStatementRows()" class="px-3 py-2 rounded-lg bg-indigo-600 text-white font-semibold">Review extracted transactions</button><button type="button" onclick="showPdfExtractionText()" class="ml-2 px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 font-semibold">Show extracted text</button></div>`;}}catch(e){if(host)host.innerHTML=`<div class="rounded-xl border border-rose-300/50 bg-rose-500/5 p-3 text-xs"><strong>PDF extraction needs attention.</strong><p class="mt-1">${escapeHtml(e.message||'Unable to read this PDF.')}</p><p class="mt-1">No transactions were imported. CSV import remains available.</p></div>`;}}
     function showPdfExtractionText(){const host=document.getElementById('recon-preview');if(host)host.innerHTML=`<div class="rounded-xl border p-3 text-xs"><strong>Extracted PDF text</strong><pre class="mt-2 whitespace-pre-wrap max-h-80 overflow-auto">${escapeHtml(String(window._finhubPdfExtractedText||'').slice(0,18000))}</pre></div>`;}
     function acceptPdfStatementRows(){const rows=window._finhubPdfCandidateRows||[];if(!rows.length)return;if(pendingStatementRows.length&&!confirm('Replace the current review batch?'))return;const accountId=document.getElementById('recon-account')?.value||'';rows.forEach(r=>{r.accountId=accountId;applyStatementImportDefaults(r,{});});pendingStatementRows=rows;const range=statementBatchRange(rows);document.getElementById('recon-end-date').value=range.endDate||'';document.getElementById('recon-opening-balance').value='';document.getElementById('recon-closing-balance').value='';const index=buildStatementDuplicateIndex();let duplicates=0;rows.forEach(r=>{const d=statementDuplicateMatch(r,index);if(d){r.status='duplicate';r.duplicateTransactionId=d.id;duplicates++;}});persistStatementBatch();renderStatementPreview();renderStatementBalanceCheck();const host=document.getElementById('recon-preview');if(host&&duplicates){const n=document.createElement('p');n.className='text-xs text-amber-500';n.textContent=`Flagged ${duplicates} possible duplicates. Review before importing.`;host.prepend(n);}}
     function statementTransactionDateForAccount(t, accountId) {
@@ -9263,6 +9296,10 @@ Bonus"></textarea></div>
       checkBackupReminder();
     }
     async function saveLatestBackup() {
+      const confirmed = window.confirm(
+        'Create or update your FinHub JSON backup?\n\nIf a backup file is already connected, this will OVERWRITE that file with your current FinHub data. This cannot be undone from FinHub.\n\nIf you want to keep the existing backup, cancel and use Export Dated Archive first.'
+      );
+      if (!confirmed) return;
       const blob = buildBackupBlob();
       try {
         if (window.showSaveFilePicker) {
