@@ -5952,11 +5952,17 @@ Bonus"></textarea></div>
       if (hasDebitMarker || explicitlyNegative) amount = -Math.abs(amount);
       else if (hasCreditMarker) amount = Math.abs(amount);
       else {
-        const amountItem = lineItems.find(item => pdfMoneyTokens(item.text).length);
+        const amountItem = lineItems.find(item => pdfMoneyTokens(item.text).some(t => t.text===rawAmount));
         if (!directionColumns || !amountItem) return null;
-        const debitDistance=Math.abs(amountItem.x-directionColumns.debitX);
-        const creditDistance=Math.abs(amountItem.x-directionColumns.creditX);
-        if (Math.min(debitDistance,creditDistance)>55 || Math.abs(debitDistance-creditDistance)<4) return null;
+        // PDF.js may return the entire description and amount as one text item.
+        // Estimate the amount's actual horizontal position within that item rather
+        // than using the item's left edge (which belongs to the description).
+        const tokenStart=amountItem.text.indexOf(rawAmount);
+        const tokenCenter=tokenStart+rawAmount.length/2;
+        const amountX=amountItem.x + ((amountItem.width||0) * (tokenCenter / Math.max(1,amountItem.text.length)));
+        const debitDistance=Math.abs(amountX-directionColumns.debitX);
+        const creditDistance=Math.abs(amountX-directionColumns.creditX);
+        if (Math.min(debitDistance,creditDistance)>105 || Math.abs(debitDistance-creditDistance)<7) return null;
         amount = debitDistance<creditDistance ? -Math.abs(amount) : Math.abs(amount);
       }
       const description = prefix.replace(/\s+/g,' ').replace(/[|•]+$/,'').trim();
@@ -5997,14 +6003,14 @@ Bonus"></textarea></div>
             const y=item.transform ? item.transform[5] : 0;
             let line=lines.find(x=>Math.abs(x.y-y)<2.5);
             if(!line){line={y,items:[]};lines.push(line);}
-            line.items.push({x:item.transform?item.transform[4]:0,text:item.str});
+            line.items.push({x:item.transform?item.transform[4]:0,width:Number(item.width)||0,text:item.str});
           }
           lines.sort((a,b)=>b.y-a.y).forEach(line=>line.items.sort((a,b)=>a.x-b.x));
           let directionColumns=null;
           for(const line of lines) {
             const debit=line.items.find(item=>/\b(debit|withdrawal|withdrawn|money out)\b/i.test(item.text));
             const credit=line.items.find(item=>/\b(credit|deposit|deposited|money in)\b/i.test(item.text));
-            if(debit&&credit&&Math.abs(debit.x-credit.x)>15) { directionColumns={debitX:debit.x,creditX:credit.x}; break; }
+            if(debit&&credit&&Math.abs(debit.x-credit.x)>15) { directionColumns={debitX:debit.x+(debit.width||0)/2,creditX:credit.x+(credit.width||0)/2}; break; }
           }
           lines.forEach(line=>{
             const text=line.items.map(x=>x.text).join(' ').replace(/\s+/g,' ').trim();
