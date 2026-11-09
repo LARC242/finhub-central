@@ -9119,32 +9119,63 @@ Bonus"></textarea></div>
     }
     function addLedgerColumnResizeHandles(header){
       header.querySelectorAll('.ledger-resize-handle').forEach(el=>el.remove());
+      const table=header.closest('table');
+      const colgroup=table?.querySelector('colgroup[data-ledger-columns]');
+      if(!table||!colgroup)return;
       [...header.children].forEach(th=>{
         const key=th.dataset.colKey;
         if(!key||key==='actions')return;
-        th.style.position='relative';th.style.userSelect='none';
+        // Bind the handle to the physical column position, not a second label lookup.
+        // This keeps the handle, header and colgroup aligned after user reordering.
+        const columnIndex=th.cellIndex;
         const grip=document.createElement('span');
-        grip.className='ledger-resize-handle';grip.dataset.resizeKey=key;
-        grip.title='Drag to resize '+key+' column';grip.setAttribute('aria-label','Resize '+key+' column');
-        grip.style.cssText='position:absolute;right:0;top:0;bottom:0;width:16px;cursor:col-resize;touch-action:none;z-index:30;pointer-events:auto;background:linear-gradient(to right,transparent 42%,rgba(99,102,241,.55) 42%,rgba(99,102,241,.55) 58%,transparent 58%);';
+        grip.className='ledger-resize-handle';
+        grip.dataset.resizeKey=key;
+        grip.title='Drag to resize '+key+' column';
+        grip.setAttribute('aria-label','Resize '+key+' column');
+        grip.style.cssText='position:absolute;right:-1px;top:0;bottom:0;width:18px;cursor:col-resize;touch-action:none;z-index:50;pointer-events:auto;background:linear-gradient(to right,transparent 42%,rgba(99,102,241,.65) 42%,rgba(99,102,241,.65) 58%,transparent 58%);';
+        th.style.position='relative';
+        th.style.userSelect='none';
         grip.addEventListener('pointerdown',e=>{
-          e.preventDefault();e.stopPropagation();
-          const table=header.closest('table');const col=table?.querySelector(`colgroup[data-ledger-columns] col[data-col-key="${key}"]`);
-          if(!table||!col)return;
-          const startX=e.clientX;const startWidth=parseFloat(col.style.width)||th.getBoundingClientRect().width;
-          const widthFor=k=>{const c=table.querySelector(`colgroup[data-ledger-columns] col[data-col-key="${k}"]`);return parseFloat(c?.style.width)||0;};
+          e.preventDefault();
+          e.stopPropagation();
+          const liveColgroup=table.querySelector('colgroup[data-ledger-columns]');
+          const col=liveColgroup?.children[columnIndex];
+          if(!col)return;
+          const actualKey=col.dataset.colKey;
+          if(!actualKey)return;
+          const startX=e.clientX;
+          const startWidth=parseFloat(col.style.width)||th.getBoundingClientRect().width;
           const applyWidth=raw=>{
-            const w=Math.max(64,Math.min(520,Math.round(raw)));col.style.width=w+'px';
-            th.style.width=w+'px';
-            const total=[...table.querySelectorAll('colgroup[data-ledger-columns] col')].reduce((sum,c)=>sum+(parseFloat(c.style.width)||0),0);
-            table.style.width=total+'px';table.style.minWidth=total+'px';
-            return w;
+            const width=Math.max(64,Math.min(520,Math.round(raw)));
+            col.style.width=width+'px';
+            th.style.width=width+'px';
+            const total=[...liveColgroup.children].reduce((sum,c)=>sum+(parseFloat(c.style.width)||0),0);
+            table.style.width=total+'px';
+            table.style.minWidth=total+'px';
+            table.style.maxWidth='none';
+            return width;
           };
-          const move=ev=>{applyWidth(startWidth+ev.clientX-startX);};
-          const cleanup=()=>{window.removeEventListener('pointermove',move,true);window.removeEventListener('pointerup',finish,true);window.removeEventListener('pointercancel',cancel,true);};
-          const finish=ev=>{const w=applyWidth(startWidth+ev.clientX-startX);ledgerPrefs().widths[key]=w;saveData();cleanup();};
+          const move=ev=>applyWidth(startWidth+ev.clientX-startX);
+          const cleanup=()=>{
+            window.removeEventListener('pointermove',move,true);
+            window.removeEventListener('pointerup',finish,true);
+            window.removeEventListener('pointercancel',cancel,true);
+            document.body.style.cursor='';
+            document.body.style.userSelect='';
+          };
+          const finish=ev=>{
+            const width=applyWidth(startWidth+ev.clientX-startX);
+            ledgerPrefs().widths[actualKey]=width;
+            saveData();
+            cleanup();
+          };
           const cancel=()=>cleanup();
-          window.addEventListener('pointermove',move,true);window.addEventListener('pointerup',finish,true);window.addEventListener('pointercancel',cancel,true);
+          document.body.style.cursor='col-resize';
+          document.body.style.userSelect='none';
+          window.addEventListener('pointermove',move,true);
+          window.addEventListener('pointerup',finish,true);
+          window.addEventListener('pointercancel',cancel,true);
         });
         th.appendChild(grip);
       });
