@@ -3121,7 +3121,11 @@ Bonus"></textarea></div>
           let change = 0;
           if (t.type === 'Debt Payment') {
             principal = Number(t.debtPrincipalAmount ?? payment?.principalAmount ?? bill?.principalAmount ?? t.amount) || 0;
-            change = -principal;
+            change = -Math.abs(principal);
+          } else if (t.type === 'Debt Payment Reversal') {
+            // A returned debt payment restores principal to the liability balance.
+            principal = Number(t.debtPrincipalAmount ?? 0) || 0;
+            change = Math.abs(principal);
           } else if (t.type === 'Interest Charge') {
             change = Number(t.amount) || 0;
           } else if (postedDirectlyToDebtAccount && t.type === 'Expense') {
@@ -3132,6 +3136,7 @@ Bonus"></textarea></div>
           const isInterest = t.type === 'Interest Charge' || (Number(t.debtInterestAmount) || 0) > 0 || /interest/i.test(`${t.category || ''} ${t.subcategory || ''} ${t.desc || ''} ${t.vendor || ''}`);
           let type = t.type || 'Related transaction';
           if (t.type === 'Debt Payment') type = principal > 0 ? 'Debt payment' : 'Interest-only payment';
+          else if (t.type === 'Debt Payment Reversal') type = 'Debt payment reversal · principal restored';
           else if (t.type === 'Interest Charge') type = 'Interest charged to balance';
           else if (postedDirectlyToDebtAccount && t.type === 'Expense') type = 'Credit / debt purchase';
           else if (postedDirectlyToDebtAccount && t.type === 'Income') type = 'Refund / credit';
@@ -3140,6 +3145,13 @@ Bonus"></textarea></div>
         });
       }
       return entries.sort((a, b) => String(a.date).localeCompare(String(b.date)) || String(a.id).localeCompare(String(b.id)));
+    }
+
+    function openAccountActivityTransaction(entryId) {
+      const id = String(entryId || '').replace(/_incoming$/, '');
+      const transaction = (state.transactions || []).find(t => String(t.id) === id);
+      if (!transaction) { alert('This activity record is not linked to an editable transaction.'); return; }
+      openTransactionModal(transaction.id);
     }
 
     function openAccountDetail(accId) {
@@ -3166,9 +3178,13 @@ Bonus"></textarea></div>
       const currentBalance = Number(acc.balance) || 0;
       // Derive the opening balance from the current stored balance and all activity, so the final row ties to the account balance.
       const hasSavedOpeningBalance = accountHasSavedOpeningBalance(acc);
-      let runningBalance = currentBalance - totalChanges;
-      const derivedOpeningBalance = runningBalance;
+      const derivedOpeningBalance = currentBalance - totalChanges;
       const openingBalance = hasSavedOpeningBalance ? Number(acc.openingBalance) : derivedOpeningBalance;
+      // Start from the selected opening balance. Previously the display always started
+      // from the derived value, silently ignoring a saved opening balance.
+      let runningBalance = openingBalance;
+      const calculatedEndingBalance = openingBalance + totalChanges;
+      const balanceDifference = calculatedEndingBalance - currentBalance;
       const balanceLabel = acc.type === 'debt' ? 'Outstanding balance' : 'Calculated balance';
       // An unset opening balance remains a derived suggestion until the user explicitly saves one.
       summary.className = 'grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2';
@@ -3176,7 +3192,7 @@ Bonus"></textarea></div>
         <div class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-3"><div class="text-[10px] uppercase font-semibold text-gray-500">Opening balance${hasSavedOpeningBalance ? ' · saved' : ' · derived'}</div><div class="flex items-center gap-2 mt-2"><span class="text-xs text-gray-500">$</span><input id="acc-opening-balance-input" type="number" step="0.01" value="${Number(openingBalance).toFixed(2)}" class="min-w-0 w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1.5 text-sm font-bold accounting-num" /></div><button onclick="saveAccountOpeningBalance()" class="mt-2 w-full px-2 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-semibold theme-bg">Save opening balance</button><div class="text-[9px] text-gray-400 mt-1">As of the start of this account's recorded activity. Saving adjusts the current balance by the same difference; it does not create a transaction.</div></div>
         <div class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-3"><div class="text-[10px] uppercase font-semibold text-gray-500">${balanceLabel}</div><div class="text-base font-bold accounting-num mt-1">${formatFinancial(currentBalance)}</div></div>
         <div class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-3"><div class="text-[10px] uppercase font-semibold text-gray-500">Activity records</div><div class="text-base font-bold mt-1">${activity.length}</div></div>
-        <div class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-3"><div class="text-[10px] uppercase font-semibold text-gray-500">Balance check</div><div class="text-base font-bold mt-1 accounting-num">${formatFinancial(openingBalance + totalChanges)}</div><div class="text-[9px] text-gray-400 mt-1">Opening balance plus recorded activity</div></div>`;
+        <div class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-3"><div class="text-[10px] uppercase font-semibold text-gray-500">Calculated ending balance</div><div class="text-base font-bold mt-1 accounting-num">${formatFinancial(calculatedEndingBalance)}</div><div class="text-[9px] ${Math.abs(balanceDifference) < 0.005 ? 'text-emerald-600' : 'text-amber-600'} mt-1">${Math.abs(balanceDifference) < 0.005 ? 'Matches current balance' : `Difference vs current: ${formatFinancial(balanceDifference)}`}</div></div>`;
 
       rows.innerHTML = `<tr class="bg-indigo-50/70 dark:bg-indigo-950/30"><td class="px-4 py-3 whitespace-nowrap">—</td><td class="px-4 py-3 font-semibold">Opening balance <span class="text-[10px] font-normal text-gray-500">(${hasSavedOpeningBalance ? 'saved opening balance' : 'derived until saved'})</span></td><td class="px-4 py-3">Opening balance</td><td class="px-4 py-3 text-right accounting-num">—</td><td class="px-4 py-3 text-right font-bold accounting-num">${formatFinancial(runningBalance)}</td></tr>`;
       if (!activity.length) {
@@ -3190,7 +3206,7 @@ Bonus"></textarea></div>
           rows.innerHTML += `
             <tr class="hover:bg-gray-50 dark:hover:bg-gray-950">
               <td class="px-4 py-3 whitespace-nowrap">${entry.date || '—'}</td>
-              <td class="px-4 py-3">${entry.description || 'Transaction'}${entry.detail ? `<div class="text-[10px] text-gray-400 mt-0.5">${entry.detail}</div>` : ''}</td>
+              <td class="px-4 py-3"><button type="button" onclick="openAccountActivityTransaction('${String(entry.id).replace(/'/g, '&#39;')}')" class="text-left font-medium text-indigo-600 dark:text-indigo-400 hover:underline focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded" title="Open this transaction">${escapeHtml(entry.description || 'Transaction')} <span class="text-[9px] opacity-70">↗</span></button>${entry.detail ? `<div class="text-[10px] text-gray-400 mt-0.5">${escapeHtml(entry.detail)}</div>` : ''}<div class="text-[9px] text-gray-400 mt-0.5">Open transaction</div></td>
               <td class="px-4 py-3"><span class="px-2 py-0.5 rounded text-[10px] bg-gray-100 dark:bg-gray-800">${entry.type}</span>${entry.matchNeedsReview ? '<span class="ml-1 px-1.5 py-0.5 rounded text-[9px] bg-amber-500/10 text-amber-600">Match needs review</span>' : entry.reconciled ? '<span class="ml-1 px-1.5 py-0.5 rounded text-[9px] bg-emerald-500/10 text-emerald-500">Statement matched</span>' : ''}</td>
               <td class="px-4 py-3 text-right font-semibold ${favorableDebtReduction || (!negative && entry.change > 0) ? 'text-emerald-600' : negative ? 'text-rose-600' : 'text-gray-400'} accounting-num">${changeText}</td>
               <td class="px-4 py-3 text-right font-bold accounting-num">${formatFinancial(runningBalance)}</td>
