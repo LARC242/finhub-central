@@ -52,7 +52,7 @@
       body.sidebar-collapsed #finhub-sidebar .sidebar-brand-actions { flex-direction:row; }
     }
     /* Compact, horizontally scrollable multi-select filters */
-    .ledger-filter-strip { display:flex; align-items:center; gap:.45rem; overflow-x:auto; overflow-y:hidden; white-space:nowrap; padding:.7rem; scrollbar-width:thin; }
+    .ledger-filter-strip { display:none !important; display:flex; align-items:center; gap:.45rem; overflow-x:auto; overflow-y:hidden; white-space:nowrap; padding:.7rem; scrollbar-width:thin; }
     .ledger-filter-button { flex:0 0 auto; display:inline-flex; align-items:center; gap:.4rem; padding:.45rem .65rem; border:1px solid rgba(148,163,184,.35); border-radius:.65rem; background:rgba(148,163,184,.08); font-size:.7rem; font-weight:600; }
     .ledger-filter-button.has-selection { border-color:#818cf8; background:rgba(99,102,241,.12); }
     #ledger-filter-popover { position:fixed; z-index:100; width:min(19rem,calc(100vw - 1.5rem)); max-height:min(26rem,calc(100vh - 2rem)); overflow:hidden; border:1px solid rgba(148,163,184,.4); border-radius:.9rem; background:#fff; color:#111827; box-shadow:0 18px 45px rgba(0,0,0,.22); }
@@ -248,12 +248,7 @@
 <body id="app-body" class="bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 min-h-screen flex flex-col md:flex-row transition-colors duration-200 relative">
 
   <!-- UNDO TOAST NOTIFICATION -->
-  <div id="undo-toast" class="fixed bottom-6 left-6 z-50 bg-gray-900 dark:bg-gray-800 text-white px-4 py-3 rounded-2xl shadow-2xl border border-gray-700 flex items-center space-x-3 hidden transition-all">
-    <i class="fa-solid fa-rotate-left text-indigo-400"></i>
-    <span id="undo-toast-msg" class="text-xs">Action performed.</span>
-    <button onclick="executeUndo()" class="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-xs font-semibold theme-bg">Undo</button>
-    <button onclick="document.getElementById('undo-toast').classList.add('hidden')" aria-label="Dismiss Undo notification" title="Dismiss notification" class="px-1.5 py-1 text-gray-400 hover:text-white text-xs">×</button>
-  </div>
+  <div id="undo-toast" class="fixed bottom-4 left-4 z-50 hidden transition-all"><button type="button" onclick="executeUndo()" aria-label="Undo last action" title="Undo last action" class="w-9 h-9 inline-flex items-center justify-center rounded-full bg-gray-900 dark:bg-gray-700 text-white shadow-lg border border-gray-600 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-400"><i class="fa-solid fa-rotate-left text-sm"></i></button></div>
 
   <!-- Sidebar Nav -->
   <aside id="finhub-sidebar" class="finhub-sidebar w-full md:w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex-shrink-0 flex flex-col justify-between">
@@ -964,7 +959,7 @@
         <table class="w-full text-left text-sm" style="min-width:1100px">
           <thead class="bg-gray-50 dark:bg-gray-950 text-xs uppercase border-b border-gray-200 dark:border-gray-800 text-gray-500">
             <tr>
-              <th class="px-4 py-3">Date</th><th class="px-4 py-3">Vendor</th><th class="px-4 py-3">Description</th><th class="px-4 py-3">Type</th><th class="px-4 py-3">Bucket</th><th class="px-4 py-3">Subcategory</th><th class="px-4 py-3">Account</th><th class="px-4 py-3 text-right">Amount</th><th class="px-4 py-3 text-right">Running Balance</th><th class="px-4 py-3 text-center">Actions</th>
+              <th class="px-4 py-3">Date <button type="button" class="ml-1 text-gray-400 hover:text-indigo-500" onclick="openLedgerFilter('date',this)" aria-label="Filter date">▾</button></th><th class="px-4 py-3">Vendor <button type="button" class="ml-1 text-gray-400 hover:text-indigo-500" onclick="openLedgerFilter('vendor',this)" aria-label="Filter vendor">▾</button></th><th class="px-4 py-3">Description <button type="button" class="ml-1 text-gray-400 hover:text-indigo-500" onclick="openLedgerFilter('desc',this)" aria-label="Filter description">▾</button></th><th class="px-4 py-3">Type <button type="button" class="ml-1 text-gray-400 hover:text-indigo-500" onclick="openLedgerFilter('type',this)" aria-label="Filter type">▾</button></th><th class="px-4 py-3">Bucket <button type="button" class="ml-1 text-gray-400 hover:text-indigo-500" onclick="openLedgerFilter('category',this)" aria-label="Filter bucket">▾</button></th><th class="px-4 py-3">Subcategory <button type="button" class="ml-1 text-gray-400 hover:text-indigo-500" onclick="openLedgerFilter('subcategory',this)" aria-label="Filter subcategory">▾</button></th><th class="px-4 py-3">Account <button type="button" class="ml-1 text-gray-400 hover:text-indigo-500" onclick="openLedgerFilter('account',this)" aria-label="Filter account">▾</button></th><th class="px-4 py-3 text-right">Amount <button type="button" class="ml-1 text-gray-400 hover:text-indigo-500" onclick="openLedgerFilter('amount',this)" aria-label="Filter amount">▾</button></th><th class="px-4 py-3 text-right">Running Balance</th><th class="px-4 py-3 text-center">Actions</th>
             </tr>
             <tr id="ledger-legacy-filter-row" class="hidden"><th colspan="10"></th></tr>
           </thead>
@@ -1229,12 +1224,20 @@
         </div>
       </div>
       <div id="acc-detail-balance-summary" class="grid grid-cols-1 sm:grid-cols-3 gap-2"></div>
+      <div id="acc-detail-apr" class="hidden text-xs text-gray-500"></div>
+      <div class="grid grid-cols-1 sm:grid-cols-4 gap-2 bg-gray-50 dark:bg-gray-950 p-3 rounded-xl border border-gray-200 dark:border-gray-800">
+        <input id="acc-activity-search" type="search" oninput="filterAccountActivity()" placeholder="Search description..." class="min-w-0 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-xs">
+        <select id="acc-activity-type" onchange="filterAccountActivity()" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-2 text-xs"><option value="">All types</option></select>
+        <input id="acc-activity-from" type="date" onchange="filterAccountActivity()" aria-label="From date" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-2 text-xs">
+        <input id="acc-activity-to" type="date" onchange="filterAccountActivity()" aria-label="To date" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-2 text-xs">
+      </div>
       <div class="overflow-auto flex-1 min-h-0 custom-scrollbar border border-gray-200 dark:border-gray-800 rounded-xl">
         <table class="w-full text-left text-sm min-w-[760px]">
           <thead class="bg-gray-50 dark:bg-gray-950 text-xs text-gray-500 uppercase sticky top-0 z-10">
             <tr><th class="px-4 py-2">Date</th><th class="px-4 py-2">Description</th><th class="px-4 py-2">Type</th><th class="px-4 py-2 text-right">Change</th><th class="px-4 py-2 text-right">Running Balance</th></tr>
           </thead>
           <tbody id="acc-detail-rows" class="divide-y divide-gray-200 dark:divide-gray-800"></tbody>
+          <tfoot id="acc-detail-foot" class="sticky bottom-0 bg-gray-50 dark:bg-gray-950 border-t-2 border-gray-300 dark:border-gray-700 font-bold text-xs"></tfoot>
         </table>
       </div>
     </div>
@@ -1755,18 +1758,15 @@ Bonus"></textarea></div>
 
     let undoStack = [];
     const MAX_UNDO_HISTORY = 20;
+    let undoToastTimer = null;
 
     function renderUndoToast() {
       const toast = document.getElementById('undo-toast');
-      const message = document.getElementById('undo-toast-msg');
-      if (!toast || !message) return;
-      if (!undoStack.length) {
-        toast.classList.add('hidden');
-        return;
-      }
-      const latest = undoStack[undoStack.length - 1];
-      message.textContent = `${latest.desc} performed${undoStack.length > 1 ? ` · ${undoStack.length} actions available` : ''}.`;
+      if (!toast) return;
+      if (undoToastTimer) { clearTimeout(undoToastTimer); undoToastTimer = null; }
+      if (!undoStack.length) { toast.classList.add('hidden'); return; }
       toast.classList.remove('hidden');
+      undoToastTimer = setTimeout(() => { toast.classList.add('hidden'); undoToastTimer = null; }, 5000);
     }
 
     function pushUndoState(description, callback) {
@@ -1823,6 +1823,15 @@ Bonus"></textarea></div>
       });
     }
 
+    function formatDateMDY(value) {
+      if (!value) return '—';
+      const raw = String(value).trim();
+      const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (match) return `${match[2]}-${match[3]}-${match[1]}`;
+      const parsed = new Date(raw);
+      if (Number.isNaN(parsed.getTime())) return raw;
+      return `${String(parsed.getMonth()+1).padStart(2,'0')}-${String(parsed.getDate()).padStart(2,'0')}-${parsed.getFullYear()}`;
+    }
     function escapeHtml(value) { return String(value ?? '').replace(/[&<>\"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[ch])); }
 
     const STANDARD_TRANSACTION_TYPES = ['Expense', 'Income', 'Transfer', 'Debt'];
@@ -2533,7 +2542,7 @@ Bonus"></textarea></div>
         const income = b.type === 'income';
         const label = income ? 'Payday / Income' : b.type === 'debt' ? 'Debt payment' : 'Bill';
         return `<div class="flex flex-wrap items-center justify-between gap-2 p-3 rounded-xl bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 text-xs">
-          <div class="min-w-0"><div class="font-semibold truncate">${escapeHtml(b.desc || b.vendor || label)}</div><div class="text-gray-400">${escapeHtml(b.date)} · ${label}</div></div>
+          <div class="min-w-0"><div class="font-semibold truncate">${escapeHtml(b.desc || b.vendor || label)}</div><div class="text-gray-400">${formatDateMDY(b.date)} · ${label}</div></div>
           <div class="flex items-center gap-3"><div class="font-bold accounting-num ${income ? 'text-emerald-500' : 'text-rose-500'}">${formatFinancial(b.amount, !income)}</div>
           <button type="button" onclick="openDashboardCalendarItem('${escapeHtml(b.id)}')" class="text-indigo-500 hover:text-indigo-400 font-semibold whitespace-nowrap" title="Open this item in the Bill & Income Calendar">Open in calendar <i class="fa-solid fa-arrow-up-right-from-square ml-1"></i></button></div>
         </div>`;
@@ -2741,7 +2750,7 @@ Bonus"></textarea></div>
               <span class="text-gray-400 cursor-grab px-1" title="Drag to reorder"><i class="fa-solid fa-grip-vertical"></i></span>
               <div class="cursor-pointer flex-1 min-w-0" onclick="openAccountDetail('${acc.id}')">
                 <div class="font-semibold text-sm flex flex-wrap items-center gap-2"><span>${acc.name}</span><span class="text-[10px] bg-indigo-100 dark:bg-indigo-950/60 text-indigo-400 px-2 py-0.5 rounded border border-indigo-500/20 font-medium">${indType}</span>${acc.hidden ? '<span class="text-[10px] bg-gray-200 dark:bg-gray-800 px-1.5 py-0.5 rounded text-gray-500">Excluded</span>' : ''}</div>
-                <div class="text-xs text-gray-400 mt-0.5">Rate: <strong class="text-gray-500 dark:text-gray-300">${rateText}</strong> · Last reconciled: ${acc.lastReconciledAt || 'Not recorded'}</div>
+                <div class="text-xs text-gray-400 mt-0.5">Last reconciled: ${acc.lastReconciledAt ? formatDateMDY(acc.lastReconciledAt) : 'Not recorded'}</div>
                 <div class="mt-2 flex flex-wrap items-center gap-2 text-[10px]" onclick="event.stopPropagation()"><label class="text-gray-500">Actual statement balance <input type="number" step="0.01" value="${acc.actualBalance === undefined || acc.actualBalance === null ? '' : Number(acc.actualBalance)}" placeholder="Enter balance" onchange="saveAccountActualBalance('${acc.id}', this.value)" class="w-28 ml-1 px-2 py-1 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-xs accounting-num"></label><span class="text-gray-500">Variance: <strong class="${acc.actualBalance === undefined || acc.actualBalance === null ? 'text-gray-400' : Math.abs(Number(acc.actualBalance)-Number(acc.balance)) < 0.005 ? 'text-emerald-500' : 'text-amber-500'} accounting-num">${acc.actualBalance === undefined || acc.actualBalance === null ? '—' : formatFinancial(Number(acc.actualBalance)-Number(acc.balance))}</strong></span></div>
               </div>
             </div>
@@ -3234,6 +3243,15 @@ Bonus"></textarea></div>
       const summary = document.getElementById('acc-detail-balance-summary');
       rows.innerHTML = '';
       const activity = getAccountActivityEntries(acc);
+      window.currentAccountActivityEntries = activity;
+      const activityTypeSelect = document.getElementById('acc-activity-type');
+      if (activityTypeSelect) {
+        const types = [...new Set(activity.map(entry => entry.type).filter(Boolean))].sort();
+        activityTypeSelect.innerHTML = '<option value="">All types</option>' + types.map(type => `<option value="${escapeHtml(type)}">${escapeHtml(type)}</option>`).join('');
+        activityTypeSelect.value = '';
+      }
+      const aprDetail = document.getElementById('acc-detail-apr');
+      if (aprDetail) { const hasApr = acc.interestRate !== undefined && acc.interestRate !== null && acc.interestRate !== ''; aprDetail.classList.toggle('hidden', acc.type !== 'debt' || !hasApr); aprDetail.textContent = acc.type === 'debt' && hasApr ? `Current APR: ${Number(acc.interestRate).toFixed(2)}%` : ''; }
       const totalChanges = activity.reduce((sum, entry) => sum + (Number(entry.change) || 0), 0);
       const currentBalance = Number(acc.balance) || 0;
       // Derive the opening balance from the current stored balance and all activity, so the final row ties to the account balance.
@@ -3265,7 +3283,7 @@ Bonus"></textarea></div>
           const changeText = entry.change === 0 ? '—' : formatFinancial(Math.abs(entry.change), negative);
           rows.innerHTML += `
             <tr class="hover:bg-gray-50 dark:hover:bg-gray-950">
-              <td class="px-4 py-3 whitespace-nowrap">${entry.date || '—'}</td>
+              <td class="px-4 py-3 whitespace-nowrap">${formatDateMDY(entry.date)}</td>
               <td class="px-4 py-3"><button type="button" onclick="openAccountActivityTransaction('${String(entry.id).replace(/'/g, '&#39;')}')" class="text-left font-medium text-indigo-600 dark:text-indigo-400 hover:underline focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded" title="Open this transaction">${escapeHtml(entry.description || 'Transaction')} <span class="text-[9px] opacity-70">↗</span></button>${entry.detail ? `<div class="text-[10px] text-gray-400 mt-0.5">${escapeHtml(entry.detail)}</div>` : ''}<div class="text-[9px] text-gray-400 mt-0.5">Open transaction</div></td>
               <td class="px-4 py-3"><span class="px-2 py-0.5 rounded text-[10px] bg-gray-100 dark:bg-gray-800">${entry.type}</span>${entry.matchNeedsReview ? '<span class="ml-1 px-1.5 py-0.5 rounded text-[9px] bg-amber-500/10 text-amber-600">Match needs review</span>' : entry.reconciled ? '<span class="ml-1 px-1.5 py-0.5 rounded text-[9px] bg-emerald-500/10 text-emerald-500">Statement matched</span>' : ''}</td>
               <td class="px-4 py-3 text-right font-semibold ${favorableDebtReduction || (!negative && entry.change > 0) ? 'text-emerald-600' : negative ? 'text-rose-600' : 'text-gray-400'} accounting-num">${changeText}</td>
@@ -3274,6 +3292,27 @@ Bonus"></textarea></div>
         });
       }
       document.getElementById('account-detail-modal').classList.remove('hidden');
+      ['acc-activity-search','acc-activity-from','acc-activity-to'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+      if (activityTypeSelect) activityTypeSelect.value='';
+      filterAccountActivity();
+    }
+
+    function filterAccountActivity() {
+      const search=(document.getElementById('acc-activity-search')?.value||'').trim().toLowerCase();
+      const type=document.getElementById('acc-activity-type')?.value||'';
+      const from=document.getElementById('acc-activity-from')?.value||'';
+      const to=document.getElementById('acc-activity-to')?.value||'';
+      const all=window.currentAccountActivityEntries||[];
+      const entries=all.filter(e => (!search || `${e.description||''} ${e.detail||''} ${e.type||''}`.toLowerCase().includes(search)) && (!type || e.type===type) && (!from || String(e.date||'')>=from) && (!to || String(e.date||'')<=to));
+      const tbody=document.getElementById('acc-detail-rows'); if(!tbody)return;
+      const acc=state.accounts.find(a=>String(a.id)===String(window.currentEditingAccountId)); if(!acc)return;
+      const total=entries.reduce((sum,e)=>sum+(Number(e.change)||0),0);
+      let running=(Number(acc.balance)||0)-all.reduce((sum,e)=>sum+(Number(e.change)||0),0);
+      const runningById=new Map(); all.forEach(entry=>{ running += Number(entry.change)||0; runningById.set(String(entry.id),running); });
+      tbody.innerHTML=`<tr class="bg-indigo-50/70 dark:bg-indigo-950/30"><td class="px-4 py-3">—</td><td class="px-4 py-3 font-semibold" colspan="2">Opening balance</td><td class="px-4 py-3 text-right">—</td><td class="px-4 py-3 text-right font-bold accounting-num">${formatFinancial(running)}</td></tr>`;
+      if(!entries.length) tbody.innerHTML+='<tr><td colspan="5" class="px-4 py-4 text-center text-xs text-gray-400">No activity matches these filters.</td></tr>';
+      else entries.forEach(entry=>{ const negative=entry.change<0; const favorable=acc.type==='debt'&&negative; const changeText=entry.change===0?'—':formatFinancial(Math.abs(entry.change),negative); tbody.innerHTML += `<tr class="hover:bg-gray-50 dark:hover:bg-gray-950"><td class="px-4 py-3 whitespace-nowrap">${formatDateMDY(entry.date)}</td><td class="px-4 py-3"><button type="button" onclick="openAccountActivityTransaction('${String(entry.id).replace(/'/g,'&#39;')}')" class="text-left font-medium text-indigo-600 dark:text-indigo-400 hover:underline">${escapeHtml(entry.description||'Transaction')}</button>${entry.detail?`<div class="text-[10px] text-gray-400 mt-0.5">${escapeHtml(entry.detail)}</div>`:''}</td><td class="px-4 py-3">${escapeHtml(entry.type||'')}</td><td class="px-4 py-3 text-right font-semibold accounting-num ${favorable||(!negative&&entry.change>0)?'text-emerald-600':negative?'text-rose-600':'text-gray-400'}">${changeText}</td><td class="px-4 py-3 text-right font-bold accounting-num">${formatFinancial(runningById.get(String(entry.id)) ?? 0)}</td></tr>`; });
+      const foot=document.getElementById('acc-detail-foot'); if(foot) foot.innerHTML=`<tr><td colspan="3" class="px-4 py-3">Filtered activity total (${entries.length} records)</td><td class="px-4 py-3 text-right accounting-num">${formatFinancial(Math.abs(total),total<0)}</td><td class="px-4 py-3 text-right accounting-num">${formatFinancial(Number(acc.balance)||0)}</td></tr>`;
     }
 
     function syncAccountBalanceToActivity(accId) {
@@ -5420,10 +5459,11 @@ Bonus"></textarea></div>
     document.addEventListener('click', (event) => {
       const pop = document.getElementById('ledger-filter-popover');
       if (!pop || pop.classList.contains('hidden')) return;
-      if (pop.contains(event.target) || event.target.closest('.ledger-filter-button')) return;
+      if (pop.contains(event.target) || event.target.closest('.ledger-filter-button, [aria-label^="Filter "]')) return;
       closeLedgerFilter();
     });
-    window.addEventListener('resize', closeLedgerFilter);
+    window.addEventListener('resize', () => { if (window.innerWidth > 640) closeLedgerFilter(); });
+    document.getElementById('ledger-filter-popover')?.addEventListener('pointerdown', event => event.stopPropagation());
 
     let ledgerBalanceAccountId = null;
 
@@ -5563,7 +5603,7 @@ Bonus"></textarea></div>
           <td class="px-3 py-2 text-right accounting-num">${formatFinancial(calculated)}</td>
           <td class="px-3 py-2 text-right accounting-num">${hasStatement ? formatFinancial(statement) : '—'}</td>
           <td class="px-3 py-2 text-right accounting-num ${variance === null ? 'text-gray-400' : balanced ? 'text-emerald-500' : 'text-amber-500'}">${variance === null ? 'Not entered' : formatFinancial(variance)}</td>
-          <td class="px-3 py-2 text-gray-500">${escapeHtml(account.lastReconciledAt || 'Not reconciled')}</td>
+          <td class="px-3 py-2 text-gray-500">${account.lastReconciledAt ? formatDateMDY(account.lastReconciledAt) : 'Not reconciled'}</td>
           <td class="px-3 py-2 text-right"><button onclick="focusAccountReconciliation('${account.id}')" class="text-indigo-500 hover:underline">Review</button></td>
         </tr>`;
       });
@@ -5592,7 +5632,7 @@ Bonus"></textarea></div>
           const isInc = b.type === 'income';
           prepList.innerHTML += `
             <div class="flex justify-between items-center p-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950 text-xs">
-              <div><strong>${b.desc}</strong> (${b.type} due: ${b.date})</div>
+              <div><strong>${b.desc}</strong> (${b.type} due: ${formatDateMDY(b.date)})</div>
               <div class="flex items-center space-x-3">
                 <span class="font-bold ${isInc ? 'text-emerald-600' : 'text-rose-600'} accounting-num">${formatFinancial(b.amount, !isInc)}</span>
                 <button onclick="markBillPaid('${b.id}')" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-semibold"><i class="fa-solid fa-check mr-1"></i> Mark Paid</button>
@@ -5667,7 +5707,7 @@ Bonus"></textarea></div>
             (t.type === 'Transfer' && t.externalTransferDirection !== 'in');
           tbody.innerHTML += `
             <tr class="hover:bg-gray-50 dark:hover:bg-gray-950">
-              <td data-label="Date" class="px-4 py-3"><div class="flex items-center gap-2"><input type="checkbox" class="ledger-row-select accent-indigo-600" data-id="${t.id}" ${selectedLedgerIds.has(t.id)?'checked':''} onchange="toggleLedgerTransactionSelection('${t.id}',this.checked)" aria-label="Select transaction ${t.date}"><span>${t.date}</span></div></td>
+              <td data-label="Date" class="px-4 py-3"><div class="flex items-center gap-2"><input type="checkbox" class="ledger-row-select accent-indigo-600" data-id="${t.id}" ${selectedLedgerIds.has(t.id)?'checked':''} onchange="toggleLedgerTransactionSelection('${t.id}',this.checked)" aria-label="Select transaction ${t.date}"><span>${formatDateMDY(t.date)}</span></div></td>
               <td data-label="Vendor" class="px-4 py-3">${t.vendor || 'Vendor not recorded'}</td>
               <td data-label="Description" class="px-4 py-3">${t.desc || '-'}</td>
               <td data-label="Type" class="px-4 py-3"><span class="px-2 py-0.5 rounded text-[10px] bg-gray-100 dark:bg-gray-800">${t.type === 'Transfer' ? 'Internal Transfer' : displayFinHubTransactionType(t.type)}</span><div class="mt-1 flex flex-wrap gap-1"><span class="px-1.5 py-0.5 rounded text-[9px] bg-indigo-500/10 text-indigo-500">${escapeHtml(transactionSourceShortLabel(t))}</span>${transactionStatementStatusBadge(t)}</div></td>
@@ -6578,15 +6618,15 @@ Bonus"></textarea></div>
         const candidatesForRow=candidateLookup.get(row.id)||[];const suggested=candidatesForRow[0];
         const crossCandidates=row.status==='pending'?findCrossAccountTransferCandidates(row):[];
         const crossCandidate=crossCandidates[0];
-        const crossOptions=crossCandidates.map(tx=>`<option value="${tx.id}">${escapeHtml(state.accounts.find(a=>String(a.id)===String(tx.accountId))?.name||'Other account')} · ${tx.date} · ${escapeHtml(tx.vendor||tx.desc||tx.type)} · ${formatFinancial(tx.amount)}</option>`).join('');
+        const crossOptions=crossCandidates.map(tx=>`<option value="${tx.id}">${escapeHtml(state.accounts.find(a=>String(a.id)===String(tx.accountId))?.name||'Other account')} · ${formatDateMDY(tx.date)} · ${escapeHtml(tx.vendor||tx.desc||tx.type)} · ${formatFinancial(tx.amount)}</option>`).join('');
         const status=row.status==='matched'?'Matched':row.status==='imported'?'Imported':row.status==='skipped'?'Skipped':row.status==='duplicate'?'Possible duplicate':suggested?'Suggested match':crossCandidate?'Possible transfer counterpart':'No match found';
-        const options=candidatesForRow.map(t=>`<option value="${t.id}" ${suggested&&t.id===suggested.id?'selected':''}>${t.date} · ${escapeHtml(t.vendor||t.desc||'Transaction')} · ${formatFinancial(t.amount)}</option>`).join('');
+        const options=candidatesForRow.map(t=>`<option value="${t.id}" ${suggested&&t.id===suggested.id?'selected':''}>${formatDateMDY(t.date)} · ${escapeHtml(t.vendor||t.desc||'Transaction')} · ${formatFinancial(t.amount)}</option>`).join('');
         const undoButton=row.matchedGroupId?`<button onclick="undoManualStatementMatch('${row.matchedGroupId}')" class="px-2.5 py-1.5 bg-gray-200 dark:bg-gray-800 rounded-lg text-xs">Undo grouped match</button>`:`<button onclick="unlinkStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-gray-200 dark:bg-gray-800 rounded-lg text-xs">Undo match</button>`;
         const importSummary = [displayFinHubTransactionType(row.importType || row.type), row.vendor || row.cleanedVendorName || applyVendorCleanupRules(row.description), row.category, row.subcategory, row.debtAccountId ? state.accounts.find(a=>String(a.id)===String(row.debtAccountId))?.name : ''].filter(Boolean).join(' · ');
         const importWarning = row.importValidationError ? `<div class="rounded-lg bg-amber-500/10 border border-amber-500/20 p-2 text-[10px] text-amber-600">${escapeHtml(row.importValidationError)}</div>` : '';
         const subcategoryNotice = row.pendingCategoryCreation ? `<div class="text-[10px] text-indigo-500">New category: <strong>${escapeHtml(row.category)}</strong>${row.subcategory?` and subcategory <strong>${escapeHtml(row.subcategory)}</strong>`:''} will be added when imported.</div>` : row.pendingSubcategoryCreation ? `<div class="text-[10px] text-indigo-500">New subcategory: <strong>${escapeHtml(row.subcategory)}</strong> will be added under ${escapeHtml(row.category)} when imported.</div>` : row.categoryAddedToCategories ? `<div class="text-[10px] text-emerald-500">Added category ${escapeHtml(row.category)} to Categories & Settings.</div>` : row.subcategoryAddedToCategories ? `<div class="text-[10px] text-emerald-500">Added ${escapeHtml(row.subcategory)} to ${escapeHtml(row.category)}.</div>` : '';
         const splitLine = ['Debt Payment','Debt Payment Reversal'].includes(row.importType) && row.principalAmount!==null && row.interestAmount!==null ? `<div class="text-[10px] text-gray-400">${row.importType==='Debt Payment Reversal'?'Reversal · ':''}Principal ${formatFinancial(row.principalAmount)} · Interest ${formatFinancial(row.interestAmount)}${row.paymentType?' · '+escapeHtml(row.paymentType):''}</div>` : row.importType==='Transfer' && row.type==='Expense' && !row.transferToAccountId ? `<div class="text-[10px] text-indigo-500">External / untracked outgoing transfer — no destination account will be updated.</div>` : '';
-        return `<div class="border border-gray-200 dark:border-gray-800 rounded-xl p-3 space-y-2"><div class="flex justify-between gap-3"><div class="min-w-0"><div class="font-semibold text-xs">${escapeHtml(row.description)}</div><div class="text-[10px] text-indigo-400">Vendor: ${escapeHtml(row.vendor || row.cleanedVendorName || applyVendorCleanupRules(row.description))}</div><div class="text-[10px] text-gray-400">${row.date} · Statement direction: ${row.type==='Expense'?'Debit / money out':'Credit / money in'}</div><div class="text-[10px] text-gray-500 mt-0.5">FinHub import: ${escapeHtml(importSummary)}</div>${subcategoryNotice}${splitLine}</div><strong class="text-sm accounting-num whitespace-nowrap">${formatFinancial(row.amount)}</strong></div>${importWarning}<div class="flex flex-wrap items-center gap-2"><span class="text-[10px] ${row.status==='matched'?'text-emerald-500':row.status==='duplicate'?'text-amber-500':'text-gray-400'}">${status}</span>${row.status==='pending'&&candidatesForRow.length?`<select id="stmt-match-${row.id}" class="flex-1 min-w-[180px] bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-1 text-xs">${options}</select><button onclick="linkStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-emerald-600 text-white rounded-lg text-xs">Match</button>`:''}${row.status==='pending'?`${crossCandidates.length?`<select id="stmt-transfer-match-${row.id}" class="min-w-[180px] bg-gray-50 dark:bg-gray-950 border border-indigo-300 dark:border-indigo-800 rounded-lg px-2 py-1 text-xs">${crossOptions}</select><button onclick="matchStatementRowAsInternalTransfer('${row.id}',document.getElementById('stmt-transfer-match-${row.id}').value)" class="px-2.5 py-1.5 bg-indigo-600 text-white rounded-lg text-xs">Match as Internal Transfer</button>`:''}<button onclick="openVendorRuleModal('${row.id}')" class="px-2.5 py-1.5 bg-violet-600/15 text-violet-500 rounded-lg text-xs">Clean vendor</button><button onclick="openImportRuleModal('${row.id}')" class="px-2.5 py-1.5 bg-violet-600/15 text-violet-500 rounded-lg text-xs">Save import rule</button><button onclick="importStatementRow('${row.id}')" ${row.importValidationError?'disabled title="Fix the import details before importing"':''} class="px-2.5 py-1.5 bg-indigo-600 text-white rounded-lg text-xs disabled:opacity-40">Import as new</button><button onclick="skipStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-gray-200 dark:bg-gray-800 rounded-lg text-xs">Skip</button>`:row.status==='duplicate'?`<span class="text-[10px] text-amber-500">${row.duplicateOfRowId?'Duplicates another row in this upload':`Looks like: ${escapeHtml((state.transactions||[]).find(t=>t.id===row.duplicateTransactionId)?.vendor||'an existing transaction')}`}</span><button onclick="allowStatementDuplicate('${row.id}')" class="px-2.5 py-1.5 bg-amber-500/15 text-amber-600 rounded-lg text-xs">Import anyway</button><button onclick="skipStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-gray-200 dark:bg-gray-800 rounded-lg text-xs">Skip</button>`:row.status==='matched'?undoButton:''}</div></div>`;
+        return `<div class="border border-gray-200 dark:border-gray-800 rounded-xl p-3 space-y-2"><div class="flex justify-between gap-3"><div class="min-w-0"><div class="font-semibold text-xs">${escapeHtml(row.description)}</div><div class="text-[10px] text-indigo-400">Vendor: ${escapeHtml(row.vendor || row.cleanedVendorName || applyVendorCleanupRules(row.description))}</div><div class="text-[10px] text-gray-400">${formatDateMDY(row.date)} · Statement direction: ${row.type==='Expense'?'Debit / money out':'Credit / money in'}</div><div class="text-[10px] text-gray-500 mt-0.5">FinHub import: ${escapeHtml(importSummary)}</div>${subcategoryNotice}${splitLine}</div><strong class="text-sm accounting-num whitespace-nowrap">${formatFinancial(row.amount)}</strong></div>${importWarning}<div class="flex flex-wrap items-center gap-2"><span class="text-[10px] ${row.status==='matched'?'text-emerald-500':row.status==='duplicate'?'text-amber-500':'text-gray-400'}">${status}</span>${row.status==='pending'&&candidatesForRow.length?`<select id="stmt-match-${row.id}" class="flex-1 min-w-[180px] bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-1 text-xs">${options}</select><button onclick="linkStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-emerald-600 text-white rounded-lg text-xs">Match</button>`:''}${row.status==='pending'?`${crossCandidates.length?`<select id="stmt-transfer-match-${row.id}" class="min-w-[180px] bg-gray-50 dark:bg-gray-950 border border-indigo-300 dark:border-indigo-800 rounded-lg px-2 py-1 text-xs">${crossOptions}</select><button onclick="matchStatementRowAsInternalTransfer('${row.id}',document.getElementById('stmt-transfer-match-${row.id}').value)" class="px-2.5 py-1.5 bg-indigo-600 text-white rounded-lg text-xs">Match as Internal Transfer</button>`:''}<button onclick="openVendorRuleModal('${row.id}')" class="px-2.5 py-1.5 bg-violet-600/15 text-violet-500 rounded-lg text-xs">Clean vendor</button><button onclick="openImportRuleModal('${row.id}')" class="px-2.5 py-1.5 bg-violet-600/15 text-violet-500 rounded-lg text-xs">Save import rule</button><button onclick="importStatementRow('${row.id}')" ${row.importValidationError?'disabled title="Fix the import details before importing"':''} class="px-2.5 py-1.5 bg-indigo-600 text-white rounded-lg text-xs disabled:opacity-40">Import as new</button><button onclick="skipStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-gray-200 dark:bg-gray-800 rounded-lg text-xs">Skip</button>`:row.status==='duplicate'?`<span class="text-[10px] text-amber-500">${row.duplicateOfRowId?'Duplicates another row in this upload':`Looks like: ${escapeHtml((state.transactions||[]).find(t=>t.id===row.duplicateTransactionId)?.vendor||'an existing transaction')}`}</span><button onclick="allowStatementDuplicate('${row.id}')" class="px-2.5 py-1.5 bg-amber-500/15 text-amber-600 rounded-lg text-xs">Import anyway</button><button onclick="skipStatementRow('${row.id}')" class="px-2.5 py-1.5 bg-gray-200 dark:bg-gray-800 rounded-lg text-xs">Skip</button>`:row.status==='matched'?undoButton:''}</div></div>`;
       }).join('')}</div><div class="flex flex-wrap items-center justify-between gap-2 text-xs text-gray-500"><span>Showing ${pageStart+1}–${Math.min(pageStart+statementPreviewPageSize,pendingStatementRows.length)} of ${pendingStatementRows.length} statement rows · Page ${statementPreviewPage+1} of ${totalPages}</span><div class="flex gap-2"><button onclick="changeStatementPreviewPage(-1)" ${statementPreviewPage===0?'disabled':''} class="px-3 py-1.5 rounded-lg bg-gray-200 dark:bg-gray-800 disabled:opacity-40">Previous</button><button onclick="changeStatementPreviewPage(1)" ${statementPreviewPage>=totalPages-1?'disabled':''} class="px-3 py-1.5 rounded-lg bg-gray-200 dark:bg-gray-800 disabled:opacity-40">Next</button></div></div><div class="text-[10px] text-gray-400">Individual matching uses account, transaction type, amount and a date within one day. Grouped manual matching supports different amounts and dates, but requires equal selected totals.</div>${groupsHtml}`;
       renderStatementBalanceCheck();
     }
@@ -7495,7 +7535,7 @@ Bonus"></textarea></div>
         const debtOptions = state.accounts.filter(a => a.type === 'debt' && !a.archived).map(a => `<option value="${a.id}" ${resolved?.id === a.id ? 'selected' : ''}>${a.name}</option>`).join('');
         container.innerHTML += `
           <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-2 p-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950 text-xs">
-            <div class="min-w-0"><strong>${d.desc}</strong> <span class="text-gray-400">(Due: ${d.date})</span><div class="font-bold text-rose-600 accounting-num mt-1">${formatFinancial(d.amount)}</div></div>
+            <div class="min-w-0"><strong>${d.desc}</strong> <span class="text-gray-400">(Due: ${formatDateMDY(d.date)})</span><div class="font-bold text-rose-600 accounting-num mt-1">${formatFinancial(d.amount)}</div></div>
             <div class="flex flex-wrap items-center gap-2">
               <label class="text-gray-500">Debt account <select id="debt-target-${d.id}" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded px-2 py-1 max-w-[150px]">${debtOptions || '<option value="">No debt accounts</option>'}</select></label>
               <button onclick="payDebtMinimumBill('${d.id}')" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-semibold"><i class="fa-solid fa-check mr-1"></i> Mark Paid</button>
