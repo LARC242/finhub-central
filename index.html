@@ -177,6 +177,50 @@
     body[data-finhub-theme="colorful"] input, body[data-finhub-theme="colorful"] select, body[data-finhub-theme="colorful"] textarea { border-color:rgba(120,130,145,.38) !important; }
 
   
+    /* Ocean Pop: aqua, lime, hot pink and navy, balanced for light and dark mode. */
+    body[data-finhub-theme="oceanpop"] { background:#eaf8f7 !important; color:#132a44; }
+    body[data-finhub-theme="oceanpop"] aside,
+    body[data-finhub-theme="oceanpop"] .tab-content .bg-white,
+    body[data-finhub-theme="oceanpop"] #transaction-modal > div,
+    body[data-finhub-theme="oceanpop"] #bulk-edit-modal > div,
+    body[data-finhub-theme="oceanpop"] #vendor-rule-modal > div,
+    body[data-finhub-theme="oceanpop"] #recon-modal > div { background-color:#f8fdfc !important; border-color:#b8e9e4 !important; }
+    body[data-finhub-theme="oceanpop"] .theme-bg,
+    body[data-finhub-theme="oceanpop"] #brand-logo,
+    body[data-finhub-theme="oceanpop"] .nav-btn[style*="background-color"] { background-color:#132a44 !important; }
+    body[data-finhub-theme="oceanpop"] .theme-text { color:#087f83 !important; }
+    body[data-finhub-theme="oceanpop"] .bg-gray-50,
+    body[data-finhub-theme="oceanpop"] .bg-gray-100 { background-color:#e2f4f1 !important; }
+    body[data-finhub-theme="oceanpop"] input,
+    body[data-finhub-theme="oceanpop"] select,
+    body[data-finhub-theme="oceanpop"] textarea { border-color:#a9ded8 !important; }
+    body[data-finhub-theme="oceanpop"] .text-indigo-600,
+    body[data-finhub-theme="oceanpop"] .text-indigo-500 { color:#087f83 !important; }
+    body[data-finhub-theme="oceanpop"] .bg-indigo-600 { background-color:#132a44 !important; }
+    body[data-finhub-theme="oceanpop"] .text-rose-600,
+    body[data-finhub-theme="oceanpop"] .text-rose-500 { color:#d91d72 !important; }
+    html.dark body[data-finhub-theme="oceanpop"] { background:#101d2d !important; color:#e9f7f5 !important; }
+    html.dark body[data-finhub-theme="oceanpop"] aside,
+    html.dark body[data-finhub-theme="oceanpop"] .tab-content .bg-white,
+    html.dark body[data-finhub-theme="oceanpop"] #transaction-modal > div,
+    html.dark body[data-finhub-theme="oceanpop"] #bulk-edit-modal > div,
+    html.dark body[data-finhub-theme="oceanpop"] #vendor-rule-modal > div,
+    html.dark body[data-finhub-theme="oceanpop"] #recon-modal > div { background-color:#17283b !important; border-color:#29445a !important; }
+    html.dark body[data-finhub-theme="oceanpop"] .theme-bg,
+    html.dark body[data-finhub-theme="oceanpop"] #brand-logo,
+    html.dark body[data-finhub-theme="oceanpop"] .nav-btn[style*="background-color"] { background-color:#087f83 !important; }
+    html.dark body[data-finhub-theme="oceanpop"] .theme-text { color:#00bdb4 !important; }
+    html.dark body[data-finhub-theme="oceanpop"] .bg-gray-50,
+    html.dark body[data-finhub-theme="oceanpop"] .bg-gray-100 { background-color:#1c3045 !important; }
+    html.dark body[data-finhub-theme="oceanpop"] input,
+    html.dark body[data-finhub-theme="oceanpop"] select,
+    html.dark body[data-finhub-theme="oceanpop"] textarea { background-color:#1c3045 !important; color:#f1fbfa !important; border-color:#35576b !important; }
+    html.dark body[data-finhub-theme="oceanpop"] .text-indigo-600,
+    html.dark body[data-finhub-theme="oceanpop"] .text-indigo-500 { color:#00d5c9 !important; }
+    html.dark body[data-finhub-theme="oceanpop"] .text-rose-600,
+    html.dark body[data-finhub-theme="oceanpop"] .text-rose-500 { color:#ff6eae !important; }
+    body[data-finhub-theme="oceanpop"] .ocean-pop-palette { background:linear-gradient(90deg,#00FBEA 0 25%,#D8FF76 25% 50%,#FF2687 50% 75%,#132A44 75%); }
+
     /* Dark-mode harmonization for every preset theme: retain each preset's accent,
        but use coordinated dark surfaces and readable neutral text throughout. */
     html.dark body[data-finhub-theme]:not([data-finhub-theme="classic"]) { color:#e5e7eb !important; color-scheme:dark; }
@@ -251,7 +295,7 @@
 <body id="app-body" class="bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 min-h-screen flex flex-col md:flex-row transition-colors duration-200 relative">
 
   <!-- UNDO TOAST NOTIFICATION -->
-  <div id="undo-toast" class="fixed bottom-4 left-4 z-50 hidden transition-all"><button type="button" onclick="executeUndo()" aria-label="Undo last action" title="Undo last action (available for 5 seconds)" class="w-9 h-9 inline-flex items-center justify-center rounded-full bg-gray-900 dark:bg-gray-700 text-white shadow-lg border border-gray-600 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-400"><i class="fa-solid fa-rotate-left text-sm"></i></button></div>
+  <div id="undo-toast" class="fixed bottom-4 left-4 z-50 hidden transition-all"><button type="button" onclick="executeUndo()" aria-label="Undo last action" title="Undo last action (Ctrl+Z / Cmd+Z · available for 5 seconds)" class="w-9 h-9 inline-flex items-center justify-center rounded-full bg-gray-900 dark:bg-gray-700 text-white shadow-lg border border-gray-600 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-400"><i class="fa-solid fa-rotate-left text-sm"></i></button></div>
 
   <!-- Sidebar Nav -->
   <aside id="finhub-sidebar" class="finhub-sidebar w-full md:w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex-shrink-0 flex flex-col justify-between">
@@ -841,7 +885,7 @@
         <div class="max-h-[420px] overflow-auto"><table class="w-full text-left text-xs"><thead class="sticky top-0 bg-gray-50 dark:bg-gray-950 text-gray-500"><tr><th class="px-3 py-1.5">Period</th><th class="px-3 py-1.5 text-right">Ending debt</th><th class="px-3 py-1.5 text-right">Interest accrued</th><th class="px-3 py-1.5 text-right">Minimum payments</th><th class="px-3 py-1.5 text-right">Extra principal</th></tr></thead><tbody id="debt-projection-schedule-rows"></tbody></table></div>
         <p id="debt-projection-schedule-note" class="px-5 py-3 text-[10px] text-gray-400"></p>
         <div class="border-t border-gray-200 dark:border-gray-800 p-5">
-          <h4 class="font-semibold text-xs mb-2">Monthly projection by debt account</h4>
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2"><h4 class="font-semibold text-xs">Monthly projection by debt account</h4><label class="flex items-center gap-2 text-[10px] text-gray-500">Show <select id="debt-projection-account-filter" onchange="renderDebtProjectionAccountRows()" class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1 text-xs"><option value="all">All debt accounts</option></select></label></div>
           <div class="max-h-[420px] overflow-auto"><table class="w-full text-left text-xs"><thead class="sticky top-0 bg-gray-50 dark:bg-gray-950 text-gray-500"><tr><th class="px-3 py-2">Period</th><th class="px-3 py-2">Debt account</th><th class="px-3 py-2 text-right">Ending balance</th><th class="px-3 py-2 text-right">Interest</th><th class="px-3 py-2 text-right">Minimum payment</th><th class="px-3 py-2 text-right">Extra principal</th></tr></thead><tbody id="debt-projection-account-rows"></tbody></table></div>
           <p id="debt-projection-account-note" class="text-[10px] text-gray-400 mt-2">Per-account estimates use the currently selected strategy and the APR/payment assumptions saved on each debt account.</p>
         </div>
@@ -1065,11 +1109,12 @@
       <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-3 shadow-sm">
         <h3 class="text-md font-bold">Application Themes</h3>
         <p class="text-xs text-gray-400">Choose a complete interface palette. Your theme is saved with your FinHub settings and does not change financial data.</p>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
           <button type="button" onclick="setVisualTheme('classic')" class="text-left rounded-xl border border-gray-200 dark:border-gray-700 p-3 hover:ring-2 ring-indigo-400"><span class="block h-7 rounded-lg mb-2" style="background:linear-gradient(90deg,#f3f4f6 50%,#4f46e5 50%)"></span><strong class="text-xs">Classic</strong><span class="block text-[10px] text-gray-400">Original FinHub look</span></button>
           <button type="button" onclick="setVisualTheme('silver')" class="text-left rounded-xl border border-gray-200 dark:border-gray-700 p-3 hover:ring-2 ring-slate-400"><span class="block h-7 rounded-lg mb-2" style="background:linear-gradient(90deg,#e7ebef 50%,#536474 50%)"></span><strong class="text-xs">Silver Bengal</strong><span class="block text-[10px] text-gray-400">Silver, charcoal, icy blue</span></button>
           <button type="button" onclick="setVisualTheme('neutral')" class="text-left rounded-xl border border-gray-200 dark:border-gray-700 p-3 hover:ring-2 ring-amber-700"><span class="block h-7 rounded-lg mb-2" style="background:linear-gradient(90deg,#eee9e1 50%,#88745d 50%)"></span><strong class="text-xs">Warm Neutral</strong><span class="block text-[10px] text-gray-400">Ivory, cream, taupe</span></button>
           <button type="button" onclick="setVisualTheme('colorful')" class="text-left rounded-xl border border-gray-200 dark:border-gray-700 p-3 hover:ring-2 ring-violet-400"><span class="block h-7 rounded-lg mb-2" style="background:linear-gradient(90deg,#fff1f5 30%,#c34f7b 30% 55%,#b69ad8 55% 78%,#e7a0b7 78%)"></span><strong class="text-xs">Rose Garden</strong><span class="block text-[10px] text-gray-400">Blush, berry, lavender & plum</span></button>
+          <button type="button" onclick="setVisualTheme('oceanpop')" class="text-left rounded-xl border border-gray-200 dark:border-gray-700 p-3 hover:ring-2 ring-cyan-400"><span class="block h-7 rounded-lg mb-2 ocean-pop-palette"></span><strong class="text-xs">Ocean Pop</strong><span class="block text-[10px] text-gray-400">Aqua, lime, hot pink & navy</span></button>
         </div>
         <p id="active-visual-theme-label" class="text-[10px] text-gray-500">Current theme: Classic</p>
       </div>
@@ -1839,6 +1884,25 @@ Bonus"></textarea></div>
       }
     }
 
+    // Ctrl+Z (Windows/Linux) and Cmd+Z (Mac) trigger FinHub's latest action
+    // while the five-second Undo toast is visible. Preserve native text-edit
+    // undo whenever the user is typing in a form field or editable element.
+    document.addEventListener('keydown', function(event) {
+      const isUndoShortcut = (event.ctrlKey || event.metaKey) && !event.altKey &&
+        !event.shiftKey && String(event.key).toLowerCase() === 'z';
+      if (!isUndoShortcut) return;
+      const target = event.target;
+      const isEditingText = target && (
+        target.isContentEditable ||
+        /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName || '')
+      );
+      if (isEditingText) return;
+      const toast = document.getElementById('undo-toast');
+      if (!undoStack.length || !toast || toast.classList.contains('hidden')) return;
+      event.preventDefault();
+      executeUndo();
+    });
+
     function captureUndo(description) {
       const snapshot = JSON.stringify(state);
       pushUndoState(description, () => {
@@ -2228,7 +2292,7 @@ Bonus"></textarea></div>
       delete t.externalTransferDirection;
     });
     state.transactionTaxonomyVersion = 2;
-    state.appVisualTheme = ['classic','silver','neutral','colorful'].includes(state.appVisualTheme) ? state.appVisualTheme : 'classic';
+    state.appVisualTheme = ['classic','silver','neutral','colorful','oceanpop'].includes(state.appVisualTheme) ? state.appVisualTheme : 'classic';
     if (!Array.isArray(state.variablePoolCategories)) state.variablePoolCategories = (state.categories || []).filter(c => !/housing|bill|debt service/i.test(c.name)).map(c => c.name);
     // New planner, reconciliation, and sinking-fund fields are additive; existing transactions and budgets remain intact.
     initializeSinkingFundLedger();
@@ -2347,12 +2411,12 @@ Bonus"></textarea></div>
       applyPrivacyBlurState();
     }
 
-    const FINHUB_VISUAL_THEMES = ['classic','silver','neutral','colorful'];
+    const FINHUB_VISUAL_THEMES = ['classic','silver','neutral','colorful','oceanpop'];
     function applyVisualTheme(theme) {
       const chosen = FINHUB_VISUAL_THEMES.includes(theme) ? theme : 'classic';
       document.getElementById('app-body')?.setAttribute('data-finhub-theme', chosen);
       const label = document.getElementById('active-visual-theme-label');
-      if (label) label.textContent = `Current theme: ${{classic:'Classic',silver:'Silver Bengal',neutral:'Warm Neutral',colorful:'Rose Garden'}[chosen]}`;
+      if (label) label.textContent = `Current theme: ${{classic:'Classic',silver:'Silver Bengal',neutral:'Warm Neutral',colorful:'Rose Garden',oceanpop:'Ocean Pop'}[chosen]}`;
     }
     function setVisualTheme(theme) {
       if (!FINHUB_VISUAL_THEMES.includes(theme)) return;
@@ -8075,13 +8139,26 @@ ${acc.name}`);
       } else {
         rows.innerHTML = accelerated.schedule.map(item => `<tr class="border-t border-gray-100 dark:border-gray-800"><td class="px-3 py-1.5">${item.period}</td><td class="px-4 py-3 text-right font-semibold accounting-num">${formatFinancial(item.balance)}</td><td class="px-4 py-3 text-right accounting-num">${formatFinancial(item.interest)}</td><td class="px-4 py-3 text-right accounting-num">${formatFinancial(item.minimumPayments)}</td><td class="px-4 py-3 text-right accounting-num">${formatFinancial(item.extraPayments)}</td></tr>`).join('');
         if (accountRows) {
-          accountRows.innerHTML = accelerated.schedule.flatMap(period => (period.debts || []).map(debt => `<tr class="border-t border-gray-100 dark:border-gray-800"><td class="px-3 py-2 whitespace-nowrap">${period.period}</td><td class="px-3 py-2">${escapeHtml(debt.name)}</td><td class="px-3 py-2 text-right accounting-num font-semibold">${formatFinancial(debt.endingBalance)}</td><td class="px-3 py-2 text-right accounting-num">${formatFinancial(debt.interest)}</td><td class="px-3 py-2 text-right accounting-num">${formatFinancial(debt.minimumPayment)}</td><td class="px-3 py-2 text-right accounting-num">${formatFinancial(debt.extraPrincipal)}</td></tr>`)).join('');
+          window._finhubDebtProjectionSchedule = accelerated.schedule;
+          renderDebtProjectionAccountRows();
         }
       }
       if (note) note.textContent = accelerated.paidOff
         ? `Showing ${accelerated.schedule.length} projected month(s). Estimated total interest: ${formatFinancial(accelerated.interest)}. Actual lender interest, fees and payment timing may differ.`
         : 'The selected contribution does not clear all debt within the projection horizon. Review minimums, payment methods and the extra contribution.';
       if (accountNote) accountNote.textContent = 'Each row is one debt account in one projected month. Minimum and extra amounts are shown separately; interest is accrued using the account’s saved APR schedule.';
+    }
+
+    function renderDebtProjectionAccountRows() {
+      const accountRows = document.getElementById('debt-projection-account-rows');
+      const filter = document.getElementById('debt-projection-account-filter');
+      if (!accountRows) return;
+      const selectedId = filter?.value || 'all';
+      const schedule = window._finhubDebtProjectionSchedule || [];
+      const rows = schedule.flatMap(period => (period.debts || [])
+        .filter(debt => selectedId === 'all' || String(debt.id) === String(selectedId))
+        .map(debt => `<tr class="border-t border-gray-100 dark:border-gray-800"><td class="px-3 py-2 whitespace-nowrap">${period.period}</td><td class="px-3 py-2">${escapeHtml(debt.name)}</td><td class="px-3 py-2 text-right accounting-num font-semibold">${formatFinancial(debt.endingBalance)}</td><td class="px-3 py-2 text-right accounting-num">${formatFinancial(debt.interest)}</td><td class="px-3 py-2 text-right accounting-num">${formatFinancial(debt.minimumPayment)}</td><td class="px-3 py-2 text-right accounting-num">${formatFinancial(debt.extraPrincipal)}</td></tr>`));
+      accountRows.innerHTML = rows.length ? rows.join('') : '<tr><td colspan="6" class="px-3 py-4 text-center text-gray-400">No projected rows for this debt account.</td></tr>';
     }
 
     function renderDebtPlanner() {
@@ -8137,6 +8214,10 @@ ${acc.name}`);
 
       const list = document.getElementById('debt-priority-list');
       const picker = document.getElementById('debt-account-picker');
+      const projectionFilter = document.getElementById('debt-projection-account-filter');
+      const previousProjectionFilter = projectionFilter?.value || 'all';
+      if (projectionFilter) projectionFilter.innerHTML = '<option value="all">All debt accounts</option>' + debts.map(d => `<option value="${escapeHtml(d.id)}">${escapeHtml(d.name)}</option>`).join('');
+      if (projectionFilter && [...projectionFilter.options].some(o => o.value === previousProjectionFilter)) projectionFilter.value = previousProjectionFilter;
       list.innerHTML = ''; picker.innerHTML = '';
       debts.forEach((d, idx) => {
         picker.innerHTML += `<option value="${d.id}">${d.name}</option>`;
@@ -9646,7 +9727,7 @@ ${acc.name}`);
       state.statementReconciliation.groups = Array.isArray(state.statementReconciliation.groups) ? state.statementReconciliation.groups : [];
       state.vendorCleanupRules = Array.isArray(state.vendorCleanupRules) ? state.vendorCleanupRules : [];
       state.merchantRules = Array.isArray(state.merchantRules) ? state.merchantRules : [];
-      state.appVisualTheme = ['classic','silver','neutral','colorful'].includes(state.appVisualTheme) ? state.appVisualTheme : 'classic';
+      state.appVisualTheme = ['classic','silver','neutral','colorful','oceanpop'].includes(state.appVisualTheme) ? state.appVisualTheme : 'classic';
       if (!isValidHexColor(state.appAccentHex)) delete state.appAccentHex;
       if (!isValidHexColor(state.appBackgroundHex)) delete state.appBackgroundHex;
       if (!Array.isArray(state.variablePoolCategories)) state.variablePoolCategories = (state.categories || []).filter(c => !/housing|bill|debt service/i.test(c.name)).map(c => c.name);
