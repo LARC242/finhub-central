@@ -2459,6 +2459,11 @@ Bonus"></textarea></div>
       if (createTransactionReversal(id)) closeTransactionModal();
     }
 
+    function getNetExpenseAmount(transaction) {
+      if (!transaction || transaction.type !== 'Expense' || transaction.reconciledDuplicate) return 0;
+      return Number(transaction.amount) || 0; // Negative linked refunds reduce spending.
+    }
+
     function getExpenseReportingComponents(transaction) {
       if (!transaction) return [];
       const signedAmount = Number(transaction.amount) || 0;
@@ -4701,12 +4706,12 @@ ${acc.name}`);
       const inPool = t => t.category !== 'Transfer' && selectedBuckets.includes(t.category || 'Uncategorized');
       const hasDates = !!(rec.startDate && rec.endDate);
       const poolTransactions = hasDates ? (state.transactions||[]).filter(t => t.type === 'Expense' && t.date >= rec.startDate && t.date <= rec.endDate && inPool(t) && !t.reconciledDuplicate) : [];
-      const actuals = poolTransactions.reduce((sum,t)=>sum+(Number(t.amount)||0),0);
+      const actuals = poolTransactions.reduce((sum,t)=>sum+getNetExpenseAmount(t),0);
       const carryIn = Number(rec.carryIn)||0;
       const remaining = basePool + carryIn - actuals;
       rec.poolRemaining = remaining;
       const categoryTotals = {};
-      poolTransactions.forEach(t=>{const key=t.category||'Uncategorized';categoryTotals[key]=(categoryTotals[key]||0)+(Number(t.amount)||0);});
+      poolTransactions.forEach(t=>{const key=t.refundOfTransactionId?(t.refundOriginalCategory||t.category||'Uncategorized'):(t.category||'Uncategorized');categoryTotals[key]=(categoryTotals[key]||0)+getNetExpenseAmount(t);});
       const categoryRows = Object.entries(categoryTotals).sort((a,b)=>b[1]-a[1]).map(([name,value])=>`<div class="flex justify-between gap-3 py-1.5 border-b border-gray-100 dark:border-gray-800 text-xs"><span class="truncate">${escapeHtml(name)}</span><strong class="accounting-num">${formatFinancial(value)}</strong></div>`).join('') || '<p class="text-xs text-gray-400">No expense transactions in this date range.</p>';
       const decisionText = rec.decision ? `Last decision: ${rec.decision === 'carry' ? 'Carried forward' : 'Reset'} · ${formatFinancial(rec.carryOut||0)} moved to next paycheque` : 'No end-of-paycheque decision recorded yet.';
       const usedPct = (basePool + carryIn) > 0 ? Math.round((actuals / (basePool + carryIn)) * 100) : 0;
@@ -10491,11 +10496,11 @@ ${acc.name}`);
       const wb=XLSX.utils.book_new(),txs=state.transactions||[],year=Number(document.getElementById('year-end-period')?.value)||new Date().getFullYear();
       const months=Array.from({length:12},(_,i)=>`${year}-${String(i+1).padStart(2,'0')}`),fmt=n=>Math.round((Number(n)||0)*100)/100;
       const incomeCats=new Set(),expenseCats=new Set();txs.forEach(t=>{if(String(t.date||'').slice(0,4)!==String(year))return;if(t.type==='Income')incomeCats.add(t.category||'Uncategorized');if(t.type==='Expense')expenseCats.add(t.category||'Uncategorized');});
-      const makeMonthly=(title,cats,kind)=>{const rows=[[title,...months.map(m=>new Date(`${m}-01T12:00:00`).toLocaleString('en-CA',{month:'short'})),'TOTAL']];[...cats].sort().forEach(cat=>{const vals=months.map(m=>fmt(txs.filter(t=>String(t.date||'').startsWith(m)&&t.type===kind&&(t.category||'Uncategorized')===cat).reduce((a,t)=>a+Math.abs(Number(t.amount)||0),0)));rows.push([cat,...vals,`=SUM(B${rows.length+1}:M${rows.length+1})`]);});rows.push([`TOTAL ${kind.toUpperCase()}`,...months.map((m,i)=>`=SUM(${String.fromCharCode(66+i)}2:${String.fromCharCode(66+i)}${rows.length})`),'=SUM(B'+(rows.length+1)+':M'+(rows.length+1)+')']);return rows;};
+      const makeMonthly=(title,cats,kind)=>{const rows=[[title,...months.map(m=>new Date(`${m}-01T12:00:00`).toLocaleString('en-CA',{month:'short'})),'TOTAL']];[...cats].sort().forEach(cat=>{const vals=months.map(m=>fmt(txs.filter(t=>String(t.date||'').startsWith(m)&&t.type===kind&&(t.refundOfTransactionId?(t.refundOriginalCategory||t.category||'Uncategorized'):(t.category||'Uncategorized'))===cat).reduce((a,t)=>a+(Number(t.amount)||0),0)));rows.push([cat,...vals,`=SUM(B${rows.length+1}:M${rows.length+1})`]);});rows.push([`TOTAL ${kind.toUpperCase()}`,...months.map((m,i)=>`=SUM(${String.fromCharCode(66+i)}2:${String.fromCharCode(66+i)}${rows.length})`),'=SUM(B'+(rows.length+1)+':M'+(rows.length+1)+')']);return rows;};
       const ie=[['INCOME & EXPENSE REPORT',...months.map(m=>new Date(`${m}-01T12:00:00`).toLocaleString('en-CA',{month:'short'})),'TOTAL']];
-      let incomeTotalRow=0,expenseTotalRow=0;const addSection=(label,cats,type)=>{ie.push([label]);const first=ie.length+1;[...cats].sort().forEach(cat=>{const r=ie.length+1;ie.push([cat,...months.map(m=>fmt(txs.filter(t=>String(t.date||'').startsWith(m)&&t.type===type&&(t.category||'Uncategorized')===cat).reduce((a,t)=>a+Math.abs(Number(t.amount)||0),0))),`=SUM(B${r}:M${r})`]);});const last=ie.length;const totalRow=ie.length+1;ie.push([`Total ${label}`,...months.map((m,i)=>`=SUM(${String.fromCharCode(66+i)}${first}:${String.fromCharCode(66+i)}${last})`),`=SUM(B${totalRow}:M${totalRow})`]);if(type==='Income')incomeTotalRow=totalRow;else expenseTotalRow=totalRow;};
+      let incomeTotalRow=0,expenseTotalRow=0;const addSection=(label,cats,type)=>{ie.push([label]);const first=ie.length+1;[...cats].sort().forEach(cat=>{const r=ie.length+1;ie.push([cat,...months.map(m=>fmt(txs.filter(t=>String(t.date||'').startsWith(m)&&t.type===type&&(t.refundOfTransactionId?(t.refundOriginalCategory||t.category||'Uncategorized'):(t.category||'Uncategorized'))===cat).reduce((a,t)=>a+(Number(t.amount)||0),0))),`=SUM(B${r}:M${r})`]);});const last=ie.length;const totalRow=ie.length+1;ie.push([`Total ${label}`,...months.map((m,i)=>`=SUM(${String.fromCharCode(66+i)}${first}:${String.fromCharCode(66+i)}${last})`),`=SUM(B${totalRow}:M${totalRow})`]);if(type==='Income')incomeTotalRow=totalRow;else expenseTotalRow=totalRow;};
       addSection('INCOME BY CATEGORY',incomeCats,'Income');addSection('EXPENSES BY CATEGORY',expenseCats,'Expense');
-      const dr=ie.length+1;ie.push(['DEBT PAYMENTS',...months.map(m=>fmt(txs.filter(t=>String(t.date||'').startsWith(m)&&t.type==='Debt Payment').reduce((a,t)=>a+Math.abs(Number(t.amount)||0),0))),`=SUM(B${dr}:M${dr})`]);
+      const dr=ie.length+1;ie.push(['DEBT PAYMENTS',...months.map(m=>fmt(txs.filter(t=>String(t.date||'').startsWith(m)&&t.type==='Debt Payment').reduce((a,t)=>a+(Number(t.amount)||0),0))),`=SUM(B${dr}:M${dr})`]);
       ie.push(['NET REMAINING',...months.map((m,i)=>`=${String.fromCharCode(66+i)}${incomeTotalRow}-${String.fromCharCode(66+i)}${expenseTotalRow}-${String.fromCharCode(66+i)}${dr}`),`=N${incomeTotalRow}-N${expenseTotalRow}-N${dr}`]);
       const ws=XLSX.utils.aoa_to_sheet(ie);ws['!cols']=[{wch:30},...Array(13).fill({wch:14})];XLSX.utils.book_append_sheet(wb,ws,'Income & Expenses');
       const raw=[['Date','Vendor','Description','Type','Category','Subcategory','Account','Amount','Reversal of'],...txs.filter(t=>String(t.date||'').startsWith(String(year))).sort((a,b)=>String(a.date).localeCompare(String(b.date))).map(t=>[t.date,t.vendor||'',t.desc||'',t.type||'',t.category||'',t.subcategory||'',state.accounts.find(a=>String(a.id)===String(t.accountId))?.name||'',Number(t.amount)||0,t.reversalOfTransactionId||''])];const tw=XLSX.utils.aoa_to_sheet(raw);tw['!autofilter']={ref:`A1:I${raw.length}`};XLSX.utils.book_append_sheet(wb,tw,'Transactions');
