@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FinHub Central - Financial Command Center</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23132A44'/%3E%3Cpath d='M18 45V19h28v7H26v5h17v7H26v7z' fill='%2300FBEA'/%3E%3Ccircle cx='47' cy='16' r='7' fill='%23FF2687'/%3E%3Ccircle cx='15' cy='49' r='5' fill='%23D8FF76'/%3E%3C/svg%3E">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -231,6 +232,30 @@
     html.dark body[data-finhub-theme="oceanpop"] .text-indigo-500 { color:#00d5c9 !important; }
     html.dark body[data-finhub-theme="oceanpop"] .text-rose-600,
     html.dark body[data-finhub-theme="oceanpop"] .text-rose-500 { color:#ff6eae !important; }
+
+    /* Ocean Pop sidebar treatment: saturated brand colours, readable navigation. */
+    html:not(.dark) body[data-finhub-theme="oceanpop"] #finhub-sidebar {
+      background:linear-gradient(160deg,#ff2687 0%,#e51f79 48%,#132a44 100%) !important;
+      color:#ffffff !important; border-color:#132a44 !important;
+    }
+    html:not(.dark) body[data-finhub-theme="oceanpop"] #finhub-sidebar .border-b,
+    html:not(.dark) body[data-finhub-theme="oceanpop"] #finhub-sidebar .border-t { border-color:rgba(255,255,255,.25) !important; }
+    html:not(.dark) body[data-finhub-theme="oceanpop"] #finhub-sidebar h1,
+    html:not(.dark) body[data-finhub-theme="oceanpop"] #finhub-sidebar .sidebar-brand-copy span,
+    html:not(.dark) body[data-finhub-theme="oceanpop"] #finhub-sidebar .nav-section-label,
+    html:not(.dark) body[data-finhub-theme="oceanpop"] #finhub-sidebar .nav-btn { color:#ffffff !important; }
+    html:not(.dark) body[data-finhub-theme="oceanpop"] #finhub-sidebar .nav-btn:hover,
+    html:not(.dark) body[data-finhub-theme="oceanpop"] #finhub-sidebar .nav-btn[style*="background-color"] { background:#00bdb4 !important; color:#132a44 !important; }
+    html:not(.dark) body[data-finhub-theme="oceanpop"] #finhub-sidebar #sidebar-summary { background:#132a44 !important; color:#ffffff !important; border-color:#00bdb4 !important; }
+    html.dark body[data-finhub-theme="oceanpop"] #finhub-sidebar {
+      background:linear-gradient(165deg,#132a44 0%,#17283b 72%,#087f83 100%) !important;
+      color:#e9f7f5 !important; border-color:#29445a !important;
+    }
+    html.dark body[data-finhub-theme="oceanpop"] #finhub-sidebar .nav-btn:hover,
+    html.dark body[data-finhub-theme="oceanpop"] #finhub-sidebar .nav-btn[style*="background-color"] { background:rgba(0,251,234,.18) !important; color:#ffffff !important; }
+    body[data-finhub-theme="oceanpop"] #brand-logo { background:#132a44 !important; }
+    /* Refund link details remain hidden until the small refund icon is activated. */
+    #tx-refund-link-fields[hidden] { display:none !important; }
     body[data-finhub-theme="oceanpop"] .ocean-pop-palette { background:linear-gradient(90deg,#00FBEA 0 25%,#D8FF76 25% 50%,#FF2687 50% 75%,#132A44 75%); }
 
     /* Ocean Pop light mode: deliberately saturated, opaque colour blocks. */
@@ -429,7 +454,9 @@
     <div>
       <div class="p-5 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between gap-2">
         <div class="sidebar-brand-row flex items-center space-x-3 min-w-0">
-          <div id="brand-logo" class="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-indigo-500/30">F</div>
+          <div id="brand-logo" role="img" aria-label="FinHub logo" class="w-10 h-10 rounded-2xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/30 overflow-hidden">
+            <svg viewBox="0 0 48 48" class="w-full h-full" aria-hidden="true"><defs><linearGradient id="finhubLogoBg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#00FBEA"/><stop offset="1" stop-color="#087F83"/></linearGradient></defs><rect width="48" height="48" rx="15" fill="#132A44"/><path d="M13 35V12h24v6H20v5h14v6H20v6z" fill="url(#finhubLogoBg)"/><circle cx="37" cy="11" r="5" fill="#FF2687"/><circle cx="10" cy="38" r="3.5" fill="#D8FF76"/><path d="M36 27l1.8 3.2L41 32l-3.2 1.8L36 37l-1.8-3.2L31 32l3.2-1.8z" fill="#FF2687"/></svg>
+          </div>
           <div class="sidebar-brand-copy min-w-0">
             <h1 class="font-bold text-lg leading-none tracking-wide">FinHub Central</h1>
             <span class="text-xs text-indigo-500 dark:text-indigo-400 font-medium">Financial OS</span>
@@ -1800,11 +1827,14 @@ Bonus"></textarea></div>
           <div><label class="block text-xs font-semibold text-gray-500 mb-1">Date</label><input type="date" id="tx-date" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
           <div><label id="tx-account-label" class="block text-xs font-semibold text-gray-500 mb-1">Account</label><select id="tx-account" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></select></div>
         </div>
-        <div class="grid grid-cols-2 gap-2 rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50/70 dark:bg-gray-950/60 p-2.5">
-          <div><div class="text-[9px] uppercase tracking-wide text-gray-400 font-semibold">Entry source</div><div id="tx-entry-source" class="text-xs font-semibold mt-0.5">Manual entry</div></div>
-          <div><div class="text-[9px] uppercase tracking-wide text-gray-400 font-semibold">Statement match</div><div id="tx-statement-status" class="text-xs font-semibold mt-0.5">Not matched</div></div>
-          <p class="col-span-2 text-[10px] text-gray-400">Source records how the transaction entered FinHub. A statement match only confirms it was matched to a bank or card statement; it does not approve the vendor, category or description.</p>
-        </div>
+        <details class="rounded-lg border border-gray-200 dark:border-gray-800 px-3 py-2">
+          <summary class="cursor-pointer text-xs font-semibold text-gray-500">Entry source & statement match</summary>
+          <div class="grid grid-cols-2 gap-2 pt-3">
+            <div><div class="text-[9px] uppercase tracking-wide text-gray-400 font-semibold">Entry source</div><div id="tx-entry-source" class="text-xs font-semibold mt-0.5">Manual entry</div></div>
+            <div><div class="text-[9px] uppercase tracking-wide text-gray-400 font-semibold">Statement match</div><div id="tx-statement-status" class="text-xs font-semibold mt-0.5">Not matched</div></div>
+            <p class="col-span-2 text-[10px] text-gray-400">Source records how the transaction entered FinHub. A statement match only confirms it was matched to a bank or card statement; it does not approve the vendor, category or description.</p>
+          </div>
+        </details>
         <p class="text-[10px] text-gray-400">Card purchase: choose the credit-card account and record an Expense. Paying the card from chequing is a separate Debt Payment. Merchant refund: enter a negative Expense in the original purchase category so it offsets spending instead of inflating Income.</p>
         <div>
           <div class="flex items-center justify-between mb-1"><label class="block text-xs font-semibold text-gray-500">Vendor <span class="text-rose-500">*</span></label><div class="flex gap-2"><button type="button" onclick="applySavedVendorCleanupToForm()" class="text-[10px] font-semibold text-indigo-500 hover:text-indigo-400">Apply saved cleanup</button><button type="button" onclick="openVendorRuleModalFromTransaction()" class="text-[10px] font-semibold text-indigo-500 hover:text-indigo-400">Create cleanup rule</button></div></div>
@@ -1823,8 +1853,8 @@ Bonus"></textarea></div>
         </div>
         <div id="tx-refund-tools" class="my-1">
           <input id="tx-is-refund" type="checkbox" onchange="toggleRefundEntryFields()" class="sr-only" aria-label="Treat this transaction as a refund or reimbursement">
-          <button type="button" id="tx-refund-trigger" onclick="toggleRefundEntryFields(true)" aria-expanded="false" aria-controls="tx-refund-link-fields" title="Link this transaction as a refund or reimbursement" class="inline-flex items-center gap-1.5 rounded-full border border-teal-500/60 px-2.5 py-1 text-[11px] font-semibold text-teal-700 dark:text-teal-300 hover:bg-teal-50 dark:hover:bg-teal-950/40">
-            <i class="fa-solid fa-rotate-left" aria-hidden="true"></i><span>Refund / reimbursement</span>
+          <button type="button" id="tx-refund-trigger" onclick="toggleRefundEntryFields(true)" aria-expanded="false" aria-controls="tx-refund-link-fields" title="Add refund / reimbursement link" aria-label="Add refund / reimbursement link" class="inline-flex items-center justify-center w-7 h-7 rounded-full border border-teal-500/60 text-teal-700 dark:text-teal-300 hover:bg-teal-50 dark:hover:bg-teal-950/40">
+            <i class="fa-solid fa-rotate-left text-[11px]" aria-hidden="true"></i>
           </button>
           <div id="tx-refund-link-fields" class="hidden mt-2 rounded-lg border border-teal-300 dark:border-teal-800 bg-teal-50 dark:bg-teal-950/30 p-3 space-y-2">
             <p class="text-[10px] text-gray-600 dark:text-gray-300">Link this deposit to the original expense. It will offset that category rather than count as ordinary income.</p>
