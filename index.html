@@ -14718,6 +14718,17 @@ html.dark body#app-body[data-finhub-theme="orangecherry"] { --fh-card-bg:#3b241f
 }
 </style>
 
+
+<style id="finhub-dashboard-action-button-sizing">
+/* Keep the three primary dashboard actions visually consistent. */
+#tab-dashboard .dashboard-action-toolbar > button {
+  display:inline-flex !important; align-items:center !important; justify-content:center !important;
+  box-sizing:border-box !important; height:2.65rem !important; min-height:2.65rem !important;
+  padding:.65rem 1rem !important; font-size:.875rem !important; line-height:1.25rem !important;
+  white-space:nowrap !important;
+}
+#tab-dashboard .dashboard-action-toolbar > button i { flex:0 0 auto !important; }
+</style>
 </body>
 </html>
 
@@ -14864,6 +14875,43 @@ html.dark body#app-body[data-finhub-theme="orangecherry"] { --fh-card-bg:#3b241f
   }
   body.sidebar-collapsed #finhub-sidebar #finhub-global-refresh [data-refresh-label] {
     display: none !important;
+  }
+}
+</style>
+
+<style id="finhub-refresh-rail-alignment-final">
+/* Align refresh with the navigation icon column in the collapsed vertical rail. */
+@media (min-width:1101px) {
+  html body#app-body > aside#finhub-sidebar > div:first-child > .px-3.pt-3 {
+    position:static !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    box-sizing:border-box !important;
+    width:100% !important;
+    min-width:0 !important;
+    padding:.35rem 0 !important;
+    margin:0 !important;
+    transform:none !important;
+  }
+  html body#app-body > aside#finhub-sidebar > div:first-child > .px-3.pt-3 #finhub-global-refresh {
+    display:inline-flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    box-sizing:border-box !important;
+    width:2.9rem !important;
+    min-width:2.9rem !important;
+    max-width:2.9rem !important;
+    height:2.8rem !important;
+    min-height:2.8rem !important;
+    max-height:2.8rem !important;
+    padding:.4rem !important;
+    margin:0 auto !important;
+    transform:none !important;
+    gap:0 !important;
+  }
+  html body#app-body > aside#finhub-sidebar > div:first-child > .px-3.pt-3 #finhub-global-refresh [data-refresh-label] {
+    display:none !important;
   }
 }
 </style>
