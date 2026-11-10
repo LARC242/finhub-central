@@ -984,7 +984,140 @@
 #ledger-column-settings p { font-size:.62rem !important; }
 #ledger-column-options label { padding:.35rem !important; border-radius:.45rem !important; font-size:.65rem !important; }
 #ledger-summary { position:static !important; margin:1rem 0 0 !important; }
-</style>\n</head>
+</style>\n
+<style id="finhub-v9-sidebar-fix">
+/* V9: horizontal top navigation for split-screen/tablet widths.
+   Many tablets report a CSS viewport around 640px even when the screenshot is wider. */
+@media (min-width:600px) {
+  body#app-body { display:flex !important; flex-direction:column !important; min-width:0 !important; }
+  body#app-body > #finhub-sidebar {
+    display:flex !important; flex-direction:row !important; align-items:center !important;
+    justify-content:space-between !important; gap:.35rem !important;
+    width:100% !important; max-width:none !important; min-width:0 !important;
+    height:auto !important; min-height:0 !important; flex:0 0 auto !important;
+    padding:.3rem .45rem !important; border-right:0 !important;
+    border-bottom:1px solid rgba(100,130,160,.3) !important;
+  }
+  body#app-body > #finhub-sidebar > div:first-child {
+    display:flex !important; flex:1 1 auto !important; min-width:0 !important;
+    flex-direction:row !important; align-items:center !important; gap:.25rem !important;
+  }
+  body#app-body > #finhub-sidebar > div:first-child > div:first-child {
+    flex:0 0 auto !important; padding:.1rem .2rem !important; border:0 !important;
+  }
+  #finhub-sidebar .sidebar-brand-copy { display:none !important; }
+  #finhub-sidebar .sidebar-brand-row { gap:0 !important; }
+  #finhub-sidebar .sidebar-brand-row #brand-logo { width:2rem !important; height:2rem !important; }
+  #finhub-sidebar .sidebar-brand-actions { display:flex !important; flex:0 0 auto !important; flex-direction:row !important; gap:0 !important; }
+  #finhub-sidebar nav {
+    display:flex !important; flex:1 1 auto !important; min-width:0 !important;
+    overflow-x:auto !important; overflow-y:hidden !important; white-space:nowrap !important;
+    padding:.1rem .2rem !important; margin:0 !important; gap:.1rem !important;
+    scrollbar-width:thin;
+  }
+  #finhub-sidebar nav .nav-group { display:contents !important; }
+  #finhub-sidebar .nav-section-label { display:none !important; }
+  #finhub-sidebar .nav-btn {
+    display:inline-flex !important; flex:0 0 auto !important; width:auto !important;
+    min-width:40px !important; min-height:38px !important; justify-content:center !important;
+    align-items:center !important; gap:.3rem !important; padding:.4rem .48rem !important;
+  }
+  #finhub-sidebar .nav-btn > i { display:inline-flex !important; width:1.1rem !important; min-width:1.1rem !important; justify-content:center !important; }
+  #finhub-sidebar .sidebar-nav-label { display:inline !important; font-size:.66rem !important; }
+  #finhub-sidebar #finhub-global-refresh {
+    display:inline-flex !important; flex:0 0 auto !important; width:auto !important;
+    min-width:38px !important; min-height:38px !important; padding:.4rem .55rem !important;
+    white-space:nowrap !important;
+  }
+  #finhub-sidebar #sidebar-summary { display:none !important; }
+  body#app-body > main { width:100% !important; min-width:0 !important; max-height:none !important; flex:1 1 auto !important; }
+  body.sidebar-collapsed #finhub-sidebar nav { display:none !important; }
+  body.sidebar-collapsed #finhub-sidebar .sidebar-brand-copy { display:none !important; }
+}
+@media (min-width:600px) and (max-width:850px) {
+  #finhub-sidebar .sidebar-nav-label { display:none !important; }
+  #finhub-sidebar .nav-btn { width:40px !important; min-width:40px !important; padding:.35rem !important; }
+  #finhub-sidebar #finhub-global-refresh [data-refresh-label] { display:none !important; }
+  #finhub-sidebar #finhub-global-refresh { width:38px !important; padding:.35rem !important; }
+}
+</style>
+
+
+<style id="finhub-v9-ledger-cards">
+#ledger-mobile-cards {
+  display:grid !important;
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr)) !important;
+  gap:.65rem !important;
+  align-items:stretch !important;
+  padding:.2rem 0 !important;
+}
+#ledger-mobile-cards.hidden { display:none !important; }
+#ledger-mobile-cards .ledger-mobile-row {
+  box-sizing:border-box !important; width:100% !important; min-width:0 !important;
+  min-height:64px !important; display:grid !important;
+  grid-template-columns:20px minmax(0,1fr) auto 34px !important;
+  align-items:center !important; gap:.55rem !important;
+  padding:.65rem .7rem !important; margin:0 !important;
+  border:1px solid #b8d5ea !important; border-radius:13px !important;
+  background:#edf5fc !important; color:#082b50 !important;
+  box-shadow:0 3px 10px rgba(18,78,150,.08) !important;
+}
+#ledger-mobile-cards .ledger-mobile-date { font-size:.68rem !important; line-height:1.2 !important; color:#52718f !important; }
+#ledger-mobile-cards .ledger-mobile-vendor { font-size:.82rem !important; font-weight:700 !important; line-height:1.25 !important; overflow:hidden !important; text-overflow:ellipsis !important; white-space:nowrap !important; color:inherit !important; }
+#ledger-mobile-cards .ledger-mobile-amount { font-size:.78rem !important; font-weight:750 !important; white-space:nowrap !important; text-align:right !important; }
+#ledger-mobile-cards .ledger-mobile-edit {
+  width:32px !important; height:32px !important; min-height:32px !important;
+  display:grid !important; place-items:center !important; border-radius:8px !important;
+  color:#124e96 !important; background:rgba(12,138,188,.12) !important;
+}
+#ledger-mobile-cards input[type=checkbox] { width:16px !important; height:16px !important; }
+body#app-body[data-finhub-theme="hibiscus"] #ledger-mobile-cards .ledger-mobile-row {
+  background:rgba(2,34,37,.97) !important; color:#fff2df !important;
+  border-color:rgba(255,118,88,.72) !important;
+}
+body#app-body[data-finhub-theme="hibiscus"] #ledger-mobile-cards .ledger-mobile-date { color:#c6dcd4 !important; }
+html.dark #ledger-mobile-cards .ledger-mobile-row {
+  background:#102e50 !important; color:#daeaf7 !important; border-color:#28577f !important;
+}
+@media (max-width:599px) {
+  #ledger-mobile-cards { grid-template-columns:1fr !important; }
+}
+</style>
+
+
+<style id="finhub-v9-ledger-controls">
+#ledger-column-settings { margin:.3rem .45rem .45rem !important; padding:.55rem !important; border-radius:.6rem !important; }
+#ledger-column-settings > div:first-child { margin-bottom:.4rem !important; }
+#ledger-column-settings h4 { font-size:.68rem !important; margin:0 !important; }
+#ledger-column-settings p { display:none !important; }
+#ledger-column-settings button { font-size:.62rem !important; padding:.25rem .4rem !important; }
+#ledger-column-options { grid-template-columns:repeat(auto-fit,minmax(125px,1fr)) !important; gap:.3rem !important; }
+#ledger-column-options label { padding:.28rem .4rem !important; border-radius:.4rem !important; font-size:.62rem !important; }
+#ledger-column-options label i { display:none !important; }
+#ledger-display-cards,#ledger-display-table {
+  border:0 !important; padding:.25rem .48rem !important; font-size:.65rem !important;
+  border-radius:.45rem !important; background:transparent !important; color:#52718f !important;
+}
+#ledger-display-cards.bg-indigo-600,#ledger-display-table.bg-indigo-600 {
+  background:rgba(255,0,142,.1) !important; color:#d60078 !important;
+}
+#ledger-table-toolbar { border:0 !important; background:transparent !important; }
+#ledger-table-toolbar > div { padding:.3rem .45rem !important; gap:.35rem !important; }
+#ledger-table-toolbar button { font-size:.62rem !important; padding:.25rem .42rem !important; }
+#ledger-table-toolbar label { font-size:.62rem !important; }
+</style>
+
+
+<style id="finhub-v9-number-colours">
+.finhub-number-positive { color:#16803c !important; }
+.finhub-number-negative { color:#d21f3c !important; }
+.finhub-number-neutral { color:#64748b !important; }
+html.dark .finhub-number-positive { color:#4ade80 !important; }
+html.dark .finhub-number-negative { color:#fb7185 !important; }
+html.dark .finhub-number-neutral { color:#94a3b8 !important; }
+</style>
+
+</head>
 <body id="app-body" class="bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 min-h-screen flex flex-col md:flex-row transition-colors duration-200 relative">
 
   <!-- UNDO TOAST NOTIFICATION -->
@@ -2545,14 +2678,9 @@ Bonus"></textarea></div>
   <!-- SCRIPT -->
   <script>
     function formatFinancial(val, isExpense = false) {
-      if (val === null || val === undefined || isNaN(val) || Math.abs(val) < 0.001) {
-        return '$ - ';
-      }
+      if (val === null || val === undefined || isNaN(val) || Math.abs(val) < 0.001) return '$ - ';
       const absVal = Math.abs(val).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-      if (isExpense || val < 0) {
-        return `($${absVal})`;
-      }
-      return `$${absVal}`;
+      return (isExpense || val < 0) ? `($${absVal})` : `$${absVal}`;
     }
 
     let undoStack = [];
@@ -3317,11 +3445,11 @@ Bonus"></textarea></div>
       if (tabId === 'debt') { renderDebtPlanner(); renderDebtPaymentHistory(); renderDebtUpcomingBills(); }
       if (tabId === 'ledger') renderLedger();
       if (tabId === 'settings') renderSettings();
-      if (window.matchMedia && window.matchMedia('(min-width: 680px) and (max-width: 1800px)').matches) {
+      if (window.matchMedia && window.matchMedia('(min-width: 600px)').matches) {
         document.body.classList.add('sidebar-collapsed');
         try { localStorage.setItem('finhub_blank_sidebar_collapsed', 'true'); } catch (e) {}
         const icon=document.getElementById('sidebar-collapse-icon');
-        if(icon) icon.className='sidebar-collapse-label fa-solid fa-angles-down';
+        if(icon) icon.className='sidebar-collapse-label fa-solid fa-angles-right';
       }
       applyCollapsibles();
       applyPrivacyBlurState();
@@ -11307,4 +11435,40 @@ function openTransactionModal(editId = null) {
       </div>
     </div>
   </div>
+
+<script id="finhub-v9-semantic-number-colours">
+(function(){
+  function colourNumbers(root){
+    const nodes=[];
+    if(root && root.nodeType===1 && root.matches?.('.accounting-num')) nodes.push(root);
+    if(root?.querySelectorAll) nodes.push(...root.querySelectorAll('.accounting-num'));
+    nodes.forEach(el=>{
+      const value=(el.textContent||'').trim();
+      if(!value || value==='$ - ' || value==='-') {
+        el.classList.remove('finhub-number-positive','finhub-number-negative');
+        el.classList.add('finhub-number-neutral');
+      } else if (/\(\s*[-$]/.test(value) || /^\s*-/.test(value)) {
+        el.classList.add('finhub-number-negative');
+        el.classList.remove('finhub-number-positive','finhub-number-neutral');
+      } else if (/\$/.test(value)) {
+        el.classList.add('finhub-number-positive');
+        el.classList.remove('finhub-number-negative','finhub-number-neutral');
+      }
+    });
+  }
+  function start(){
+    colourNumbers(document);
+    const observer=new MutationObserver(records=>{
+      records.forEach(record=>{
+        if(record.type==='childList') record.addedNodes.forEach(node=>{if(node.nodeType===1)colourNumbers(node);});
+        else if(record.type==='characterData') colourNumbers(record.target.parentElement);
+      });
+    });
+    observer.observe(document.body,{subtree:true,childList:true,characterData:true});
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',start,{once:true});
+  else start();
+})();
+</script>
+
 </body>\n</html>\n
