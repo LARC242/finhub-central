@@ -75,6 +75,26 @@
     #ledger-table-container th { position:relative; }
     #ledger-table-container tbody#ledger-rows td { overflow:hidden; text-overflow:ellipsis; }
     #ledger-table-container tbody#ledger-rows td button, #ledger-table-container tbody#ledger-rows td a { max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+    /* Refinement pass 2: touch-friendly controls and compact mobile planner layout. */
+    @media (max-width: 767px) {
+      button, select, input:not([type="checkbox"]):not([type="radio"]), textarea { min-height: 40px; }
+      #tab-biweekly > .flex:first-child { align-items: stretch; }
+      #tab-biweekly > .flex:first-child > div:last-child { display:flex; flex-wrap:wrap; align-items:center; gap:.5rem; }
+      #zbb-period-picker { flex:1 1 9rem; min-width:0; }
+      #zbb-cycle-selector-wrap { flex:1 1 auto; justify-content:center; }
+      #zbb-payday-display { flex:1 1 100%; text-align:center; }
+      #tab-biweekly .grid.grid-cols-1.sm\:grid-cols-3 { grid-template-columns:1fr; }
+      #tab-ledger .overflow-x-auto { -webkit-overflow-scrolling:touch; }
+      #ledger-filter-popover { left:.75rem !important; right:.75rem !important; width:auto !important; }
+      #tab-ledger input[type="search"], #tab-ledger select { max-width:100%; }
+    }
+    @media (min-width: 768px) and (max-width: 1023px) {
+      #finhub-sidebar { width:5rem; }
+      #finhub-sidebar .sidebar-brand-copy, #finhub-sidebar .sidebar-nav-label, #finhub-sidebar #sidebar-summary { display:none !important; }
+      #finhub-sidebar .nav-btn { justify-content:center; padding-left:.5rem; padding-right:.5rem; }
+    }
+
     /* Compact Expense Tracker density: tighter rows and slightly smaller type. */
     #ledger-table-container thead th { padding:.5rem .65rem !important; font-size:.64rem !important; line-height:1.15 !important; }
     #ledger-table-container tbody#ledger-rows td { padding:.42rem .65rem !important; font-size:.72rem !important; line-height:1.2 !important; }
@@ -1014,7 +1034,7 @@
         </div>
         <div class="flex items-center space-x-3">
           <input type="month" id="zbb-period-picker" onchange="changeZbbPeriod(this.value)" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-1.5 text-xs font-semibold shadow-sm">
-          <div class="flex bg-white dark:bg-gray-900 p-1.5 rounded-xl border border-gray-200 dark:border-gray-800">
+          <div id="zbb-cycle-selector-wrap" class="flex bg-white dark:bg-gray-900 p-1.5 rounded-xl border border-gray-200 dark:border-gray-800">
             <button onclick="setPayCycle(1)" id="cycle-btn-1" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white theme-bg">Paycheque 1</button>
             <button onclick="setPayCycle(2)" id="cycle-btn-2" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-500 hover:text-gray-900">Paycheque 2</button>
             <button onclick="setPayCycle(3)" id="cycle-btn-3" class="hidden px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-500 hover:text-gray-900">Paycheque 3</button>
@@ -4078,9 +4098,14 @@ ${acc.name}`);
     function refreshPaydaySelector(period) {
       const dates = getScheduledPaydaysForMonth(period);
       const thirdButton = document.getElementById('cycle-btn-3');
+      const selectorWrap = document.getElementById('zbb-cycle-selector-wrap');
       const display = document.getElementById('zbb-payday-display');
       const thirdApplies = dates.length >= 3;
-      if (thirdButton) thirdButton.classList.toggle('hidden', !thirdApplies);
+      // In a two-payday month, remove the entire third-paycheque option from
+      // the interface rather than leaving an empty/hidden button in the selector.
+      if (thirdButton) thirdButton.hidden = !thirdApplies;
+      if (thirdButton) thirdButton.style.display = thirdApplies ? '' : 'none';
+      if (selectorWrap) selectorWrap.classList.toggle('hidden', dates.length < 2);
       if (Number(state.selectedPayCycle || 1) === 3 && !thirdApplies) state.selectedPayCycle = 1;
       const cycle = Math.min(Number(state.selectedPayCycle || 1), Math.max(1, dates.length));
       if (display) {
