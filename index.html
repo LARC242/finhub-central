@@ -53,7 +53,7 @@
       body.sidebar-collapsed #finhub-sidebar .sidebar-brand-actions { flex-direction:row; }
     }
     /* Compact, horizontally scrollable multi-select filters */
-    .ledger-filter-strip { display:flex !important; align-items:center; gap:.45rem; overflow-x:auto; overflow-y:hidden; white-space:nowrap; padding:.7rem; scrollbar-width:thin; }
+    .ledger-filter-strip { display:none !important; }
     .ledger-filter-button { flex:0 0 auto; display:inline-flex; align-items:center; gap:.4rem; padding:.45rem .65rem; border:1px solid rgba(148,163,184,.35); border-radius:.65rem; background:rgba(148,163,184,.08); font-size:.7rem; font-weight:600; }
     .ledger-filter-button.has-selection { border-color:#818cf8; background:rgba(99,102,241,.12); }
     #ledger-filter-popover { position:fixed; z-index:100; width:min(19rem,calc(100vw - 1.5rem)); max-height:min(26rem,calc(100vh - 2rem)); overflow:hidden; border:1px solid rgba(148,163,184,.4); border-radius:.9rem; background:#fff; color:#111827; box-shadow:0 18px 45px rgba(0,0,0,.22); }
@@ -1166,7 +1166,7 @@
               <button onclick="clearLedgerFilters()" class="px-2.5 py-1.5 text-xs font-semibold text-indigo-600 dark:text-cyan-300">Clear all</button>
             </div>
           </div>
-          <div id="ledger-filter-strip" class="ledger-filter-strip custom-scrollbar px-3 py-2 hidden"></div>
+          
         </div>
         <table class="w-full text-left text-sm" style="min-width:1100px">
           <thead class="bg-gray-50 dark:bg-gray-950 text-xs uppercase border-b border-gray-200 dark:border-gray-800 text-gray-500">
@@ -2305,7 +2305,7 @@ Bonus"></textarea></div>
     // This clean-start build uses a dedicated storage namespace so it cannot
     // read or overwrite data from an existing FinHub installation.
     const blankPeriod = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
-    let state = JSON.parse(localStorage.getItem('finhub_demo_testing_v1')) || {
+    let state = JSON.parse(localStorage.getItem('finhub_blank_central_v1')) || {
       darkMode: true,
       privacyBlur: false,
       appThemeColor: 'indigo',
@@ -2482,7 +2482,7 @@ Bonus"></textarea></div>
 
     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
-    function saveData() { localStorage.setItem('finhub_demo_testing_v1', JSON.stringify(state)); }
+    function saveData() { localStorage.setItem('finhub_blank_central_v1', JSON.stringify(state)); }
 
     const BACKUP_REMINDER_DAYS = 7;
     const BACKUP_REMINDER_SNOOZE_KEY = 'finhub_blank_backup_reminder_snooze_until';
@@ -8905,8 +8905,7 @@ ${acc.name}`);
       }
       const oldDebt = oldPayment ? state.accounts.find(a => String(a.id) === String(oldPayment.accountId) && a.type === 'debt') : null;
       const oldFunding = oldPayment ? state.accounts.find(a => String(a.id) === String(oldPayment.fundingAccountId) && a.type === 'asset') : null;
-      const debtBalanceForCapacity = Math.abs(Number(debtAcc.balance) || 0);
-      const availablePrincipal = debtBalanceForCapacity + (oldDebt && String(oldDebt.id) === String(debtAcc.id) ? (Number(oldPayment.principalAmount) || 0) : 0);
+      const availablePrincipal = Math.abs(Number(debtAcc.balance) || 0) + (oldDebt && String(oldDebt.id) === String(debtAcc.id) ? (Number(oldPayment.principalAmount) || 0) : 0);
       const conversionCredit = conversionTransaction && String(conversionFunding.id) === String(fundingAcc.id) ? (Number(conversionTransaction.amount) || 0) : 0;
       const availableFunding = (Number(fundingAcc.balance) || 0) + (oldFunding && String(oldFunding.id) === String(fundingAcc.id) ? (Number(oldPayment.amount) || 0) : conversionCredit);
       if (principalAmount > availablePrincipal + 0.005) { alert('The principal portion cannot exceed the outstanding debt balance after accounting for the payment being edited.'); return; }
@@ -8926,7 +8925,7 @@ ${acc.name}`);
       let paymentTransaction;
       if (oldPayment) {
         // Reverse the previous entry first, then apply the corrected payment.
-        if (oldDebt) { const oldBal=Number(oldDebt.balance)||0, principal=Number(oldPayment.principalAmount)||0; oldDebt.balance=Math.round((oldBal<0 ? oldBal-principal : oldBal+principal)*100)/100; }
+        if (oldDebt) { const priorBalance = Number(oldDebt.balance) || 0; const priorPrincipal = Number(oldPayment.principalAmount) || 0; oldDebt.balance = Math.round((priorBalance < 0 ? priorBalance - priorPrincipal : priorBalance + priorPrincipal) * 100) / 100; }
         if (oldFunding) oldFunding.balance = Math.round(((Number(oldFunding.balance) || 0) + (Number(oldPayment.amount) || 0)) * 100) / 100;
         oldPayment.accountId = accountId;
         oldPayment.fundingAccountId = fundingAccountId;
@@ -8989,8 +8988,8 @@ ${acc.name}`);
         applyTransactionBalanceEffect(paymentTransaction, 1);
       }
 
-      const currentDebtBalance=Number(debtAcc.balance)||0;
-      debtAcc.balance=Math.round((currentDebtBalance<0 ? currentDebtBalance+principalAmount : Math.max(0,currentDebtBalance-principalAmount))*100)/100;
+      const currentDebtBalance = Number(debtAcc.balance) || 0;
+      debtAcc.balance = Math.round((currentDebtBalance < 0 ? currentDebtBalance + principalAmount : Math.max(0, currentDebtBalance - principalAmount)) * 100) / 100;
       saveData(); closeDebtPaymentModal(); renderDebtPlanner(); renderDebtPaymentHistory(); renderLedger(); renderDashboard(); renderCalendar();
     }
 
@@ -10460,51 +10459,54 @@ ${acc.name}`);
     document.addEventListener('DOMContentLoaded',()=>{['debt-simulator-details','data-health-details'].forEach(id=>{const el=document.getElementById(id);if(!el)return;const key='finhub-collapse-'+id;const saved=localStorage.getItem(key);if(saved!==null)el.open=saved==='open';el.addEventListener('toggle',()=>localStorage.setItem(key,el.open?'open':'closed'));});const up=document.getElementById('dashboard-upcoming-month');if(up&&!up.value){const n=new Date();up.value=`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}`;}renderDashboardUpcoming();const m=document.getElementById('monthly-close-period');if(m&&!m.value)m.value=new Date().toISOString().slice(0,7);const y=document.getElementById('year-end-period');if(y&&!y.value)y.value=new Date().getFullYear();renderMonthlyClose();renderYearEndClose();renderDataHealth();const period=document.getElementById('ledger-period-preset');if(period)period.value='current';applyLedgerColumns();});
 
 
-    // Universal section collapsing: attach to top-level content panels with headings.
-    function initializeUniversalSectionCollapse() {
-      const roots = Array.from(document.querySelectorAll('#dashboard-tab, #ledger-tab, #accounts-tab, #budget-tab, #debt-tab, #reports-tab, #settings-tab, #calendar-tab'));
-      roots.forEach(root => {
-        root.querySelectorAll(':scope > section, :scope > .section-card, :scope > .card-section').forEach((panel, index) => {
-          if (panel.dataset.collapseReady === '1') return;
-          const heading = panel.querySelector(':scope > h2, :scope > h3, :scope > .section-heading, :scope > div > h2, :scope > div > h3');
+    function initializeRemainingSectionCollapses() {
+      const tabIds = ['tab-dashboard','tab-biweekly','tab-calendar','tab-joint','tab-debt','tab-ledger','tab-settings'];
+      tabIds.forEach(tabId => {
+        const tab = document.getElementById(tabId);
+        if (!tab) return;
+        const candidates = tab.querySelectorAll(':scope > .rounded-2xl, :scope > div > .rounded-2xl, :scope > .grid > .rounded-2xl, :scope > div > .grid > .rounded-2xl');
+        candidates.forEach((panel, index) => {
+          if (panel.dataset.sectionCollapseReady === '1') return;
+          if (panel.querySelector('[onclick*="toggleCollapse("]')) return;
+          const heading = panel.querySelector(':scope > h2, :scope > h3, :scope > div > h2, :scope > div > h3, :scope > div > div > h2, :scope > div > div > h3');
           if (!heading) return;
-          const content = Array.from(panel.children).filter(el => el !== heading && !el.contains(heading));
-          if (!content.length) return;
-          const key = `finhub-panel-${root.id}-${index}`;
-          const saved = localStorage.getItem(key);
+          let header = heading.parentElement;
+          if (!header || header.closest('button')) return;
+          if (header === panel) {
+            header = document.createElement('div');
+            header.className = 'flex items-center gap-2';
+            panel.insertBefore(header, heading);
+            header.appendChild(heading);
+          }
           const body = document.createElement('div');
-          body.className = 'finhub-collapsible-body';
-          content.forEach(el => body.appendChild(el));
+          body.className = 'finhub-section-collapse-body';
+          const movable = Array.from(panel.children).filter(node => node !== header && !node.contains(heading));
+          if (!movable.length) return;
+          movable.forEach(node => body.appendChild(node));
+          const key = `finhub_section_${tabId}_${index}_${(heading.textContent || '').trim().slice(0,40).replace(/\\s+/g,'_')}`;
           const toggle = document.createElement('button');
           toggle.type = 'button';
-          toggle.className = 'finhub-collapse-toggle ml-auto text-xs text-gray-500 hover:text-indigo-500';
+          toggle.className = 'ml-auto inline-flex items-center justify-center w-7 h-7 rounded-lg text-gray-400 hover:text-indigo-500 hover:bg-gray-100 dark:hover:bg-gray-800';
           toggle.setAttribute('aria-label', 'Collapse section');
           toggle.innerHTML = '<i class="fa-solid fa-chevron-down"></i>';
-          let header = heading.parentElement;
-          if (header === panel) {
-            const row = document.createElement('div');
-            row.className = 'flex items-center gap-2';
-            panel.insertBefore(row, heading);
-            row.appendChild(heading);
-            row.appendChild(toggle);
-          } else {
-            header.classList.add('flex','items-center','gap-2');
-            header.appendChild(toggle);
-          }
+          header.classList.add('flex','items-center','gap-2');
+          header.appendChild(toggle);
           panel.appendChild(body);
           const setOpen = open => {
             body.hidden = !open;
             toggle.innerHTML = open ? '<i class="fa-solid fa-chevron-down"></i>' : '<i class="fa-solid fa-chevron-right"></i>';
             toggle.setAttribute('aria-label', open ? 'Collapse section' : 'Expand section');
-            localStorage.setItem(key, open ? '1' : '0');
+            try { localStorage.setItem(key, open ? '1' : '0'); } catch (_) {}
           };
           toggle.addEventListener('click', () => setOpen(body.hidden));
+          let saved = null;
+          try { saved = localStorage.getItem(key); } catch (_) {}
           setOpen(saved !== '0');
-          panel.dataset.collapseReady = '1';
+          panel.dataset.sectionCollapseReady = '1';
         });
       });
     }
-    document.addEventListener('DOMContentLoaded', initializeUniversalSectionCollapse);
+    document.addEventListener('DOMContentLoaded', initializeRemainingSectionCollapses);
 </script>
   <div id="backup-import-preview-modal" class="hidden fixed inset-0 z-[110] bg-black/70 items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="backup-preview-title">
     <div class="w-full max-w-xl bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-2xl overflow-hidden">
