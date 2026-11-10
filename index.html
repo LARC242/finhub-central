@@ -53,13 +53,19 @@
       body.sidebar-collapsed #finhub-sidebar .sidebar-brand-actions { flex-direction:row; }
     }
     /* Compact, horizontally scrollable multi-select filters */
-    .ledger-filter-strip { display:none !important; display:flex; align-items:center; gap:.45rem; overflow-x:auto; overflow-y:hidden; white-space:nowrap; padding:.7rem; scrollbar-width:thin; }
+    .ledger-filter-strip { display:flex !important; align-items:center; gap:.45rem; overflow-x:auto; overflow-y:hidden; white-space:nowrap; padding:.7rem; scrollbar-width:thin; }
     .ledger-filter-button { flex:0 0 auto; display:inline-flex; align-items:center; gap:.4rem; padding:.45rem .65rem; border:1px solid rgba(148,163,184,.35); border-radius:.65rem; background:rgba(148,163,184,.08); font-size:.7rem; font-weight:600; }
     .ledger-filter-button.has-selection { border-color:#818cf8; background:rgba(99,102,241,.12); }
     #ledger-filter-popover { position:fixed; z-index:100; width:min(19rem,calc(100vw - 1.5rem)); max-height:min(26rem,calc(100vh - 2rem)); overflow:hidden; border:1px solid rgba(148,163,184,.4); border-radius:.9rem; background:#fff; color:#111827; box-shadow:0 18px 45px rgba(0,0,0,.22); }
     .dark #ledger-filter-popover { background:#111827; color:#f3f4f6; border-color:#374151; }
     #ledger-filter-options { max-height:17rem; overflow-y:auto; overscroll-behavior:contain; }
     #ledger-filter-popover input[type="search"] { color:inherit; }
+    #ledger-table-container table[data-density="compact"] tbody#ledger-rows td { padding:.28rem .48rem !important; font-size:.68rem !important; line-height:1.12 !important; }
+    #ledger-table-container table[data-density="compact"] thead th { padding:.38rem .48rem !important; }
+    #ledger-table-container table[data-density="wide"] tbody#ledger-rows td { padding:.8rem .85rem !important; font-size:.82rem !important; line-height:1.4 !important; }
+    #ledger-table-container table[data-density="wide"] thead th { padding:.75rem .85rem !important; font-size:.72rem !important; }
+    #ledger-table-container .ledger-resize-handle { width:10px !important; border-right:2px solid rgba(99,102,241,.45) !important; cursor:col-resize !important; }
+    #ledger-table-container .ledger-resize-handle:hover { background:rgba(99,102,241,.14) !important; border-right-color:#6366f1 !important; }
     /* Expense Tracker remains a true table and scrolls horizontally on narrow screens. */
     #ledger-table-container { max-width:100%; overflow-x:auto !important; overflow-y:visible; -webkit-overflow-scrolling:touch; }
     #ledger-table-container table { min-width:1400px; width:100%; }
@@ -1127,23 +1133,7 @@
         </div>
       </div>
 
-      <!-- BULK TRANSACTION ACTIONS -->
-      <div id="ledger-bulk-toolbar" class="bg-white dark:bg-gray-900 p-3 rounded-xl border border-gray-200 dark:border-gray-800 flex flex-wrap items-center gap-2 shadow-sm">
-        <span id="ledger-selected-count" class="text-xs font-semibold text-gray-500">0 selected</span>
-        <button type="button" onclick="selectAllFilteredTransactions()" class="px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-xs font-semibold">Select filtered</button>
-        <button type="button" onclick="clearLedgerSelection()" class="px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-xs font-semibold">Clear selection</button>
-        <button type="button" onclick="openBulkEditModal()" id="ledger-bulk-edit-btn" disabled class="px-3 py-2 rounded-lg bg-indigo-600 text-white text-xs font-semibold disabled:opacity-40 theme-bg">Edit selected</button>
-        <button type="button" onclick="bulkDeleteSelectedTransactions()" id="ledger-bulk-delete-btn" disabled class="px-3 py-2 rounded-lg bg-rose-600 text-white text-xs font-semibold disabled:opacity-40">Delete selected</button>
-      </div>
-
-      <!-- SEARCHABLE MULTI-SELECT FILTERS -->
-      <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
-        <div class="flex items-center justify-between px-3 pt-3 gap-2">
-          <div class="text-xs font-semibold text-gray-500"><i class="fa-solid fa-filter mr-1"></i> Filter transactions</div>
-          <div class="flex items-center gap-2"><label for="ledger-period-preset" class="text-[10px] text-gray-500">Period</label><select id="ledger-period-preset" onchange="setLedgerPeriodPreset(this.value)" class="border rounded-lg px-2 py-1 text-[11px] bg-white dark:bg-gray-900"><option value="current">This month</option><option value="last">Last month</option><option value="3months">Last 3 months</option><option value="year">This year</option><option value="all">All dates</option></select><select id="ledger-sort-order" onchange="renderLedger()" class="hidden" aria-hidden="true" tabindex="-1"><option value="date-desc">Date: Newest first</option><option value="date-asc">Date: Oldest first</option><option value="amount-desc">Amount: Highest first</option><option value="amount-asc">Amount: Lowest first</option></select><button onclick="clearLedgerFilters()" class="text-[10px] text-indigo-500 hover:underline flex-shrink-0">Clear all</button></div>
-        </div>
-        <div id="ledger-filter-strip" class="ledger-filter-strip custom-scrollbar"></div>
-      </div>
+      <!-- EXPENSE TRACKER TABLE CONTROLS: selection, period, filters and density live with the table -->
       <div id="ledger-filter-popover" class="hidden" role="dialog" aria-label="Transaction filter">
         <div class="p-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between gap-2"><strong id="ledger-filter-title" class="text-xs">Filter</strong><button onclick="closeLedgerFilter()" class="text-gray-400 hover:text-gray-700 dark:hover:text-white" aria-label="Close filter"><i class="fa-solid fa-xmark"></i></button></div>
         <div id="ledger-sort-options" class="hidden px-3 pt-3"></div>
@@ -1159,6 +1149,27 @@
         <div class="flex justify-end mt-3"><button type="button" onclick="resetLedgerColumnWidths()" class="text-xs text-indigo-600 dark:text-indigo-400 underline">Reset column widths</button></div>
       </div>
       <div id="ledger-table-container" class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-x-auto overflow-y-visible shadow-sm custom-scrollbar">
+        <div id="ledger-table-toolbar" class="min-w-max border-b border-gray-200 dark:border-gray-800">
+          <div class="flex flex-wrap items-center justify-between gap-3 px-3 py-2 bg-gray-50 dark:bg-gray-950">
+            <div class="flex flex-wrap items-center gap-3">
+              <label class="inline-flex items-center gap-2 text-xs font-semibold cursor-pointer"><input id="ledger-select-all-filtered" type="checkbox" class="accent-indigo-600 w-4 h-4" onchange="toggleSelectAllFiltered(this.checked)" aria-label="Select all currently filtered transactions"><span>Select all filtered</span></label>
+              <span id="ledger-selected-count" class="text-xs font-semibold text-gray-500">0 selected</span>
+              <button type="button" onclick="clearLedgerSelection()" class="px-2.5 py-1.5 rounded-lg border text-xs">Clear selection</button>
+              <button type="button" onclick="openBulkEditModal()" id="ledger-bulk-edit-btn" disabled class="px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-semibold disabled:opacity-40 theme-bg">Edit selected</button>
+              <button type="button" onclick="bulkDeleteSelectedTransactions()" id="ledger-bulk-delete-btn" disabled class="px-3 py-1.5 rounded-lg bg-rose-600 text-white text-xs font-semibold disabled:opacity-40">Delete selected</button>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <label for="ledger-period-preset" class="text-xs text-gray-500">Period</label>
+              <select id="ledger-period-preset" onchange="setLedgerPeriodPreset(this.value)" class="border rounded-lg px-2.5 py-1.5 text-xs bg-white dark:bg-gray-900"><option value="current">This month</option><option value="last">Last month</option><option value="3months">Last 3 months</option><option value="year">This year</option><option value="all">All dates</option></select>
+              <button onclick="clearLedgerFilters()" class="px-2.5 py-1.5 text-xs font-semibold text-indigo-600 dark:text-cyan-300">Clear all</button>
+              <div class="flex items-center rounded-lg border p-0.5" role="group" aria-label="Transaction table view density">
+                <button type="button" id="ledger-view-compact" onclick="setLedgerViewDensity('compact')" class="px-2.5 py-1 rounded-md text-xs font-semibold">Compact</button>
+                <button type="button" id="ledger-view-wide" onclick="setLedgerViewDensity('wide')" class="px-2.5 py-1 rounded-md text-xs font-semibold">Wide</button>
+              </div>
+            </div>
+          </div>
+          <div id="ledger-filter-strip" class="ledger-filter-strip custom-scrollbar px-3 py-2"></div>
+        </div>
         <table class="w-full text-left text-sm" style="min-width:1100px">
           <thead class="bg-gray-50 dark:bg-gray-950 text-xs uppercase border-b border-gray-200 dark:border-gray-800 text-gray-500">
             <tr>
@@ -5337,12 +5348,42 @@ ${acc.name}`);
       const label = document.getElementById('ledger-selected-count');
       const button = document.getElementById('ledger-bulk-edit-btn');
       const deleteButton = document.getElementById('ledger-bulk-delete-btn');
+      const selectAll = document.getElementById('ledger-select-all-filtered');
+      const visibleIds = Array.from(document.querySelectorAll('.ledger-row-select')).map(el => String(el.dataset.id));
+      const selectedVisible = visibleIds.filter(id => selectedLedgerIds.has(id)).length;
       if (label) label.textContent = `${count} selected`;
       if (button) button.disabled = count === 0;
       if (deleteButton) deleteButton.disabled = count === 0;
+      if (selectAll) { selectAll.checked = visibleIds.length > 0 && selectedVisible === visibleIds.length; selectAll.indeterminate = selectedVisible > 0 && selectedVisible < visibleIds.length; selectAll.disabled = visibleIds.length === 0; }
+    }
+    function toggleSelectAllFiltered(checked) {
+      if (checked) selectAllFilteredTransactions(); else {
+        const visibleIds = new Set(Array.from(document.querySelectorAll('.ledger-row-select')).map(el => String(el.dataset.id)));
+        selectedLedgerIds = new Set(Array.from(selectedLedgerIds).filter(id => !visibleIds.has(String(id))));
+        renderLedger();
+      }
+    }
+    function setLedgerViewDensity(mode) {
+      const safeMode = mode === 'wide' ? 'wide' : 'compact';
+      state.ledgerViewDensity = safeMode;
+      saveData();
+      applyLedgerViewDensity();
+    }
+    function applyLedgerViewDensity() {
+      const mode = state.ledgerViewDensity === 'wide' ? 'wide' : 'compact';
+      const table = document.querySelector('#ledger-table-container table');
+      const compact = document.getElementById('ledger-view-compact');
+      const wide = document.getElementById('ledger-view-wide');
+      if (table) table.dataset.density = mode;
+      [ [compact,'compact'], [wide,'wide'] ].forEach(([button,key]) => {
+        if (!button) return;
+        button.classList.toggle('bg-indigo-600', mode === key);
+        button.classList.toggle('text-white', mode === key);
+        button.classList.toggle('text-gray-500', mode !== key);
+      });
     }
     function toggleLedgerTransactionSelection(id, checked) {
-      if (checked) selectedLedgerIds.add(id); else selectedLedgerIds.delete(id);
+      if (checked) selectedLedgerIds.add(String(id)); else selectedLedgerIds.delete(String(id));
       updateLedgerSelectionUI();
     }
     function selectAllFilteredTransactions() {
@@ -6155,7 +6196,7 @@ ${acc.name}`);
             (t.type === 'Transfer' && t.externalTransferDirection !== 'in');
           tbody.innerHTML += `
             <tr class="hover:bg-gray-50 dark:hover:bg-gray-950">
-              <td data-label="Date" class="px-3 py-1.5"><div class="flex items-center gap-2"><input type="checkbox" class="ledger-row-select accent-indigo-600" data-id="${t.id}" ${selectedLedgerIds.has(t.id)?'checked':''} onchange="toggleLedgerTransactionSelection('${t.id}',this.checked)" aria-label="Select transaction ${t.date}"><span>${formatDateMDY(t.date)}</span></div></td>
+              <td data-label="Date" class="px-3 py-1.5"><div class="flex items-center gap-2"><input type="checkbox" class="ledger-row-select accent-indigo-600" data-id="${t.id}" ${selectedLedgerIds.has(String(t.id))?'checked':''} onchange="toggleLedgerTransactionSelection('${t.id}',this.checked)" aria-label="Select transaction ${t.date}"><span>${formatDateMDY(t.date)}</span></div></td>
               <td data-label="Vendor" class="px-3 py-1.5">${t.vendor || 'Vendor not recorded'}</td>
               <td data-label="Description" class="px-3 py-1.5">${t.desc || '-'}</td>
               <td data-label="Type" class="px-3 py-1.5"><span class="px-2 py-0.5 rounded text-[10px] bg-gray-100 dark:bg-gray-800">${t.type === 'Transfer' ? 'Internal Transfer' : displayFinHubTransactionType(t.type)}</span><div class="mt-1 flex flex-wrap gap-1"><span class="px-1.5 py-0.5 rounded text-[9px] bg-indigo-500/10 text-indigo-500">${escapeHtml(transactionSourceShortLabel(t))}</span>${transactionStatementStatusBadge(t)}</div></td>
@@ -6175,8 +6216,9 @@ ${acc.name}`);
 
       // Reapply saved column order, visibility and widths after every ledger render.
       applyLedgerColumns();
+      applyLedgerViewDensity();
       // Drop stale selections for transactions that no longer exist.
-      selectedLedgerIds = new Set(Array.from(selectedLedgerIds).filter(id => state.transactions.some(t => t.id === id)));
+      selectedLedgerIds = new Set(Array.from(selectedLedgerIds).filter(id => state.transactions.some(t => String(t.id) === String(id))));
       updateLedgerSelectionUI();
 
       if (state.ledgerView === 'calendar') {
