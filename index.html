@@ -325,6 +325,36 @@
     @media(max-width:900px){.tx-workspace-form{grid-template-columns:minmax(0,1fr)}.tx-workspace-form>#tx-entry-fields,.tx-workspace-form>#tx-spending-panel,.tx-workspace-form>#split-tx-fields,.tx-workspace-form>div.flex.space-x-3{grid-column:1;grid-row:auto}.tx-workspace-form>#tx-spending-panel{order:5}.tx-analytics-chart{grid-template-columns:120px minmax(0,1fr)}}
 
 
+    /* Ocean Pop light mode: bold pink foundation with turquoise accents. Dark-mode rules below remain untouched. */
+    html:not(.dark) body[data-finhub-theme="oceanpop"] { background:#ffb5d2 !important; color:#132a44 !important; }
+    html:not(.dark) body[data-finhub-theme="oceanpop"] .tab-content { color:#132a44 !important; }
+    html:not(.dark) body[data-finhub-theme="oceanpop"] aside { background:linear-gradient(165deg,#132a44 0%,#173d59 100%) !important; color:#fff !important; }
+    html:not(.dark) body[data-finhub-theme="oceanpop"] .tab-content .bg-white,
+    html:not(.dark) body[data-finhub-theme="oceanpop"] .tab-content .bg-gray-50 { background:#ffe3ee !important; border-color:#e94b91 !important; }
+    html:not(.dark) body[data-finhub-theme="oceanpop"] .tab-content .bg-gray-100 { background:#b8fff8 !important; }
+    html:not(.dark) body[data-finhub-theme="oceanpop"] .tab-content h1,
+    html:not(.dark) body[data-finhub-theme="oceanpop"] .tab-content h2,
+    html:not(.dark) body[data-finhub-theme="oceanpop"] .tab-content h3,
+    html:not(.dark) body[data-finhub-theme="oceanpop"] .tab-content h4 { color:#132a44 !important; }
+    html:not(.dark) body[data-finhub-theme="oceanpop"] .tab-content h2 { border-left:6px solid #00a99e; padding-left:10px; }
+    html:not(.dark) body[data-finhub-theme="oceanpop"] .tab-content .theme-bg,
+    html:not(.dark) body[data-finhub-theme="oceanpop"] .tab-content button.bg-indigo-600 { background:#00bdb2 !important; color:#10283f !important; }
+    html:not(.dark) body[data-finhub-theme="oceanpop"] .tab-content .theme-text,
+    html:not(.dark) body[data-finhub-theme="oceanpop"] .tab-content .text-indigo-600,
+    html:not(.dark) body[data-finhub-theme="oceanpop"] .tab-content .text-indigo-500 { color:#007d78 !important; }
+    html:not(.dark) body[data-finhub-theme="oceanpop"] .tab-content .text-rose-600,
+    html:not(.dark) body[data-finhub-theme="oceanpop"] .tab-content .text-rose-500 { color:#b20d58 !important; }
+    html:not(.dark) body[data-finhub-theme="oceanpop"] .tab-content .text-emerald-600,
+    html:not(.dark) body[data-finhub-theme="oceanpop"] .tab-content .text-emerald-500 { color:#32650d !important; }
+    html:not(.dark) body[data-finhub-theme="oceanpop"] .tab-content input,
+    html:not(.dark) body[data-finhub-theme="oceanpop"] .tab-content select,
+    html:not(.dark) body[data-finhub-theme="oceanpop"] .tab-content textarea,
+    html:not(.dark) body[data-finhub-theme="oceanpop"] #transaction-modal input,
+    html:not(.dark) body[data-finhub-theme="oceanpop"] #transaction-modal select,
+    html:not(.dark) body[data-finhub-theme="oceanpop"] #transaction-modal textarea { background:#ffffff !important; color:#132a44 !important; border-color:#00a99e !important; }
+    html:not(.dark) body[data-finhub-theme="oceanpop"] .tab-content summary { background:#00d9cc !important; color:#132a44 !important; }
+    html:not(.dark) body[data-finhub-theme="oceanpop"] .tab-content [class*="border"] { border-color:#e56b9f !important; }
+
     /* Ocean Pop refresh: stronger colour presence with translucent surfaces and accessible contrast. */
     body[data-finhub-theme="oceanpop"] { --op-aqua:0,251,234; --op-lime:216,255,118; --op-pink:255,38,135; --op-navy:19,42,68; background:linear-gradient(135deg,rgba(0,251,234,.13),rgba(216,255,118,.12) 48%,rgba(255,38,135,.08)),#eaf8f7 !important; }
     body[data-finhub-theme="oceanpop"] .tab-content h2, body[data-finhub-theme="oceanpop"] .tab-content h3, body[data-finhub-theme="oceanpop"] .tab-content h4 { color:#132a44 !important; }
@@ -5904,7 +5934,7 @@ ${acc.name}`);
       if (summary) summary.textContent = `${checked} of ${accounts.length} have a statement balance · ${exceptions} variance(s) to review`;
     }
 
-    function setLedgerPeriodPreset(value){window.closeLedgerFilterPeriod=null;window.closeLedgerFilterOnlyUnmatched=false;renderLedger();}
+    function setLedgerPeriodPreset(value){window.closeLedgerFilterPeriod=null;window.closeLedgerFilterOnlyUnmatched=false;window.dataHealthTransactionIds=null;renderLedger();}
 
     function renderLedger() {
       const filterInput = document.getElementById('upcoming-bills-filter');
@@ -5952,7 +5982,8 @@ ${acc.name}`);
           if (preset === 'year' && txDate.slice(0,4)!==String(now.getFullYear())) return false;
         }
         if (window.closeLedgerFilterPeriod && (String(window.closeLedgerFilterPeriod).length===4 ? String(t.date || '').slice(0,4) : String(t.date || '').slice(0,7)) !== String(window.closeLedgerFilterPeriod)) return false;
-        if (window.closeLedgerFilterOnlyUnmatched && (t.reconciled || t.statementMatchId || t.statementMatchGroupId)) return false;
+        if (Array.isArray(window.dataHealthTransactionIds) && window.dataHealthTransactionIds.length && !window.dataHealthTransactionIds.some(id => String(id) === String(t.id))) return false;
+        if (window.closeLedgerFilterOnlyUnmatched && (t.reconciled || t.statementMatchId || t.statementMatchGroupId || t.statementMatchId === 0)) return false;
         const acc = state.accounts.find(a => a.id === t.accountId);
         const accName = acc ? acc.name.toLowerCase() : '';
         for (const [filterKey] of LEDGER_FILTERS) {
@@ -10083,21 +10114,61 @@ ${acc.name}`);
       XLSX.writeFile(wb,`FinHub_Financial_Reports_${year}.xlsx`);
     }
 
-    function renderDataHealth(){const el=document.getElementById('data-health-results');if(!el)return;const tx=state.transactions||[],accounts=state.accounts||[],ids=new Set(accounts.map(a=>String(a.id))),seen=new Set(),duplicateIds=[],missingAccount=[],missingDate=[],missingCategory=[];tx.forEach(t=>{const id=String(t.id??'');if(id&&seen.has(id))duplicateIds.push(t);if(id)seen.add(id);if(t.accountId&&!ids.has(String(t.accountId))&&!t.transferToAccountId)missingAccount.push(t);if(!/^\d{4}-\d{2}-\d{2}$/.test(String(t.date||'')))missingDate.push(t);if(['Expense','Income','Interest Charge'].includes(t.type)&&!t.category)missingCategory.push(t);});const checks=[['Duplicate transaction IDs',duplicateIds.length,'Potentially conflicting records'],['Missing or archived account references',missingAccount.length,'Transactions linked to an account that is not present'],['Missing or invalid dates',missingDate.length,'Transactions that may not sort or report correctly'],['Missing categories',missingCategory.length,'Income/expense records without a category']];el.innerHTML=checks.map(([name,count,desc])=>`<div class="rounded-lg border p-3 flex items-center justify-between gap-3"><div><strong>${name}</strong><p class="text-gray-500 mt-1">${desc}</p></div><span class="font-bold ${count?'text-amber-600':'text-emerald-600'}">${count} ${count?'to review':'clear'}</span></div>`).join('');}
-
+    function openDataHealthIssue(issueKey) {
+      const list = (window.dataHealthIssueMap?.[String(issueKey)] || []).map(String);
+      if (!list.length) return;
+      window.closeLedgerFilterPeriod = null;
+      window.closeLedgerFilterOnlyUnmatched = false;
+      window.dataHealthTransactionIds = list;
+      const preset = document.getElementById('ledger-period-preset');
+      if (preset) preset.value = 'all';
+      ledgerFilterSelections = {};
+      ledgerFilterSearchTerms = {};
+      switchTab('ledger');
+      const host = document.getElementById('ledger-table-container');
+      if (host) host.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    function renderDataHealth(){
+      const el=document.getElementById('data-health-results'); if(!el)return;
+      const tx=state.transactions||[], accounts=state.accounts||[], ids=new Set(accounts.map(a=>String(a.id))), seen=new Map();
+      const duplicateIds=[], missingAccount=[], missingDate=[], missingCategory=[], unmatched=[], missingVendor=[];
+      tx.forEach(t=>{
+        const id=String(t.id??'');
+        if(id && seen.has(id)){ duplicateIds.push(seen.get(id),t); } else if(id) seen.set(id,t);
+        if(t.accountId && !ids.has(String(t.accountId)) && !t.transferToAccountId) missingAccount.push(t);
+        if(!/^\d{4}-\d{2}-\d{2}$/.test(String(t.date||'')) || Number.isNaN(Date.parse(`${t.date}T12:00:00`))) missingDate.push(t);
+        if(['Expense','Income','Interest Charge'].includes(t.type) && !t.category) missingCategory.push(t);
+        if(!t.reconciled && !t.statementMatchId && !t.statementMatchGroupId) unmatched.push(t);
+        if(t.type==='Expense' && !String(t.vendor||'').trim()) missingVendor.push(t);
+      });
+      const checks=[
+        ['Unmatched transactions',unmatched,'Transactions without a reconciliation or statement-match reference','Review whether each item is genuinely outstanding'],
+        ['Duplicate transaction IDs',duplicateIds,'Potentially conflicting records','Check the duplicate records before deleting anything'],
+        ['Missing or archived account references',missingAccount,'Transactions linked to an account that is not present','Check the account assignment'],
+        ['Missing or invalid dates',missingDate,'Transactions that may not sort or report correctly','Correct the transaction date'],
+        ['Missing categories',missingCategory,'Income/expense records without a category','Assign an appropriate category'],
+        ['Missing vendor information',missingVendor,'Expense transactions without a vendor','Add the vendor or payee']
+      ];
+      window.dataHealthIssueMap = {};
+      el.innerHTML=checks.map(([name,rows,desc,action],i)=>{
+        const count=rows.length, ids=rows.map(t=>String(t.id)); window.dataHealthIssueMap[String(i)] = ids;
+        const actionHtml=count?`<button type="button" onclick="openDataHealthIssue('${i}')" class="mt-2 inline-flex items-center gap-1 font-semibold text-indigo-700 dark:text-cyan-300 underline underline-offset-2">View ${count} affected ${count===1?'record':'records'} <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i></button>`:`<span class="mt-2 block text-emerald-700 dark:text-emerald-300 font-semibold">No records to review</span>`;
+        return `<div class="rounded-xl border p-3 flex flex-col justify-between gap-2 bg-white dark:bg-gray-900"><div class="flex items-start justify-between gap-3"><div class="min-w-0"><strong>${name}</strong><p class="text-gray-500 mt-1">${desc}</p><p class="text-[10px] text-gray-400 mt-1">${action}</p></div><span class="font-bold whitespace-nowrap ${count?'text-amber-600':'text-emerald-600'}">${count} ${count?'to review':'clear'}</span></div>${actionHtml}</div>`;
+      }).join('');
+    }
     function closePeriod(){return document.getElementById('monthly-close-period')?.value||new Date().toISOString().slice(0,7);}
     function closeMetrics(period){const tx=(state.transactions||[]).filter(t=>String(t.date||'').slice(0,7)===period),accounts=(state.accounts||[]).filter(a=>!a.archived),unrec=accounts.filter(a=>!a.lastReconciledAt||String(a.lastReconciledAt).slice(0,7)!==period),income=tx.filter(t=>t.type==='Income'&&t.category!=='Transfer').reduce((s,t)=>s+(Number(t.amount)||0),0),expense=tx.reduce((s,t)=>s+getExpenseReportingComponents(t).reduce((a,c)=>a+(Number(c.amount)||0),0),0),unmatched=tx.filter(t=>!t.reconciled&&!t.statementMatchId&&!t.statementMatchGroupId);return {tx,accounts,unrec,income,expense,unmatched};}
     const MONTH_CLOSE_TASKS=[['review_budget','Review budget actuals against the paycheque plan'],['review_debt','Review debt payments, principal and interest'],['review_transfers','Review transfers, refunds and outstanding items'],['review_carryforward','Confirm variable pool carry-forward/reset decisions'],['backup','Save a current JSON backup']];
     function setMonthlyCloseTask(key,checked){const p=closePeriod();state.monthlyCloseChecklist=state.monthlyCloseChecklist||{};state.monthlyCloseChecklist[p]=state.monthlyCloseChecklist[p]||{};state.monthlyCloseChecklist[p][key]=!!checked;saveData();renderMonthlyClose();}
-    function openCloseUnmatched(){window.closeLedgerFilterPeriod=closePeriod();window.closeLedgerFilterOnlyUnmatched=true;const p=document.getElementById('ledger-period-preset');if(p)p.value='all';switchTab('ledger');const host=document.getElementById('ledger-table-container');if(host)host.scrollIntoView({behavior:'smooth',block:'start'});}
-    function clearCloseTransactionFilter(){window.closeLedgerFilterPeriod=null;window.closeLedgerFilterOnlyUnmatched=false;const p=document.getElementById('ledger-period-preset');if(p)p.value='current';renderLedger();}
+    function openCloseUnmatched(){window.dataHealthTransactionIds=null;window.closeLedgerFilterPeriod=closePeriod();window.closeLedgerFilterOnlyUnmatched=true;ledgerFilterSelections={};ledgerFilterSearchTerms={};const p=document.getElementById('ledger-period-preset');if(p)p.value='all';switchTab('ledger');const host=document.getElementById('ledger-table-container');if(host)host.scrollIntoView({behavior:'smooth',block:'start'});}
+    function clearCloseTransactionFilter(){window.closeLedgerFilterPeriod=null;window.closeLedgerFilterOnlyUnmatched=false;window.dataHealthTransactionIds=null;const p=document.getElementById('ledger-period-preset');if(p)p.value='current';renderLedger();}
     function renderMonthlyClose(){const p=closePeriod(),d=closeMetrics(p),sum=document.getElementById('monthly-close-summary'),list=document.getElementById('monthly-close-checklist');if(!sum||!list)return;sum.innerHTML=[['Transactions',d.tx.length],['Income',formatFinancial(d.income)],['Expenses',formatFinancial(d.expense)],['Unmatched',`<button onclick="openCloseUnmatched()" class="text-indigo-600 dark:text-indigo-300 underline font-bold">${d.unmatched.length} · View transactions</button>`]].map(x=>`<div class="p-2 bg-gray-50 dark:bg-gray-950 rounded"><div class="text-gray-500">${x[0]}</div><b>${x[1]}</b></div>`).join('');const flags=state.monthlyCloseChecklist?.[p]||{};const rows=[`<div class="p-2 border rounded flex items-center justify-between gap-2"><span>Account reconciliation: ${d.unrec.length} account(s) not reconciled in this month</span><span class="font-semibold ${d.unrec.length?'text-amber-600':'text-emerald-600'}">${d.unrec.length?'Review':'Clear'}</span></div>`,`<div class="p-2 border rounded flex items-center justify-between gap-2"><span>Transaction review: <button onclick="openCloseUnmatched()" class="text-indigo-600 dark:text-indigo-300 underline">${d.unmatched.length} unmatched transaction(s) · Open list</button></span><span class="font-semibold ${d.unmatched.length?'text-amber-600':'text-emerald-600'}">${d.unmatched.length?'Review':'Clear'}</span></div>`,...MONTH_CLOSE_TASKS.map(([key,label])=>`<label class="p-2 border rounded flex items-center gap-2"><input type="checkbox" ${flags[key]?'checked':''} onchange="setMonthlyCloseTask('${key}',this.checked)" class="accent-indigo-600"><span>${label}</span></label>` )];list.innerHTML=rows.join('');const snap=state.monthlyCloseSnapshots?.[p];const reopen=document.getElementById('monthly-close-reopen');if(reopen)reopen.classList.toggle('hidden',!snap||snap.status==='reopened');renderMonthlyCloseHistory();}
     function completeMonthlyClose(){const p=closePeriod(),d=closeMetrics(p),flags=state.monthlyCloseChecklist?.[p]||{},missing=MONTH_CLOSE_TASKS.filter(([k])=>!flags[k]);if((d.unrec.length||d.unmatched.length||missing.length)&&!confirm(`${d.unrec.length} account(s), ${d.unmatched.length} transaction(s), and ${missing.length} checklist item(s) remain open. Save as incomplete?`))return;if(!confirm(`Save the ${p} month-end snapshot? This does not lock transactions.`))return;state.monthlyCloseSnapshots=state.monthlyCloseSnapshots||{};state.monthlyCloseSnapshots[p]={period:p,closedAt:new Date().toISOString(),status:d.unrec.length||d.unmatched.length||missing.length?'incomplete':'completed',income:d.income,expenses:d.expense,transactionCount:d.tx.length,unmatched:d.unmatched.length,checklist:{...flags},accountBalances:d.accounts.map(a=>({id:a.id,name:a.name,balance:Number(a.balance)||0,statementBalance:a.actualBalance??null}))};saveData();renderMonthlyClose();alert('Monthly snapshot saved.');}
     function reopenMonthlyClose(){const p=closePeriod(),snap=state.monthlyCloseSnapshots?.[p];if(!snap)return;if(!confirm(`Reopen ${p}? The existing snapshot will be retained as a prior snapshot record and the month can be reviewed again.`))return;state.monthlyCloseSnapshots[p]={...snap,status:'reopened',reopenedAt:new Date().toISOString(),priorSnapshot:{...snap}};saveData();renderMonthlyClose();}
     function renderMonthlyCloseHistory(){const el=document.getElementById('monthly-close-history');if(!el)return;const items=Object.values(state.monthlyCloseSnapshots||{}).sort((a,b)=>b.period.localeCompare(a.period));el.innerHTML=items.length?'<b>Saved monthly snapshots</b><div class="mt-1 space-y-1">'+items.map(x=>`<div>${escapeHtml(x.period)}: <strong>${escapeHtml(x.status)}</strong> · ${new Date(x.closedAt).toLocaleDateString()}${x.reopenedAt?' · reopened '+new Date(x.reopenedAt).toLocaleDateString():''}</div>`).join('')+'</div>':'No monthly snapshots saved.';}
     function yearEndMetrics(year){const prefix=String(year),tx=(state.transactions||[]).filter(t=>String(t.date||'').startsWith(prefix)),accounts=(state.accounts||[]).filter(a=>!a.archived),months=Array.from({length:12},(_,i)=>`${prefix}-${String(i+1).padStart(2,'0')}`),snapshots=state.monthlyCloseSnapshots||{},closed=months.filter(m=>snapshots[m]&&snapshots[m].status==='completed').length,income=tx.filter(t=>t.type==='Income'&&t.category!=='Transfer').reduce((s,t)=>s+(Number(t.amount)||0),0),expenses=tx.reduce((s,t)=>s+getExpenseReportingComponents(t).reduce((a,c)=>a+(Number(c.amount)||0),0),0),unmatched=tx.filter(t=>!t.reconciled&&!t.statementMatchId&&!t.statementMatchGroupId).length;return {tx,accounts,months,closed,income,expenses,unmatched};}
     function renderYearEndClose(){const year=Number(document.getElementById('year-end-period')?.value)||new Date().getFullYear(),d=yearEndMetrics(year),sum=document.getElementById('year-end-summary'),list=document.getElementById('year-end-checklist');if(!sum||!list)return;sum.innerHTML=[['Transactions',d.tx.length],['Income',formatFinancial(d.income)],['Expenses',formatFinancial(d.expenses)],['Monthly closes',`${d.closed}/12 completed`]].map(x=>`<div class="p-2 bg-gray-50 dark:bg-gray-950 rounded"><div class="text-gray-500">${x[0]}</div><b>${x[1]}</b></div>`).join('');list.innerHTML=[`Monthly close coverage: ${d.closed} of 12 months have completed snapshots`,`Unmatched transactions: ${d.unmatched} · <button onclick="openYearUnmatched(${year})" class="text-indigo-600 underline">View transactions</button>`,`Review final balances for ${d.accounts.length} active accounts and liabilities`,`Review annual income, expenses, debt principal/interest, transfers and outstanding items`,`Save a full JSON backup before completing year-end`].map(x=>`<div class="p-2 border rounded">${x}</div>`).join('');const hist=document.getElementById('year-end-history');const snap=state.yearEndSnapshots?.[year];if(hist)hist.innerHTML=snap?`Saved ${year} snapshot: <strong>${escapeHtml(snap.status)}</strong> · ${new Date(snap.closedAt).toLocaleDateString()}`:'No year-end snapshot saved for this year.';}
-    function openYearUnmatched(year){window.closeLedgerFilterPeriod=String(year);window.closeLedgerFilterOnlyUnmatched=true;const p=document.getElementById('ledger-period-preset');if(p)p.value='all';switchTab('ledger');}
+    function openYearUnmatched(year){window.dataHealthTransactionIds=null;window.closeLedgerFilterPeriod=String(year);window.closeLedgerFilterOnlyUnmatched=true;ledgerFilterSelections={};ledgerFilterSearchTerms={};const p=document.getElementById('ledger-period-preset');if(p)p.value='all';switchTab('ledger');const host=document.getElementById('ledger-table-container');if(host)host.scrollIntoView({behavior:'smooth',block:'start'});}
     function completeYearEndClose(){const year=Number(document.getElementById('year-end-period')?.value)||new Date().getFullYear(),d=yearEndMetrics(year);if(!confirm(`${d.closed}/12 monthly closes completed and ${d.unmatched} transactions are unmatched. Save the ${year} year-end snapshot anyway?`))return;state.yearEndSnapshots=state.yearEndSnapshots||{};state.yearEndSnapshots[year]={year,closedAt:new Date().toISOString(),status:d.closed===12&&!d.unmatched?'completed':'incomplete',income:d.income,expenses:d.expenses,transactionCount:d.tx.length,unmatched:d.unmatched,monthlyCloseCoverage:d.closed,accountBalances:d.accounts.map(a=>({id:a.id,name:a.name,balance:Number(a.balance)||0,statementBalance:a.actualBalance??null}))};saveData();renderYearEndClose();alert('Year-end snapshot saved. Continue in the same FinHub file; do not re-enter opening balances.');}
     document.addEventListener('DOMContentLoaded',()=>{['debt-simulator-details','data-health-details'].forEach(id=>{const el=document.getElementById(id);if(!el)return;const key='finhub-collapse-'+id;const saved=localStorage.getItem(key);if(saved!==null)el.open=saved==='open';el.addEventListener('toggle',()=>localStorage.setItem(key,el.open?'open':'closed'));});const up=document.getElementById('dashboard-upcoming-month');if(up&&!up.value){const n=new Date();up.value=`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}`;}renderDashboardUpcoming();const m=document.getElementById('monthly-close-period');if(m&&!m.value)m.value=new Date().toISOString().slice(0,7);const y=document.getElementById('year-end-period');if(y&&!y.value)y.value=new Date().getFullYear();renderMonthlyClose();renderYearEndClose();renderDataHealth();const period=document.getElementById('ledger-period-preset');if(period)period.value='current';applyLedgerColumns();});
 
