@@ -10304,7 +10304,36 @@ ${acc.name}`);
       const ws=XLSX.utils.aoa_to_sheet(ie);ws['!cols']=[{wch:30},...Array(13).fill({wch:14})];XLSX.utils.book_append_sheet(wb,ws,'Income & Expenses');
       const raw=[['Date','Vendor','Description','Type','Category','Subcategory','Account','Amount','Reversal of'],...txs.filter(t=>String(t.date||'').startsWith(String(year))).sort((a,b)=>String(a.date).localeCompare(String(b.date))).map(t=>[t.date,t.vendor||'',t.desc||'',t.type||'',t.category||'',t.subcategory||'',state.accounts.find(a=>String(a.id)===String(t.accountId))?.name||'',Number(t.amount)||0,t.reversalOfTransactionId||''])];const tw=XLSX.utils.aoa_to_sheet(raw);tw['!autofilter']={ref:`A1:I${raw.length}`};XLSX.utils.book_append_sheet(wb,tw,'Transactions');
       const cash=[['CASH FLOW PROJECTION (scheduled calendar items only)','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','TOTAL'],['Scheduled income',...months.map(m=>fmt((state.calendarBills||[]).filter(b=>String(b.date||'').startsWith(m)&&b.type==='income'&&!b.paid).reduce((a,b)=>a+(Number(b.amount)||0),0))),''],['Scheduled bills',...months.map(m=>fmt((state.calendarBills||[]).filter(b=>String(b.date||'').startsWith(m)&&b.type!=='income'&&!b.paid).reduce((a,b)=>a+(Number(b.amount)||0),0))),''],['Net scheduled cash flow',...months.map((m,i)=>`=${String.fromCharCode(66+i)}2-${String.fromCharCode(66+i)}3`),'']];XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(cash),'Cash Flow Projection');
-      const jb=[['JOINT BILLS ACTUAL / PLANNED ENTRIES',...months.map(m=>new Date(`${m}-01T12:00:00`).toLocaleString('en-CA',{month:'short'})),'TOTAL']];for(const [cls,label] of [['fixed','FIXED JOINT EXPENSES'],['variable','VARIABLE JOINT EXPENSES']]){jb.push([label]);const items=[...new Set((state.jointBills||[]).filter(b=>b.classification===cls).map(b=>b.name))].sort();const start=jb.length+1;items.forEach(name=>{const row=jb.length+1;jb.push([name,...months.map(m=>fmt((state.jointBills||[]).filter(b=>b.ym===m&&b.classification===cls&&b.name===name).reduce((a,b)=>a+(Number(b.amount)||0),0))),`=SUM(B${row}:M${row})`]);});const end=jb.length;const tr=jb.length+1;jb.push([`Total ${label}`,...months.map((m,i)=>`=SUM(${String.fromCharCode(66+i)}${start}:${String.fromCharCode(66+i)}${end})`),`=SUM(B${tr}:M${tr})`]);}XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(jb),'Joint Bills');
+      // Joint Bills report shows the full household amount and the user's share side by side.
+      const jb=[['JOINT BILLS ACTUAL / PLANNED ENTRIES',...months.flatMap(m=>{const label=new Date(`${m}-01T12:00:00`).toLocaleString('en-CA',{month:'short'});return [`${label} - Full`,`${label} - My Portion`];}),'TOTAL - Full','TOTAL - My Portion']];
+      for(const [cls,label] of [['fixed','FIXED JOINT EXPENSES'],['variable','VARIABLE JOINT EXPENSES']]){
+        jb.push([label]);
+        const items=[...new Set((state.jointBills||[]).filter(b=>b.classification===cls).map(b=>b.name))].sort();
+        const first=jb.length+1;
+        items.forEach(name=>{
+          const row=jb.length+1, values=[];
+          months.forEach(m=>{
+            const bills=(state.jointBills||[]).filter(b=>b.ym===m&&b.classification===cls&&b.name===name);
+            values.push(fmt(bills.reduce((a,b)=>a+(Number(b.amount)||0),0)));
+            values.push(fmt(bills.reduce((a,b)=>a+(Number(b.amount)||0)*(Number(b.splitPct)||0)/100,0)));
+          });
+          const fullRefs=months.map((m,i)=>`${XLSX.utils.encode_col(1+i*2)}${row}`).join(',');
+          const myRefs=months.map((m,i)=>`${XLSX.utils.encode_col(2+i*2)}${row}`).join(',');
+          jb.push([name,...values,`=SUM(${fullRefs})`,`=SUM(${myRefs})`]);
+        });
+        const last=jb.length,totalRow=jb.length+1,totals=[];
+        for(let c=1;c<=24;c++){
+          const col=XLSX.utils.encode_col(c);
+          totals.push(`=SUM(${col}${first}:${col}${last})`);
+        }
+        const fullTotalRefs=months.map((m,i)=>`${XLSX.utils.encode_col(1+i*2)}${totalRow}`).join(',');
+        const myTotalRefs=months.map((m,i)=>`${XLSX.utils.encode_col(2+i*2)}${totalRow}`).join(',');
+        jb.push([`Total ${label}`,...totals,`=SUM(${fullTotalRefs})`,`=SUM(${myTotalRefs})`]);
+      }
+      const jbSheet=XLSX.utils.aoa_to_sheet(jb);
+      jbSheet['!cols']=[{wch:30},...Array(24).fill({wch:14}),{wch:16},{wch:18}];
+      jbSheet['!autofilter']={ref:`A1:AA${jb.length}`};
+      XLSX.utils.book_append_sheet(wb,jbSheet,'Joint Bills');
       // Balance Sheet: current account balances at the time of export.
       const activeAccounts=(state.accounts||[]).filter(a=>!a.archived);
       const assets=activeAccounts.filter(a=>a.type==='asset').sort((a,b)=>String(a.name||'').localeCompare(String(b.name||'')));
@@ -10327,10 +10356,28 @@ ${acc.name}`);
       const fill=(rgb)=>({patternType:'solid',fgColor:{rgb}});
       const ACCOUNTING_FMT='_($* #,##0.00_);_($* \(#,##0.00\);_($* "-"??_);_(@_)';
       const borderBottom={style:'thin',color:{rgb:'64748B'}};
+      const JOINT_BILLS_FMT='#,##0.00;[Red](#,##0.00);-';
       const styleCell=(cell,style)=>{if(cell)cell.s={...(cell.s||{}),...style};};
       Object.entries(wb.Sheets).forEach(([name,sheet])=>{
         if(name==='Accounts')return;
         const range=XLSX.utils.decode_range(sheet['!ref']||'A1:A1');
+        if(name==='Joint Bills'){
+          for(let R=range.s.r;R<=range.e.r;R++){
+            const label=String(sheet[XLSX.utils.encode_cell({r:R,c:0})]?.v??'').toUpperCase();
+            const isTitle=R===range.s.r;
+            const isSection=label==='FIXED JOINT EXPENSES'||label==='VARIABLE JOINT EXPENSES';
+            const isTotal=label.startsWith('TOTAL ');
+            for(let C=range.s.c;C<=range.e.c;C++){
+              const cell=sheet[XLSX.utils.encode_cell({r:R,c:C})]; if(!cell)continue;
+              if(isTitle)styleCell(cell,{font:{bold:true,color:{rgb:'FFFFFF'},sz:14},fill:fill('243B63'),alignment:{vertical:'center'}});
+              else if(isSection)styleCell(cell,{font:{bold:true,color:{rgb:'FFFFFF'}},fill:fill('365F91')});
+              else if(isTotal)styleCell(cell,{font:{bold:true},border:{bottom:borderBottom,top:{style:'thin',color:{rgb:'64748B'}}}});
+              if(C>0&&(cell.t==='n'||cell.f))styleCell(cell,{numFmt:JOINT_BILLS_FMT});
+            }
+          }
+          sheet['!rows']=sheet['!rows']||[];sheet['!rows'][0]={hpt:24};
+          return;
+        }
         if(name==='Transactions'){for(let C=range.s.c;C<=range.e.c;C++){const cell=sheet[XLSX.utils.encode_cell({r:0,c:C})];if(cell)cell.s={font:{bold:true,color:{rgb:'FFFFFF'}},fill:fill('243B63'),alignment:{vertical:'center',wrapText:true}};}sheet['!rows']=sheet['!rows']||[];sheet['!rows'][0]={hpt:24};for(let R=1;R<=range.e.r;R++){const amount=sheet[XLSX.utils.encode_cell({r:R,c:7})];if(amount)amount.s={...(amount.s||{}),numFmt:ACCOUNTING_FMT};}return;}
         for(let R=range.s.r;R<=range.e.r;R++){
           const first=sheet[XLSX.utils.encode_cell({r:R,c:0})];
