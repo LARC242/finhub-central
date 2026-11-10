@@ -1202,7 +1202,291 @@ html.dark body#app-body[data-finhub-theme="colorful"] #tab-debt details.debt-act
 html.dark body#app-body[data-finhub-theme="colorful"] #tab-debt details.debt-activity-section > .debt-activity-content {
   background: #30202c !important;
 }
-</style></head>
+</style>
+<style id="finhub-sidebar-vertical-icons-final">
+/* Keep the collapsed navigation as a true vertical rail at desktop/tablet widths.
+   This intentionally overrides the earlier responsive horizontal-nav rules. */
+@media (min-width:681px) {
+  html body#app-body.sidebar-collapsed > aside#finhub-sidebar {
+    box-sizing:border-box !important;
+    width:5rem !important;
+    min-width:5rem !important;
+    max-width:5rem !important;
+    height:100vh !important;
+    min-height:100vh !important;
+    max-height:100vh !important;
+    flex:0 0 5rem !important;
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:stretch !important;
+    justify-content:space-between !important;
+    overflow:hidden !important;
+  }
+  html body#app-body.sidebar-collapsed > aside#finhub-sidebar > div:first-child {
+    display:flex !important;
+    flex:1 1 auto !important;
+    min-height:0 !important;
+    width:100% !important;
+    flex-direction:column !important;
+    align-items:stretch !important;
+    overflow:hidden !important;
+  }
+  html body#app-body.sidebar-collapsed > aside#finhub-sidebar > div:first-child > div:first-child {
+    flex:0 0 auto !important;
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:center !important;
+    justify-content:center !important;
+    gap:.25rem !important;
+    width:100% !important;
+    padding:.45rem .25rem !important;
+    border-bottom:0 !important;
+  }
+  html body#app-body.sidebar-collapsed > aside#finhub-sidebar .sidebar-brand-row {
+    width:100% !important;
+    justify-content:center !important;
+    margin:0 !important;
+  }
+  html body#app-body.sidebar-collapsed > aside#finhub-sidebar #brand-logo {
+    width:2.45rem !important;
+    height:2.45rem !important;
+    min-width:2.45rem !important;
+    min-height:2.45rem !important;
+  }
+  html body#app-body.sidebar-collapsed > aside#finhub-sidebar .sidebar-brand-actions {
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:center !important;
+    justify-content:center !important;
+    gap:.12rem !important;
+    width:100% !important;
+    margin:0 !important;
+  }
+  html body#app-body.sidebar-collapsed > aside#finhub-sidebar .sidebar-brand-actions button {
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    width:2.35rem !important;
+    height:2.15rem !important;
+    min-height:2.15rem !important;
+    padding:.25rem !important;
+    margin:0 !important;
+  }
+  html body#app-body.sidebar-collapsed > aside#finhub-sidebar nav {
+    display:flex !important;
+    flex:1 1 auto !important;
+    min-height:0 !important;
+    width:100% !important;
+    flex-direction:column !important;
+    align-items:stretch !important;
+    justify-content:space-evenly !important;
+    gap:.08rem !important;
+    padding:.25rem .35rem !important;
+    overflow:hidden !important;
+  }
+  html body#app-body.sidebar-collapsed > aside#finhub-sidebar nav .nav-group {
+    display:contents !important;
+  }
+  html body#app-body.sidebar-collapsed > aside#finhub-sidebar .nav-section-label,
+  html body#app-body.sidebar-collapsed > aside#finhub-sidebar .sidebar-nav-label,
+  html body#app-body.sidebar-collapsed > aside#finhub-sidebar #sidebar-summary {
+    display:none !important;
+  }
+  html body#app-body.sidebar-collapsed > aside#finhub-sidebar .nav-btn {
+    display:flex !important;
+    flex:0 0 auto !important;
+    align-items:center !important;
+    justify-content:center !important;
+    width:100% !important;
+    min-width:0 !important;
+    height:2.35rem !important;
+    min-height:2.35rem !important;
+    padding:.3rem !important;
+    margin:0 !important;
+  }
+  html body#app-body.sidebar-collapsed > aside#finhub-sidebar .nav-btn > i {
+    display:inline-flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    width:auto !important;
+    min-width:0 !important;
+    margin:0 !important;
+    font-size:1.08rem !important;
+    line-height:1 !important;
+  }
+  html body#app-body.sidebar-collapsed > aside#finhub-sidebar > .px-3.pt-3 {
+    display:flex !important;
+    flex:0 0 auto !important;
+    align-items:center !important;
+    justify-content:center !important;
+    width:100% !important;
+    margin:0 !important;
+    padding:.35rem !important;
+  }
+  html body#app-body.sidebar-collapsed > aside#finhub-sidebar #finhub-global-refresh {
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    width:2.45rem !important;
+    min-width:2.45rem !important;
+    max-width:2.45rem !important;
+    height:2.45rem !important;
+    min-height:2.45rem !important;
+    padding:.35rem !important;
+    gap:0 !important;
+  }
+  html body#app-body.sidebar-collapsed > aside#finhub-sidebar #finhub-global-refresh [data-refresh-label] {
+    display:none !important;
+  }
+}
+</style>
+
+
+<style id="finhub-sidebar-refresh-final-position">
+/* Keep the collapsed rail tidy: park Refresh at the upper-right, separate from navigation. */
+@media (min-width: 641px) {
+  body.sidebar-collapsed #finhub-sidebar {
+    position: relative !important;
+  }
+  body.sidebar-collapsed #finhub-sidebar > .px-3.pt-3 {
+    position: absolute !important;
+    top: .55rem !important;
+    right: .45rem !important;
+    bottom: auto !important;
+    left: auto !important;
+    width: 2.35rem !important;
+    height: 2.35rem !important;
+    min-height: 2.35rem !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    z-index: 8 !important;
+  }
+  body.sidebar-collapsed #finhub-sidebar #finhub-global-refresh {
+    position: static !important;
+    inset: auto !important;
+    transform: none !important;
+    width: 2.25rem !important;
+    min-width: 2.25rem !important;
+    max-width: 2.25rem !important;
+    height: 2.25rem !important;
+    min-height: 2.25rem !important;
+    max-height: 2.25rem !important;
+    padding: .35rem !important;
+    margin: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: .7rem !important;
+    gap: 0 !important;
+  }
+  body.sidebar-collapsed #finhub-sidebar #finhub-global-refresh [data-refresh-label] {
+    display: none !important;
+  }
+}
+</style>
+
+<style id="finhub-refresh-rail-bottom-fix">
+/* Collapsed rail: keep Refresh clear of the logo and navigation controls. */
+@media (min-width: 641px) {
+  body.sidebar-collapsed #finhub-sidebar {
+    position: relative !important;
+    padding-bottom: 4.25rem !important;
+  }
+  body.sidebar-collapsed #finhub-sidebar > .px-3.pt-3 {
+    position: absolute !important;
+    top: auto !important;
+    right: auto !important;
+    bottom: .65rem !important;
+    left: 50% !important;
+    width: 2.5rem !important;
+    height: 2.5rem !important;
+    min-height: 2.5rem !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    transform: translateX(-50%) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    z-index: 20 !important;
+  }
+  body.sidebar-collapsed #finhub-sidebar #finhub-global-refresh {
+    position: static !important;
+    inset: auto !important;
+    transform: none !important;
+    width: 2.35rem !important;
+    min-width: 2.35rem !important;
+    max-width: 2.35rem !important;
+    height: 2.35rem !important;
+    min-height: 2.35rem !important;
+    max-height: 2.35rem !important;
+    padding: .3rem !important;
+    margin: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: .75rem !important;
+    gap: 0 !important;
+  }
+  body.sidebar-collapsed #finhub-sidebar #finhub-global-refresh [data-refresh-label] {
+    display: none !important;
+  }
+}
+</style>
+
+
+<style id="finhub-refresh-top-right-rail">
+/* In the narrow desktop rail, put Refresh in the top-right corner,
+   with the brand logo below it so the two controls never overlap. */
+@media (min-width: 680px) {
+  html body#app-body.sidebar-collapsed > aside#finhub-sidebar {
+    position: relative !important;
+  }
+  html body#app-body.sidebar-collapsed > aside#finhub-sidebar > .px-3.pt-3 {
+    position: absolute !important;
+    top: .35rem !important;
+    right: .35rem !important;
+    bottom: auto !important;
+    left: auto !important;
+    width: 2.35rem !important;
+    height: 2.35rem !important;
+    min-height: 2.35rem !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    z-index: 30 !important;
+  }
+  html body#app-body.sidebar-collapsed > aside#finhub-sidebar > .px-3.pt-3 #finhub-global-refresh {
+    position: static !important;
+    inset: auto !important;
+    width: 2.2rem !important;
+    min-width: 2.2rem !important;
+    max-width: 2.2rem !important;
+    height: 2.2rem !important;
+    min-height: 2.2rem !important;
+    max-height: 2.2rem !important;
+    padding: .25rem !important;
+    margin: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: .7rem !important;
+    gap: 0 !important;
+  }
+  html body#app-body.sidebar-collapsed > aside#finhub-sidebar > .px-3.pt-3 #finhub-global-refresh [data-refresh-label] {
+    display: none !important;
+  }
+  html body#app-body.sidebar-collapsed > aside#finhub-sidebar > div:first-child > .p-5.border-b {
+    padding-top: 3.1rem !important;
+  }
+}
+</style>
+
+</head>
 <body class="bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 min-h-screen flex flex-col md:flex-row transition-colors duration-200 relative" id="app-body">
 <!-- UNDO TOAST NOTIFICATION -->
 <div class="fixed bottom-4 left-4 z-50 hidden transition-all" id="undo-toast"><button aria-label="Undo last action" class="w-9 h-9 inline-flex items-center justify-center rounded-full bg-gray-900 dark:bg-gray-700 text-white shadow-lg border border-gray-600 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-400" onclick="executeUndo()" title="Undo last action (Ctrl+Z / Cmd+Z · available for 5 seconds)" type="button"><i class="fa-solid fa-rotate-left text-sm"></i></button></div>
@@ -1273,12 +1557,13 @@ html.dark body#app-body[data-finhub-theme="colorful"] #tab-debt details.debt-act
 </button>
 </div>
 </nav>
-</div>
 <div class="px-3 pt-3">
 <button aria-label="Refresh displayed FinHub information" class="w-full inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-xs font-bold text-white shadow-lg theme-bg border border-black/10 hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-offset-2" id="finhub-global-refresh" onclick="refreshFinHubView()" title="Refresh displayed FinHub information" type="button">
 <i class="fa-solid fa-rotate"></i><span data-refresh-label="">Refresh FinHub</span>
 </button>
 </div>
+</div>
+
 <div class="p-4 border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50 m-3 rounded-2xl border" id="sidebar-summary">
 <div class="text-xs text-gray-500 font-medium uppercase tracking-wider">Live Net Worth</div>
 <div class="text-lg font-bold text-emerald-600 dark:text-emerald-400 mt-1 accounting-num blur-target" id="sidebar-networth">$ - </div>
@@ -13914,7 +14199,7 @@ document.addEventListener('toggle', function(event) {
   }
 }, true);
 </script>
-\n
+
 <style id="finhub-v37-unified-new-page-theme-surfaces">
 /* Theme tokens for dark mode, paired with the existing light-mode palette above. */
 html.dark body#app-body[data-finhub-theme="hibiscus"] { --fh-card-bg:#082b2a; --fh-card-alt:#103b38; --fh-card-border:#245b55; --fh-card-text:#f4eee0; --fh-card-muted:#b8d0c8; }
@@ -14146,5 +14431,439 @@ html.dark body#app-body[data-finhub-theme="orangecherry"] { --fh-card-bg:#3b241f
 })();
 </script>
 
+
+
+
+
+<style id="finhub-sidebar-refresh-final-placement">
+/* Keep the refresh control in normal sidebar flow, after the navigation list.
+   This avoids absolute/fixed positioning that can place it above the logo. */
+@media (min-width: 768px) {
+  #finhub-sidebar {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+    align-items: stretch !important;
+    overflow: hidden !important;
+  }
+  #finhub-sidebar > div:first-child {
+    flex: 0 1 auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+  }
+  #finhub-sidebar > div:nth-child(2) {
+    position: static !important;
+    inset: auto !important;
+    transform: none !important;
+    order: 2 !important;
+    flex: 0 0 auto !important;
+    width: 100% !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    padding: .35rem .25rem .5rem !important;
+    margin: 0 !important;
+  }
+  #finhub-sidebar > div:nth-child(2) #finhub-global-refresh {
+    position: static !important;
+    inset: auto !important;
+    transform: none !important;
+    width: 2.35rem !important;
+    min-width: 2.35rem !important;
+    max-width: 2.35rem !important;
+    height: 2.35rem !important;
+    min-height: 2.35rem !important;
+    max-height: 2.35rem !important;
+    padding: .35rem !important;
+    margin: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0 !important;
+    border-radius: .7rem !important;
+  }
+  #finhub-sidebar > div:nth-child(2) #finhub-global-refresh [data-refresh-label] {
+    display: none !important;
+  }
+  body.sidebar-collapsed #finhub-sidebar > div:first-child {
+    flex: 0 1 auto !important;
+  }
+  body.sidebar-collapsed #finhub-sidebar nav {
+    display: flex !important;
+    flex-direction: column !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    gap: .05rem !important;
+    padding: .2rem .35rem !important;
+  }
+  body.sidebar-collapsed #finhub-sidebar .nav-btn {
+    flex: 0 0 2.15rem !important;
+    height: 2.15rem !important;
+    min-height: 2.15rem !important;
+    padding: .2rem !important;
+    justify-content: center !important;
+  }
+  body.sidebar-collapsed #finhub-sidebar .nav-btn > i {
+    font-size: .95rem !important;
+  }
+  body.sidebar-collapsed #finhub-sidebar > div:nth-child(2) {
+    margin-top: .15rem !important;
+  }
+  body.sidebar-collapsed #finhub-sidebar > div:nth-child(3) {
+    display: none !important;
+  }
+}
+</style>
+
+
+<style id="finhub-refresh-collapsed-rail-layout-v2">
+@media (min-width: 768px) {
+  /* The sidebar is a vertical stack: brand/navigation, refresh, then summary. */
+  #finhub-sidebar {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+    min-height: 100vh !important;
+    height: 100vh !important;
+    overflow: hidden !important;
+  }
+  #finhub-sidebar > div:first-child {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+  #finhub-sidebar > div:first-child > div:first-child {
+    flex: 0 0 auto !important;
+  }
+  #finhub-sidebar > div:first-child > nav {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow: auto !important;
+  }
+  #finhub-sidebar > div:nth-child(2) {
+    position: static !important;
+    inset: auto !important;
+    transform: none !important;
+    flex: 0 0 auto !important;
+    width: 100% !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    padding: .4rem .25rem !important;
+    margin: 0 !important;
+    order: 2 !important;
+  }
+  #finhub-sidebar > div:nth-child(2) #finhub-global-refresh {
+    position: static !important;
+    inset: auto !important;
+    transform: none !important;
+    width: 2.5rem !important;
+    min-width: 2.5rem !important;
+    max-width: 2.5rem !important;
+    height: 2.5rem !important;
+    min-height: 2.5rem !important;
+    max-height: 2.5rem !important;
+    padding: .35rem !important;
+    margin: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0 !important;
+    border-radius: .75rem !important;
+  }
+  #finhub-sidebar > div:nth-child(2) #finhub-global-refresh [data-refresh-label] {
+    display: none !important;
+  }
+  body.sidebar-collapsed #finhub-sidebar > div:first-child > nav {
+    padding: .25rem .3rem !important;
+    overflow: hidden !important;
+  }
+  body.sidebar-collapsed #finhub-sidebar .nav-section-label {
+    display: none !important;
+  }
+  body.sidebar-collapsed #finhub-sidebar .nav-group {
+    display: contents !important;
+  }
+  body.sidebar-collapsed #finhub-sidebar nav {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+    align-items: center !important;
+    gap: .08rem !important;
+  }
+  body.sidebar-collapsed #finhub-sidebar .nav-btn {
+    display: flex !important;
+    flex: 0 0 2.35rem !important;
+    width: 100% !important;
+    height: 2.35rem !important;
+    min-height: 2.35rem !important;
+    padding: .2rem !important;
+    margin: 0 !important;
+    justify-content: center !important;
+    align-items: center !important;
+  }
+  body.sidebar-collapsed #finhub-sidebar .nav-btn > i {
+    width: auto !important;
+    min-width: 0 !important;
+    font-size: .98rem !important;
+  }
+  body.sidebar-collapsed #finhub-sidebar .sidebar-nav-label,
+  body.sidebar-collapsed #finhub-sidebar .sidebar-brand-copy,
+  body.sidebar-collapsed #finhub-sidebar #sidebar-summary {
+    display: none !important;
+  }
+  body.sidebar-collapsed #finhub-sidebar .sidebar-brand-row {
+    justify-content: center !important;
+  }
+  body.sidebar-collapsed #finhub-sidebar .sidebar-brand-row #brand-logo {
+    width: 2.8rem !important;
+    height: 2.8rem !important;
+  }
+  body.sidebar-collapsed #finhub-sidebar .sidebar-brand-actions {
+    flex-direction: row !important;
+    justify-content: center !important;
+  }
+  body.sidebar-collapsed #finhub-sidebar > div:nth-child(2) {
+    padding: .35rem .2rem .55rem !important;
+  }
+}
+</style>
+
+
+<style id="finhub-refresh-actual-sidebar-flow">
+@media (min-width: 768px) {
+  html body#app-body > aside#finhub-sidebar {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+    height: 100vh !important;
+    min-height: 100vh !important;
+    overflow: hidden !important;
+  }
+  html body#app-body > aside#finhub-sidebar > div:first-child {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+  html body#app-body > aside#finhub-sidebar > div:first-child > nav {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+  }
+  html body#app-body > aside#finhub-sidebar > div:first-child > .finhub-refresh-slot {
+    display: flex !important;
+    flex: 0 0 auto !important;
+    width: 100% !important;
+    justify-content: center !important;
+    align-items: center !important;
+    padding: .35rem .2rem .55rem !important;
+    margin: 0 !important;
+    position: static !important;
+  }
+  html body#app-body > aside#finhub-sidebar #finhub-global-refresh {
+    position: static !important;
+    display: inline-flex !important;
+    flex: 0 0 auto !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 2.35rem !important;
+    min-width: 2.35rem !important;
+    max-width: 2.35rem !important;
+    height: 2.35rem !important;
+    min-height: 2.35rem !important;
+    max-height: 2.35rem !important;
+    padding: .3rem !important;
+    margin: 0 !important;
+    gap: 0 !important;
+    border-radius: .7rem !important;
+  }
+  html body#app-body > aside#finhub-sidebar #finhub-global-refresh [data-refresh-label] {
+    display: none !important;
+  }
+  html body#app-body.sidebar-collapsed > aside#finhub-sidebar > div:first-child > nav {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+    align-items: stretch !important;
+    gap: .05rem !important;
+    padding: .15rem .3rem !important;
+  }
+  html body#app-body.sidebar-collapsed > aside#finhub-sidebar .nav-section-label {
+    display: none !important;
+  }
+  html body#app-body.sidebar-collapsed > aside#finhub-sidebar .nav-group {
+    display: contents !important;
+  }
+  html body#app-body.sidebar-collapsed > aside#finhub-sidebar .nav-btn {
+    display: flex !important;
+    flex: 0 0 2.15rem !important;
+    width: 100% !important;
+    height: 2.15rem !important;
+    min-height: 2.15rem !important;
+    padding: .15rem !important;
+    margin: 0 !important;
+    justify-content: center !important;
+    align-items: center !important;
+  }
+  html body#app-body.sidebar-collapsed > aside#finhub-sidebar .nav-btn > i {
+    width: auto !important;
+    min-width: 0 !important;
+    font-size: .95rem !important;
+  }
+}
+</style>
+
 </body>
 </html>
+
+<style id="finhub-final-collapsed-sidebar-rail">
+/* Final override: a genuinely vertical collapsed rail. This comes last so
+   the older tablet/horizontal-nav rules cannot hide or rearrange its icons. */
+@media (min-width: 641px) {
+  body.sidebar-collapsed #finhub-sidebar {
+    width: 5rem !important;
+    min-width: 5rem !important;
+    max-width: 5rem !important;
+    height: 100vh !important;
+    min-height: 100vh !important;
+    max-height: 100vh !important;
+    flex: 0 0 5rem !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+    align-items: stretch !important;
+    overflow: hidden !important;
+    gap: 0 !important;
+  }
+  body.sidebar-collapsed #finhub-sidebar > div:first-child {
+    width: 100% !important;
+    min-height: 0 !important;
+    height: auto !important;
+    flex: 1 1 auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+    align-items: stretch !important;
+    overflow: hidden !important;
+  }
+  body.sidebar-collapsed #finhub-sidebar > div:first-child > div:first-child {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    padding: .65rem .35rem .45rem !important;
+    display: flex !important;
+    flex: 0 0 auto !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: .55rem !important;
+  }
+  body.sidebar-collapsed #finhub-sidebar .sidebar-brand-row {
+    width: 100% !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    margin: 0 !important;
+  }
+  body.sidebar-collapsed #finhub-sidebar #brand-logo {
+    width: 2.65rem !important;
+    height: 2.65rem !important;
+    min-width: 2.65rem !important;
+    min-height: 2.65rem !important;
+  }
+  body.sidebar-collapsed #finhub-sidebar .sidebar-brand-actions {
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: .2rem !important;
+    margin: 0 !important;
+  }
+  body.sidebar-collapsed #finhub-sidebar .sidebar-brand-actions button {
+    width: 2.65rem !important;
+    height: 2.45rem !important;
+    min-height: 2.45rem !important;
+    padding: .35rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 !important;
+  }
+  body.sidebar-collapsed #finhub-sidebar nav {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    height: auto !important;
+    flex: 1 1 auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    padding: .35rem .45rem .5rem !important;
+    margin: 0 !important;
+    gap: .2rem !important;
+    white-space: normal !important;
+    scrollbar-width: none !important;
+  }
+  body.sidebar-collapsed #finhub-sidebar nav::-webkit-scrollbar { display: none !important; }
+  body.sidebar-collapsed #finhub-sidebar nav .nav-group { display: contents !important; }
+  body.sidebar-collapsed #finhub-sidebar .nav-section-label,
+  body.sidebar-collapsed #finhub-sidebar .sidebar-nav-label,
+  body.sidebar-collapsed #finhub-sidebar #sidebar-summary { display: none !important; }
+  body.sidebar-collapsed #finhub-sidebar .nav-btn {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    height: 2.55rem !important;
+    min-height: 2.55rem !important;
+    flex: 0 0 2.55rem !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: .35rem !important;
+    margin: 0 !important;
+    gap: 0 !important;
+  }
+  body.sidebar-collapsed #finhub-sidebar .nav-btn > i {
+    width: auto !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    font-size: 1.08rem !important;
+    line-height: 1 !important;
+  }
+  body.sidebar-collapsed #finhub-sidebar > .px-3.pt-3 {
+    width: 100% !important;
+    height: auto !important;
+    flex: 0 0 auto !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: .45rem !important;
+    margin: 0 !important;
+  }
+  body.sidebar-collapsed #finhub-sidebar #finhub-global-refresh {
+    width: 2.75rem !important;
+    min-width: 2.75rem !important;
+    height: 2.75rem !important;
+    min-height: 2.75rem !important;
+    padding: .4rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 !important;
+    gap: 0 !important;
+  }
+  body.sidebar-collapsed #finhub-sidebar #finhub-global-refresh [data-refresh-label] {
+    display: none !important;
+  }
+}
+</style>
