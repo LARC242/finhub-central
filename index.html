@@ -52,7 +52,7 @@
       body.sidebar-collapsed #finhub-sidebar .sidebar-brand-row { justify-content:flex-start; }
       body.sidebar-collapsed #finhub-sidebar .sidebar-brand-actions { flex-direction:row; }
     }
-    @media (min-width: 768px) and (max-width: 1450px) {
+    @media (min-width: 768px) and (max-width: 1650px) {
       body:has(#finhub-sidebar) { }
       #finhub-sidebar {
         width:100% !important;
@@ -105,7 +105,7 @@
         padding:.55rem .7rem !important;
         font-size:.72rem !important;
       }
-      #finhub-sidebar .nav-btn > i { width:auto !important; }
+      #finhub-sidebar .nav-btn > i { width:1.1rem !important; min-width:1.1rem !important; display:inline-flex !important; justify-content:center !important; }
       #finhub-sidebar .sidebar-nav-label { display:inline !important; }
       #finhub-sidebar #sidebar-summary { display:none !important; }
       #finhub-sidebar #finhub-global-refresh { width:auto !important; white-space:nowrap !important; }
@@ -113,6 +113,13 @@
       body.sidebar-collapsed #finhub-sidebar { width:100% !important; }
       body.sidebar-collapsed #finhub-sidebar .sidebar-nav-label { display:inline !important; }
       body.sidebar-collapsed #finhub-sidebar nav { display:flex !important; }
+    }
+\n    @media (min-width:768px) and (max-width:1650px) {
+      body.sidebar-collapsed #finhub-sidebar { min-height:3.7rem !important; }
+      body.sidebar-collapsed #finhub-sidebar nav { display:none !important; }
+      body.sidebar-collapsed #finhub-sidebar .sidebar-brand-copy { display:none !important; }
+      body.sidebar-collapsed #finhub-sidebar .sidebar-brand-row { justify-content:flex-start !important; }
+      body.sidebar-collapsed #finhub-sidebar .sidebar-brand-actions { flex-direction:row !important; }
     }
 \n    /* Compact, horizontally scrollable multi-select filters */
     .ledger-filter-strip { display:none !important; }
@@ -185,9 +192,6 @@
     }
 
     @media(max-width:640px) {
-      #ledger-mobile-cards { display:block !important; }
-      #ledger-table-container { display:none !important; }
-      #tab-ledger .ledger-table-controls { display:none !important; }
       #ledger-mobile-cards .ledger-mobile-row { min-height:46px; display:grid; grid-template-columns:22px minmax(0,1fr) auto 30px; align-items:center; gap:7px; padding:6px 8px; border:1px solid rgba(148,163,184,.24); border-radius:9px; background:rgba(255,255,255,.78); color:#1f2937; }
       .dark #ledger-mobile-cards .ledger-mobile-row { background:rgba(15,23,42,.72); color:#f3f4f6; border-color:rgba(148,163,184,.2); }
       #ledger-mobile-cards .ledger-mobile-date { font-size:9px; color:#64748b; line-height:1.1; }
@@ -196,6 +200,14 @@
       #ledger-mobile-cards .ledger-mobile-edit { width:28px; height:28px; min-height:28px !important; display:grid; place-items:center; border-radius:7px; color:#6366f1; background:rgba(99,102,241,.1); }
       #ledger-mobile-cards input[type=checkbox] { width:15px; height:15px; }
     }
+\n    .finhub-form-actions { display:flex; gap:.55rem; align-items:center; }
+    .finhub-action-btn { flex:1 1 0; min-height:42px; padding:.65rem .9rem; border-radius:.75rem; font-size:.82rem; font-weight:700; text-align:center; border:1px solid transparent; }
+    .finhub-action-cancel { background:#e5e7eb; color:#1f2937; border-color:#cbd5e1; }
+    .dark .finhub-action-cancel { background:#1f2937; color:#f3f4f6; border-color:#475569; }
+    .finhub-action-delete { background:#fff1f2; color:#be123c; border-color:#fda4af; }
+    .dark .finhub-action-delete { background:rgba(159,18,57,.18); color:#fda4af; border-color:#be123c; }
+    .finhub-action-save { background:linear-gradient(110deg,#fb705e,#d72d83); color:#fff; border-color:transparent; }
+    .finhub-action-btn.hidden { display:none !important; }
 \n    /* FinHub full-interface visual themes. Classic remains the original design. */
     body[data-finhub-theme="silver"] { background:#e7ebef !important; color:#26313c; }
     html.dark body[data-finhub-theme="silver"] { background:#171d24 !important; color:#e5eaf0; }
@@ -1554,6 +1566,13 @@
         <div id="ledger-column-options" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 text-xs"></div>
         <div class="flex justify-end mt-3"><button type="button" onclick="resetLedgerColumnWidths()" class="text-xs text-indigo-600 dark:text-indigo-400 underline">Reset column widths</button></div>
       </div>
+      <div class="flex items-center justify-between gap-2 mb-2">
+        <div class="text-xs font-semibold text-gray-500">Transaction display</div>
+        <div class="inline-flex rounded-lg border border-gray-300 dark:border-gray-700 p-1 gap-1" role="group" aria-label="Transaction display mode">
+          <button id="ledger-display-cards" type="button" onclick="setLedgerDisplayMode('cards')" class="px-3 py-1.5 rounded-md text-xs font-semibold">Cards</button>
+          <button id="ledger-display-table" type="button" onclick="setLedgerDisplayMode('table')" class="px-3 py-1.5 rounded-md text-xs font-semibold">Table</button>
+        </div>
+      </div>
       <div id="ledger-mobile-cards" class="hidden space-y-1.5"></div>
       <div id="ledger-table-container" class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-x-auto overflow-y-visible shadow-sm custom-scrollbar">
         <div id="ledger-table-toolbar" class="min-w-max border-b border-gray-200 dark:border-gray-800">
@@ -1584,7 +1603,7 @@
           <tbody id="ledger-rows" class="divide-y divide-gray-200 dark:divide-gray-800"></tbody>
         </table>
       </div>
-      <div id="ledger-summary" class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-4 shadow-sm">
+      <div id="ledger-summary" class="relative static mt-3 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-4 shadow-sm">
         <div class="text-xs font-bold uppercase tracking-wide text-gray-500 mb-3">Filtered transaction totals</div>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
           <div><div class="text-xs text-gray-500">Expenses</div><div id="ledger-total-expenses" class="font-bold text-rose-500 accounting-num">$0.00</div></div>
@@ -2330,7 +2349,7 @@ Bonus"></textarea></div>
           <div id="split-rows-container" class="space-y-2"></div><div class="text-xs rounded-lg bg-indigo-50 dark:bg-indigo-950/30 p-3">Additional splits: <strong id="split-extra-total">$0.00</strong> · Remaining to original bucket: <strong id="split-remainder-total">—</strong></div>
         </div>
 
-        <div class="flex space-x-3 pt-3 pb-1 sticky bottom-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 mt-2"><button type="button" onclick="closeTransactionModal()" class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold">Cancel</button><button type="button" id="tx-delete-edit-btn" onclick="deleteEditingTransaction()" class="hidden px-3 py-2 rounded-lg border border-rose-500 text-rose-600 text-xs font-semibold">Delete transaction</button><button type="submit" class="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold theme-bg">Save</button></div>
+        <div class="finhub-form-actions flex gap-2 pt-3 pb-1 sticky bottom-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 mt-2"><button type="button" onclick="closeTransactionModal()" class="finhub-action-btn finhub-action-cancel">Cancel</button><button type="button" id="tx-delete-edit-btn" onclick="deleteEditingTransaction()" class="finhub-action-btn finhub-action-delete hidden">Delete</button><button type="submit" class="finhub-action-btn finhub-action-save">Save</button></div>
       </form>
     </div>
   </div>
@@ -3160,6 +3179,11 @@ Bonus"></textarea></div>
       if (tabId === 'debt') { renderDebtPlanner(); renderDebtPaymentHistory(); renderDebtUpcomingBills(); }
       if (tabId === 'ledger') renderLedger();
       if (tabId === 'settings') renderSettings();
+      if (window.matchMedia && window.matchMedia('(min-width: 768px) and (max-width: 1650px)').matches) {
+        document.body.classList.add('sidebar-collapsed');
+        const icon=document.getElementById('sidebar-collapse-icon');
+        if(icon) icon.className='sidebar-collapse-label fa-solid fa-angles-down';
+      }
       applyCollapsibles();
       applyPrivacyBlurState();
       applyThemeColor(state.appThemeColor || 'indigo');
@@ -6574,6 +6598,31 @@ ${acc.name}`);
 
     function setLedgerPeriodPreset(value){window.closeLedgerFilterPeriod=null;window.closeLedgerFilterOnlyUnmatched=false;window.dataHealthTransactionIds=null;const range=document.getElementById('ledger-custom-date-range');if(range)range.classList.toggle('hidden',value!=='custom');renderLedger();}
 
+    function getLedgerDisplayMode() {
+      try { return localStorage.getItem('finhub-ledger-display-mode') || (window.innerWidth <= 640 ? 'cards' : 'table'); }
+      catch (e) { return window.innerWidth <= 640 ? 'cards' : 'table'; }
+    }
+    function setLedgerDisplayMode(mode) {
+      const safe = mode === 'cards' ? 'cards' : 'table';
+      try { localStorage.setItem('finhub-ledger-display-mode', safe); } catch (e) {}
+      applyLedgerDisplayMode();
+    }
+    function applyLedgerDisplayMode() {
+      const mode=getLedgerDisplayMode();
+      const cards=document.getElementById('ledger-mobile-cards');
+      const table=document.getElementById('ledger-table-container');
+      const cardBtn=document.getElementById('ledger-display-cards');
+      const tableBtn=document.getElementById('ledger-display-table');
+      if(cards) cards.classList.toggle('hidden',mode!=='cards');
+      if(table) table.classList.toggle('hidden',mode!=='table');
+      [[cardBtn,'cards'],[tableBtn,'table']].forEach(([btn,key])=>{
+        if(!btn)return;
+        btn.classList.toggle('bg-indigo-600',mode===key);
+        btn.classList.toggle('text-white',mode===key);
+        btn.classList.toggle('text-gray-500',mode!==key);
+      });
+    }
+
     function renderLedger() {
       const filterInput = document.getElementById('upcoming-bills-filter');
       if (!filterInput.value) {
@@ -6668,6 +6717,7 @@ ${acc.name}`);
         }).join('') : '<div class="text-center text-xs text-gray-400 py-5">No matching transactions found.</div>';
       }
 
+      applyLedgerDisplayMode();
       const totalExpenses = matchedTxs.reduce((sum, t) => sum + getExpenseReportingComponents(t).reduce((componentSum, component) => componentSum + (Number(component.amount) || 0), 0), 0);
       const totalIncome = matchedTxs.reduce((sum, t) => sum + (t.type === 'Income' && !t.excludeFromIncomeReporting && t.category !== 'Transfer' ? (Number(t.amount) || 0) : 0), 0);
       const totalOther = matchedTxs.reduce((sum, t) => {
@@ -9707,7 +9757,7 @@ ${acc.name}`);
       if (submitButton) {
         submitButton.disabled = false;
         submitButton.classList.remove('opacity-50','cursor-not-allowed');
-        submitButton.textContent = isInterestCharge ? 'Save Interest Charge' : isDebtPayment ? 'Save Debt Payment' : 'Save Transaction';
+        submitButton.textContent = 'Save';
         submitButton.title = '';
       }
       const additionalDetails = document.querySelector('#transaction-form > details');
