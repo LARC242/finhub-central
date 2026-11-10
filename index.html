@@ -545,7 +545,7 @@
           <button onclick="openTransferModal()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 rounded-xl text-xs font-semibold text-white"><i class="fa-solid fa-right-left mr-1"></i> Quick Transfer</button>
           <button onclick="openAccountModal()" class="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 rounded-xl text-xs font-semibold text-white transition-colors shadow-md theme-bg"><i class="fa-solid fa-plus mr-1"></i> Add Account</button>
           <button onclick="exportData()" class="px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-semibold">JSON Backup</button>
-          <button onclick="exportWorkbook()" class="px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-semibold">Excel Export</button>
+          <button onclick="exportFinancialWorkbook()" class="px-3 py-1.5 bg-cyan-700 hover:bg-cyan-600 text-white rounded-xl text-xs font-semibold">Excel Reports</button>
           <button onclick="exportTransactionsCSV()" class="px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-semibold">Transactions CSV</button>
           <label class="px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-semibold cursor-pointer">
             Import Backup <input type="file" onchange="importData(event)" accept=".json,.xlsx,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" class="hidden">
@@ -1162,7 +1162,7 @@
             </div>
             <div class="flex flex-wrap items-center gap-2">
               <label for="ledger-period-preset" class="text-xs text-gray-500">Period</label>
-              <select id="ledger-period-preset" onchange="setLedgerPeriodPreset(this.value)" class="border rounded-lg px-2.5 py-1.5 text-xs bg-white dark:bg-gray-900"><option value="current">This month</option><option value="last">Last month</option><option value="3months">Last 3 months</option><option value="year">This year</option><option value="all">All dates</option></select>
+              <select id="ledger-period-preset" onchange="setLedgerPeriodPreset(this.value)" class="border rounded-lg px-2.5 py-1.5 text-xs bg-white dark:bg-gray-900"><option value="current">This month</option><option value="last">Last month</option><option value="3months">Last 3 months</option><option value="year">This year</option><option value="custom">Custom range</option><option value="all">All dates</option></select><div id="ledger-custom-date-range" class="hidden flex flex-wrap items-center gap-1.5"><label class="text-[10px] text-gray-500" for="ledger-date-from">From</label><input id="ledger-date-from" type="date" onchange="renderLedger()" class="border rounded-lg px-2 py-1.5 text-xs bg-white dark:bg-gray-900"><label class="text-[10px] text-gray-500" for="ledger-date-to">To</label><input id="ledger-date-to" type="date" onchange="renderLedger()" class="border rounded-lg px-2 py-1.5 text-xs bg-white dark:bg-gray-900"></div>
               <button onclick="clearLedgerFilters()" class="px-2.5 py-1.5 text-xs font-semibold text-indigo-600 dark:text-cyan-300">Clear all</button>
             </div>
           </div>
@@ -5917,6 +5917,7 @@ ${acc.name}`);
       renderLedgerFilterStrip(); renderLedger(); renderLedgerFilterOptions();
     }
     function clearLedgerFilters() {
+      const from=document.getElementById('ledger-date-from');if(from)from.value='';const to=document.getElementById('ledger-date-to');if(to)to.value='';const preset=document.getElementById('ledger-period-preset');if(preset)preset.value='all';const range=document.getElementById('ledger-custom-date-range');if(range)range.classList.add('hidden');
       ledgerFilterSelections = {};
       ledgerFilterSearchTerms = {};
       if (document.getElementById('ledger-filter-search')) document.getElementById('ledger-filter-search').value = '';
@@ -6081,7 +6082,7 @@ ${acc.name}`);
       if (summary) summary.textContent = `${checked} of ${accounts.length} have a statement balance · ${exceptions} variance(s) to review`;
     }
 
-    function setLedgerPeriodPreset(value){window.closeLedgerFilterPeriod=null;window.closeLedgerFilterOnlyUnmatched=false;window.dataHealthTransactionIds=null;renderLedger();}
+    function setLedgerPeriodPreset(value){window.closeLedgerFilterPeriod=null;window.closeLedgerFilterOnlyUnmatched=false;window.dataHealthTransactionIds=null;const range=document.getElementById('ledger-custom-date-range');if(range)range.classList.toggle('hidden',value!=='custom');renderLedger();}
 
     function renderLedger() {
       const filterInput = document.getElementById('upcoming-bills-filter');
@@ -6127,6 +6128,7 @@ ${acc.name}`);
           if (preset === 'last') { const d=new Date(now.getFullYear(),now.getMonth()-1,1); const ym=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; if(txDate.slice(0,7)!==ym)return false; }
           if (preset === '3months') { const start=new Date(now.getFullYear(),now.getMonth()-2,1); const ym=txDate.slice(0,7); if(!/^\d{4}-\d{2}$/.test(ym)||ym<`${start.getFullYear()}-${String(start.getMonth()+1).padStart(2,'0')}`||ym>currentYM)return false; }
           if (preset === 'year' && txDate.slice(0,4)!==String(now.getFullYear())) return false;
+          if (preset === 'custom') { const from=document.getElementById('ledger-date-from')?.value||''; const to=document.getElementById('ledger-date-to')?.value||''; if(from && txDate<from)return false; if(to && txDate>to)return false; }
         }
         if (window.closeLedgerFilterPeriod && (String(window.closeLedgerFilterPeriod).length===4 ? String(t.date || '').slice(0,4) : String(t.date || '').slice(0,7)) !== String(window.closeLedgerFilterPeriod)) return false;
         if (Array.isArray(window.dataHealthTransactionIds) && window.dataHealthTransactionIds.length && !window.dataHealthTransactionIds.some(id => String(id) === String(t.id))) return false;
@@ -10296,9 +10298,9 @@ ${acc.name}`);
       const makeMonthly=(title,cats,kind)=>{const rows=[[title,...months.map(m=>new Date(`${m}-01T12:00:00`).toLocaleString('en-CA',{month:'short'})),'TOTAL']];[...cats].sort().forEach(cat=>{const vals=months.map(m=>fmt(txs.filter(t=>String(t.date||'').startsWith(m)&&t.type===kind&&(t.category||'Uncategorized')===cat).reduce((a,t)=>a+Math.abs(Number(t.amount)||0),0)));rows.push([cat,...vals,`=SUM(B${rows.length+1}:M${rows.length+1})`]);});rows.push([`TOTAL ${kind.toUpperCase()}`,...months.map((m,i)=>`=SUM(${String.fromCharCode(66+i)}2:${String.fromCharCode(66+i)}${rows.length})`),'=SUM(B'+(rows.length+1)+':M'+(rows.length+1)+')']);return rows;};
       const ie=[['INCOME & EXPENSE REPORT',...months.map(m=>new Date(`${m}-01T12:00:00`).toLocaleString('en-CA',{month:'short'})),'TOTAL']];
       let incomeTotalRow=0,expenseTotalRow=0;const addSection=(label,cats,type)=>{ie.push([label]);const first=ie.length+1;[...cats].sort().forEach(cat=>{const r=ie.length+1;ie.push([cat,...months.map(m=>fmt(txs.filter(t=>String(t.date||'').startsWith(m)&&t.type===type&&(t.category||'Uncategorized')===cat).reduce((a,t)=>a+Math.abs(Number(t.amount)||0),0))),`=SUM(B${r}:M${r})`]);});const last=ie.length;const totalRow=ie.length+1;ie.push([`Total ${label}`,...months.map((m,i)=>`=SUM(${String.fromCharCode(66+i)}${first}:${String.fromCharCode(66+i)}${last})`),`=SUM(B${totalRow}:M${totalRow})`]);if(type==='Income')incomeTotalRow=totalRow;else expenseTotalRow=totalRow;};
-      addSection('INCOME',incomeCats,'Income');addSection('EXPENSES',expenseCats,'Expense');
-      const debtCats=new Set(['Debt Payments']);ie.push(['DEBT PAYMENTS',...Array(13).fill('')]);const dr=ie.length+1;ie.push(['Debt payments',...months.map(m=>fmt(txs.filter(t=>String(t.date||'').startsWith(m)&&t.type==='Debt Payment').reduce((a,t)=>a+Math.abs(Number(t.amount)||0),0))),`=SUM(B${dr}:M${dr})`]);
-      ie.push(['NET REMAINING',...months.map((m,i)=>`=B${2+i} `),'']);
+      addSection('INCOME BY CATEGORY',incomeCats,'Income');addSection('EXPENSES BY CATEGORY',expenseCats,'Expense');
+      const dr=ie.length+1;ie.push(['DEBT PAYMENTS',...months.map(m=>fmt(txs.filter(t=>String(t.date||'').startsWith(m)&&t.type==='Debt Payment').reduce((a,t)=>a+Math.abs(Number(t.amount)||0),0))),`=SUM(B${dr}:M${dr})`]);
+      ie.push(['NET REMAINING',...months.map((m,i)=>`=${String.fromCharCode(66+i)}${incomeTotalRow}-${String.fromCharCode(66+i)}${expenseTotalRow}-${String.fromCharCode(66+i)}${dr}`),`=N${incomeTotalRow}-N${expenseTotalRow}-N${dr}`]);
       const ws=XLSX.utils.aoa_to_sheet(ie);ws['!cols']=[{wch:30},...Array(13).fill({wch:14})];XLSX.utils.book_append_sheet(wb,ws,'Income & Expenses');
       const raw=[['Date','Vendor','Description','Type','Category','Subcategory','Account','Amount','Reversal of'],...txs.filter(t=>String(t.date||'').startsWith(String(year))).sort((a,b)=>String(a.date).localeCompare(String(b.date))).map(t=>[t.date,t.vendor||'',t.desc||'',t.type||'',t.category||'',t.subcategory||'',state.accounts.find(a=>String(a.id)===String(t.accountId))?.name||'',Number(t.amount)||0,t.reversalOfTransactionId||''])];const tw=XLSX.utils.aoa_to_sheet(raw);tw['!autofilter']={ref:`A1:I${raw.length}`};XLSX.utils.book_append_sheet(wb,tw,'Transactions');
       const cash=[['CASH FLOW PROJECTION (scheduled calendar items only)','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','TOTAL'],['Scheduled income',...months.map(m=>fmt((state.calendarBills||[]).filter(b=>String(b.date||'').startsWith(m)&&b.type==='income'&&!b.paid).reduce((a,b)=>a+(Number(b.amount)||0),0))),''],['Scheduled bills',...months.map(m=>fmt((state.calendarBills||[]).filter(b=>String(b.date||'').startsWith(m)&&b.type!=='income'&&!b.paid).reduce((a,b)=>a+(Number(b.amount)||0),0))),''],['Net scheduled cash flow',...months.map((m,i)=>`=${String.fromCharCode(66+i)}2-${String.fromCharCode(66+i)}3`),'']];XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(cash),'Cash Flow Projection');
@@ -10323,23 +10325,25 @@ ${acc.name}`);
       // Apply report styling: colored section headers, bold headings, currency formats,
       // and bottom borders under totals. xlsx-js-style supports cell-level styles.
       const fill=(rgb)=>({patternType:'solid',fgColor:{rgb}});
+      const ACCOUNTING_FMT='_($* #,##0.00_);_($* \(#,##0.00\);_($* "-"??_);_(@_)';
       const borderBottom={style:'thin',color:{rgb:'64748B'}};
       const styleCell=(cell,style)=>{if(cell)cell.s={...(cell.s||{}),...style};};
       Object.entries(wb.Sheets).forEach(([name,sheet])=>{
-        if(name==='Transactions'||name==='Accounts')return;
+        if(name==='Accounts')return;
         const range=XLSX.utils.decode_range(sheet['!ref']||'A1:A1');
+        if(name==='Transactions'){for(let C=range.s.c;C<=range.e.c;C++){const cell=sheet[XLSX.utils.encode_cell({r:0,c:C})];if(cell)cell.s={font:{bold:true,color:{rgb:'FFFFFF'}},fill:fill('243B63'),alignment:{vertical:'center',wrapText:true}};}sheet['!rows']=sheet['!rows']||[];sheet['!rows'][0]={hpt:24};for(let R=1;R<=range.e.r;R++){const amount=sheet[XLSX.utils.encode_cell({r:R,c:7})];if(amount)amount.s={...(amount.s||{}),numFmt:ACCOUNTING_FMT};}return;}
         for(let R=range.s.r;R<=range.e.r;R++){
           const first=sheet[XLSX.utils.encode_cell({r:R,c:0})];
           const label=String(first?.v??'').toUpperCase();
           const isTitle=R===range.s.r;
-          const isSection=label && (label===label.toUpperCase()) && (label.includes('ASSETS')||label.includes('LIABILITIES')||label==='INCOME'||label==='EXPENSES'||label.includes('FIXED JOINT')||label.includes('VARIABLE JOINT')||label.includes('CASH FLOW'));
+          const isSection=label && (label===label.toUpperCase()) && (label.includes('ASSETS')||label.includes('LIABILITIES')||label==='INCOME BY CATEGORY'||label==='EXPENSES BY CATEGORY'||label.includes('FIXED JOINT')||label.includes('VARIABLE JOINT')||label.includes('CASH FLOW'));
           const isTotal=label.startsWith('TOTAL')||label.startsWith('NET ')||label.startsWith('NET WORTH');
           for(let C=range.s.c;C<=range.e.c;C++){
             const cell=sheet[XLSX.utils.encode_cell({r:R,c:C})];if(!cell)continue;
             if(isTitle)styleCell(cell,{font:{bold:true,color:{rgb:'FFFFFF'},sz:14},fill:fill('243B63'),alignment:{vertical:'center'}});
             else if(isSection)styleCell(cell,{font:{bold:true,color:{rgb:'FFFFFF'}},fill:fill('365F91')});
             else if(isTotal)styleCell(cell,{font:{bold:true},border:{bottom:borderBottom,top:{style:'thin',color:{rgb:'64748B'}}}});
-            if(C>0 && (cell.t==='n'||cell.f))styleCell(cell,{numFmt:'$#,##0.00;[Red]($#,##0.00);–'});
+            if(C>0 && (cell.t==='n'||cell.f))styleCell(cell,{numFmt:ACCOUNTING_FMT});
           }
         }
         sheet['!rows']=sheet['!rows']||[];sheet['!rows'][0]={hpt:24};
