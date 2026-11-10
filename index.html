@@ -1106,7 +1106,6 @@
         <button type="button" onclick="selectAllFilteredTransactions()" class="px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-xs font-semibold">Select filtered</button>
         <button type="button" onclick="clearLedgerSelection()" class="px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-xs font-semibold">Clear selection</button>
         <button type="button" onclick="openBulkEditModal()" id="ledger-bulk-edit-btn" disabled class="px-3 py-2 rounded-lg bg-indigo-600 text-white text-xs font-semibold disabled:opacity-40 theme-bg">Edit selected</button>
-        <button type="button" onclick="matchSelectedOffsetTransactions()" id="ledger-match-offset-btn" disabled class="px-3 py-2 rounded-lg bg-teal-700 text-white text-xs font-semibold disabled:opacity-40">Match offsetting entries</button>
         <button type="button" onclick="bulkDeleteSelectedTransactions()" id="ledger-bulk-delete-btn" disabled class="px-3 py-2 rounded-lg bg-rose-600 text-white text-xs font-semibold disabled:opacity-40">Delete selected</button>
       </div>
 
@@ -1822,10 +1821,13 @@ Bonus"></textarea></div>
           </div>
           <select id="tx-type" onchange="updateTransactionTypeFields()" class="hidden" aria-hidden="true" tabindex="-1"></select>
         </div>
-        <div id="tx-refund-tools" class="rounded-xl border border-teal-300 dark:border-teal-800 bg-teal-50 dark:bg-teal-950/30 p-3 space-y-2">
-          <label class="flex items-center gap-2 text-xs font-semibold"><input id="tx-is-refund" type="checkbox" onchange="toggleRefundEntryFields()" class="rounded"> Treat this transaction as a refund / reimbursement</label>
-          <p class="text-[10px] text-gray-600 dark:text-gray-300">A refund is recorded as a credit to the original expense category, not ordinary income. It increases the bank balance and reduces reported spending.</p>
-          <div id="tx-refund-link-fields" class="hidden space-y-2">
+        <div id="tx-refund-tools" class="my-1">
+          <input id="tx-is-refund" type="checkbox" onchange="toggleRefundEntryFields()" class="sr-only" aria-label="Treat this transaction as a refund or reimbursement">
+          <button type="button" id="tx-refund-trigger" onclick="toggleRefundEntryFields(true)" aria-expanded="false" aria-controls="tx-refund-link-fields" title="Link this transaction as a refund or reimbursement" class="inline-flex items-center gap-1.5 rounded-full border border-teal-500/60 px-2.5 py-1 text-[11px] font-semibold text-teal-700 dark:text-teal-300 hover:bg-teal-50 dark:hover:bg-teal-950/40">
+            <i class="fa-solid fa-rotate-left" aria-hidden="true"></i><span>Refund / reimbursement</span>
+          </button>
+          <div id="tx-refund-link-fields" class="hidden mt-2 rounded-lg border border-teal-300 dark:border-teal-800 bg-teal-50 dark:bg-teal-950/30 p-3 space-y-2">
+            <p class="text-[10px] text-gray-600 dark:text-gray-300">Link this deposit to the original expense. It will offset that category rather than count as ordinary income.</p>
             <input id="tx-refund-search" type="search" placeholder="Find original expense by vendor, category, amount or date…" oninput="populateRefundOriginalOptions()" class="w-full bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm">
             <select id="tx-refund-original" onchange="applyRefundOriginalSelection()" size="5" class="w-full bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm"><option value="">Choose original expense</option></select>
             <div id="tx-refund-preview" class="text-[10px] text-gray-600 dark:text-gray-300"></div>
@@ -9056,9 +9058,13 @@ ${acc.name}`);
       box.textContent=`Original: ${t.type} · ${t.accountId ? (state.accounts.find(a=>String(a.id)===String(t.accountId))?.name||'Account') : 'Account'} · ${formatFinancial(remaining)} still reversible`;
     }
 
-    function toggleRefundEntryFields() {
-      const enabled = !!document.getElementById('tx-is-refund')?.checked;
+    function toggleRefundEntryFields(forceToggle=false) {
+      const checkbox = document.getElementById('tx-is-refund');
+      if (forceToggle && checkbox) checkbox.checked = !checkbox.checked;
+      const enabled = !!checkbox?.checked;
       document.getElementById('tx-refund-link-fields')?.classList.toggle('hidden', !enabled);
+      const trigger=document.getElementById('tx-refund-trigger');
+      if(trigger){ trigger.setAttribute('aria-expanded', enabled ? 'true' : 'false'); trigger.classList.toggle('bg-teal-100',enabled); trigger.classList.toggle('dark:bg-teal-950',enabled); trigger.classList.toggle('ring-2',enabled); trigger.classList.toggle('ring-teal-400',enabled); }
       if (enabled) {
         const typeSelect = document.getElementById('tx-type');
         if (typeSelect && typeSelect.value !== 'Expense') { typeSelect.value = 'Expense'; refreshTransactionBucketOptions(''); updateTransactionTypeFields(); }
