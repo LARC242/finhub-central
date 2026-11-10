@@ -450,7 +450,70 @@
     html.dark body[data-finhub-theme="oceanpop"] .text-indigo-500 { color:#00d5c9 !important; }
     html.dark body[data-finhub-theme="oceanpop"] .text-rose-600,
     html.dark body[data-finhub-theme="oceanpop"] .text-rose-500 { color:#ff6eae !important; }
-  </style>
+
+    /* Orange / Cherry palette: warm cream-and-peach light mode, cherry-led dark mode. */
+    body[data-finhub-theme="orangecherry"] { background:#f3eee3 !important; color:#4a1714 !important; }
+    body[data-finhub-theme="orangecherry"] aside,
+    body[data-finhub-theme="orangecherry"] .tab-content .bg-white,
+    body[data-finhub-theme="orangecherry"] #transaction-modal > div,
+    body[data-finhub-theme="orangecherry"] #bulk-edit-modal > div,
+    body[data-finhub-theme="orangecherry"] #vendor-rule-modal > div,
+    body[data-finhub-theme="orangecherry"] #recon-modal > div { background-color:#fffaf0 !important; border-color:#dfbda8 !important; }
+    body[data-finhub-theme="orangecherry"] .theme-bg,
+    body[data-finhub-theme="orangecherry"] #brand-logo,
+    body[data-finhub-theme="orangecherry"] .nav-btn[style*="background-color"] { background-color:#bd542d !important; }
+    body[data-finhub-theme="orangecherry"] .theme-text { color:#9a4328 !important; }
+    body[data-finhub-theme="orangecherry"] .bg-gray-50,
+    body[data-finhub-theme="orangecherry"] .bg-gray-100 { background-color:#f6e5d8 !important; }
+    body[data-finhub-theme="orangecherry"] h1,
+    body[data-finhub-theme="orangecherry"] h2,
+    body[data-finhub-theme="orangecherry"] h3,
+    body[data-finhub-theme="orangecherry"] h4 { color:#641b17 !important; }
+    body[data-finhub-theme="orangecherry"] input,
+    body[data-finhub-theme="orangecherry"] select,
+    body[data-finhub-theme="orangecherry"] textarea { background:#fffaf0 !important; color:#4a1714 !important; border-color:#d9a98d !important; }
+    body[data-finhub-theme="orangecherry"] .text-gray-500,
+    body[data-finhub-theme="orangecherry"] .text-gray-400 { color:#815b4b !important; }
+    html.dark body[data-finhub-theme="orangecherry"] { background:#3b090b !important; color:#f4d1b9 !important; }
+    html.dark body[data-finhub-theme="orangecherry"] main { background:#3b090b !important; }
+    html.dark body[data-finhub-theme="orangecherry"] aside,
+    html.dark body[data-finhub-theme="orangecherry"] .tab-content .bg-white,
+    html.dark body[data-finhub-theme="orangecherry"] #transaction-modal > div,
+    html.dark body[data-finhub-theme="orangecherry"] #bulk-edit-modal > div,
+    html.dark body[data-finhub-theme="orangecherry"] #vendor-rule-modal > div,
+    html.dark body[data-finhub-theme="orangecherry"] #recon-modal > div { background-color:#541316 !important; color:#f4d1b9 !important; border-color:#87402f !important; }
+    html.dark body[data-finhub-theme="orangecherry"] .theme-bg,
+    html.dark body[data-finhub-theme="orangecherry"] #brand-logo,
+    html.dark body[data-finhub-theme="orangecherry"] .nav-btn[style*="background-color"] { background-color:#c45a30 !important; }
+    html.dark body[data-finhub-theme="orangecherry"] .theme-text { color:#f2b18c !important; }
+    html.dark body[data-finhub-theme="orangecherry"] .bg-gray-50,
+    html.dark body[data-finhub-theme="orangecherry"] .bg-gray-100,
+    html.dark body[data-finhub-theme="orangecherry"] .bg-gray-900,
+    html.dark body[data-finhub-theme="orangecherry"] .bg-gray-950 { background-color:#641b1e !important; }
+    html.dark body[data-finhub-theme="orangecherry"] h1,
+    html.dark body[data-finhub-theme="orangecherry"] h2,
+    html.dark body[data-finhub-theme="orangecherry"] h3,
+    html.dark body[data-finhub-theme="orangecherry"] h4 { color:#f4c6a7 !important; }
+    html.dark body[data-finhub-theme="orangecherry"] input,
+    html.dark body[data-finhub-theme="orangecherry"] select,
+    html.dark body[data-finhub-theme="orangecherry"] textarea { background:#451013 !important; color:#f8e9dc !important; border-color:#98513d !important; }
+    html.dark body[data-finhub-theme="orangecherry"] .text-gray-500,
+    html.dark body[data-finhub-theme="orangecherry"] .text-gray-400 { color:#e0b49b !important; }
+    html.dark body[data-finhub-theme="orangecherry"] .text-indigo-600,
+    html.dark body[data-finhub-theme="orangecherry"] .text-indigo-500 { color:#f2a477 !important; }
+    html.dark body[data-finhub-theme="orangecherry"] .text-rose-600,
+    html.dark body[data-finhub-theme="orangecherry"] .text-rose-500 { color:#f2a477 !important; }
+
+  
+    /* Streamlined transaction entry: narrower, single-column, no analytics sidebar. */
+    #transaction-modal > div { max-width: 620px !important; }
+    #transaction-form.tx-workspace-form { display:grid; grid-template-columns:minmax(0,1fr); gap:12px; }
+    #transaction-form #tx-entry-fields,
+    #transaction-form #split-tx-fields { grid-column:1; }
+    #transaction-form .tx-kind-card { min-height:28px; padding:4px 6px; font-size:10px; gap:4px; }
+    #transaction-form .tx-kind-card i { font-size:10px; }
+
+</style>
 </head>
 <body id="app-body" class="bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 min-h-screen flex flex-col md:flex-row transition-colors duration-200 relative">
 
@@ -1223,12 +1286,14 @@
     <section id="tab-settings" class="tab-content hidden space-y-6">
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 class="text-2xl font-bold">Categories, Merchant Rules & Branding</h2>
+          <h2 class="text-2xl font-bold">Settings & Customization</h2>
           <p class="text-sm text-gray-500 dark:text-gray-400">Configure categories, automation, accounts, backups, and appearance</p>
         </div>
-        <button onclick="openCategoryModal()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-xl text-xs font-semibold text-white shadow-md theme-bg"><i class="fa-solid fa-plus mr-1"></i> Add Spending Bucket</button>
       </div>
 
+      <details id="settings-group-backup" class="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-950/40" open>
+        <summary class="cursor-pointer list-none px-5 py-4 font-bold text-sm flex items-center justify-between">Backup & Restore <i class="fa-solid fa-chevron-down text-gray-400"></i></summary>
+        <div class="px-4 pb-4 space-y-4">
       <!-- DATA BACKUP & DEVICE TRANSFER -->
       <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-indigo-200 dark:border-indigo-900 space-y-4 shadow-sm">
         <div>
@@ -1255,7 +1320,6 @@
           </div>
           <p class="text-[11px] text-indigo-700 dark:text-indigo-300">FinHub checks when the last JSON export was initiated and reminds you when a backup is due. The browser cannot silently save a backup file on a schedule, so use Export JSON Backup when reminded.</p>
           <div class="flex flex-wrap gap-2">
-            <button onclick="exportData()" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-semibold theme-bg">Export backup now</button>
             <button onclick="snoozeBackupReminder(7)" class="px-3 py-1.5 rounded-lg bg-white dark:bg-gray-900 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 text-[11px] font-semibold">Remind me in 7 days</button>
           </div>
         </div>
@@ -1272,6 +1336,12 @@
         </div>
       </div>
 
+        </div>
+      </details>
+
+      <details id="settings-group-preferences" class="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-950/40" open>
+        <summary class="cursor-pointer list-none px-5 py-4 font-bold text-sm flex items-center justify-between">Accounts & Appearance <i class="fa-solid fa-chevron-down text-gray-400"></i></summary>
+        <div class="px-4 pb-4 space-y-4">
       <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-3 shadow-sm">
         <div><h3 class="font-bold text-sm"><i class="fa-solid fa-box-archive mr-2 text-amber-500"></i>Archived Accounts</h3><p class="text-[11px] text-gray-500 mt-1">Closed or retired accounts are hidden from active totals and selectors. Restore them or permanently delete the account and its linked history.</p></div>
         <div id="archived-accounts-list" class="space-y-2"></div>
@@ -1281,12 +1351,13 @@
       <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-3 shadow-sm">
         <h3 class="text-md font-bold">Application Themes</h3>
         <p class="text-xs text-gray-400">Choose a complete interface palette. Your theme is saved with your FinHub settings and does not change financial data.</p>
-        <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
           <button type="button" onclick="setVisualTheme('classic')" class="text-left rounded-xl border border-gray-200 dark:border-gray-700 p-3 hover:ring-2 ring-indigo-400"><span class="block h-7 rounded-lg mb-2" style="background:linear-gradient(90deg,#f3f4f6 50%,#4f46e5 50%)"></span><strong class="text-xs">Classic</strong><span class="block text-[10px] text-gray-400">Original FinHub look</span></button>
           <button type="button" onclick="setVisualTheme('silver')" class="text-left rounded-xl border border-gray-200 dark:border-gray-700 p-3 hover:ring-2 ring-slate-400"><span class="block h-7 rounded-lg mb-2" style="background:linear-gradient(90deg,#e7ebef 50%,#536474 50%)"></span><strong class="text-xs">Silver Bengal</strong><span class="block text-[10px] text-gray-400">Silver, charcoal, icy blue</span></button>
           <button type="button" onclick="setVisualTheme('neutral')" class="text-left rounded-xl border border-gray-200 dark:border-gray-700 p-3 hover:ring-2 ring-amber-700"><span class="block h-7 rounded-lg mb-2" style="background:linear-gradient(90deg,#eee9e1 50%,#88745d 50%)"></span><strong class="text-xs">Warm Neutral</strong><span class="block text-[10px] text-gray-400">Ivory, cream, taupe</span></button>
           <button type="button" onclick="setVisualTheme('colorful')" class="text-left rounded-xl border border-gray-200 dark:border-gray-700 p-3 hover:ring-2 ring-violet-400"><span class="block h-7 rounded-lg mb-2" style="background:linear-gradient(90deg,#fff1f5 30%,#c34f7b 30% 55%,#b69ad8 55% 78%,#e7a0b7 78%)"></span><strong class="text-xs">Rose Garden</strong><span class="block text-[10px] text-gray-400">Blush, berry, lavender & plum</span></button>
           <button type="button" onclick="setVisualTheme('oceanpop')" class="text-left rounded-xl border border-gray-200 dark:border-gray-700 p-3 hover:ring-2 ring-cyan-400"><span class="block h-7 rounded-lg mb-2 ocean-pop-palette"></span><strong class="text-xs">Ocean Pop</strong><span class="block text-[10px] text-gray-400">Aqua, lime, hot pink & navy</span></button>
+          <button type="button" onclick="setVisualTheme('orangecherry')" class="text-left rounded-xl border border-gray-200 dark:border-gray-700 p-3 hover:ring-2 ring-orange-500"><span class="block h-7 rounded-lg mb-2" style="background:linear-gradient(90deg,#f3eee3 0 25%,#bd542d 25% 50%,#3b090b 50% 75%,#f2b18c 75%)"></span><strong class="text-xs">Orange & Cherry</strong><span class="block text-[10px] text-gray-400">Orange, cherry, cream & peach</span></button>
         </div>
         <p id="active-visual-theme-label" class="text-[10px] text-gray-500">Current theme: Classic</p>
       </div>
@@ -1300,6 +1371,9 @@
         <div class="pt-4 space-y-3"><div class="flex justify-end"><button onclick="event.preventDefault();openMerchantRuleModal()" class="px-3 py-1 bg-indigo-600 text-white rounded-lg text-xs font-semibold theme-bg"><i class="fa-solid fa-plus mr-1"></i> Add Rule</button></div><div id="merchant-rules-list" class="space-y-2"></div></div>
       </details>
 
+      <details id="settings-group-automation" class="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-950/40">
+        <summary class="cursor-pointer list-none px-5 py-4 font-bold text-sm flex items-center justify-between">Automation Rules <i class="fa-solid fa-chevron-down text-gray-400"></i></summary>
+        <div class="px-4 pb-4 space-y-4">
       <!-- VENDOR NAME CLEANUP RULES -->
       <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-4 shadow-sm">
         <div class="flex flex-wrap justify-between items-center gap-2 border-b border-gray-200 dark:border-gray-800 pb-3"><div><h3 class="text-md font-bold">Vendor Name Cleanup Rules</h3><p class="text-xs text-gray-400 mt-1">Turn bank descriptions such as “TIM HORTONS #0048 OTTAWA ON” into consistent vendor names.</p></div><div class="flex gap-2"><button onclick="applyVendorCleanupToExisting()" class="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 rounded-lg text-xs font-semibold">Apply to existing</button><button onclick="openVendorRuleModal()" class="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-semibold theme-bg"><i class="fa-solid fa-plus mr-1"></i>Add rule</button></div></div>
@@ -1311,6 +1385,9 @@
         <div class="flex flex-wrap justify-between items-center gap-2 border-b border-gray-200 dark:border-gray-800 pb-3"><div><h3 class="text-md font-bold text-indigo-600 dark:text-indigo-400 theme-text">Statement Import Rules</h3><p class="text-xs text-gray-400 mt-1">Automatically fill transaction type, vendor, category and debt-payment details when a bank description contains a saved phrase. Explicit CSV columns always take priority.</p></div><button onclick="openImportRuleModal()" class="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-semibold theme-bg"><i class="fa-solid fa-plus mr-1"></i>Add import rule</button></div>
         <div id="statement-import-rules-list" class="space-y-2"></div>
       </div>
+
+        </div>
+      </details>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-4 shadow-sm">
@@ -1327,6 +1404,12 @@
           </div>
         </div>
 
+        </div>
+      </details>
+
+      <details id="settings-group-categories" class="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-950/40" open>
+        <summary class="cursor-pointer list-none px-5 py-4 font-bold text-sm flex items-center justify-between">Categories & Subcategories <i class="fa-solid fa-chevron-down text-gray-400"></i></summary>
+        <div class="px-4 pb-4 space-y-4">
         <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-4 shadow-sm">
           <div class="flex flex-wrap items-center justify-between gap-2"><div><h3 class="text-md font-bold">Expense Buckets & Subcategories</h3><p class="text-[10px] text-gray-400 mt-1">Used for spending, budgets and expense reporting.</p></div><button type="button" onclick="openCategoryModal()" class="px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-semibold theme-bg"><i class="fa-solid fa-plus mr-1"></i>Add Expense Bucket</button></div>
           <div id="settings-categories-list" class="space-y-3"></div>
@@ -1340,6 +1423,8 @@
           <div id="settings-income-categories-list" class="space-y-3"></div>
         </div>
       </div>
+        </div>
+      </details>
     </section>
 
   </main>
@@ -1839,7 +1924,7 @@ Bonus"></textarea></div>
         <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-gray-400 border-b border-gray-100 dark:border-gray-800 pb-2">
           <span>Source: <strong id="tx-entry-source" class="font-semibold text-gray-600 dark:text-gray-300">Manual</strong></span>
           <span>Statement: <strong id="tx-statement-status" class="font-semibold text-gray-600 dark:text-gray-300">Not matched</strong></span>
-          <button type="button" onclick="refreshTransactionEntryView()" class="ml-auto inline-flex items-center gap-1 rounded-md border border-gray-200 dark:border-gray-700 px-2 py-1 text-[10px] font-semibold hover:bg-gray-100 dark:hover:bg-gray-800" title="Refresh analytics and transaction form options"><i class="fa-solid fa-rotate"></i> Refresh</button>
+          
         </div>
         <div>
           <div class="flex items-center justify-between mb-1"><label class="block text-xs font-semibold text-gray-500">Vendor <span class="text-rose-500">*</span></label><div class="flex gap-2"><button type="button" onclick="applySavedVendorCleanupToForm()" class="text-[10px] font-semibold text-indigo-500 hover:text-indigo-400">Apply saved cleanup</button><button type="button" onclick="openVendorRuleModalFromTransaction()" class="text-[10px] font-semibold text-indigo-500 hover:text-indigo-400">Create cleanup rule</button></div></div>
@@ -1882,12 +1967,7 @@ Bonus"></textarea></div>
           <p class="text-[10px] text-gray-400">Interest is calculated as total payment less principal. Enter the principal shown on the lender statement.</p>
         </div>
         <div><label class="block text-xs font-semibold text-gray-500 mb-1">Description (optional)</label><input type="text" id="tx-desc" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" placeholder="e.g. Weekly groceries"></div>
-        <details class="rounded-lg border border-gray-200 dark:border-gray-800 px-3 py-2">
-          <summary class="cursor-pointer text-xs font-semibold text-gray-500">Additional details (optional)</summary>
-          <div class="space-y-2 pt-3">
-            <div id="tx-related-debt-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Related Debt Account</label><select id="tx-related-debt" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"><option value="">Not linked to a debt account</option></select><p id="tx-related-debt-help" class="text-[10px] text-gray-400 mt-1">Link interest expenses or other activity to a debt account.</p></div>
-          </div>
-        </details>
+        <div id="tx-related-debt-wrap" class="hidden"><label class="block text-xs font-semibold text-gray-500 mb-1">Related Debt Account</label><select id="tx-related-debt" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"><option value="">Not linked to a debt account</option></select><p id="tx-related-debt-help" class="text-[10px] text-gray-400 mt-1">Link interest expenses or other activity to a debt account.</p></div>
         <div id="tx-transfer-destination-wrap" class="hidden"><label class="block text-xs font-semibold text-gray-500 mb-1">Account To</label><select id="tx-transfer-to" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></select><p class="text-[10px] text-gray-400 mt-1">Choose another FinHub account for an internal transfer, or leave this blank for money sent outside your tracked accounts (for example, an e-transfer to another person).</p></div>
         <!-- SINGLE TRANSACTION FIELDS (OPTIONAL DROPDOWNS) -->
         <div id="single-tx-fields" class="space-y-3">
@@ -1915,19 +1995,7 @@ Bonus"></textarea></div>
         </div>
 
         </div><!-- /tx-entry-fields -->
-        <aside id="tx-spending-panel" class="tx-spending-panel rounded-2xl border border-gray-200 dark:border-gray-800 bg-gray-50/70 dark:bg-gray-950/50 p-3 space-y-3 min-w-0">
-          <details id="tx-analytics-details">
-          <summary class="cursor-pointer flex items-center justify-between gap-2 list-none"><h4 class="font-bold text-sm"><i class="fa-solid fa-chart-pie mr-2 text-indigo-500"></i>Spending Analytics</h4><span class="text-[10px] text-gray-400">Show / hide <i class="fa-solid fa-chevron-down ml-1"></i></span></summary>
-          <div class="space-y-3 pt-3"><div class="flex justify-end"><select id="tx-analytics-period" onchange="renderTransactionAnalytics()" class="text-xs bg-white dark:bg-gray-900 border rounded-lg px-2 py-1"><option value="month">This Month</option><option value="30">Last 30 Days</option><option value="year">This Year</option></select></div>
-          <div class="flex gap-1 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-1"><button type="button" class="tx-analytics-tab active" data-level="subcategory" onclick="setTransactionAnalyticsLevel('subcategory')">Subcategory</button><button type="button" class="tx-analytics-tab" data-level="category" onclick="setTransactionAnalyticsLevel('category')">Category</button><button type="button" class="tx-analytics-tab" data-level="account" onclick="setTransactionAnalyticsLevel('account')">Account</button></div>
-          <div id="tx-analytics-total" class="text-center text-lg font-bold accounting-num">$0.00</div>
-          <div id="tx-analytics-chart" class="tx-analytics-chart"><div class="tx-analytics-donut"></div><div id="tx-analytics-legend" class="space-y-2"></div></div>
-          <p class="text-[10px] text-gray-400">Net expenses for the selected period. Refunds offset the original spending category; debt principal is excluded.</p>
-          <div class="border-t border-gray-200 dark:border-gray-800 pt-3"><div class="flex items-center justify-between mb-2"><h4 class="font-semibold text-xs">Categories</h4><button type="button" onclick="closeTransactionModal();switchTab('categories')" class="text-[10px] text-indigo-500">Manage categories</button></div><div id="tx-analytics-categories" class="space-y-1 text-xs"></div>
-            <details id="tx-auto-rules-details" class="mt-3 border border-gray-200 dark:border-gray-800 rounded-lg p-2"><summary class="cursor-pointer text-xs font-semibold"><i class="fa-solid fa-wand-magic-sparkles mr-2 text-indigo-500"></i>Auto Tagging Rules <span id="tx-auto-rules-count" class="float-right text-gray-400"></span></summary><div id="tx-auto-rules-list" class="pt-2 space-y-1 text-[10px] text-gray-500"></div></details>
-          </div></div>
-          </details>
-        </aside>
+
         <!-- SPLIT TRANSACTION ENGINE -->
         <div id="split-tx-fields" class="space-y-3 hidden border-t border-gray-200 dark:border-gray-800 pt-3">
           <div class="flex justify-between items-center">
@@ -2473,7 +2541,7 @@ Bonus"></textarea></div>
       delete t.externalTransferDirection;
     });
     state.transactionTaxonomyVersion = 2;
-    state.appVisualTheme = ['classic','silver','neutral','colorful','oceanpop'].includes(state.appVisualTheme) ? state.appVisualTheme : 'classic';
+    state.appVisualTheme = ['classic','silver','neutral','colorful','oceanpop','orangecherry'].includes(state.appVisualTheme) ? state.appVisualTheme : 'classic';
     if (!Array.isArray(state.variablePoolCategories)) state.variablePoolCategories = (state.categories || []).filter(c => !/housing|bill|debt service/i.test(c.name)).map(c => c.name);
     // New planner, reconciliation, and sinking-fund fields are additive; existing transactions and budgets remain intact.
     initializeSinkingFundLedger();
@@ -2592,12 +2660,12 @@ Bonus"></textarea></div>
       applyPrivacyBlurState();
     }
 
-    const FINHUB_VISUAL_THEMES = ['classic','silver','neutral','colorful','oceanpop'];
+    const FINHUB_VISUAL_THEMES = ['classic','silver','neutral','colorful','oceanpop','orangecherry'];
     function applyVisualTheme(theme) {
       const chosen = FINHUB_VISUAL_THEMES.includes(theme) ? theme : 'classic';
       document.getElementById('app-body')?.setAttribute('data-finhub-theme', chosen);
       const label = document.getElementById('active-visual-theme-label');
-      if (label) label.textContent = `Current theme: ${{classic:'Classic',silver:'Silver Bengal',neutral:'Warm Neutral',colorful:'Rose Garden',oceanpop:'Ocean Pop'}[chosen]}`;
+      if (label) label.textContent = `Current theme: ${{classic:'Classic',silver:'Silver Bengal',neutral:'Warm Neutral',colorful:'Rose Garden',oceanpop:'Ocean Pop',orangecherry:'Orange & Cherry'}[chosen]}`;
     }
     function setVisualTheme(theme) {
       if (!FINHUB_VISUAL_THEMES.includes(theme)) return;
@@ -10094,7 +10162,7 @@ ${acc.name}`);
       state.statementReconciliation.groups = Array.isArray(state.statementReconciliation.groups) ? state.statementReconciliation.groups : [];
       state.vendorCleanupRules = Array.isArray(state.vendorCleanupRules) ? state.vendorCleanupRules : [];
       state.merchantRules = Array.isArray(state.merchantRules) ? state.merchantRules : [];
-      state.appVisualTheme = ['classic','silver','neutral','colorful','oceanpop'].includes(state.appVisualTheme) ? state.appVisualTheme : 'classic';
+      state.appVisualTheme = ['classic','silver','neutral','colorful','oceanpop','orangecherry'].includes(state.appVisualTheme) ? state.appVisualTheme : 'classic';
       if (!isValidHexColor(state.appAccentHex)) delete state.appAccentHex;
       if (!isValidHexColor(state.appBackgroundHex)) delete state.appBackgroundHex;
       if (!Array.isArray(state.variablePoolCategories)) state.variablePoolCategories = (state.categories || []).filter(c => !/housing|bill|debt service/i.test(c.name)).map(c => c.name);
@@ -10526,6 +10594,29 @@ ${acc.name}`);
       });
     }
     document.addEventListener('DOMContentLoaded', initializeRemainingSectionCollapses);
+
+    function refreshFinHubView() {
+      const refreshers = [
+        'renderDashboard','renderCalendar','renderLedger','renderDebtPlanner',
+        'renderDebtPaymentHistory','renderZbbPlanner','renderZbbFundingTracker',
+        'renderJointAppView','renderSettings','renderStatementPreview',
+        'renderStatementBalanceCheck','renderTransactionAnalytics',
+        'renderBudget','renderReports','renderIncomeExpenseReport'
+      ];
+      try { if (typeof refreshTransactionEntryView === 'function') refreshTransactionEntryView(); } catch (error) { console.warn('FinHub transaction refresh warning:', error); }
+      refreshers.forEach(name => {
+        try { if (typeof window[name] === 'function') window[name](); }
+        catch (error) { console.warn('FinHub refresh warning (' + name + '):', error); }
+      });
+      try { if (typeof updateLedgerSelectionUI === 'function') updateLedgerSelectionUI(); } catch (_) {}
+      const btn = document.getElementById('finhub-global-refresh');
+      if (btn) {
+        const label = btn.querySelector('[data-refresh-label]');
+        if (label) label.textContent = 'Refreshed';
+        window.setTimeout(() => { if (label) label.textContent = 'Refresh'; }, 1200);
+      }
+    }
+
 </script>
   <div id="backup-import-preview-modal" class="hidden fixed inset-0 z-[110] bg-black/70 items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="backup-preview-title">
     <div class="w-full max-w-xl bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-2xl overflow-hidden">
@@ -10564,6 +10655,11 @@ ${acc.name}`);
       </div>
     </div>
   </div>
+
+
+    <button id="finhub-global-refresh" type="button" onclick="refreshFinHubView()" title="Refresh displayed FinHub information" aria-label="Refresh displayed FinHub information" class="fixed bottom-5 right-5 z-[90] inline-flex items-center gap-2 rounded-full px-4 py-3 text-xs font-bold text-white shadow-xl theme-bg border border-black/10 hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-offset-2">
+      <i class="fa-solid fa-rotate"></i><span data-refresh-label>Refresh</span>
+    </button>
 
 </body>
 </html>
