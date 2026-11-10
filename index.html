@@ -52,7 +52,69 @@
       body.sidebar-collapsed #finhub-sidebar .sidebar-brand-row { justify-content:flex-start; }
       body.sidebar-collapsed #finhub-sidebar .sidebar-brand-actions { flex-direction:row; }
     }
-    /* Compact, horizontally scrollable multi-select filters */
+    @media (min-width: 768px) and (max-width: 1450px) {
+      body:has(#finhub-sidebar) { }
+      #finhub-sidebar {
+        width:100% !important;
+        max-width:none !important;
+        height:auto !important;
+        min-height:0 !important;
+        flex:0 0 auto !important;
+        border-right:0 !important;
+        border-bottom:1px solid rgba(148,163,184,.3) !important;
+        display:flex !important;
+        flex-direction:row !important;
+        align-items:center !important;
+        justify-content:space-between !important;
+        gap:.5rem !important;
+        padding:.35rem .6rem !important;
+      }
+      #finhub-sidebar > div:first-child {
+        display:flex !important;
+        flex:1 1 auto !important;
+        min-width:0 !important;
+        align-items:center !important;
+        gap:.5rem !important;
+      }
+      #finhub-sidebar > div:first-child > div:first-child {
+        padding:.25rem .45rem !important;
+        border:0 !important;
+        flex:0 0 auto !important;
+      }
+      #finhub-sidebar .sidebar-brand-row { gap:.35rem !important; }
+      #finhub-sidebar .sidebar-brand-row #brand-logo { width:2.25rem !important; height:2.25rem !important; }
+      #finhub-sidebar nav {
+        display:flex !important;
+        flex:1 1 auto !important;
+        min-width:0 !important;
+        overflow-x:auto !important;
+        overflow-y:hidden !important;
+        white-space:nowrap !important;
+        padding:.1rem .25rem !important;
+        gap:.2rem !important;
+        scrollbar-width:thin;
+      }
+      #finhub-sidebar nav .nav-group { display:contents !important; }
+      #finhub-sidebar .nav-section-label { display:none !important; }
+      #finhub-sidebar .nav-btn {
+        width:auto !important;
+        flex:0 0 auto !important;
+        display:inline-flex !important;
+        align-items:center !important;
+        gap:.4rem !important;
+        padding:.55rem .7rem !important;
+        font-size:.72rem !important;
+      }
+      #finhub-sidebar .nav-btn > i { width:auto !important; }
+      #finhub-sidebar .sidebar-nav-label { display:inline !important; }
+      #finhub-sidebar #sidebar-summary { display:none !important; }
+      #finhub-sidebar #finhub-global-refresh { width:auto !important; white-space:nowrap !important; }
+      main { min-width:0 !important; width:100% !important; }
+      body.sidebar-collapsed #finhub-sidebar { width:100% !important; }
+      body.sidebar-collapsed #finhub-sidebar .sidebar-nav-label { display:inline !important; }
+      body.sidebar-collapsed #finhub-sidebar nav { display:flex !important; }
+    }
+\n    /* Compact, horizontally scrollable multi-select filters */
     .ledger-filter-strip { display:none !important; }
     .ledger-filter-button { flex:0 0 auto; display:inline-flex; align-items:center; gap:.4rem; padding:.45rem .65rem; border:1px solid rgba(148,163,184,.35); border-radius:.65rem; background:rgba(148,163,184,.08); font-size:.7rem; font-weight:600; }
     .ledger-filter-button.has-selection { border-color:#818cf8; background:rgba(99,102,241,.12); }
@@ -1299,7 +1361,7 @@
               <div class="flex justify-between items-center text-xs text-gray-500"><span>Transfers Sent Logged:</span><input type="number" step="0.01" id="joint-transfers-sent-input" onchange="saveTransfersSent(this.value)" class="w-24 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded px-2 py-1 text-right font-bold text-xs accounting-num"></div>
               <div class="flex justify-between font-bold text-sm"><span>Remaining Due:</span><span id="joint-remaining-due" class="text-rose-600 dark:text-rose-400 accounting-num">$ - </span></div>
             </div>
-            <textarea id="joint-month-notes" onchange="saveJointNotes(this.value)" rows="2" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-2 text-xs" placeholder="Add monthly notes..."></textarea>
+            <textarea id="joint-month-notes" onchange="saveJointNotes(this.value)" onmouseup="saveJointNotesHeight(this)" ontouchend="saveJointNotesHeight(this)" onkeyup="saveJointNotesHeight(this)" rows="2" class="w-full min-h-[3.5rem] bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-2 text-xs resize-y" placeholder="Add monthly notes..."></textarea>
           </div>
         </div>
         <div class="lg:col-span-2 space-y-6">
@@ -2268,7 +2330,7 @@ Bonus"></textarea></div>
           <div id="split-rows-container" class="space-y-2"></div><div class="text-xs rounded-lg bg-indigo-50 dark:bg-indigo-950/30 p-3">Additional splits: <strong id="split-extra-total">$0.00</strong> · Remaining to original bucket: <strong id="split-remainder-total">—</strong></div>
         </div>
 
-        <div class="flex space-x-3 pt-3 pb-1 sticky bottom-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 mt-2"><button type="button" onclick="closeTransactionModal()" class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold">Cancel</button><button type="button" id="tx-delete-edit-btn" onclick="deleteEditingTransaction()" class="hidden px-3 py-2 rounded-lg border border-rose-500 text-rose-600 text-xs font-semibold">Delete transaction</button><button type="submit" class="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold theme-bg">Save Transaction</button></div>
+        <div class="flex space-x-3 pt-3 pb-1 sticky bottom-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 mt-2"><button type="button" onclick="closeTransactionModal()" class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold">Cancel</button><button type="button" id="tx-delete-edit-btn" onclick="deleteEditingTransaction()" class="hidden px-3 py-2 rounded-lg border border-rose-500 text-rose-600 text-xs font-semibold">Delete transaction</button><button type="submit" class="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold theme-bg">Save</button></div>
       </form>
     </div>
   </div>
@@ -2291,7 +2353,7 @@ Bonus"></textarea></div>
         <div class="rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900 p-3 text-[11px] text-rose-800 dark:text-rose-200">
           This increases the selected liability and records an interest expense. It does not change any chequing or savings account.
         </div>
-        <div class="flex gap-2"><button type="button" onclick="closeInterestChargeModal()" class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold">Cancel</button><button type="submit" class="flex-1 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-sm font-semibold">Save Interest Charge</button></div>
+        <div class="flex gap-2"><button type="button" onclick="closeInterestChargeModal()" class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold">Cancel</button><button type="submit" class="flex-1 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-sm font-semibold">Save</button></div>
       </form>
     </div>
   </div>
@@ -5738,6 +5800,19 @@ ${acc.name}`);
       state.jointMetaData[ym].transfersSent = nextValue;
       saveData(); renderJointAppView();
     }
+    function saveJointNotesHeight(el) {
+      if (!el) return;
+      try { localStorage.setItem('finhub-joint-notes-height', String(Math.round(el.getBoundingClientRect().height))); } catch (e) {}
+    }
+    function restoreJointNotesHeight() {
+      const el = document.getElementById('joint-month-notes');
+      if (!el) return;
+      try {
+        const height = Number(localStorage.getItem('finhub-joint-notes-height'));
+        if (Number.isFinite(height) && height >= 56 && height <= 1200) el.style.height = `${height}px`;
+      } catch (e) {}
+    }
+    document.addEventListener('DOMContentLoaded', restoreJointNotesHeight);
     function saveJointNotes(val) {
       const ym = state.selectedJointYM || '2026-11';
       if (!state.jointMetaData[ym]) state.jointMetaData[ym] = { transfersSent: 0, notes: '' };
