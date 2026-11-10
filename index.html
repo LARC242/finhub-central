@@ -62,10 +62,12 @@
     #ledger-filter-popover input[type="search"] { color:inherit; }
     #ledger-table-container table[data-density="compact"] tbody#ledger-rows td { padding:.28rem .48rem !important; font-size:.68rem !important; line-height:1.12 !important; }
     #ledger-table-container table[data-density="compact"] thead th { padding:.38rem .48rem !important; }
+    #ledger-table-container table[data-density="comfortable"] tbody#ledger-rows td { padding:.55rem .7rem !important; font-size:.75rem !important; line-height:1.28 !important; }
+    #ledger-table-container table[data-density="comfortable"] thead th { padding:.55rem .7rem !important; font-size:.67rem !important; }
     #ledger-table-container table[data-density="wide"] tbody#ledger-rows td { padding:.8rem .85rem !important; font-size:.82rem !important; line-height:1.4 !important; }
     #ledger-table-container table[data-density="wide"] thead th { padding:.75rem .85rem !important; font-size:.72rem !important; }
-    #ledger-table-container .ledger-resize-handle { width:10px !important; border-right:2px solid rgba(99,102,241,.45) !important; cursor:col-resize !important; }
-    #ledger-table-container .ledger-resize-handle:hover { background:rgba(99,102,241,.14) !important; border-right-color:#6366f1 !important; }
+    #ledger-table-container .ledger-resize-handle { width:12px !important; border-right:3px solid rgba(99,102,241,.55) !important; cursor:col-resize !important; background:linear-gradient(90deg,transparent 55%,rgba(99,102,241,.08) 55%) !important; }
+    #ledger-table-container .ledger-resize-handle:hover { background:rgba(99,102,241,.16) !important; border-right-color:#6366f1 !important; }
     /* Expense Tracker remains a true table and scrolls horizontally on narrow screens. */
     #ledger-table-container { max-width:100%; overflow-x:auto !important; overflow-y:visible; -webkit-overflow-scrolling:touch; }
     #ledger-table-container table { min-width:1400px; width:100%; }
@@ -460,7 +462,7 @@
     <div>
       <div class="p-5 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between gap-2">
         <div class="sidebar-brand-row flex items-center space-x-3 min-w-0">
-          <div id="brand-logo" role="img" aria-label="FinHub logo" class="w-10 h-10 rounded-2xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/30 overflow-hidden">
+          <div id="brand-logo" role="img" aria-label="FinHub logo" class="w-14 h-14 rounded-2xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/30 overflow-hidden">
             <svg viewBox="0 0 48 48" class="w-full h-full" aria-hidden="true"><defs><linearGradient id="finhubLogoBg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#00FBEA"/><stop offset="1" stop-color="#087F83"/></linearGradient></defs><rect width="48" height="48" rx="15" fill="#132A44"/><path d="M13 35V12h24v6H20v5h14v6H20v6z" fill="url(#finhubLogoBg)"/><circle cx="37" cy="11" r="5" fill="#FF2687"/><circle cx="10" cy="38" r="3.5" fill="#D8FF76"/><path d="M36 27l1.8 3.2L41 32l-3.2 1.8L36 37l-1.8-3.2L31 32l3.2-1.8z" fill="#FF2687"/></svg>
           </div>
           <div class="sidebar-brand-copy min-w-0">
@@ -1143,8 +1145,8 @@
       </div>
 
       <!-- TABLE VIEW CONTAINER -->
-      <div class="flex flex-wrap justify-end gap-2 mb-2"><button type="button" onclick="openLedgerColumnSettings()" class="px-3 py-2 border rounded-lg text-xs"><i class="fa-solid fa-table-columns mr-1"></i>Show / hide columns</button><button type="button" onclick="restoreLedgerColumns()" class="px-3 py-2 border border-indigo-300 dark:border-indigo-800 text-indigo-600 dark:text-indigo-300 rounded-lg text-xs">Restore all columns</button><button type="button" onclick="exportLedgerCsv()" class="px-3 py-2 bg-emerald-600 text-white rounded-lg text-xs">Export CSV</button><button type="button" onclick="exportFinancialWorkbook()" class="px-3 py-2 bg-cyan-700 text-white rounded-lg text-xs">Export Excel Reports</button></div><div id="ledger-column-settings" class="hidden p-4 mb-3 border border-indigo-200 dark:border-indigo-900 rounded-xl bg-indigo-50/50 dark:bg-indigo-950/20">
-        <div class="flex flex-wrap items-center justify-between gap-2 mb-3"><div><h4 class="text-sm font-bold">Customize transaction columns</h4><p class="text-xs text-gray-500 mt-1">Tick a column to show it. Untick it to hide it. Drag to reorder; drag a header edge to resize.</p></div><div class="flex gap-2"><button type="button" onclick="restoreLedgerColumns()" class="px-3 py-1.5 border border-indigo-300 dark:border-indigo-800 text-indigo-600 dark:text-indigo-300 rounded-lg text-xs">Show all</button><button type="button" onclick="closeLedgerColumnSettings()" class="px-3 py-1.5 border rounded-lg text-xs">Done</button></div></div>
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-2"><div class="flex items-center gap-2"><span class="text-xs text-gray-500 font-semibold">Table view</span><div class="inline-flex items-center rounded-lg border p-0.5" role="group" aria-label="Expense tracker density"><button type="button" id="ledger-view-compact" onclick="setLedgerViewDensity('compact')" class="px-2.5 py-1 rounded-md text-xs font-semibold">Compact</button><button type="button" id="ledger-view-comfortable" onclick="setLedgerViewDensity('comfortable')" class="px-2.5 py-1 rounded-md text-xs font-semibold">Comfortable</button><button type="button" id="ledger-view-wide" onclick="setLedgerViewDensity('wide')" class="px-2.5 py-1 rounded-md text-xs font-semibold">Wide</button></div></div><div class="flex flex-wrap justify-end gap-2"><button type="button" onclick="openLedgerColumnSettings()" class="px-3 py-2 border rounded-lg text-xs"><i class="fa-solid fa-table-columns mr-1"></i>Show / hide columns</button><button type="button" onclick="restoreLedgerColumns()" class="px-3 py-2 border border-indigo-300 dark:border-indigo-800 text-indigo-600 dark:text-indigo-300 rounded-lg text-xs">Restore all columns</button><button type="button" onclick="exportLedgerCsv()" class="px-3 py-2 bg-emerald-600 text-white rounded-lg text-xs">Export CSV</button><button type="button" onclick="exportFinancialWorkbook()" class="px-3 py-2 bg-cyan-700 text-white rounded-lg text-xs">Export Excel Reports</button></div></div><div id="ledger-column-settings" class="hidden p-4 mb-3 border border-indigo-200 dark:border-indigo-900 rounded-xl bg-indigo-50/50 dark:bg-indigo-950/20">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-3"><div><h4 class="text-sm font-bold">Customize transaction columns</h4><p class="text-xs text-gray-500 mt-1">Tick a column to show it. Untick it to hide it. Drag to reorder. Drag the blue divider at the right edge of a header to resize that column independently. Columns can grow without squeezing the others; use Reset column widths to start over.</p></div><div class="flex gap-2"><button type="button" onclick="restoreLedgerColumns()" class="px-3 py-1.5 border border-indigo-300 dark:border-indigo-800 text-indigo-600 dark:text-indigo-300 rounded-lg text-xs">Show all</button><button type="button" onclick="closeLedgerColumnSettings()" class="px-3 py-1.5 border rounded-lg text-xs">Done</button></div></div>
         <div id="ledger-column-options" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 text-xs"></div>
         <div class="flex justify-end mt-3"><button type="button" onclick="resetLedgerColumnWidths()" class="text-xs text-indigo-600 dark:text-indigo-400 underline">Reset column widths</button></div>
       </div>
@@ -1162,10 +1164,6 @@
               <label for="ledger-period-preset" class="text-xs text-gray-500">Period</label>
               <select id="ledger-period-preset" onchange="setLedgerPeriodPreset(this.value)" class="border rounded-lg px-2.5 py-1.5 text-xs bg-white dark:bg-gray-900"><option value="current">This month</option><option value="last">Last month</option><option value="3months">Last 3 months</option><option value="year">This year</option><option value="all">All dates</option></select>
               <button onclick="clearLedgerFilters()" class="px-2.5 py-1.5 text-xs font-semibold text-indigo-600 dark:text-cyan-300">Clear all</button>
-              <div class="flex items-center rounded-lg border p-0.5" role="group" aria-label="Transaction table view density">
-                <button type="button" id="ledger-view-compact" onclick="setLedgerViewDensity('compact')" class="px-2.5 py-1 rounded-md text-xs font-semibold">Compact</button>
-                <button type="button" id="ledger-view-wide" onclick="setLedgerViewDensity('wide')" class="px-2.5 py-1 rounded-md text-xs font-semibold">Wide</button>
-              </div>
             </div>
           </div>
           <div id="ledger-filter-strip" class="ledger-filter-strip custom-scrollbar px-3 py-2"></div>
@@ -1853,19 +1851,18 @@ Bonus"></textarea></div>
         </div>
         <div class="space-y-2">
           <label class="block text-xs font-semibold text-gray-500">Transaction Type</label>
-          <div class="grid grid-cols-5 gap-2" id="tx-type-cards">
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2" id="tx-type-cards">
             <button type="button" data-tx-kind="Expense" onclick="selectTransactionKind('Expense')" class="tx-kind-card"><i class="fa-solid fa-cart-shopping"></i><span>Expense</span></button>
             <button type="button" data-tx-kind="Income" onclick="selectTransactionKind('Income')" class="tx-kind-card"><i class="fa-solid fa-arrow-down-to-line"></i><span>Income</span></button>
             <button type="button" data-tx-kind="Debt" onclick="selectTransactionKind('Debt')" class="tx-kind-card"><i class="fa-solid fa-credit-card"></i><span>Debt</span></button>
             <button type="button" data-tx-kind="Transfer" onclick="selectTransactionKind('Transfer')" class="tx-kind-card"><i class="fa-solid fa-right-left"></i><span>Transfer</span></button>
-            <button type="button" data-tx-kind="Reversal" onclick="selectTransactionKind('Reversal')" class="tx-kind-card"><i class="fa-solid fa-rotate-left"></i><span>Reversal</span></button>
           </div>
           <select id="tx-type" onchange="updateTransactionTypeFields()" class="hidden" aria-hidden="true" tabindex="-1"></select>
         </div>
         <div id="tx-refund-tools" class="my-1">
           <input id="tx-is-refund" type="checkbox" onchange="toggleRefundEntryFields()" class="sr-only" aria-label="Treat this transaction as a refund or reimbursement">
-          <button type="button" id="tx-refund-trigger" onclick="toggleRefundEntryFields(true)" aria-expanded="false" aria-controls="tx-refund-link-fields" title="Add refund / reimbursement link" aria-label="Add refund / reimbursement link" class="inline-flex items-center justify-center w-7 h-7 rounded-full border border-teal-500/60 text-teal-700 dark:text-teal-300 hover:bg-teal-50 dark:hover:bg-teal-950/40">
-            <i class="fa-solid fa-rotate-left text-[11px]" aria-hidden="true"></i>
+          <button type="button" id="tx-refund-trigger" onclick="toggleRefundEntryFields(true)" aria-expanded="false" aria-controls="tx-refund-link-fields" title="Add refund / reimbursement link" aria-label="Add refund / reimbursement link" class="inline-flex items-center gap-1 rounded-full border border-teal-500/60 px-2.5 py-1 text-[11px] font-semibold text-teal-700 dark:text-teal-300 hover:bg-teal-50 dark:hover:bg-teal-950/40">
+            <i class="fa-solid fa-rotate-left text-[10px]" aria-hidden="true"></i><span>Refund</span>
           </button>
           <div id="tx-refund-link-fields" class="hidden mt-2 rounded-lg border border-teal-300 dark:border-teal-800 bg-teal-50 dark:bg-teal-950/30 p-3 space-y-2">
             <p class="text-[10px] text-gray-600 dark:text-gray-300">Link this deposit to the original expense. It will offset that category rather than count as ordinary income.</p>
@@ -1873,12 +1870,6 @@ Bonus"></textarea></div>
             <select id="tx-refund-original" onchange="applyRefundOriginalSelection()" size="5" class="w-full bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm"><option value="">Choose original expense</option></select>
             <div id="tx-refund-preview" class="text-[10px] text-gray-600 dark:text-gray-300"></div>
           </div>
-        </div>
-        <div id="tx-manual-reversal-fields" class="hidden rounded-xl border border-amber-300 dark:border-amber-800 bg-amber-50/60 dark:bg-amber-950/20 p-3 space-y-2">
-          <div class="text-xs font-semibold">Reverse an existing transaction</div>
-          <p class="text-[10px] text-gray-500">Choose the original transaction. FinHub will calculate the remaining reversible amount and apply the correct account and debt effects.</p>
-          <input id="tx-reversal-search" type="search" placeholder="Search original by vendor, description, amount or date…" oninput="populateManualReversalOptions()" class="w-full bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm mb-2"><select id="tx-reversal-original" onchange="updateManualReversalPreview()" size="6" class="w-full bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"><option value="">Choose original transaction</option></select><p class="text-[10px] text-gray-500">Newest transactions first. Only transactions with a remaining reversible amount are shown.</p>
-          <div id="tx-reversal-preview" class="text-[11px] text-gray-500"></div>
         </div>
         <div id="tx-amount-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Total Amount ($)</label><input type="number" step="0.01" id="tx-amount" oninput="updateInlineDebtSplit(false)" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
         <div id="tx-interest-charge-guidance" class="hidden rounded-xl border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30 p-3 space-y-1">
@@ -5364,18 +5355,19 @@ ${acc.name}`);
       }
     }
     function setLedgerViewDensity(mode) {
-      const safeMode = mode === 'wide' ? 'wide' : 'compact';
+      const safeMode = ['compact','comfortable','wide'].includes(mode) ? mode : 'comfortable';
       state.ledgerViewDensity = safeMode;
       saveData();
       applyLedgerViewDensity();
     }
     function applyLedgerViewDensity() {
-      const mode = state.ledgerViewDensity === 'wide' ? 'wide' : 'compact';
+      const mode = ['compact','comfortable','wide'].includes(state.ledgerViewDensity) ? state.ledgerViewDensity : 'comfortable';
       const table = document.querySelector('#ledger-table-container table');
       const compact = document.getElementById('ledger-view-compact');
+      const comfortable = document.getElementById('ledger-view-comfortable');
       const wide = document.getElementById('ledger-view-wide');
       if (table) table.dataset.density = mode;
-      [ [compact,'compact'], [wide,'wide'] ].forEach(([button,key]) => {
+      [ [compact,'compact'], [comfortable,'comfortable'], [wide,'wide'] ].forEach(([button,key]) => {
         if (!button) return;
         button.classList.toggle('bg-indigo-600', mode === key);
         button.classList.toggle('text-white', mode === key);
@@ -9111,25 +9103,6 @@ ${acc.name}`);
       const chart=document.getElementById('tx-analytics-chart');if(!chart)return;const period=document.getElementById('tx-analytics-period')?.value||'month';const now=new Date();let start=new Date(now.getFullYear(),now.getMonth(),1);if(period==='30')start=new Date(now.getFullYear(),now.getMonth(),now.getDate()-29);if(period==='year')start=new Date(now.getFullYear(),0,1);const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;const from=iso(start),to=iso(now);const level=state.transactionAnalyticsLevel||'subcategory';const components=(state.transactions||[]).filter(t=>t.date>=from&&t.date<=to&&t.category!=='Transfer'&&!(t.desc||'').toLowerCase().startsWith('transfer ')).flatMap(t=>getExpenseReportingComponents(t));const totals={};components.forEach(c=>{const key=level==='account'?(state.accounts.find(a=>String(a.id)===String(c.transaction.accountId))?.name||'Unknown account'):level==='subcategory'?(c.subcategory||'Uncategorized'):(c.category||'Uncategorized');totals[key]=(totals[key]||0)+(Number(c.amount)||0)});const entries=Object.entries(totals).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);const total=entries.reduce((a,[,v])=>a+v,0);document.getElementById('tx-analytics-total').textContent=`${formatFinancial(total)} spent`;const palette=['#6366f1','#ec4899','#3b82f6','#14b8a6','#f59e0b','#8b5cf6','#84cc16','#64748b'];let cursor=0;const stops=entries.map(([name,value],i)=>{const from=cursor;cursor+=value/Math.max(total,1)*100;return `${palette[i%palette.length]} ${from}% ${cursor}%`}).join(',');const donut=chart.querySelector('.tx-analytics-donut');donut.style.background=entries.length?`conic-gradient(${stops})`:'#e5e7eb';const legend=document.getElementById('tx-analytics-legend');legend.innerHTML=entries.slice(0,7).map(([name,value],i)=>`<div class="flex items-center justify-between gap-2 text-[10px]"><span class="flex items-center gap-1.5 min-w-0"><i class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background:${palette[i%palette.length]}"></i><span class="truncate">${escapeHtml(name)}</span></span><strong class="whitespace-nowrap">${(value/Math.max(total,1)*100).toFixed(1)}%</strong></div>`).join('')||'<p class="text-xs text-gray-400">No spending in this period.</p>';const cats=document.getElementById('tx-analytics-categories');cats.innerHTML=(state.categories||[]).slice(0,7).map(c=>`<div class="flex justify-between gap-2"><span class="truncate">${escapeHtml(c.name)}</span><span class="text-gray-400">${(c.subcategories||[]).length} subcategories</span></div>`).join('');const rules=state.merchantRules||[];document.getElementById('tx-auto-rules-count').textContent=`${rules.length} rules`;document.getElementById('tx-auto-rules-list').innerHTML=rules.slice(0,8).map(r=>`<div class="flex justify-between gap-2"><span class="truncate">${escapeHtml(r.keyword||'')}</span><span>${escapeHtml(r.category||'')}</span></div>`).join('')||'No saved rules yet.';
     }
 
-    function populateManualReversalOptions() {
-      const select=document.getElementById('tx-reversal-original'); if(!select) return;
-      const current=select.value;
-      const q=(document.getElementById('tx-reversal-search')?.value||'').trim().toLowerCase();
-      const eligible=(state.transactions||[]).filter(t=>!t.reversalOfTransactionId && !t.isReversal && Math.max(0,Math.abs(Number(t.amount)||0)-getTransactionReversedAmount(t.id))>0.009)
-        .filter(t=>!q || [t.date,t.vendor,t.desc,t.type,t.category,formatFinancial(Math.abs(Number(t.amount)||0))].join(' ').toLowerCase().includes(q))
-        .sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')) || String(b.id||'').localeCompare(String(a.id||'')));
-      select.innerHTML='<option value="">Choose original transaction</option>'+eligible.map(t=>{const remaining=Math.max(0,Math.abs(Number(t.amount)||0)-getTransactionReversedAmount(t.id));return `<option value="${escapeHtml(String(t.id))}">${escapeHtml(t.date||'No date')} · ${escapeHtml(t.vendor||t.desc||t.type)} · ${escapeHtml(t.type||'')} · ${formatFinancial(remaining)} remaining</option>`;}).join('');
-      if(current && eligible.some(t=>String(t.id)===String(current))) select.value=current;
-      updateManualReversalPreview();
-    }
-    function updateManualReversalPreview() {
-      const id=document.getElementById('tx-reversal-original')?.value; const box=document.getElementById('tx-reversal-preview'); if(!box)return;
-      const t=(state.transactions||[]).find(x=>String(x.id)===String(id));
-      if(!t){box.textContent='';return;}
-      const remaining=Math.max(0,Math.abs(Number(t.amount)||0)-getTransactionReversedAmount(t.id));
-      box.textContent=`Original: ${t.type} · ${t.accountId ? (state.accounts.find(a=>String(a.id)===String(t.accountId))?.name||'Account') : 'Account'} · ${formatFinancial(remaining)} still reversible`;
-    }
-
     function toggleRefundEntryFields(forceToggle=false) {
       const checkbox = document.getElementById('tx-is-refund');
       if (forceToggle && checkbox) checkbox.checked = !checkbox.checked;
@@ -9183,9 +9156,6 @@ ${acc.name}`);
       if(selectedType==='Expense') applySmartMerchantRules(document.getElementById('tx-vendor')?.value||'');
       const isTransfer = selectedType === 'Transfer';
       const isDebt = selectedType === 'Debt';
-      const isReversal = selectedType === 'Reversal';
-      document.getElementById('tx-manual-reversal-fields')?.classList.toggle('hidden', !isReversal);
-      if (isReversal) populateManualReversalOptions();
       if (isDebt && !['Debt Payment','Interest Charge'].includes(selectedCategory)) selectedCategory = 'Debt Payment';
       if (!isDebt && selectedCategory === 'Debt Payment' || !isDebt && selectedCategory === 'Interest Charge') selectedCategory = '';
       const isDebtPayment = isDebt && selectedCategory === 'Debt Payment';
@@ -9206,10 +9176,10 @@ ${acc.name}`);
         updateInlineDebtSplit(false);
       }
       document.querySelectorAll('.tx-kind-card').forEach(card=>card.classList.toggle('active',card.dataset.txKind===selectedType));
-      document.getElementById('tx-spending-panel')?.classList.toggle('hidden',isTransfer || isReversal);
+      document.getElementById('tx-spending-panel')?.classList.toggle('hidden',isTransfer);
       const vendorWrap=document.getElementById('tx-vendor')?.closest('div'); vendorWrap?.classList.toggle('hidden',isTransfer);
       const vendorInput=document.getElementById('tx-vendor'); if(vendorInput) vendorInput.required=!isTransfer;
-      document.getElementById('single-tx-fields')?.classList.toggle('hidden',isTransfer || isReversal);
+      document.getElementById('single-tx-fields')?.classList.toggle('hidden',isTransfer);
       renderTransactionAnalytics();
       const submitButton = document.querySelector('#transaction-form button[type="submit"]');
       const transferWrap = document.getElementById('tx-transfer-destination-wrap');
@@ -9221,7 +9191,7 @@ ${acc.name}`);
       if (submitButton) {
         submitButton.disabled = false;
         submitButton.classList.remove('opacity-50','cursor-not-allowed');
-        submitButton.textContent = isReversal ? 'Record Reversal' : isInterestCharge ? 'Save Interest Charge' : isDebtPayment ? 'Save Debt Payment' : 'Save Transaction';
+        submitButton.textContent = isInterestCharge ? 'Save Interest Charge' : isDebtPayment ? 'Save Debt Payment' : 'Save Transaction';
         submitButton.title = '';
       }
       const additionalDetails = document.querySelector('#transaction-form > details');
@@ -9361,7 +9331,7 @@ ${acc.name}`);
 
     function openTransactionModal(editId = null) {
       const tSelect = document.getElementById('tx-type');
-      tSelect.innerHTML = ''; state.transactionTypes.forEach(t => tSelect.innerHTML += `<option value="${t}">${t === 'Transfer' ? 'Internal Transfer' : t}</option>`); tSelect.innerHTML += '<option value="Reversal">Reversal</option>';
+      tSelect.innerHTML = ''; state.transactionTypes.forEach(t => tSelect.innerHTML += `<option value="${t}">${t === 'Transfer' ? 'Internal Transfer' : t}</option>`);
       refreshTransactionBucketOptions('');
       const existingTxForEdit = editId ? state.transactions.find(t => String(t.id) === String(editId)) : null;
       const aSelect = document.getElementById('tx-account');
@@ -9370,7 +9340,6 @@ ${acc.name}`);
       transferSelect.innerHTML = '<option value="">External transfer — no destination account</option>' + state.accounts.filter(a => a.type === 'asset' && !a.archived).map(a => `<option value="${a.id}">${escapeHtml(a.name)}</option>`).join('');
       const debtLinkSelect = document.getElementById('tx-related-debt'); debtLinkSelect.innerHTML = '<option value="">Not linked to a debt account</option>'; state.accounts.filter(a => a.type === 'debt' && !a.archived).forEach(a => debtLinkSelect.innerHTML += `<option value="${a.id}">${a.name}</option>`);
       updateSubcategoryDropdown();
-      populateManualReversalOptions();
 
       document.getElementById('tx-is-split').value = "false";
       document.getElementById('single-tx-fields').classList.remove('hidden');
@@ -9591,7 +9560,6 @@ ${acc.name}`);
       const isSplit = document.getElementById('tx-is-split').value === "true";
       const accountId = document.getElementById('tx-account').value;
       const visibleType = document.getElementById('tx-type').value;
-      if (visibleType === 'Reversal') { const originalId=document.getElementById('tx-reversal-original')?.value; if(!originalId){alert('Choose the original transaction to reverse.');return;} if(createTransactionReversal(originalId)) closeTransactionModal(); return; }
       const selectedCategory = document.getElementById('tx-category').value;
       let type = internalTransactionType(visibleType, selectedCategory);
       const isRefund = !!document.getElementById('tx-is-refund')?.checked;
@@ -10230,6 +10198,7 @@ ${acc.name}`);
     document.addEventListener('input',e=>{if(e.target.matches('#tx-amount,.split-amt-input'))updateSplitRemainderPreview();});
     function ledgerPrefs(){
       state.ledgerColumnPrefs=state.ledgerColumnPrefs||{hidden:[],order:ledgerCols.map(x=>x[1]),widths:{}};
+      if(!['compact','comfortable','wide'].includes(state.ledgerViewDensity)) state.ledgerViewDensity='comfortable';
       const p=state.ledgerColumnPrefs;
       p.hidden=Array.isArray(p.hidden)?p.hidden:[];
       p.order=[...new Set([...(Array.isArray(p.order)?p.order:[]).filter(k=>ledgerCols.some(x=>x[1]===k)),...ledgerCols.map(x=>x[1])])];
@@ -10266,7 +10235,8 @@ ${acc.name}`);
       const widthFor=key=>Math.max(64,Math.min(520,Number(p.widths[key])||defaults[key]||120));
       [...header.children].forEach(th=>{const key=keyForHeader(th);th.dataset.colKey=key||'';th.style.display=p.hidden.includes(key)?'none':'';});
       [...body.rows].forEach(row=>[...row.cells].forEach(td=>{const key=keyForLabel(td.dataset.label);td.style.display=p.hidden.includes(key)?'none':'';}));
-      const totalWidth=p.order.reduce((sum,key)=>sum+widthFor(key),0);
+      const visibleOrder=p.order.filter(key=>!p.hidden.includes(key));
+      const totalWidth=visibleOrder.reduce((sum,key)=>sum+widthFor(key),0);
       table.style.tableLayout='fixed';table.style.width=totalWidth+'px';table.style.minWidth=totalWidth+'px';table.style.maxWidth='none';
       [...header.children].forEach((th,index)=>{
         const key=th.dataset.colKey;if(!key)return;
@@ -10285,7 +10255,7 @@ ${acc.name}`);
         const grip=document.createElement('span');
         grip.className='ledger-resize-handle';grip.dataset.resizeKey=key;
         grip.title='Drag to resize '+key+' column';grip.setAttribute('aria-label','Resize '+key+' column');
-        grip.style.cssText='position:absolute;right:0;top:0;bottom:0;width:8px;cursor:col-resize;touch-action:none;z-index:5;pointer-events:auto;background:transparent;border-right:1px solid rgba(148,163,184,.10);box-sizing:border-box;';
+        grip.style.cssText='position:absolute;right:-2px;top:0;bottom:0;width:12px;cursor:col-resize;touch-action:none;z-index:8;pointer-events:auto;background:linear-gradient(90deg,transparent 55%,rgba(99,102,241,.08) 55%);border-right:3px solid rgba(99,102,241,.45);box-sizing:border-box;border-radius:2px;';
         grip.addEventListener('pointerenter',()=>{grip.style.borderRightColor='rgba(148,163,184,.32)';});
         grip.addEventListener('pointerleave',()=>{if(!grip.dataset.dragging)grip.style.borderRightColor='rgba(148,163,184,.10)';});
         grip.addEventListener('pointerdown',e=>{
@@ -10297,10 +10267,10 @@ ${acc.name}`);
           const startX=e.clientX;
           const startWidth=Math.round(th.getBoundingClientRect().width)||Math.max(64,Number(ledgerPrefs().widths[key])||125);
           const applyWidth=raw=>{
-            const width=Math.max(64,Math.min(520,Math.round(raw))),px=width+'px';
+            const width=Math.max(80,Math.min(640,Math.round(raw))),px=width+'px';
             cells().forEach(cell=>{cell.style.width=px;cell.style.minWidth=px;cell.style.maxWidth=px;});
             columnCells().forEach(cell=>{cell.style.width=px;cell.style.minWidth=px;cell.style.maxWidth=px;});
-            const total=[...header.children].reduce((sum,cell)=>sum+(cell.dataset.colKey?Math.round(cell.getBoundingClientRect().width):0),0);
+            const total=[...header.children].reduce((sum,cell)=>sum+(cell.dataset.colKey && cell.style.display!=='none'?Math.round(cell.getBoundingClientRect().width):0),0);
             table.style.width=total+'px';table.style.minWidth=total+'px';table.style.maxWidth='none';
             return width;
           };
