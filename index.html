@@ -744,6 +744,23 @@
     }
 
 </style>
+
+  <style id="finhub-v3-mobile-ledger">
+    @media (max-width: 640px) {
+      #ledger-table-container { overflow: visible !important; background: transparent !important; border: 0 !important; box-shadow: none !important; }
+      #ledger-table-toolbar { min-width: 0 !important; border: 1px solid rgba(148,163,184,.28); border-radius: 14px; overflow: visible; margin-bottom: .75rem; }
+      #ledger-table-container table { min-width: 0 !important; width: 100% !important; display: block !important; }
+      #ledger-table-container thead { display: none !important; }
+      #ledger-table-container tbody#ledger-rows { display: grid !important; gap: .7rem; }
+      #ledger-table-container tbody#ledger-rows tr { display: grid !important; grid-template-columns: 1fr 1fr; gap: .35rem .7rem; padding: .8rem; border: 1px solid rgba(148,163,184,.35); border-radius: 14px; background: var(--finhub-card-bg, rgba(15,45,52,.92)); color: inherit; }
+      #ledger-table-container tbody#ledger-rows td { display: block !important; min-width: 0; padding: .25rem !important; white-space: normal !important; overflow: visible !important; font-size: .72rem !important; }
+      #ledger-table-container tbody#ledger-rows td:before { content: attr(data-label); display: block; margin-bottom: .12rem; font-size: .58rem; text-transform: uppercase; letter-spacing: .06em; opacity: .62; font-weight: 700; }
+      #ledger-table-container tbody#ledger-rows td[data-label="Description"], #ledger-table-container tbody#ledger-rows td[data-label="Vendor"], #ledger-table-container tbody#ledger-rows td[data-label="Actions"] { grid-column: 1 / -1; }
+      #ledger-table-container tbody#ledger-rows td[data-label="Actions"] { text-align: right; padding-top: .45rem !important; border-top: 1px solid rgba(148,163,184,.2); }
+      #ledger-table-container tbody#ledger-rows td[colspan] { grid-column: 1 / -1; }
+      #ledger-global-search { width: 100%; }
+    }
+  </style>
 </head>
 <body id="app-body" class="bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 min-h-screen flex flex-col md:flex-row transition-colors duration-200 relative">
 
@@ -1461,6 +1478,7 @@
               <button type="button" onclick="bulkDeleteSelectedTransactions()" id="ledger-bulk-delete-btn" disabled class="px-3 py-1.5 rounded-lg bg-rose-600 text-white text-xs font-semibold disabled:opacity-40">Delete selected</button>
             </div>
             <div class="flex flex-wrap items-center gap-2">
+              <label class="sr-only" for="ledger-global-search">Search all transactions</label><input id="ledger-global-search" type="search" placeholder="Search vendor, description, category, account or amount…" oninput="renderLedger()" class="w-full sm:w-64 border rounded-lg px-3 py-1.5 text-xs bg-white dark:bg-gray-900" aria-label="Search all transactions">
               <label for="ledger-period-preset" class="text-xs text-gray-500">Period</label>
               <select id="ledger-period-preset" onchange="setLedgerPeriodPreset(this.value)" class="border rounded-lg px-2.5 py-1.5 text-xs bg-white dark:bg-gray-900"><option value="current">This month</option><option value="last">Last month</option><option value="3months">Last 3 months</option><option value="year">This year</option><option value="custom">Custom range</option><option value="all">All dates</option></select><div id="ledger-custom-date-range" class="hidden flex flex-wrap items-center gap-1.5"><label class="text-[10px] text-gray-500" for="ledger-date-from">From</label><input id="ledger-date-from" type="date" onchange="renderLedger()" class="border rounded-lg px-2 py-1.5 text-xs bg-white dark:bg-gray-900"><label class="text-[10px] text-gray-500" for="ledger-date-to">To</label><input id="ledger-date-to" type="date" onchange="renderLedger()" class="border rounded-lg px-2 py-1.5 text-xs bg-white dark:bg-gray-900"></div>
               <button onclick="clearLedgerFilters()" class="px-2.5 py-1.5 text-xs font-semibold text-indigo-600 dark:text-cyan-300">Clear all</button>
@@ -4720,7 +4738,12 @@ ${acc.name}`);
 
       document.getElementById('zbb-sub-savings-disp').innerText = formatFinancial(savingsSum, true);
       document.getElementById('zbb-rem-savings-disp').innerText = formatFinancial(bottomLine);
-      document.getElementById('zbb-cycle-bottomline').innerText = formatFinancial(bottomLine);
+      const bottomLineEl = document.getElementById('zbb-cycle-bottomline');
+      bottomLineEl.innerText = formatFinancial(bottomLine);
+      bottomLineEl.classList.remove('text-emerald-600','dark:text-emerald-400','text-rose-600','dark:text-rose-400','text-red-600','dark:text-red-400');
+      if (bottomLine < -0.005) bottomLineEl.classList.add('text-red-600','dark:text-red-400');
+      else bottomLineEl.classList.add('text-emerald-600','dark:text-emerald-400');
+      bottomLineEl.setAttribute('aria-label', bottomLine < -0.005 ? 'Overallocated: negative remaining balance' : 'Zero-based remaining balance');
       document.getElementById('zbb-pct-savings').innerText = `Savings: ${incomeSum > 0 ? ((savingsSum / incomeSum)*100).toFixed(1) : 0}%`;
 
       const sfGrid = document.getElementById('sinking-funds-progress-grid');
@@ -6457,7 +6480,13 @@ ${acc.name}`);
       const tbody = document.getElementById('ledger-rows');
       tbody.innerHTML = '';
 
+      const globalSearch = (document.getElementById('ledger-global-search')?.value || '').trim().toLowerCase();
       const matchedTxs = state.transactions.filter(t => {
+        if (globalSearch) {
+          const accountName = (state.accounts.find(a => String(a.id) === String(t.accountId)) || {}).name || '';
+          const haystack = [t.vendor, t.desc, t.category, t.subcategory, t.type, accountName, t.amount, t.date].join(' ').toLowerCase();
+          if (!haystack.includes(globalSearch)) return false;
+        }
         if (!window.closeLedgerFilterPeriod) {
           const preset = document.getElementById('ledger-period-preset')?.value || 'current';
           const now = new Date(); const currentYM = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
