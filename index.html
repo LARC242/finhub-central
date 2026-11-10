@@ -522,7 +522,7 @@
       --hibiscus-pink:#f52f79; --hibiscus-berry:#9b286b; --hibiscus-aqua:#20e3dc;
       --hibiscus-gold:#f5b51b;
       min-height:100vh !important; color:#fff2df !important; background-color:#052b2b !important;
-      background-image:linear-gradient(rgba(0,20,21,.12),rgba(0,20,21,.18)),url('https://images.unsplash.com/photo-1600196387198-a0e5e712d059?auto=format&fit=crop&w=2400&q=90') !important;
+      background-image:linear-gradient(rgba(0,20,21,.12),rgba(0,20,21,.18)),url('https://www.hiddenvalleyhibiscus.com/images/greenhouse1.jpg') !important;
       background-position:center center !important; background-size:cover !important;
       background-repeat:no-repeat !important; background-attachment:fixed !important;
     }
@@ -598,6 +598,39 @@
     body#app-body[data-finhub-theme="hibiscus"] .nav-btn:hover {background:rgba(255,118,88,.2) !important;}
     body#app-body[data-finhub-theme="hibiscus"] .tab-content .shadow-sm {box-shadow:0 14px 36px rgba(0,0,0,.34) !important;}
     @media(max-width:767px){body#app-body[data-finhub-theme="hibiscus"]{background-attachment:scroll !important;}}
+
+    /* Hibiscus light mode: keep the floral backdrop, but use high-contrast teal glass rather than pale cards. */
+    html:not(.dark) body#app-body[data-finhub-theme="hibiscus"] { color:#fff2df !important; background-color:#052b2b !important; }
+    html:not(.dark) body#app-body[data-finhub-theme="hibiscus"] #finhub-sidebar { background:linear-gradient(180deg,rgba(1,25,28,.98),rgba(2,43,45,.97)) !important; color:#fff2df !important; }
+    html:not(.dark) body#app-body[data-finhub-theme="hibiscus"] .tab-content [class*="bg-white"],
+    html:not(.dark) body#app-body[data-finhub-theme="hibiscus"] .tab-content [class*="bg-gray-"],
+    html:not(.dark) body#app-body[data-finhub-theme="hibiscus"] .tab-content details,
+    html:not(.dark) body#app-body[data-finhub-theme="hibiscus"] .tab-content .rounded-xl.border,
+    html:not(.dark) body#app-body[data-finhub-theme="hibiscus"] .tab-content .rounded-2xl.border,
+    html:not(.dark) body#app-body[data-finhub-theme="hibiscus"] #transaction-modal > div,
+    html:not(.dark) body#app-body[data-finhub-theme="hibiscus"] #bulk-edit-modal > div,
+    html:not(.dark) body#app-body[data-finhub-theme="hibiscus"] #vendor-rule-modal > div,
+    html:not(.dark) body#app-body[data-finhub-theme="hibiscus"] #recon-modal > div {
+      background:rgba(2,35,37,.91) !important; color:#fff2df !important;
+      border-color:rgba(255,118,88,.72) !important;
+      box-shadow:0 14px 40px rgba(0,0,0,.42),inset 0 1px rgba(255,255,255,.09) !important;
+      backdrop-filter:blur(18px) saturate(145%);-webkit-backdrop-filter:blur(18px) saturate(145%);
+    }
+    html:not(.dark) body#app-body[data-finhub-theme="hibiscus"] input,
+    html:not(.dark) body#app-body[data-finhub-theme="hibiscus"] select,
+    html:not(.dark) body#app-body[data-finhub-theme="hibiscus"] textarea { background:rgba(3,58,59,.96) !important; color:#fff2df !important; border-color:rgba(255,255,255,.42) !important; }
+    html:not(.dark) body#app-body[data-finhub-theme="hibiscus"] h1,
+    html:not(.dark) body#app-body[data-finhub-theme="hibiscus"] h2,
+    html:not(.dark) body#app-body[data-finhub-theme="hibiscus"] h3,
+    html:not(.dark) body#app-body[data-finhub-theme="hibiscus"] h4,
+    html:not(.dark) body#app-body[data-finhub-theme="hibiscus"] label,
+    html:not(.dark) body#app-body[data-finhub-theme="hibiscus"] p,
+    html:not(.dark) body#app-body[data-finhub-theme="hibiscus"] span,
+    html:not(.dark) body#app-body[data-finhub-theme="hibiscus"] td,
+    html:not(.dark) body#app-body[data-finhub-theme="hibiscus"] th { color:inherit; }
+    html:not(.dark) body#app-body[data-finhub-theme="hibiscus"] .text-gray-400,
+    html:not(.dark) body#app-body[data-finhub-theme="hibiscus"] .text-gray-500,
+    html:not(.dark) body#app-body[data-finhub-theme="hibiscus"] .text-gray-600 { color:#c6dcd4 !important; }
 
 </style>
 </head>
@@ -909,7 +942,7 @@
         <div class="bg-white dark:bg-gray-900 p-4 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
           <div class="text-[10px] uppercase tracking-wide text-gray-500 font-bold">Total planned allocations</div>
           <div id="zbb-overview-allocated" class="text-xl font-bold mt-1 accounting-num">$0.00</div>
-          <div class="text-[10px] text-gray-400 mt-1">Bills, variable spending, debt and savings</div>
+          <div class="text-[10px] text-gray-400 mt-1">Fixed expenses, debt, variable expenses and savings</div>
         </div>
         <div class="bg-white dark:bg-gray-900 p-4 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
           <div class="text-[10px] uppercase tracking-wide text-gray-500 font-bold">Remaining to assign</div>
@@ -934,14 +967,14 @@
           <div id="zbb-pct-bills" class="text-[10px] text-gray-400 mt-1">Fixed Bills: 0%</div>
         </div>
         <div class="bg-white dark:bg-gray-900 p-3 rounded-xl border border-gray-200 dark:border-gray-800">
-          <div class="text-[11px] text-gray-500 uppercase font-bold">After Variable Exp</div>
-          <div id="zbb-rem-variable" class="text-lg font-bold text-indigo-600 dark:text-indigo-400 mt-1 accounting-num theme-text">$ - </div>
-          <div id="zbb-pct-variable" class="text-[10px] text-gray-400 mt-1">Variable: 0%</div>
-        </div>
-        <div class="bg-white dark:bg-gray-900 p-3 rounded-xl border border-gray-200 dark:border-gray-800">
-          <div class="text-[11px] text-gray-500 uppercase font-bold">After Debt Payments</div>
+          <div class="text-[11px] text-gray-500 uppercase font-bold">After Debt</div>
           <div id="zbb-rem-debt" class="text-lg font-bold text-indigo-600 dark:text-indigo-400 mt-1 accounting-num theme-text">$ - </div>
           <div id="zbb-pct-debt" class="text-[10px] text-gray-400 mt-1">Debt: 0%</div>
+        </div>
+        <div class="bg-white dark:bg-gray-900 p-3 rounded-xl border border-gray-200 dark:border-gray-800">
+          <div class="text-[11px] text-gray-500 uppercase font-bold">After Variable Expenses</div>
+          <div id="zbb-rem-variable" class="text-lg font-bold text-indigo-600 dark:text-indigo-400 mt-1 accounting-num theme-text">$ - </div>
+          <div id="zbb-pct-variable" class="text-[10px] text-gray-400 mt-1">Variable: 0%</div>
         </div>
         <div class="bg-white dark:bg-gray-900 p-3 rounded-xl border border-gray-200 dark:border-gray-800">
           <div class="text-[11px] text-gray-500 uppercase font-bold">Zero-Based Bottom Line</div>
@@ -962,11 +995,11 @@
         <div id="zbb-income-list" class="space-y-2"></div>
       </div>
 
-      <!-- STEP 2: FIXED BILLS -->
+      <!-- STEP 2: FIXED EXPENSES -->
       <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-4 shadow-sm">
         <div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-800 pb-3">
           <div>
-            <h3 class="text-md font-bold text-rose-600 dark:text-rose-400"><i class="fa-solid fa-file-invoice-dollar mr-2"></i>2. Monthly Bills Funding</h3>
+            <h3 class="text-md font-bold text-rose-600 dark:text-rose-400"><i class="fa-solid fa-file-invoice-dollar mr-2"></i>2. Less: Fixed Expenses</h3>
             <p class="text-xs text-gray-400 mt-0.5">This paycheque allocation: <strong id="zbb-sub-bills-disp" class="accounting-num">$ - </strong> | Remaining Bal: <strong id="zbb-rem-bills-disp" class="accounting-num">$ - </strong></p>
           </div>
           <button onclick="openZbbItemModal('bill')" class="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold theme-bg"><i class="fa-solid fa-plus mr-1"></i> Add Bill</button>
@@ -974,11 +1007,23 @@
         <div id="zbb-bills-list" class="space-y-2"></div>
       </div>
 
-      <!-- STEP 3: VARIABLE EXPENSES -->
+      <!-- STEP 3: DEBT PAYMENTS -->
       <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-4 shadow-sm">
         <div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-800 pb-3">
           <div>
-            <h3 class="text-md font-bold text-amber-600 dark:text-amber-400"><i class="fa-solid fa-cart-shopping mr-2"></i>3. Variable Spending Pool Allocation</h3>
+            <h3 class="text-md font-bold text-amber-600 dark:text-amber-400"><i class="fa-solid fa-credit-card mr-2"></i>3. Less: Debt</h3>
+            <p class="text-xs text-gray-400 mt-0.5">Subtotal: <strong id="zbb-sub-debt-disp" class="accounting-num">$ - </strong> | Remaining Bal: <strong id="zbb-rem-debt-disp" class="accounting-num">$ - </strong></p>
+          </div>
+          <div class="flex flex-wrap gap-2"><button onclick="syncDebtMinimumsToZbb()" title="Copies the current minimum payment amounts from Debt Account details into this paycheque budget. Existing paycheque splits are preserved." class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold"><i class="fa-solid fa-rotate mr-1"></i> Refresh Debt Minimums</button><button onclick="openZbbItemModal('debt')" class="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold theme-bg"><i class="fa-solid fa-plus mr-1"></i> Add Debt</button></div>
+        </div>
+        <div id="zbb-debt-list" class="space-y-2"></div>
+      </div>
+
+      <!-- STEP 4: VARIABLE EXPENSES -->
+      <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-4 shadow-sm">
+        <div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-800 pb-3">
+          <div>
+            <h3 class="text-md font-bold text-amber-600 dark:text-amber-400"><i class="fa-solid fa-cart-shopping mr-2"></i>4. Less: Variable Expenses</h3>
             <p class="text-xs text-gray-400 mt-0.5">Total variable pool: <strong id="zbb-sub-variable-disp" class="accounting-num">$ - </strong> | Remaining after pool: <strong id="zbb-rem-variable-disp" class="accounting-num">$ - </strong></p>
           </div>
           <button onclick="openZbbItemModal('variable')" class="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold theme-bg"><i class="fa-solid fa-plus mr-1"></i> Add Variable Exp</button>
@@ -987,23 +1032,11 @@
         <p class="text-[10px] text-gray-400">Allocate the fixed pool across your variable categories for this paycheque. Set the overall pool above, then distribute it across categories. Moving money between categories does not change the overall pool or bottom line; changing the pool amount does. Actual spending is tracked separately in the Expense Tracker.</p>
       </div>
 
-      <!-- STEP 4: DEBT PAYMENTS -->
-      <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-4 shadow-sm">
-        <div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-800 pb-3">
-          <div>
-            <h3 class="text-md font-bold text-amber-600 dark:text-amber-400"><i class="fa-solid fa-credit-card mr-2"></i>4. Debt Payments</h3>
-            <p class="text-xs text-gray-400 mt-0.5">Subtotal: <strong id="zbb-sub-debt-disp" class="accounting-num">$ - </strong> | Remaining Bal: <strong id="zbb-rem-debt-disp" class="accounting-num">$ - </strong></p>
-          </div>
-          <div class="flex flex-wrap gap-2"><button onclick="syncDebtMinimumsToZbb()" title="Copies the current minimum payment amounts from Debt Account details into this paycheque budget. Existing paycheque splits are preserved." class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold"><i class="fa-solid fa-rotate mr-1"></i> Refresh Debt Minimums</button><button onclick="openZbbItemModal('debt')" class="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold theme-bg"><i class="fa-solid fa-plus mr-1"></i> Add Debt</button></div>
-        </div>
-        <div id="zbb-debt-list" class="space-y-2"></div>
-      </div>
-
       <!-- STEP 5: SAVINGS -->
       <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-4 shadow-sm">
         <div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-800 pb-3">
           <div>
-            <h3 class="text-md font-bold text-indigo-600 dark:text-indigo-400 theme-text"><i class="fa-solid fa-piggy-bank mr-2"></i>5. Savings & Sinking Funds (Zero-Based Goal)</h3>
+            <h3 class="text-md font-bold text-indigo-600 dark:text-indigo-400 theme-text"><i class="fa-solid fa-piggy-bank mr-2"></i>5. Less: Savings (Zero-Based Goal)</h3>
             <p class="text-xs text-gray-400 mt-0.5">Subtotal: <strong id="zbb-sub-savings-disp" class="accounting-num">$ - </strong> | Final Balance: <strong id="zbb-rem-savings-disp" class="accounting-num">$ - </strong></p>
           </div>
           <button onclick="openZbbItemModal('savings')" class="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold theme-bg"><i class="fa-solid fa-plus mr-1"></i> Add Savings</button>
@@ -4407,9 +4440,9 @@ ${acc.name}`);
       (zbb.savings || []).forEach(s => savingsSum += calcAmt(s));
 
       const remAfterBills = incomeSum - billsSum;
-      const remAfterVariable = remAfterBills - variableSum;
-      const remAfterDebt = remAfterVariable - debtSum;
-      const bottomLine = remAfterDebt - savingsSum;
+      const remAfterDebt = remAfterBills - debtSum;
+      const remAfterVariable = remAfterDebt - variableSum;
+      const bottomLine = remAfterVariable - savingsSum;
       const plannedAllocations = billsSum + variableSum + debtSum + savingsSum;
       const quickIncome = document.getElementById('zbb-overview-income');
       const quickAllocated = document.getElementById('zbb-overview-allocated');
