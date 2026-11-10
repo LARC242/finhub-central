@@ -2463,7 +2463,7 @@ Bonus"></textarea></div>
       if (!transaction) return [];
       const signedAmount = Number(transaction.amount) || 0;
       const amount = Math.max(0, signedAmount);
-      if (transaction.type === 'Expense' && signedAmount !== 0) return [{ transaction, category: transaction.category || 'Uncategorized', subcategory: transaction.subcategory || 'Uncategorized', amount: signedAmount, component: signedAmount < 0 ? 'Refund' : 'Expense' }];
+      if (transaction.type === 'Expense' && signedAmount !== 0) return [{ transaction, category: transaction.refundOfTransactionId && signedAmount < 0 ? (transaction.refundOriginalCategory || transaction.category || 'Uncategorized') : (transaction.category || 'Uncategorized'), subcategory: transaction.subcategory || 'Uncategorized', amount: signedAmount, component: signedAmount < 0 ? 'Refund' : 'Expense' }];
       if (transaction.type === 'Interest Charge' && signedAmount !== 0) return [{ transaction, category: 'Debt Service', subcategory: 'Interest Expense', amount: signedAmount, component: signedAmount < 0 ? 'Interest charge reversal' : 'Interest charge' }];
       if (transaction.type === 'Debt Payment') {
         const interest = Math.max(0, Math.min(amount, Number(transaction.debtInterestAmount) || 0));
@@ -5980,7 +5980,7 @@ ${acc.name}`);
       if (key === 'date') return t.date || '';
       if (key === 'vendor') return t.vendor || '(No vendor)';
       if (key === 'desc') return t.desc || '(No description)';
-      if (key === 'type') return displayFinHubTransactionType(t.type);
+      if (key === 'type') return (t.type === 'Expense' && Number(t.amount) < 0 && t.refundOfTransactionId) ? 'Refund / reimbursement' : displayFinHubTransactionType(t.type);
       if (key === 'category') return t.category || '(Uncategorized)';
       if (key === 'subcategory') return t.subcategory || '(No subcategory)';
       if (key === 'account') return acc ? acc.name : '(No account)';
@@ -6367,7 +6367,7 @@ ${acc.name}`);
               <td data-label="Date" class="px-3 py-1.5"><div class="flex items-center gap-2"><input type="checkbox" class="ledger-row-select accent-indigo-600" data-id="${t.id}" ${selectedLedgerIds.has(String(t.id))?'checked':''} onchange="toggleLedgerTransactionSelection('${t.id}',this.checked)" aria-label="Select transaction ${t.date}"><span>${formatDateMDY(t.date)}</span></div></td>
               <td data-label="Vendor" class="px-3 py-1.5">${t.vendor || 'Vendor not recorded'}</td>
               <td data-label="Description" class="px-3 py-1.5">${t.desc || '-'}</td>
-              <td data-label="Type" class="px-3 py-1.5"><span class="px-2 py-0.5 rounded text-[10px] bg-gray-100 dark:bg-gray-800">${t.type === 'Transfer' ? 'Internal Transfer' : displayFinHubTransactionType(t.type)}</span><div class="mt-1 flex flex-wrap gap-1"><span class="px-1.5 py-0.5 rounded text-[9px] bg-indigo-500/10 text-indigo-500">${escapeHtml(transactionSourceShortLabel(t))}</span>${transactionStatementStatusBadge(t)}</div></td>
+              <td data-label="Type" class="px-3 py-1.5"><span class="px-2 py-0.5 rounded text-[10px] bg-gray-100 dark:bg-gray-800">${t.type === 'Transfer' ? 'Internal Transfer' : (t.type === 'Expense' && Number(t.amount) < 0 && t.refundOfTransactionId ? 'Refund / reimbursement' : displayFinHubTransactionType(t.type))}</span><div class="mt-1 flex flex-wrap gap-1"><span class="px-1.5 py-0.5 rounded text-[9px] bg-indigo-500/10 text-indigo-500">${escapeHtml(transactionSourceShortLabel(t))}</span>${transactionStatementStatusBadge(t)}</div></td>
               <td data-label="Bucket" class="px-3 py-1.5">${t.category || '-'}</td>
               <td data-label="Subcategory" class="px-3 py-1.5">${t.subcategory || '-'}</td>
               <td data-label="Account" class="px-3 py-1.5">${acc ? (t.transferToAccountId ? `${acc.name} → ${(state.accounts.find(a=>a.id===t.transferToAccountId)||{}).name||'Account'}` : acc.name) : '-'}</td>
