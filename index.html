@@ -907,6 +907,19 @@
         </div>
       </div>
 
+      <div data-dashboard-block="monthly-overview" class="dashboard-block bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm p-5">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <div><h3 class="font-bold text-md"><i class="fa-solid fa-scale-balanced text-cyan-500 mr-2"></i>Financial Overview · Selected Period</h3><p class="text-xs text-gray-400 mt-1">Actual cash flow based on recorded transactions. Transfers are excluded.</p></div>
+          <span id="monthly-overview-period" class="text-xs text-gray-500"></span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="rounded-xl bg-gray-50 dark:bg-gray-950 p-3"><div class="text-[10px] text-gray-500 uppercase tracking-wide">Income received</div><div id="monthly-overview-income" class="text-lg font-bold text-emerald-600 accounting-num">$0.00</div></div>
+          <div class="rounded-xl bg-gray-50 dark:bg-gray-950 p-3"><div class="text-[10px] text-gray-500 uppercase tracking-wide">Net expenses</div><div id="monthly-overview-expenses" class="text-lg font-bold text-rose-500 accounting-num">$0.00</div></div>
+          <div class="rounded-xl bg-gray-50 dark:bg-gray-950 p-3"><div class="text-[10px] text-gray-500 uppercase tracking-wide">Net cash flow</div><div id="monthly-overview-net" class="text-lg font-bold accounting-num">$0.00</div></div>
+        </div>
+        <div id="monthly-overview-category-list" class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1 text-xs"></div>
+      </div>
+
       <div data-dashboard-block="debt-health" class="dashboard-block bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
         <div class="p-5 border-b border-gray-200 dark:border-gray-800">
           <h3 class="font-bold text-md"><i class="fa-solid fa-chart-line text-rose-500 mr-2"></i>Debt Movement & Interest Report</h3>
@@ -3246,6 +3259,33 @@ Bonus"></textarea></div>
       openCategoryModal(index);
     }
 
+    function renderMonthlyFinancialOverview() {
+      const range = getDashboardDateRange();
+      const tx = (state.transactions || []).filter(t => t.date >= range.start && t.date <= range.end);
+      const income = tx.filter(t => t.type === 'Income' && !t.excludeFromIncomeReporting && t.category !== 'Transfer')
+        .reduce((sum,t) => sum + (Number(t.amount) || 0), 0);
+      const components = tx.flatMap(t => getExpenseReportingComponents(t));
+      const expenses = components.reduce((sum,c) => sum + (Number(c.amount) || 0), 0);
+      const net = income - expenses;
+      const put = (id,value) => { const el=document.getElementById(id); if(el) el.textContent=value; };
+      put('monthly-overview-period', `${range.start} to ${range.end}`);
+      put('monthly-overview-income', formatFinancial(income));
+      put('monthly-overview-expenses', formatFinancial(expenses, true));
+      put('monthly-overview-net', formatFinancial(net));
+      const netEl=document.getElementById('monthly-overview-net');
+      if(netEl) netEl.className=`text-lg font-bold accounting-num ${net < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}`;
+      const totals = new Map();
+      components.forEach(c => {
+        const key = c.category || 'Uncategorized';
+        totals.set(key,(totals.get(key)||0)+(Number(c.amount)||0));
+      });
+      const host=document.getElementById('monthly-overview-category-list');
+      if(host) {
+        const rows=Array.from(totals.entries()).filter(([,v])=>Math.abs(v)>0.004).sort((a,b)=>b[1]-a[1]);
+        host.innerHTML=rows.length ? rows.map(([name,value])=>`<div class="flex justify-between gap-3 py-1 border-b border-gray-100 dark:border-gray-800"><span class="truncate">${escapeHtml(name)}</span><strong class="accounting-num ${value<0?'text-emerald-600':'text-gray-700 dark:text-gray-200'}">${formatFinancial(value,true)}</strong></div>`).join('') : '<p class="text-xs text-gray-400">No expense activity in this period.</p>';
+      }
+    }
+
     function renderDashboard() {
       updateSidebarNetWorth();
       const visibleAccounts = state.accounts.filter(a => !a.hidden && !a.archived);
@@ -3271,6 +3311,7 @@ Bonus"></textarea></div>
       document.getElementById('dash-income').innerText = formatFinancial(totalIncome);
       document.getElementById('dash-expenses').innerText = formatFinancial(totalExpenses, true);
       document.getElementById('dash-networth').innerText = formatFinancial(netWorth);
+      renderMonthlyFinancialOverview();
       document.getElementById('dash-asset-sum').innerText = formatFinancial(assets);
       document.getElementById('dash-debt-sum').innerText = formatFinancial(liabilities);
 
@@ -10809,7 +10850,7 @@ ${acc.name}`);
     function renderDataHealth(){
       const el=document.getElementById('data-health-results'); if(!el)return;
       const tx=state.transactions||[], accounts=state.accounts||[], ids=new Set(accounts.map(a=>String(a.id))), seen=new Map();
-      const duplicateIds=[], missingAccount=[], missingDate=[], missingCategory=[], unmatched=[], missingVendor=[];
+      const duplicateIds=[], missingAccount=[], missingDate=[], missingCategory=[], unmatched=[], missingVendor=[], brokenRefundLinks=[];
       tx.forEach(t=>{
         const id=String(t.id??'');
         if(id && seen.has(id)){ duplicateIds.push(seen.get(id),t); } else if(id) seen.set(id,t);
@@ -10818,6 +10859,10 @@ ${acc.name}`);
         if(['Expense','Income','Interest Charge'].includes(t.type) && !t.category) missingCategory.push(t);
         if(!t.reconciled && !t.statementMatchId && !t.statementMatchGroupId) unmatched.push(t);
         if(t.type==='Expense' && !String(t.vendor||'').trim()) missingVendor.push(t);
+        if(t.refundOfTransactionId) {
+          const original=tx.find(x=>String(x.id)===String(t.refundOfTransactionId));
+          if(!original || original.type!=='Expense' || String(original.id)===String(t.id)) brokenRefundLinks.push(t);
+        }
       });
       const checks=[
         ['Unmatched transactions',unmatched,'Transactions without a reconciliation or statement-match reference','Review whether each item is genuinely outstanding'],
@@ -10825,7 +10870,8 @@ ${acc.name}`);
         ['Missing or archived account references',missingAccount,'Transactions linked to an account that is not present','Check the account assignment'],
         ['Missing or invalid dates',missingDate,'Transactions that may not sort or report correctly','Correct the transaction date'],
         ['Missing categories',missingCategory,'Income/expense records without a category','Assign an appropriate category'],
-        ['Missing vendor information',missingVendor,'Expense transactions without a vendor','Add the vendor or payee']
+        ['Missing vendor information',missingVendor,'Expense transactions without a vendor','Add the vendor or payee'],
+        ['Broken refund links',brokenRefundLinks,'Refunds linked to a missing or non-expense original transaction','Review the refund link before changing either transaction']
       ];
       window.dataHealthIssueMap = {};
       el.innerHTML=checks.map(([name,rows,desc,action],i)=>{
