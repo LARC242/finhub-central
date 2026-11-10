@@ -1822,6 +1822,15 @@ Bonus"></textarea></div>
           </div>
           <select id="tx-type" onchange="updateTransactionTypeFields()" class="hidden" aria-hidden="true" tabindex="-1"></select>
         </div>
+        <div id="tx-refund-tools" class="rounded-xl border border-teal-300 dark:border-teal-800 bg-teal-50 dark:bg-teal-950/30 p-3 space-y-2">
+          <label class="flex items-center gap-2 text-xs font-semibold"><input id="tx-is-refund" type="checkbox" onchange="toggleRefundEntryFields()" class="rounded"> Treat this transaction as a refund / reimbursement</label>
+          <p class="text-[10px] text-gray-600 dark:text-gray-300">A refund is recorded as a credit to the original expense category, not ordinary income. It increases the bank balance and reduces reported spending.</p>
+          <div id="tx-refund-link-fields" class="hidden space-y-2">
+            <input id="tx-refund-search" type="search" placeholder="Find original expense by vendor, category, amount or date…" oninput="populateRefundOriginalOptions()" class="w-full bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm">
+            <select id="tx-refund-original" onchange="applyRefundOriginalSelection()" size="5" class="w-full bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm"><option value="">Choose original expense</option></select>
+            <div id="tx-refund-preview" class="text-[10px] text-gray-600 dark:text-gray-300"></div>
+          </div>
+        </div>
         <div id="tx-manual-reversal-fields" class="hidden rounded-xl border border-amber-300 dark:border-amber-800 bg-amber-50/60 dark:bg-amber-950/20 p-3 space-y-2">
           <div class="text-xs font-semibold">Reverse an existing transaction</div>
           <p class="text-[10px] text-gray-500">Choose the original transaction. FinHub will calculate the remaining reversible amount and apply the correct account and debt effects.</p>
@@ -3400,7 +3409,7 @@ Bonus"></textarea></div>
             let change = (t.type === 'Income' || isExternalTransferIn) ? amount : -amount;
             let type = isExternalTransferIn ? 'Transfer In' : (t.type || 'Transaction');
             if (t.type === 'Transfer' && t.transferToAccountId) type = 'Transfer Out';
-            if (t.type === 'Expense' && amount < 0) type = 'Refund / credit';
+            if (t.type === 'Expense' && amount < 0) type = t.refundOfTransactionId ? 'Refund / reimbursement' : 'Refund / credit';
             entries.push({ id: t.id, date: t.type==='Transfer' && t.transferToAccountId ? (statementTransactionDateForAccount(t,acc.id) || t.date || '') : (t.date || ''), description: t.vendor || t.desc || 'Transaction', detail: t.desc && t.vendor && t.desc !== t.vendor ? t.desc : '', type, change, reconciled: (t.type==='Transfer' && t.transferToAccountId ? statementTransactionReconciledForAccount(t,acc.id) : !!t.reconciled) && !t.statementMatchNeedsReview, matchNeedsReview: !!t.statementMatchNeedsReview });
           } else if (t.type === 'Transfer' && t.transferToAccountId === acc.id) {
             const amount = Number(t.amount) || 0;
@@ -9047,6 +9056,47 @@ ${acc.name}`);
       box.textContent=`Original: ${t.type} · ${t.accountId ? (state.accounts.find(a=>String(a.id)===String(t.accountId))?.name||'Account') : 'Account'} · ${formatFinancial(remaining)} still reversible`;
     }
 
+    function toggleRefundEntryFields() {
+      const enabled = !!document.getElementById('tx-is-refund')?.checked;
+      document.getElementById('tx-refund-link-fields')?.classList.toggle('hidden', !enabled);
+      if (enabled) {
+        const typeSelect = document.getElementById('tx-type');
+        if (typeSelect && typeSelect.value !== 'Expense') { typeSelect.value = 'Expense'; refreshTransactionBucketOptions(''); updateTransactionTypeFields(); }
+        populateRefundOriginalOptions();
+      }
+    }
+    function getRefundedAmountForOriginal(id, excludeId='') {
+      return (state.transactions || []).filter(t => String(t.refundOfTransactionId || '') === String(id) && String(t.id) !== String(excludeId))
+        .reduce((sum,t) => sum + Math.abs(Number(t.amount)||0), 0);
+    }
+    function populateRefundOriginalOptions() {
+      const select=document.getElementById('tx-refund-original'); if(!select) return;
+      const current=select.value; const editingId=document.getElementById('tx-edit-id')?.value || '';
+      const q=(document.getElementById('tx-refund-search')?.value||'').trim().toLowerCase();
+      const rows=(state.transactions||[]).filter(t => t.type==='Expense' && Number(t.amount)>0 && !t.refundOfTransactionId && !t.isReversal && String(t.id)!==String(editingId))
+        .map(t=>({...t, refundRemaining:Math.max(0,Number(t.amount)-getRefundedAmountForOriginal(t.id,editingId))}))
+        .filter(t=>t.refundRemaining>0.009)
+        .filter(t=>!q || [t.date,t.vendor,t.desc,t.category,t.subcategory,formatFinancial(t.refundRemaining)].join(' ').toLowerCase().includes(q))
+        .sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')) || String(b.id||'').localeCompare(String(a.id||'')));
+      select.innerHTML='<option value="">Choose original expense</option>'+rows.map(t=>`<option value="${escapeHtml(String(t.id))}">${escapeHtml(t.date||'No date')} · ${escapeHtml(t.vendor||t.desc||'Expense')} · ${escapeHtml(t.category||'Uncategorized')} · ${formatFinancial(t.refundRemaining)} refundable</option>`).join('');
+      if(current && rows.some(t=>String(t.id)===String(current))) select.value=current;
+      applyRefundOriginalSelection(false);
+    }
+    function applyRefundOriginalSelection(updateForm=true) {
+      const id=document.getElementById('tx-refund-original')?.value;
+      const box=document.getElementById('tx-refund-preview'); if(!box) return;
+      const original=(state.transactions||[]).find(t=>String(t.id)===String(id));
+      if(!original){box.textContent='Choose an original expense. The refund will inherit its account and category.';return;}
+      const remaining=Math.max(0,Number(original.amount)-getRefundedAmountForOriginal(original.id,document.getElementById('tx-edit-id')?.value||''));
+      box.textContent=`Original: ${original.vendor||original.desc||'Expense'} · ${original.category||'Uncategorized'} · ${formatFinancial(remaining)} remaining`;
+      if(updateForm){
+        const account=document.getElementById('tx-account'); if(account) account.value=String(original.accountId||'');
+        const category=document.getElementById('tx-category'); if(category){ refreshTransactionBucketOptions(original.category||''); category.value=original.category||''; updateSubcategoryDropdown(); }
+        const sub=document.getElementById('tx-subcategory'); if(sub) sub.value=original.subcategory||'';
+        const vendor=document.getElementById('tx-vendor'); if(vendor && !vendor.value.trim()) vendor.value=`${original.vendor||original.desc||'Merchant'} refund`;
+      }
+    }
+
     function updateTransactionTypeFields() {
       const typeSelect = document.getElementById('tx-type');
       const categorySelect = document.getElementById('tx-category');
@@ -9270,11 +9320,14 @@ ${acc.name}`);
           document.getElementById('tx-category').value = tx.category || '';
           updateSubcategoryDropdown();
           document.getElementById('tx-subcategory').value = tx.subcategory || '';
-          document.getElementById('tx-amount').value = tx.amount;
+          document.getElementById('tx-amount').value = tx.refundOfTransactionId ? Math.abs(Number(tx.amount)||0) : tx.amount;
+          document.getElementById('tx-is-refund').checked = !!tx.refundOfTransactionId;
+          document.getElementById('tx-refund-search').value = '';
           document.getElementById('tx-account').value = tx.accountId;
           document.getElementById('tx-related-debt').value = tx.debtAccountId || '';
           document.getElementById('tx-transfer-to').value = tx.transferToAccountId || '';
           updateTransactionTypeFields();
+          if (tx.refundOfTransactionId) { document.getElementById('tx-refund-link-fields')?.classList.remove('hidden'); populateRefundOriginalOptions(); document.getElementById('tx-refund-original').value=String(tx.refundOfTransactionId); applyRefundOriginalSelection(false); }
           document.getElementById('split-tx-toggle-btn').classList.add('hidden');
         }
       } else {
@@ -9286,6 +9339,10 @@ ${acc.name}`);
         document.getElementById('transaction-form').reset();
         document.getElementById('tx-date').value = new Date().toISOString().split('T')[0];
         document.getElementById('tx-vendor').value = '';
+        document.getElementById('tx-is-refund').checked = false;
+        document.getElementById('tx-refund-link-fields')?.classList.add('hidden');
+        document.getElementById('tx-refund-search').value = '';
+        document.getElementById('tx-refund-original').innerHTML='<option value="">Choose original expense</option>';
         document.getElementById('tx-related-debt').value = '';
         document.getElementById('tx-transfer-to').value = '';
         updateTransactionTypeFields();
@@ -9458,12 +9515,25 @@ ${acc.name}`);
       const visibleType = document.getElementById('tx-type').value;
       if (visibleType === 'Reversal') { const originalId=document.getElementById('tx-reversal-original')?.value; if(!originalId){alert('Choose the original transaction to reverse.');return;} if(createTransactionReversal(originalId)) closeTransactionModal(); return; }
       const selectedCategory = document.getElementById('tx-category').value;
-      const type = internalTransactionType(visibleType, selectedCategory);
+      let type = internalTransactionType(visibleType, selectedCategory);
+      const isRefund = !!document.getElementById('tx-is-refund')?.checked;
+      let refundOriginal = null;
+      if (isRefund) {
+        const originalId=document.getElementById('tx-refund-original')?.value;
+        refundOriginal=(state.transactions||[]).find(t=>String(t.id)===String(originalId));
+        if (!refundOriginal || refundOriginal.type!=='Expense' || Number(refundOriginal.amount)<=0) { alert('Choose a valid original expense for this refund.'); return; }
+        if (String(refundOriginal.accountId)!==String(accountId)) { alert('A linked refund must use the same account as its original expense.'); return; }
+        const refundAmount=Math.round(Math.abs(Number(document.getElementById('tx-amount').value)||0)*100)/100;
+        const remaining=Math.max(0,Number(refundOriginal.amount)-getRefundedAmountForOriginal(refundOriginal.id,editId));
+        if (refundAmount<=0 || refundAmount-remaining>0.005) { alert(`Enter a refund greater than zero and no more than the remaining refundable amount (${formatFinancial(remaining)}).`); return; }
+        type='Expense';
+      }
       if (type === 'Debt Payment') { saveInlineDebtPayment(e); return; }
       const selectedAccount = state.accounts.find(a => String(a.id) === String(document.getElementById('tx-account').value));
       if (type === 'Interest Charge' && selectedAccount?.type !== 'debt') { alert('For an Interest Charge, choose the liability account whose balance is increasing. If the interest is being paid from chequing or savings, use Debt → Debt Payment with $0 principal and the full amount as interest.'); return; }
       if (selectedAccount?.archived && !editId) { alert('This account is archived. Restore it before recording new activity.'); return; }
-      const amount = parseFloat(document.getElementById('tx-amount').value) || 0;
+      let amount = parseFloat(document.getElementById('tx-amount').value) || 0;
+      if (isRefund) amount = -Math.abs(amount);
       const desc = (document.getElementById('tx-desc').value || '').trim();
       const enteredVendor = (document.getElementById('tx-vendor')?.value || '').trim();
       const vendor = type === 'Transfer' ? (enteredVendor || 'Account transfer') : applyVendorCleanupRules(enteredVendor);
@@ -9546,8 +9616,8 @@ ${acc.name}`);
         const groupId=`split_${Date.now()}_${Math.random().toString(36).slice(2,7)}`;
         allocations.forEach((x,i)=>{const tx={id:Date.now().toString()+Math.random(),date,desc,vendor,type,source:'manual-entry',category:x.category,subcategory:x.subcategory,amount:x.amount,accountId,splitGroupId:groupId,splitRemainder:i===allocations.length-1&&remainder>0};state.transactions.unshift(tx);applyTransactionBalanceEffect(tx,1);});
       } else {
-        const category = type === 'Interest Charge' ? 'Interest Charge' : document.getElementById('tx-category').value;
-        const subcategory = type === 'Interest Charge' ? 'Interest Expense' : document.getElementById('tx-subcategory').value;
+        const category = isRefund ? (refundOriginal.category || 'Uncategorized') : type === 'Interest Charge' ? 'Interest Charge' : document.getElementById('tx-category').value;
+        const subcategory = isRefund ? (refundOriginal.subcategory || '') : type === 'Interest Charge' ? 'Interest Expense' : document.getElementById('tx-subcategory').value;
         const relatedDebtAccountId = type === 'Interest Charge' ? accountId : (document.getElementById('tx-related-debt').value || '');
 
         if (!editId) {
@@ -9582,7 +9652,8 @@ ${acc.name}`);
             if (oldDebtAccount) oldDebtAccount.balance = (Number(oldDebtAccount.balance) || 0) + (Number(oldT.debtPrincipalAmount ?? oldT.amount) || 0);
             if (loggedDebtAccount) loggedDebtAccount.balance = (Number(loggedDebtAccount.balance) || 0) + (Number(oldT.debtPrincipalAmount ?? linkedDebtPayment.principalAmount ?? oldT.amount) || 0);
             applyTransactionBalanceEffect(oldT, -1);
-            const updatedT = { ...oldT, id: editId, date, desc, vendor, type, category, subcategory, amount, accountId, ...(oldT.debtPaymentId || oldT.calendarBillId ? {} : { debtAccountId: relatedDebtAccountId || undefined }) };
+            const updatedT = { ...oldT, id: editId, date, desc, vendor, type, category, subcategory, amount, accountId, ...(isRefund ? { refundOfTransactionId: String(refundOriginal.id), refundKind: 'Refund/Reimbursement', refundOriginalCategory: refundOriginal.category || '' } : {}), ...(oldT.debtPaymentId || oldT.calendarBillId ? {} : { debtAccountId: relatedDebtAccountId || undefined }) };
+            if (!isRefund) { delete updatedT.refundOfTransactionId; delete updatedT.refundKind; delete updatedT.refundOriginalCategory; }
             if (transactionNeedsStatementReview(oldT, updatedT)) updatedT.statementMatchNeedsReview = true;
             state.transactions[idx] = updatedT;
             if (oldT.calendarBillId) {
@@ -9606,7 +9677,7 @@ ${acc.name}`);
             applyTransactionBalanceEffect(updatedT, 1);
           }
         } else {
-          const newTransaction = { id: Date.now().toString(), date, desc, vendor, type, category, subcategory, amount, accountId, source: 'manual-entry', ...(relatedDebtAccountId ? { debtAccountId: relatedDebtAccountId } : {}) };
+          const newTransaction = { id: Date.now().toString(), date, desc, vendor, type, category, subcategory, amount, accountId, source: 'manual-entry', ...(isRefund ? { refundOfTransactionId: String(refundOriginal.id), refundKind: 'Refund/Reimbursement', refundOriginalCategory: refundOriginal.category || '' } : {}), ...(relatedDebtAccountId ? { debtAccountId: relatedDebtAccountId } : {}) };
           state.transactions.unshift(newTransaction);
           applyTransactionBalanceEffect(newTransaction, 1);
         }
