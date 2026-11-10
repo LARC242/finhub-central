@@ -233,6 +233,28 @@
     html.dark body[data-finhub-theme="oceanpop"] .text-rose-500 { color:#ff6eae !important; }
     body[data-finhub-theme="oceanpop"] .ocean-pop-palette { background:linear-gradient(90deg,#00FBEA 0 25%,#D8FF76 25% 50%,#FF2687 50% 75%,#132A44 75%); }
 
+    /* Ocean Pop light mode: deliberately saturated, opaque colour blocks. */
+    body[data-finhub-theme="oceanpop"] { background:#bcece7 !important; color:#132a44 !important; }
+    body[data-finhub-theme="oceanpop"] main { background:linear-gradient(145deg,#bcece7 0%,#d2f2ed 48%,#f7c5dc 100%) !important; }
+    body[data-finhub-theme="oceanpop"] .tab-content .bg-white,
+    body[data-finhub-theme="oceanpop"] .tab-content .bg-gray-50,
+    body[data-finhub-theme="oceanpop"] .tab-content .bg-gray-100,
+    body[data-finhub-theme="oceanpop"] #transaction-modal > div,
+    body[data-finhub-theme="oceanpop"] #bulk-edit-modal > div,
+    body[data-finhub-theme="oceanpop"] #vendor-rule-modal > div,
+    body[data-finhub-theme="oceanpop"] #recon-modal > div { background:#f2fffc !important; border:1px solid #078b8d !important; color:#132a44 !important; }
+    body[data-finhub-theme="oceanpop"] .tab-content h2, body[data-finhub-theme="oceanpop"] .tab-content h3 { color:#132a44 !important; }
+    body[data-finhub-theme="oceanpop"] .tab-content h3 { border-left:5px solid #ff2687; padding-left:.55rem; }
+    body[data-finhub-theme="oceanpop"] .theme-bg, body[data-finhub-theme="oceanpop"] button.bg-indigo-600, body[data-finhub-theme="oceanpop"] .bg-indigo-600 { background:#132a44 !important; color:#fff !important; }
+    body[data-finhub-theme="oceanpop"] .theme-text, body[data-finhub-theme="oceanpop"] .text-indigo-600, body[data-finhub-theme="oceanpop"] .text-indigo-500 { color:#006c70 !important; }
+    body[data-finhub-theme="oceanpop"] .text-rose-600, body[data-finhub-theme="oceanpop"] .text-rose-500 { color:#c20c61 !important; }
+    body[data-finhub-theme="oceanpop"] .text-emerald-600 { color:#386b00 !important; }
+    body[data-finhub-theme="oceanpop"] input, body[data-finhub-theme="oceanpop"] select, body[data-finhub-theme="oceanpop"] textarea { background:#ffffff !important; color:#132a44 !important; border:2px solid #078b8d !important; }
+    body[data-finhub-theme="oceanpop"] .bg-pink-50, body[data-finhub-theme="oceanpop"] .bg-rose-50 { background:#ffd5e7 !important; color:#7c1646 !important; }
+    body[data-finhub-theme="oceanpop"] .bg-emerald-50, body[data-finhub-theme="oceanpop"] .bg-green-50 { background:#e5ffad !important; color:#284600 !important; }
+    body[data-finhub-theme="oceanpop"] .bg-cyan-50, body[data-finhub-theme="oceanpop"] .bg-indigo-50 { background:#b7fff8 !important; color:#064b54 !important; }
+    body[data-finhub-theme="oceanpop"] .border, body[data-finhub-theme="oceanpop"] [class*="border-gray-"] { border-color:#65bdb8 !important; }
+
     /* Dark-mode harmonization for every preset theme: retain each preset's accent,
        but use coordinated dark surfaces and readable neutral text throughout. */
     html.dark body[data-finhub-theme]:not([data-finhub-theme="classic"]) { color:#e5e7eb !important; color-scheme:dark; }
@@ -980,6 +1002,7 @@
             <button onclick="setLedgerView('table')" id="ledger-view-table-btn" class="px-3 py-1 rounded-lg text-xs font-semibold bg-indigo-600 text-white theme-bg">Table View</button>
             <button onclick="setLedgerView('calendar')" id="ledger-view-cal-btn" class="px-3 py-1 rounded-lg text-xs font-semibold text-gray-500">Transaction Calendar</button>
           </div>
+          <button onclick="document.getElementById('data-health-details')?.scrollIntoView({behavior:'smooth',block:'start'});renderDataHealth()" class="px-3 py-2 border border-emerald-500 text-emerald-700 dark:text-emerald-300 rounded-xl text-xs font-semibold"><i class="fa-solid fa-shield-halved mr-1"></i>Data Health Checks</button>
           <button onclick="openReconciliationModal()" class="px-3 py-2 bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-400 rounded-xl text-xs font-semibold border border-indigo-500/30">
             <i class="fa-solid fa-file-csv mr-1"></i> Statement Helper
           </button>
@@ -1034,7 +1057,7 @@
       </div>
 
       <!-- TABLE VIEW CONTAINER -->
-      <div class="flex flex-wrap justify-end gap-2 mb-2"><button type="button" onclick="openLedgerColumnSettings()" class="px-3 py-2 border rounded-lg text-xs"><i class="fa-solid fa-table-columns mr-1"></i>Show / hide columns</button><button type="button" onclick="restoreLedgerColumns()" class="px-3 py-2 border border-indigo-300 dark:border-indigo-800 text-indigo-600 dark:text-indigo-300 rounded-lg text-xs">Restore all columns</button><button type="button" onclick="exportLedgerCsv()" class="px-3 py-2 bg-emerald-600 text-white rounded-lg text-xs">Export CSV</button></div><div id="ledger-column-settings" class="hidden p-4 mb-3 border border-indigo-200 dark:border-indigo-900 rounded-xl bg-indigo-50/50 dark:bg-indigo-950/20">
+      <div class="flex flex-wrap justify-end gap-2 mb-2"><button type="button" onclick="openLedgerColumnSettings()" class="px-3 py-2 border rounded-lg text-xs"><i class="fa-solid fa-table-columns mr-1"></i>Show / hide columns</button><button type="button" onclick="restoreLedgerColumns()" class="px-3 py-2 border border-indigo-300 dark:border-indigo-800 text-indigo-600 dark:text-indigo-300 rounded-lg text-xs">Restore all columns</button><button type="button" onclick="exportLedgerCsv()" class="px-3 py-2 bg-emerald-600 text-white rounded-lg text-xs">Export CSV</button><button type="button" onclick="exportFinancialWorkbook()" class="px-3 py-2 bg-cyan-700 text-white rounded-lg text-xs">Export Excel Reports</button></div><div id="ledger-column-settings" class="hidden p-4 mb-3 border border-indigo-200 dark:border-indigo-900 rounded-xl bg-indigo-50/50 dark:bg-indigo-950/20">
         <div class="flex flex-wrap items-center justify-between gap-2 mb-3"><div><h4 class="text-sm font-bold">Customize transaction columns</h4><p class="text-xs text-gray-500 mt-1">Tick a column to show it. Untick it to hide it. Drag to reorder; drag a header edge to resize.</p></div><div class="flex gap-2"><button type="button" onclick="restoreLedgerColumns()" class="px-3 py-1.5 border border-indigo-300 dark:border-indigo-800 text-indigo-600 dark:text-indigo-300 rounded-lg text-xs">Show all</button><button type="button" onclick="closeLedgerColumnSettings()" class="px-3 py-1.5 border rounded-lg text-xs">Done</button></div></div>
         <div id="ledger-column-options" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 text-xs"></div>
         <div class="flex justify-end mt-3"><button type="button" onclick="resetLedgerColumnWidths()" class="text-xs text-indigo-600 dark:text-indigo-400 underline">Reset column widths</button></div>
@@ -1108,7 +1131,7 @@
           <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Move your FinHub data between your laptop, phone, or tablet using a backup file. Save the exported file somewhere both devices can access, such as Google Drive or iCloud.</p>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <button onclick="saveLatestBackup()" class="px-4 py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl text-sm font-semibold text-white shadow-md theme-bg"><i class="fa-solid fa-floppy-disk mr-2"></i>Save / Update Latest Backup</button>
+          <button onclick="saveLatestBackup()" class="px-4 py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl text-sm font-semibold text-white shadow-md theme-bg"><i class="fa-solid fa-floppy-disk mr-2"></i>Save / Update Latest Backup</button><span class="text-[10px] text-gray-500">Quick separate backup: Ctrl+S / Cmd+S</span>
           <button onclick="saveBackupAs()" class="px-4 py-3 bg-cyan-100 dark:bg-cyan-950/40 hover:bg-cyan-200 dark:hover:bg-cyan-900/60 text-cyan-900 dark:text-cyan-100 rounded-xl text-sm font-semibold border border-cyan-300/70 dark:border-cyan-800"><i class="fa-solid fa-file-arrow-down mr-2"></i>Save As…</button>
           <button onclick="exportDatedArchive()" class="px-4 py-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl text-sm font-semibold"><i class="fa-solid fa-box-archive mr-2"></i>Save Dated Archive</button>
           <button onclick="document.getElementById('backup-import-file').click()" class="px-4 py-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl text-sm font-semibold"><i class="fa-solid fa-upload mr-2"></i>Import Backup</button>
@@ -1732,7 +1755,7 @@ Bonus"></textarea></div>
         <div id="tx-manual-reversal-fields" class="hidden rounded-xl border border-amber-300 dark:border-amber-800 bg-amber-50/60 dark:bg-amber-950/20 p-3 space-y-2">
           <div class="text-xs font-semibold">Reverse an existing transaction</div>
           <p class="text-[10px] text-gray-500">Choose the original transaction. FinHub will calculate the remaining reversible amount and apply the correct account and debt effects.</p>
-          <select id="tx-reversal-original" onchange="updateManualReversalPreview()" class="w-full bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"><option value="">Choose original transaction</option></select>
+          <input id="tx-reversal-search" type="search" placeholder="Search original by vendor, description, amount or date…" oninput="populateManualReversalOptions()" class="w-full bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm mb-2"><select id="tx-reversal-original" onchange="updateManualReversalPreview()" size="6" class="w-full bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"><option value="">Choose original transaction</option></select><p class="text-[10px] text-gray-500">Newest transactions first. Only transactions with a remaining reversible amount are shown.</p>
           <div id="tx-reversal-preview" class="text-[11px] text-gray-500"></div>
         </div>
         <div id="tx-amount-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Total Amount ($)</label><input type="number" step="0.01" id="tx-amount" oninput="updateInlineDebtSplit(false)" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div>
@@ -2087,6 +2110,8 @@ Bonus"></textarea></div>
       const date = prompt('Reversal date (YYYY-MM-DD):', new Date().toISOString().slice(0,10));
       if (date == null) return false;
       if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) { alert('Enter the date as YYYY-MM-DD.'); return false; }
+      const duplicateReversal=(state.transactions||[]).find(t=>String(t.reversalOfTransactionId||'')===String(original.id)&&String(t.date||'')===date&&Math.abs(Math.abs(Number(t.amount)||0)-amount)<0.005);
+      if(duplicateReversal){alert('A reversal for this original transaction, date and amount already exists. FinHub has not created another transaction. Open the existing reversal instead.');return false;}
       const vendor = original.vendor || original.desc || 'Transaction reversal';
       const base = {
         id: `tx_rev_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,
@@ -8902,8 +8927,11 @@ ${acc.name}`);
     function populateManualReversalOptions() {
       const select=document.getElementById('tx-reversal-original'); if(!select) return;
       const current=select.value;
-      const eligible=(state.transactions||[]).filter(t=>!t.reversalOfTransactionId && !t.isReversal && Math.max(0,Math.abs(Number(t.amount)||0)-getTransactionReversedAmount(t.id))>0.009);
-      select.innerHTML='<option value="">Choose original transaction</option>'+eligible.map(t=>{const remaining=Math.max(0,Math.abs(Number(t.amount)||0)-getTransactionReversedAmount(t.id));return `<option value="${escapeHtml(String(t.id))}">${escapeHtml(t.date||'')} · ${escapeHtml(t.vendor||t.desc||t.type)} · ${formatFinancial(remaining)} remaining</option>`;}).join('');
+      const q=(document.getElementById('tx-reversal-search')?.value||'').trim().toLowerCase();
+      const eligible=(state.transactions||[]).filter(t=>!t.reversalOfTransactionId && !t.isReversal && Math.max(0,Math.abs(Number(t.amount)||0)-getTransactionReversedAmount(t.id))>0.009)
+        .filter(t=>!q || [t.date,t.vendor,t.desc,t.type,t.category,formatFinancial(Math.abs(Number(t.amount)||0))].join(' ').toLowerCase().includes(q))
+        .sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')) || String(b.id||'').localeCompare(String(a.id||'')));
+      select.innerHTML='<option value="">Choose original transaction</option>'+eligible.map(t=>{const remaining=Math.max(0,Math.abs(Number(t.amount)||0)-getTransactionReversedAmount(t.id));return `<option value="${escapeHtml(String(t.id))}">${escapeHtml(t.date||'No date')} · ${escapeHtml(t.vendor||t.desc||t.type)} · ${escapeHtml(t.type||'')} · ${formatFinancial(remaining)} remaining</option>`;}).join('');
       if(current && eligible.some(t=>String(t.id)===String(current))) select.value=current;
       updateManualReversalPreview();
     }
@@ -9648,6 +9676,19 @@ ${acc.name}`);
     // Backward-compatible entry point used by the reminder banner.
     function exportData() { saveLatestBackup(); }
 
+    // Ctrl+S / Cmd+S creates a separate timestamped JSON archive; it never overwrites the connected backup.
+    document.addEventListener('keydown', event => {
+      const key = String(event.key || '').toLowerCase();
+      if ((event.ctrlKey || event.metaKey) && key === 's' && !event.altKey && !event.shiftKey) {
+        const target = event.target;
+        if (target && target.isContentEditable) return;
+        event.preventDefault();
+        exportDatedArchive();
+        const status = document.getElementById('backup-status');
+        if (status) status.textContent = 'Quick backup download started.';
+      }
+    });
+
     let pendingBackupImport = null;
 
     function validateFinHubBackupData(data) {
@@ -10024,6 +10065,24 @@ ${acc.name}`);
       });
     }
     function exportLedgerCsv(){const table=document.querySelector('#ledger-table-container table');if(!table)return;const rows=[...table.querySelectorAll('tr')].filter(r=>r.cells.length);const csv=rows.map(r=>[...r.cells].map(c=>'"'+c.innerText.trim().replace(/"/g,'""')+'"').join(',')).join('\r\n');const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='FinHub_Expense_Tracker.csv';a.click();URL.revokeObjectURL(url);}
+    function exportFinancialWorkbook(){
+      if(!window.XLSX){alert('Excel export library is unavailable. Check your internet connection and try again.');return;}
+      const wb=XLSX.utils.book_new(),txs=state.transactions||[],year=Number(document.getElementById('year-end-period')?.value)||new Date().getFullYear();
+      const months=Array.from({length:12},(_,i)=>`${year}-${String(i+1).padStart(2,'0')}`),fmt=n=>Math.round((Number(n)||0)*100)/100;
+      const incomeCats=new Set(),expenseCats=new Set();txs.forEach(t=>{if(String(t.date||'').slice(0,4)!==String(year))return;if(t.type==='Income')incomeCats.add(t.category||'Uncategorized');if(t.type==='Expense')expenseCats.add(t.category||'Uncategorized');});
+      const makeMonthly=(title,cats,kind)=>{const rows=[[title,...months.map(m=>new Date(`${m}-01T12:00:00`).toLocaleString('en-CA',{month:'short'})),'TOTAL']];[...cats].sort().forEach(cat=>{const vals=months.map(m=>fmt(txs.filter(t=>String(t.date||'').startsWith(m)&&t.type===kind&&(t.category||'Uncategorized')===cat).reduce((a,t)=>a+Math.abs(Number(t.amount)||0),0)));rows.push([cat,...vals,`=SUM(B${rows.length+1}:M${rows.length+1})`]);});rows.push([`TOTAL ${kind.toUpperCase()}`,...months.map((m,i)=>`=SUM(${String.fromCharCode(66+i)}2:${String.fromCharCode(66+i)}${rows.length})`),'=SUM(B'+(rows.length+1)+':M'+(rows.length+1)+')']);return rows;};
+      const ie=[['INCOME & EXPENSE REPORT',...months.map(m=>new Date(`${m}-01T12:00:00`).toLocaleString('en-CA',{month:'short'})),'TOTAL']];
+      let incomeTotalRow=0,expenseTotalRow=0;const addSection=(label,cats,type)=>{ie.push([label]);const first=ie.length+1;[...cats].sort().forEach(cat=>{const r=ie.length+1;ie.push([cat,...months.map(m=>fmt(txs.filter(t=>String(t.date||'').startsWith(m)&&t.type===type&&(t.category||'Uncategorized')===cat).reduce((a,t)=>a+Math.abs(Number(t.amount)||0),0))),`=SUM(B${r}:M${r})`]);});const last=ie.length;const totalRow=ie.length+1;ie.push([`Total ${label}`,...months.map((m,i)=>`=SUM(${String.fromCharCode(66+i)}${first}:${String.fromCharCode(66+i)}${last})`),`=SUM(B${totalRow}:M${totalRow})`]);if(type==='Income')incomeTotalRow=totalRow;else expenseTotalRow=totalRow;};
+      addSection('INCOME',incomeCats,'Income');addSection('EXPENSES',expenseCats,'Expense');
+      const debtCats=new Set(['Debt Payments']);ie.push(['DEBT PAYMENTS',...Array(13).fill('')]);const dr=ie.length+1;ie.push(['Debt payments',...months.map(m=>fmt(txs.filter(t=>String(t.date||'').startsWith(m)&&t.type==='Debt Payment').reduce((a,t)=>a+Math.abs(Number(t.amount)||0),0))),`=SUM(B${dr}:M${dr})`]);
+      ie.push(['NET REMAINING',...months.map((m,i)=>`=B${2+i} `),'']);
+      const ws=XLSX.utils.aoa_to_sheet(ie);ws['!cols']=[{wch:30},...Array(13).fill({wch:14})];XLSX.utils.book_append_sheet(wb,ws,'Income & Expenses');
+      const raw=[['Date','Vendor','Description','Type','Category','Subcategory','Account','Amount','Reversal of'],...txs.filter(t=>String(t.date||'').startsWith(String(year))).sort((a,b)=>String(a.date).localeCompare(String(b.date))).map(t=>[t.date,t.vendor||'',t.desc||'',t.type||'',t.category||'',t.subcategory||'',state.accounts.find(a=>String(a.id)===String(t.accountId))?.name||'',Number(t.amount)||0,t.reversalOfTransactionId||''])];const tw=XLSX.utils.aoa_to_sheet(raw);tw['!autofilter']={ref:`A1:I${raw.length}`};XLSX.utils.book_append_sheet(wb,tw,'Transactions');
+      const cash=[['CASH FLOW PROJECTION (scheduled calendar items only)','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','TOTAL'],['Scheduled income',...months.map(m=>fmt((state.calendarBills||[]).filter(b=>String(b.date||'').startsWith(m)&&b.type==='income'&&!b.paid).reduce((a,b)=>a+(Number(b.amount)||0),0))),''],['Scheduled bills',...months.map(m=>fmt((state.calendarBills||[]).filter(b=>String(b.date||'').startsWith(m)&&b.type!=='income'&&!b.paid).reduce((a,b)=>a+(Number(b.amount)||0),0))),''],['Net scheduled cash flow',...months.map((m,i)=>`=${String.fromCharCode(66+i)}2-${String.fromCharCode(66+i)}3`),'']];XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(cash),'Cash Flow Projection');
+      const jb=[['JOINT BILLS ACTUAL / PLANNED ENTRIES',...months.map(m=>new Date(`${m}-01T12:00:00`).toLocaleString('en-CA',{month:'short'})),'TOTAL']];for(const [cls,label] of [['fixed','FIXED JOINT EXPENSES'],['variable','VARIABLE JOINT EXPENSES']]){jb.push([label]);const items=[...new Set((state.jointBills||[]).filter(b=>b.classification===cls).map(b=>b.name))].sort();const start=jb.length+1;items.forEach(name=>{const row=jb.length+1;jb.push([name,...months.map(m=>fmt((state.jointBills||[]).filter(b=>b.ym===m&&b.classification===cls&&b.name===name).reduce((a,b)=>a+(Number(b.amount)||0),0))),`=SUM(B${row}:M${row})`]);});const end=jb.length;const tr=jb.length+1;jb.push([`Total ${label}`,...months.map((m,i)=>`=SUM(${String.fromCharCode(66+i)}${start}:${String.fromCharCode(66+i)}${end})`),`=SUM(B${tr}:M${tr})`]);}XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(jb),'Joint Bills');
+      XLSX.writeFile(wb,`FinHub_Financial_Reports_${year}.xlsx`);
+    }
+
     function renderDataHealth(){const el=document.getElementById('data-health-results');if(!el)return;const tx=state.transactions||[],accounts=state.accounts||[],ids=new Set(accounts.map(a=>String(a.id))),seen=new Set(),duplicateIds=[],missingAccount=[],missingDate=[],missingCategory=[];tx.forEach(t=>{const id=String(t.id??'');if(id&&seen.has(id))duplicateIds.push(t);if(id)seen.add(id);if(t.accountId&&!ids.has(String(t.accountId))&&!t.transferToAccountId)missingAccount.push(t);if(!/^\d{4}-\d{2}-\d{2}$/.test(String(t.date||'')))missingDate.push(t);if(['Expense','Income','Interest Charge'].includes(t.type)&&!t.category)missingCategory.push(t);});const checks=[['Duplicate transaction IDs',duplicateIds.length,'Potentially conflicting records'],['Missing or archived account references',missingAccount.length,'Transactions linked to an account that is not present'],['Missing or invalid dates',missingDate.length,'Transactions that may not sort or report correctly'],['Missing categories',missingCategory.length,'Income/expense records without a category']];el.innerHTML=checks.map(([name,count,desc])=>`<div class="rounded-lg border p-3 flex items-center justify-between gap-3"><div><strong>${name}</strong><p class="text-gray-500 mt-1">${desc}</p></div><span class="font-bold ${count?'text-amber-600':'text-emerald-600'}">${count} ${count?'to review':'clear'}</span></div>`).join('');}
 
     function closePeriod(){return document.getElementById('monthly-close-period')?.value||new Date().toISOString().slice(0,7);}
