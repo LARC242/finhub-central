@@ -513,6 +513,95 @@
     #transaction-form .tx-kind-card { min-height:28px; padding:4px 6px; font-size:10px; gap:4px; }
     #transaction-form .tx-kind-card i { font-size:10px; }
 
+
+
+    /* FinHub Hibiscus: tropical photo-led identity with coordinated light/dark surfaces. */
+    body[data-finhub-theme="hibiscus"] {
+      background-color:#073d3b !important;
+      background-image:linear-gradient(120deg,rgba(3,28,30,.50),rgba(4,35,35,.30)),url("https://images.unsplash.com/photo-1600196387198-a0e5e712d059?auto=format&fit=crop&w=2200&q=85") !important;
+      background-position:center center !important;background-size:cover !important;background-attachment:fixed !important;
+      color:#fff3df !important;
+    }
+    body[data-finhub-theme="hibiscus"] #finhub-sidebar,
+    body[data-finhub-theme="hibiscus"] aside {
+      background:rgba(3,43,44,.94) !important;color:#fff3df !important;border-color:rgba(80,190,173,.35) !important;
+      backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+    }
+    body[data-finhub-theme="hibiscus"] .tab-content .bg-white,
+    body[data-finhub-theme="hibiscus"] #transaction-modal > div,
+    body[data-finhub-theme="hibiscus"] #bulk-edit-modal > div,
+    body[data-finhub-theme="hibiscus"] #vendor-rule-modal > div,
+    body[data-finhub-theme="hibiscus"] #recon-modal > div {
+      background:rgba(4,39,40,.91) !important;color:#fff3df !important;
+      border:1px solid rgba(242,106,86,.72) !important;box-shadow:0 16px 44px rgba(0,0,0,.24);
+      backdrop-filter:blur(15px);-webkit-backdrop-filter:blur(15px);
+    }
+    body[data-finhub-theme="hibiscus"] .theme-bg,
+    body[data-finhub-theme="hibiscus"] #brand-logo,
+    body[data-finhub-theme="hibiscus"] .nav-btn[style*="background-color"] {
+      background:linear-gradient(135deg,#f36a4b,#dc4e4b) !important;color:#fff8e9 !important;
+    }
+    body[data-finhub-theme="hibiscus"] .theme-text {color:#f36a4b !important;}
+    body[data-finhub-theme="hibiscus"] h1,body[data-finhub-theme="hibiscus"] h2,
+    body[data-finhub-theme="hibiscus"] h3,body[data-finhub-theme="hibiscus"] h4,
+    body[data-finhub-theme="hibiscus"] label {color:#fff0d9 !important;}
+    body[data-finhub-theme="hibiscus"] input,body[data-finhub-theme="hibiscus"] select,
+    body[data-finhub-theme="hibiscus"] textarea {
+      background:rgba(5,58,57,.88) !important;color:#fff3df !important;border-color:rgba(205,225,208,.48) !important;
+    }
+    body[data-finhub-theme="hibiscus"] input::placeholder,
+    body[data-finhub-theme="hibiscus"] textarea::placeholder {color:#c7d6c9 !important;}
+    body[data-finhub-theme="hibiscus"] .bg-gray-50,body[data-finhub-theme="hibiscus"] .bg-gray-100,
+    body[data-finhub-theme="hibiscus"] .dark\:bg-gray-950 {background-color:rgba(7,61,59,.82) !important;}
+    body[data-finhub-theme="hibiscus"] .text-gray-400,body[data-finhub-theme="hibiscus"] .text-gray-500,
+    body[data-finhub-theme="hibiscus"] .text-gray-600 {color:#d4d9c9 !important;}
+    body[data-finhub-theme="hibiscus"] .border-gray-200,body[data-finhub-theme="hibiscus"] .border-gray-800,
+    body[data-finhub-theme="hibiscus"] .border-gray-700 {border-color:rgba(201,218,202,.25) !important;}
+    body[data-finhub-theme="hibiscus"] .nav-btn:hover {background:rgba(243,106,75,.22) !important;}
+    body[data-finhub-theme="hibiscus"] .nav-btn[style*="background-color"] {border-radius:14px !important;}
+    body[data-finhub-theme="hibiscus"] #brand-logo {position:relative;}
+    body[data-finhub-theme="hibiscus"] #brand-logo svg {filter:brightness(0) invert(1);opacity:.96;}
+    body[data-finhub-theme="hibiscus"] .sidebar-brand-copy h1 {letter-spacing:.02em;}
+    body[data-finhub-theme="hibiscus"] .sidebar-brand-copy span {color:#f36a86 !important;}
+    body[data-finhub-theme="hibiscus"] .tab-content .shadow-sm {box-shadow:0 14px 36px rgba(0,0,0,.22) !important;}
+    body[data-finhub-theme="hibiscus"] .theme-bg:hover {filter:brightness(1.08);}
+
+    /* Light Hibiscus keeps the same photograph, with warm ivory glass panels for contrast. */
+    html:not(.dark) body[data-finhub-theme="hibiscus"] {
+      background-image:linear-gradient(120deg,rgba(245,239,224,.38),rgba(255,225,213,.22)),url("https://images.unsplash.com/photo-1600196387198-a0e5e712d059?auto=format&fit=crop&w=2200&q=85") !important;
+      color:#153c3a !important;
+    }
+    html:not(.dark) body[data-finhub-theme="hibiscus"] #finhub-sidebar,
+    html:not(.dark) body[data-finhub-theme="hibiscus"] aside {
+      background:rgba(245,240,225,.94) !important;color:#123d3b !important;border-color:rgba(7,91,83,.20) !important;
+    }
+    html:not(.dark) body[data-finhub-theme="hibiscus"] .tab-content .bg-white,
+    html:not(.dark) body[data-finhub-theme="hibiscus"] #transaction-modal > div,
+    html:not(.dark) body[data-finhub-theme="hibiscus"] #bulk-edit-modal > div,
+    html:not(.dark) body[data-finhub-theme="hibiscus"] #vendor-rule-modal > div,
+    html:not(.dark) body[data-finhub-theme="hibiscus"] #recon-modal > div {
+      background:rgba(255,249,237,.94) !important;color:#183f3d !important;border-color:rgba(210,91,85,.58) !important;
+      backdrop-filter:blur(15px);-webkit-backdrop-filter:blur(15px);
+    }
+    html:not(.dark) body[data-finhub-theme="hibiscus"] h1,
+    html:not(.dark) body[data-finhub-theme="hibiscus"] h2,
+    html:not(.dark) body[data-finhub-theme="hibiscus"] h3,
+    html:not(.dark) body[data-finhub-theme="hibiscus"] h4,
+    html:not(.dark) body[data-finhub-theme="hibiscus"] label {color:#153f3c !important;}
+    html:not(.dark) body[data-finhub-theme="hibiscus"] input,
+    html:not(.dark) body[data-finhub-theme="hibiscus"] select,
+    html:not(.dark) body[data-finhub-theme="hibiscus"] textarea {background:#fffdf7 !important;color:#173e3b !important;border-color:#b8c9bc !important;}
+    html:not(.dark) body[data-finhub-theme="hibiscus"] .text-gray-400,
+    html:not(.dark) body[data-finhub-theme="hibiscus"] .text-gray-500,
+    html:not(.dark) body[data-finhub-theme="hibiscus"] .text-gray-600 {color:#55706a !important;}
+    html:not(.dark) body[data-finhub-theme="hibiscus"] .bg-gray-50,
+    html:not(.dark) body[data-finhub-theme="hibiscus"] .bg-gray-100 {background:#f3eadb !important;}
+
+
+    body[data-finhub-theme="hibiscus"] .sidebar-brand-copy span {font-size:0 !important;}
+    body[data-finhub-theme="hibiscus"] .sidebar-brand-copy span::after {content:"Hibiscus";font-family:Georgia,serif;font-style:italic;font-size:14px;color:#f36a86;}
+    html:not(.dark) body[data-finhub-theme="hibiscus"] .sidebar-brand-copy span::after {color:#c84e70;}
+
 </style>
 </head>
 <body id="app-body" class="bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 min-h-screen flex flex-col md:flex-row transition-colors duration-200 relative">
@@ -1358,6 +1447,7 @@
           <button type="button" onclick="setVisualTheme('colorful')" class="text-left rounded-xl border border-gray-200 dark:border-gray-700 p-3 hover:ring-2 ring-violet-400"><span class="block h-7 rounded-lg mb-2" style="background:linear-gradient(90deg,#fff1f5 30%,#c34f7b 30% 55%,#b69ad8 55% 78%,#e7a0b7 78%)"></span><strong class="text-xs">Rose Garden</strong><span class="block text-[10px] text-gray-400">Blush, berry, lavender & plum</span></button>
           <button type="button" onclick="setVisualTheme('oceanpop')" class="text-left rounded-xl border border-gray-200 dark:border-gray-700 p-3 hover:ring-2 ring-cyan-400"><span class="block h-7 rounded-lg mb-2 ocean-pop-palette"></span><strong class="text-xs">Ocean Pop</strong><span class="block text-[10px] text-gray-400">Aqua, lime, hot pink & navy</span></button>
           <button type="button" onclick="setVisualTheme('orangecherry')" class="text-left rounded-xl border border-gray-200 dark:border-gray-700 p-3 hover:ring-2 ring-orange-500"><span class="block h-7 rounded-lg mb-2" style="background:linear-gradient(90deg,#f3eee3 0 25%,#bd542d 25% 50%,#3b090b 50% 75%,#f2b18c 75%)"></span><strong class="text-xs">Orange & Cherry</strong><span class="block text-[10px] text-gray-400">Orange, cherry, cream & peach</span></button>
+          <button type="button" onclick="setVisualTheme('hibiscus')" class="text-left rounded-xl border border-gray-200 dark:border-gray-700 p-3 hover:ring-2 ring-rose-400"><span class="block h-7 rounded-lg mb-2" style="background:linear-gradient(90deg,#073d3b 0 20%,#f36a4b 20% 40%,#a83c79 40% 60%,#ee668b 60% 80%,#e5a82f 80%)"></span><strong class="text-xs">Hibiscus</strong><span class="block text-[10px] text-gray-400">Tropical florals, teal & sunset accents</span></button>
         </div>
         <p id="active-visual-theme-label" class="text-[10px] text-gray-500">Current theme: Classic</p>
       </div>
@@ -2541,7 +2631,7 @@ Bonus"></textarea></div>
       delete t.externalTransferDirection;
     });
     state.transactionTaxonomyVersion = 2;
-    state.appVisualTheme = ['classic','silver','neutral','colorful','oceanpop','orangecherry'].includes(state.appVisualTheme) ? state.appVisualTheme : 'classic';
+    state.appVisualTheme = ['classic','silver','neutral','colorful','oceanpop','orangecherry','hibiscus'].includes(state.appVisualTheme) ? state.appVisualTheme : 'classic';
     if (!Array.isArray(state.variablePoolCategories)) state.variablePoolCategories = (state.categories || []).filter(c => !/housing|bill|debt service/i.test(c.name)).map(c => c.name);
     // New planner, reconciliation, and sinking-fund fields are additive; existing transactions and budgets remain intact.
     initializeSinkingFundLedger();
@@ -2660,12 +2750,12 @@ Bonus"></textarea></div>
       applyPrivacyBlurState();
     }
 
-    const FINHUB_VISUAL_THEMES = ['classic','silver','neutral','colorful','oceanpop','orangecherry'];
+    const FINHUB_VISUAL_THEMES = ['classic','silver','neutral','colorful','oceanpop','orangecherry','hibiscus'];
     function applyVisualTheme(theme) {
       const chosen = FINHUB_VISUAL_THEMES.includes(theme) ? theme : 'classic';
       document.getElementById('app-body')?.setAttribute('data-finhub-theme', chosen);
       const label = document.getElementById('active-visual-theme-label');
-      if (label) label.textContent = `Current theme: ${{classic:'Classic',silver:'Silver Bengal',neutral:'Warm Neutral',colorful:'Rose Garden',oceanpop:'Ocean Pop',orangecherry:'Orange & Cherry'}[chosen]}`;
+      if (label) label.textContent = `Current theme: ${{classic:'Classic',silver:'Silver Bengal',neutral:'Warm Neutral',colorful:'Rose Garden',oceanpop:'Ocean Pop',orangecherry:'Orange & Cherry',hibiscus:'Hibiscus'}[chosen]}`;
     }
     function setVisualTheme(theme) {
       if (!FINHUB_VISUAL_THEMES.includes(theme)) return;
@@ -10162,7 +10252,7 @@ ${acc.name}`);
       state.statementReconciliation.groups = Array.isArray(state.statementReconciliation.groups) ? state.statementReconciliation.groups : [];
       state.vendorCleanupRules = Array.isArray(state.vendorCleanupRules) ? state.vendorCleanupRules : [];
       state.merchantRules = Array.isArray(state.merchantRules) ? state.merchantRules : [];
-      state.appVisualTheme = ['classic','silver','neutral','colorful','oceanpop','orangecherry'].includes(state.appVisualTheme) ? state.appVisualTheme : 'classic';
+      state.appVisualTheme = ['classic','silver','neutral','colorful','oceanpop','orangecherry','hibiscus'].includes(state.appVisualTheme) ? state.appVisualTheme : 'classic';
       if (!isValidHexColor(state.appAccentHex)) delete state.appAccentHex;
       if (!isValidHexColor(state.appBackgroundHex)) delete state.appBackgroundHex;
       if (!Array.isArray(state.variablePoolCategories)) state.variablePoolCategories = (state.categories || []).filter(c => !/housing|bill|debt service/i.test(c.name)).map(c => c.name);
