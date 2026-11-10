@@ -6,7 +6,7 @@
   <title>FinHub Central - Financial Command Center</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23132A44'/%3E%3Cpath d='M18 45V19h28v7H26v5h17v7H26v7z' fill='%2300FBEA'/%3E%3Ccircle cx='47' cy='16' r='7' fill='%23FF2687'/%3E%3Ccircle cx='15' cy='49' r='5' fill='%23D8FF76'/%3E%3C/svg%3E">
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script>
     // Declare ledger column metadata before startup rendering can invoke applyLedgerColumns().
@@ -10303,6 +10303,48 @@ ${acc.name}`);
       const raw=[['Date','Vendor','Description','Type','Category','Subcategory','Account','Amount','Reversal of'],...txs.filter(t=>String(t.date||'').startsWith(String(year))).sort((a,b)=>String(a.date).localeCompare(String(b.date))).map(t=>[t.date,t.vendor||'',t.desc||'',t.type||'',t.category||'',t.subcategory||'',state.accounts.find(a=>String(a.id)===String(t.accountId))?.name||'',Number(t.amount)||0,t.reversalOfTransactionId||''])];const tw=XLSX.utils.aoa_to_sheet(raw);tw['!autofilter']={ref:`A1:I${raw.length}`};XLSX.utils.book_append_sheet(wb,tw,'Transactions');
       const cash=[['CASH FLOW PROJECTION (scheduled calendar items only)','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','TOTAL'],['Scheduled income',...months.map(m=>fmt((state.calendarBills||[]).filter(b=>String(b.date||'').startsWith(m)&&b.type==='income'&&!b.paid).reduce((a,b)=>a+(Number(b.amount)||0),0))),''],['Scheduled bills',...months.map(m=>fmt((state.calendarBills||[]).filter(b=>String(b.date||'').startsWith(m)&&b.type!=='income'&&!b.paid).reduce((a,b)=>a+(Number(b.amount)||0),0))),''],['Net scheduled cash flow',...months.map((m,i)=>`=${String.fromCharCode(66+i)}2-${String.fromCharCode(66+i)}3`),'']];XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(cash),'Cash Flow Projection');
       const jb=[['JOINT BILLS ACTUAL / PLANNED ENTRIES',...months.map(m=>new Date(`${m}-01T12:00:00`).toLocaleString('en-CA',{month:'short'})),'TOTAL']];for(const [cls,label] of [['fixed','FIXED JOINT EXPENSES'],['variable','VARIABLE JOINT EXPENSES']]){jb.push([label]);const items=[...new Set((state.jointBills||[]).filter(b=>b.classification===cls).map(b=>b.name))].sort();const start=jb.length+1;items.forEach(name=>{const row=jb.length+1;jb.push([name,...months.map(m=>fmt((state.jointBills||[]).filter(b=>b.ym===m&&b.classification===cls&&b.name===name).reduce((a,b)=>a+(Number(b.amount)||0),0))),`=SUM(B${row}:M${row})`]);});const end=jb.length;const tr=jb.length+1;jb.push([`Total ${label}`,...months.map((m,i)=>`=SUM(${String.fromCharCode(66+i)}${start}:${String.fromCharCode(66+i)}${end})`),`=SUM(B${tr}:M${tr})`]);}XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(jb),'Joint Bills');
+      // Balance Sheet: current account balances at the time of export.
+      const activeAccounts=(state.accounts||[]).filter(a=>!a.archived);
+      const assets=activeAccounts.filter(a=>a.type==='asset').sort((a,b)=>String(a.name||'').localeCompare(String(b.name||'')));
+      const liabilities=activeAccounts.filter(a=>a.type==='debt').sort((a,b)=>String(a.name||'').localeCompare(String(b.name||'')));
+      const balanceRows=[['BALANCE SHEET',''],['As of',new Date().toLocaleDateString('en-CA')],[],['ASSETS','BALANCE'],...assets.map(a=>[a.name||'Unnamed asset',fmt(a.balance)]),['TOTAL ASSETS',assets.reduce((n,a)=>n+(Number(a.balance)||0),0)],[],['LIABILITIES','BALANCE'],...liabilities.map(a=>[a.name||'Unnamed liability',Math.abs(Number(a.balance)||0)]),['TOTAL LIABILITIES',liabilities.reduce((n,a)=>n+Math.abs(Number(a.balance)||0),0)],[],['NET WORTH',assets.reduce((n,a)=>n+(Number(a.balance)||0),0)-liabilities.reduce((n,a)=>n+Math.abs(Number(a.balance)||0),0)]];
+      const bs=XLSX.utils.aoa_to_sheet(balanceRows);bs['!cols']=[{wch:34},{wch:18}];bs['!autofilter']={ref:`A4:B${3+assets.length+liabilities.length+7}`};XLSX.utils.book_append_sheet(wb,bs,'Balance Sheet');
+
+      // Convert formula-looking strings into real Excel formula cells. SheetJS does not
+      // treat strings beginning with '=' in aoa_to_sheet as formulas automatically.
+      Object.values(wb.Sheets).forEach(sheet=>{
+        Object.keys(sheet).filter(k=>!k.startsWith('!')).forEach(k=>{
+          const cell=sheet[k];
+          if(cell && cell.t==='s' && typeof cell.v==='string' && cell.v.startsWith('=')){
+            cell.f=cell.v.slice(1);delete cell.v;cell.t='n';
+          }
+        });
+      });
+      // Apply report styling: colored section headers, bold headings, currency formats,
+      // and bottom borders under totals. xlsx-js-style supports cell-level styles.
+      const fill=(rgb)=>({patternType:'solid',fgColor:{rgb}});
+      const borderBottom={style:'thin',color:{rgb:'64748B'}};
+      const styleCell=(cell,style)=>{if(cell)cell.s={...(cell.s||{}),...style};};
+      Object.entries(wb.Sheets).forEach(([name,sheet])=>{
+        if(name==='Transactions'||name==='Accounts')return;
+        const range=XLSX.utils.decode_range(sheet['!ref']||'A1:A1');
+        for(let R=range.s.r;R<=range.e.r;R++){
+          const first=sheet[XLSX.utils.encode_cell({r:R,c:0})];
+          const label=String(first?.v??'').toUpperCase();
+          const isTitle=R===range.s.r;
+          const isSection=label && (label===label.toUpperCase()) && (label.includes('ASSETS')||label.includes('LIABILITIES')||label==='INCOME'||label==='EXPENSES'||label.includes('FIXED JOINT')||label.includes('VARIABLE JOINT')||label.includes('CASH FLOW'));
+          const isTotal=label.startsWith('TOTAL')||label.startsWith('NET ')||label.startsWith('NET WORTH');
+          for(let C=range.s.c;C<=range.e.c;C++){
+            const cell=sheet[XLSX.utils.encode_cell({r:R,c:C})];if(!cell)continue;
+            if(isTitle)styleCell(cell,{font:{bold:true,color:{rgb:'FFFFFF'},sz:14},fill:fill('243B63'),alignment:{vertical:'center'}});
+            else if(isSection)styleCell(cell,{font:{bold:true,color:{rgb:'FFFFFF'}},fill:fill('365F91')});
+            else if(isTotal)styleCell(cell,{font:{bold:true},border:{bottom:borderBottom,top:{style:'thin',color:{rgb:'64748B'}}}});
+            if(C>0 && (cell.t==='n'||cell.f))styleCell(cell,{numFmt:'$#,##0.00;[Red]($#,##0.00);–'});
+          }
+        }
+        sheet['!rows']=sheet['!rows']||[];sheet['!rows'][0]={hpt:24};
+      });
+      wb.Workbook=wb.Workbook||{};wb.Workbook.CalcPr={calcMode:'auto',fullCalcOnLoad:true,forceFullCalc:true};
       XLSX.writeFile(wb,`FinHub_Financial_Reports_${year}.xlsx`);
     }
 
