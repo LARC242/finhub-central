@@ -5,7 +5,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>FinHub Central - Financial Command Center</title>
-<meta content="stage4-clean-foundation-step1" name="finhub-build-stage"/>
+<meta content="stage3b-buttons-actions-number-typography" name="finhub-build-stage"/>
 <meta content="2" name="finhub-schema-version"/>
 <link href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23132A44'/%3E%3Cpath d='M18 45V19h28v7H26v5h17v7H26v7z' fill='%2300FBEA'/%3E%3Ccircle cx='47' cy='16' r='7' fill='%23FF2687'/%3E%3Ccircle cx='15' cy='49' r='5' fill='%23D8FF76'/%3E%3C/svg%3E" rel="icon" type="image/svg+xml"/>
 <script src="https://cdn.tailwindcss.com"></script>
@@ -22,7 +22,12 @@
     .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
     .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(156, 163, 175, 0.3); border-radius: 3px; }
-    .accounting-num { font-family: "Courier New", Courier, monospace; letter-spacing: -0.5px; }
+    .accounting-num {
+      font-family: "Courier New", Courier, monospace;
+      font-variant-numeric: tabular-nums lining-nums;
+      font-feature-settings: "tnum" 1, "lnum" 1;
+      letter-spacing: -0.5px;
+    }
     .blur-sensitive { filter: blur(6px); transition: filter 0.2s ease; cursor: pointer; }
     .dashboard-block { position: relative; }
     .dashboard-block.dragging { opacity: .45; outline: 2px dashed #818cf8; }
@@ -1299,10 +1304,32 @@ body#app-body > #finhub-sidebar {
   padding:0 4px; border-radius:9px;
 }
 #finhub-sidebar .sidebar-back-refresh > button span { display:none; }
-#finhub-sidebar #finhub-back-button:disabled {
-  opacity:.35; cursor:not-allowed; filter:grayscale(1);
+#finhub-sidebar #finhub-back-button:disabled,
+#finhub-sidebar #finhub-back-button.is-back-disabled {
+  opacity:1 !important; cursor:not-allowed !important; filter:none !important;
+  background:rgba(167,139,250,.22) !important;
+  border:1px solid rgba(196,181,253,.48) !important;
+  color:#F0EAFE !important; box-shadow:none !important;
 }
-#finhub-sidebar #finhub-back-button:disabled i { color:#94a3b8; }
+#finhub-sidebar #finhub-back-button:disabled i,
+#finhub-sidebar #finhub-back-button.is-back-disabled i {
+  color:#F0EAFE !important; opacity:1 !important;
+}
+/* Keep the disabled Back action legible and consistently sized in the compact icon rail. */
+#finhub-sidebar.sidebar-icon-rail #finhub-back-button:disabled,
+#finhub-sidebar.sidebar-icon-rail #finhub-back-button.is-back-disabled {
+  display:inline-flex !important; align-items:center !important; justify-content:center !important;
+  width:44px !important; min-width:44px !important; max-width:44px !important;
+  height:44px !important; min-height:44px !important; padding:0 !important;
+  border-radius:11px !important;
+  background:rgba(167,139,250,.22) !important;
+  border:1px solid rgba(196,181,253,.48) !important;
+  color:#F0EAFE !important; opacity:1 !important; filter:none !important;
+}
+#finhub-sidebar.sidebar-icon-rail #finhub-back-button:disabled i,
+#finhub-sidebar.sidebar-icon-rail #finhub-back-button.is-back-disabled i {
+  color:#F0EAFE !important; opacity:1 !important; font-size:1rem !important;
+}
 #finhub-sidebar #sidebar-summary { display:none; }
 body#app-body > main {
   box-sizing:border-box; position:relative; inset:auto; display:block;
@@ -1651,18 +1678,7 @@ html.dark body[data-finhub-theme="midnightpop"] #tab-debt .text-gray-500 {
   
 }
 
-/* Account-page monetary figures use the same proportional numeric styling
-   as dashboard available-funds figures, not the ledger's spaced mono face. */
-body[data-finhub-theme="midnightpop"] #tab-accounts .accounting-num,
-body[data-finhub-theme="midnightpop"] #tab-accounts .monthly-kpi strong,
-body[data-finhub-theme="midnightpop"] #tab-accounts [id^="accounts-page-"] {
-  font-family: inherit !important;
-  letter-spacing: normal !important;
-  font-variant-numeric: tabular-nums;
-}
-body[data-finhub-theme="midnightpop"] #tab-accounts .monthly-kpi strong {
-  font-weight: 750;
-}
+/* Retired: Accounts now inherits the shared .accounting-num typography contract. */
 
 /* Make statement import/reconciliation and transaction dialogs genuinely opaque.
    The dimmer is deliberately stronger so the underlying page cannot ghost through. */
@@ -1765,17 +1781,7 @@ html:not(.dark) body[data-finhub-theme="midnightpop"] #tab-accounts .account-car
   color: #756B86 !important;
   opacity: 1;
 }
-html:not(.dark) body[data-finhub-theme="midnightpop"] #tab-accounts .account-card .accounting-num,
-html:not(.dark) body[data-finhub-theme="midnightpop"] #tab-accounts .account-card strong,
-html:not(.dark) body[data-finhub-theme="midnightpop"] #tab-accounts [id^="accounts-page-"] {
-  font-family: inherit !important;
-  letter-spacing: normal !important;
-  font-variant-numeric: tabular-nums;
-}
-html:not(.dark) body[data-finhub-theme="midnightpop"] #tab-accounts .account-card .accounting-num {
-  color: var(--text-primary) !important;
-  font-weight: 700;
-}
+/* Retired: light-mode Accounts figures inherit .accounting-num. */
 html:not(.dark) body[data-finhub-theme="midnightpop"] #tab-accounts .account-card .fh-status-income {
   color: #168A69 !important;
 }
@@ -2186,62 +2192,16 @@ body[data-finhub-theme] :is(
   color: var(--fh-ui-muted) !important;
 }
 /* Monthly Review and Year-End Review use one identical disclosure component. */
-.checkin-review-disclosure {
-  box-sizing:border-box !important;
-  display:block !important;
-  width:100% !important;
-  margin:0 !important;
-  padding:0 !important;
-  border:1px solid var(--fh-ui-border) !important;
-  border-radius:1rem !important;
-  overflow:hidden !important;
-  background:var(--fh-ui-card) !important;
-  box-shadow:none !important;
-}
-.checkin-review-disclosure > .global-collapsible-summary {
-  box-sizing:border-box !important;
-  display:flex !important;
-  align-items:center !important;
-  justify-content:space-between !important;
-  gap:1rem !important;
-  width:100% !important;
-  min-height:3.25rem !important;
-  margin:0 !important;
-  padding:.875rem 1rem !important;
-  border:0 !important;
-  border-radius:0 !important;
-  background:var(--fh-ui-card) !important;
-  color:var(--fh-ui-ink) !important;
-  box-shadow:none !important;
-  cursor:pointer !important;
-  list-style:none !important;
-}
-.checkin-review-disclosure > .global-collapsible-summary::-webkit-details-marker {display:none !important;}
-.checkin-review-disclosure > .global-collapsible-summary .global-collapsible-description {
-  margin-left:auto !important;
-  color:var(--fh-ui-muted) !important;
-  font-size:.75rem !important;
-  font-weight:400 !important;
-  text-align:right !important;
-}
-.checkin-review-disclosure[open] > .global-collapsible-summary {
-  border-bottom:1px solid var(--fh-ui-border) !important;
-}
-.checkin-review-disclosure > div {
-  background:var(--fh-ui-card) !important;
-  color:var(--fh-ui-ink) !important;
-  border:0 !important;
-}
-html.dark body[data-finhub-theme] .checkin-review-disclosure,
-html.dark body[data-finhub-theme] .checkin-review-disclosure > .global-collapsible-summary,
-html.dark body[data-finhub-theme] .checkin-review-disclosure > div {
-  background:var(--fh-ui-card) !important;
-  color:var(--fh-ui-ink) !important;
-  border-color:var(--fh-ui-border) !important;
-}
+
+
+
+
+
+
+
 @media (max-width:640px) {
-  .checkin-review-disclosure > .global-collapsible-summary {align-items:flex-start !important;}
-  .checkin-review-disclosure > .global-collapsible-summary .global-collapsible-description {max-width:55%;}
+  
+  
 }
 </style>
 <style id="finhub-final-table-filter-and-debt-heading-consistency">
@@ -2379,8 +2339,8 @@ body[data-finhub-theme] .acc-column-menu.fh-filter-portal :is(button,input):focu
 </div>
 </div>
 <div class="dashboard-block bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden" data-dashboard-block="budget-performance">
-<div class="p-5 flex items-center justify-between gap-3">
-<button aria-expanded="true" class="flex-1 text-left" id="budget-performance-toggle" onclick="toggleDashboardBudgetPerformance()" type="button">
+<div class="dashboard-block-header flex items-center justify-between gap-3">
+<button aria-expanded="true" class="dashboard-block-header-trigger flex-1 w-full p-5 text-left" id="budget-performance-toggle" onclick="toggleDashboardBudgetPerformance()" type="button">
 <h3 class="font-bold text-md"><i class="fa-solid fa-chart-simple fh-status-income mr-2"></i>Budget Performance</h3>
 <p class="text-xs text-gray-400 mt-1">Actual spending compared with your category budgets. Select a category to edit its budget.</p>
 </button>
@@ -2404,7 +2364,7 @@ body[data-finhub-theme] .acc-column-menu.fh-filter-portal :is(button,input):focu
 <!-- NET WORTH TREND -->
 <!-- SPENDING BY CATEGORY -->
 <div class="dashboard-block bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden" data-dashboard-block="spending">
-<button class="w-full p-5 flex justify-between items-center text-left dark: transition-colors" onclick="toggleCollapse('sec-spending-chart')">
+<button class="dashboard-block-header-trigger w-full p-5 flex justify-between items-center text-left" onclick="toggleCollapse('sec-spending-chart')">
 <div class="flex items-center space-x-2">
 <i class="fa-solid fa-chart-column text-amber-500"></i>
 <div><h3 class="font-bold text-md">Spending by Category</h3><p class="text-xs text-gray-400 mt-1" id="spending-chart-period">Expense transactions in the selected period.</p></div>
@@ -2420,8 +2380,8 @@ body[data-finhub-theme] .acc-column-menu.fh-filter-portal :is(button,input):focu
 <!-- ACCOUNT BALANCES & CLASSIFICATIONS -->
 <!-- UPCOMING CASH FLOW -->
 <div class="dashboard-block bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden" data-dashboard-block="upcoming">
-<div class="p-5 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between gap-3">
-<button class="flex-1 flex items-center justify-between gap-3 text-left hover:opacity-80 transition-opacity" onclick="toggleCollapse('sec-dashboard-upcoming')" type="button">
+<div class="dashboard-block-header border-b border-gray-200 dark:border-gray-800 flex items-center justify-between gap-3">
+<button class="dashboard-block-header-trigger flex-1 w-full p-5 flex items-center justify-between gap-3 text-left" onclick="toggleCollapse('sec-dashboard-upcoming')" type="button">
 <div><h3 class="font-bold text-md"><i class="fa-solid fa-calendar-days text-indigo-500 mr-2"></i>Upcoming Bills &amp; Paydays</h3><p class="text-xs text-gray-400 mt-1">Live from the Bill &amp; Income Calendar. Select an item to open it in the calendar.</p></div>
 <i class="fa-solid fa-chevron-down text-gray-400 transition-transform" id="sec-dashboard-upcoming-icon"></i>
 </button>
@@ -2463,12 +2423,12 @@ body[data-finhub-theme] .acc-column-menu.fh-filter-portal :is(button,input):focu
 <div class="space-y-4" id="checkin-panel-monthly">
 <div class="space-y-4" id="financial-checkin-workspace">
 <div class="grid grid-cols-1 gap-4" id="financial-close-period-blocks">
-<div class="space-y-3"><details class="global-collapsible-section checkin-review-disclosure" data-global-collapsible="true"><summary class="global-collapsible-summary"><span>Monthly Review</span><span class="global-collapsible-description">Review month-end activity and save a monthly snapshot.</span></summary><div class="bg-white dark:bg-gray-900 rounded-2xl border p-4 space-y-3"><div class="flex flex-wrap justify-between gap-2"><div><p class="text-xs text-gray-500">Work through the checklist and save a snapshot. Closing does not lock transactions.</p></div><div class="flex gap-2"><input class="border rounded-lg px-2 py-1 text-xs" id="monthly-close-period" onchange="renderMonthlyClose()" type="month"/><button class="border rounded-lg px-3 py-1 text-xs" onclick="refreshMonthlyCloseReview()" type="button">Refresh review</button></div></div><div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs" id="monthly-close-summary"></div><div class="rounded-xl bg-gray-50 dark:bg-gray-950 p-3 space-y-2"><div class="flex items-center justify-between text-sm font-semibold"><span id="monthly-close-progress-label">0 of 10 complete</span><span id="monthly-close-progress-percent">0%</span></div><div aria-label="Monthly review completion" aria-valuemax="100" aria-valuemin="0" aria-valuenow="0" class="h-2.5 rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden" role="progressbar"><div class="h-full rounded-full fh-theme-progress" id="monthly-close-progress-bar" style="width:0%"></div></div></div><div class="space-y-2 text-xs" id="monthly-close-checklist"></div><div class="flex flex-wrap gap-2"><button class="px-3 py-2 rounded-lg text-xs fh-theme-primary-button" onclick="completeMonthlyClose()">Save monthly close snapshot</button><button class="hidden px-3 py-2 border rounded-lg text-xs" id="monthly-close-reopen" onclick="reopenMonthlyClose()">Reopen month</button></div><div class="text-xs text-gray-500" id="monthly-close-history"></div></div></details></div>
+<div class="space-y-3"><details class="fh-disclosure" data-global-collapsible="true"><summary class="fh-disclosure-trigger"><span>Monthly Review</span><span class="global-collapsible-description">Review month-end activity and save a monthly snapshot.</span></summary><div class="fh-disclosure-panel p-4 space-y-3"><div class="flex flex-wrap justify-between gap-2"><div><p class="text-xs text-gray-500">Work through the checklist and save a snapshot. Closing does not lock transactions.</p></div><div class="flex gap-2"><input class="border rounded-lg px-2 py-1 text-xs" id="monthly-close-period" onchange="renderMonthlyClose()" type="month"/><button class="border rounded-lg px-3 py-1 text-xs" onclick="refreshMonthlyCloseReview()" type="button">Refresh review</button></div></div><div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs" id="monthly-close-summary"></div><div class="rounded-xl bg-gray-50 dark:bg-gray-950 p-3 space-y-2"><div class="flex items-center justify-between text-sm font-semibold"><span id="monthly-close-progress-label">0 of 10 complete</span><span id="monthly-close-progress-percent">0%</span></div><div aria-label="Monthly review completion" aria-valuemax="100" aria-valuemin="0" aria-valuenow="0" class="h-2.5 rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden" role="progressbar"><div class="h-full rounded-full fh-theme-progress" id="monthly-close-progress-bar" style="width:0%"></div></div></div><div class="space-y-2 text-xs" id="monthly-close-checklist"></div><div class="flex flex-wrap gap-2"><button class="px-3 py-2 rounded-lg text-xs fh-theme-primary-button" onclick="completeMonthlyClose()">Save monthly close snapshot</button><button class="hidden px-3 py-2 border rounded-lg text-xs" id="monthly-close-reopen" onclick="reopenMonthlyClose()">Reopen month</button></div><div class="text-xs text-gray-500" id="monthly-close-history"></div></div></details></div>
 </div></div>
-<div class="fh-reorderable-section rounded-xl" id="financial-close-data-health"><h4 class="font-semibold text-sm mb-2">Data Health &amp; Integrity</h4><details class="bg-white dark:bg-gray-900 rounded-2xl border p-4 space-y-3 fh-reorderable-section" data-fh-drag-ready="false" id="data-health-details" open=""><summary class="cursor-pointer list-none flex items-center justify-between gap-3"><span><strong class="text-sm">Data Health &amp; Integrity</strong><span class="block text-xs text-gray-500 mt-1">Read-only checks for common data quality issues</span></span><i aria-hidden="true" class="fa-solid fa-chevron-down fh-theme-chevron transition-transform"></i></summary><div class="pt-3"><div class="flex items-center justify-between gap-2 mb-3"><p class="text-xs text-gray-500">These checks flag records for review; they do not change your data.</p><button class="border rounded-lg px-3 py-1.5 text-xs" onclick="renderDataHealth()" type="button">Run checks</button></div><div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs" id="data-health-results"></div></div></details></div>
+<div class="fh-reorderable-section rounded-xl" id="financial-close-data-health"><h4 class="font-semibold text-sm mb-2">Data Health &amp; Integrity</h4><details class="fh-disclosure" data-fh-drag-ready="false" id="data-health-details" open=""><summary class="fh-disclosure-trigger"><span><strong class="text-sm">Data Health &amp; Integrity</strong><span class="block text-xs text-gray-500 mt-1">Read-only checks for common data quality issues</span></span></summary><div class="fh-disclosure-panel p-4"><div class="flex items-center justify-between gap-2 mb-3"><p class="text-xs text-gray-500">These checks flag records for review; they do not change your data.</p><button class="border rounded-lg px-3 py-1.5 text-xs" onclick="renderDataHealth()" type="button">Run checks</button></div><div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs" id="data-health-results"></div></div></details></div>
 </div>
 
-<div class="hidden space-y-4" id="checkin-panel-yearly"><div class="space-y-3"><details class="global-collapsible-section checkin-review-disclosure" data-global-collapsible="true"><summary class="global-collapsible-summary"><span>Year-End Review</span><span class="global-collapsible-description">Review the full year, confirm monthly close coverage and save a year-end snapshot.</span></summary><div class="bg-white dark:bg-gray-900 rounded-2xl border p-4 space-y-3"><div class="flex flex-wrap items-center justify-between gap-2"><div><h3 class="text-sm font-bold">Year-End Close</h3><p class="text-xs text-gray-500">Review the year, work through the checklist and save a snapshot. Closing does not lock transactions.</p></div><div class="flex gap-2"><input class="border rounded-lg px-2 py-1 text-xs w-24" id="year-end-period" max="2200" min="2000" type="number"/><button class="border rounded-lg px-3 py-1 text-xs" onclick="refreshYearEndCloseReview()" type="button">Refresh review</button></div></div><div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs" id="year-end-summary"></div><div class="rounded-xl bg-gray-50 dark:bg-gray-950 p-3 space-y-2"><div class="flex items-center justify-between text-sm font-semibold"><span id="year-end-progress-label">0 of 8 complete</span><span id="year-end-progress-percent">0%</span></div><div class="h-2.5 rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden"><div class="h-full rounded-full fh-theme-progress" id="year-end-progress-bar" style="width:0%"></div></div></div><div class="space-y-2 text-xs" id="year-end-checklist"></div><div class="flex flex-wrap gap-2"><button class="px-3 py-2 rounded-lg text-xs fh-theme-primary-button" onclick="completeYearEndClose()">Save year-end snapshot</button><button class="hidden px-3 py-2 border rounded-lg text-xs" id="year-end-reopen" onclick="reopenYearEndClose()">Reopen year</button></div><div class="text-xs text-gray-500" id="year-end-history"></div></div></details></div></div>
+<div class="hidden space-y-4" id="checkin-panel-yearly"><div class="space-y-3"><details class="fh-disclosure" data-global-collapsible="true"><summary class="fh-disclosure-trigger"><span>Year-End Review</span><span class="global-collapsible-description">Review the full year, confirm monthly close coverage and save a year-end snapshot.</span></summary><div class="fh-disclosure-panel p-4 space-y-3"><div class="flex flex-wrap items-center justify-between gap-2"><div><h3 class="text-sm font-bold">Year-End Close</h3><p class="text-xs text-gray-500">Review the year, work through the checklist and save a snapshot. Closing does not lock transactions.</p></div><div class="flex gap-2"><input class="border rounded-lg px-2 py-1 text-xs w-24" id="year-end-period" max="2200" min="2000" type="number"/><button class="border rounded-lg px-3 py-1 text-xs" onclick="refreshYearEndCloseReview()" type="button">Refresh review</button></div></div><div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs" id="year-end-summary"></div><div class="rounded-xl bg-gray-50 dark:bg-gray-950 p-3 space-y-2"><div class="flex items-center justify-between text-sm font-semibold"><span id="year-end-progress-label">0 of 8 complete</span><span id="year-end-progress-percent">0%</span></div><div class="h-2.5 rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden"><div class="h-full rounded-full fh-theme-progress" id="year-end-progress-bar" style="width:0%"></div></div></div><div class="space-y-2 text-xs" id="year-end-checklist"></div><div class="flex flex-wrap gap-2"><button class="px-3 py-2 rounded-lg text-xs fh-theme-primary-button" onclick="completeYearEndClose()">Save year-end snapshot</button><button class="hidden px-3 py-2 border rounded-lg text-xs" id="year-end-reopen" onclick="reopenYearEndClose()">Reopen year</button></div><div class="text-xs text-gray-500" id="year-end-history"></div></div></details></div></div>
 <div class="hidden space-y-4" id="checkin-panel-history"><div class="rounded-2xl border border-gray-200 dark:border-gray-800 p-4"><h3 class="text-lg font-bold mb-3">Snapshot History</h3><div class="overflow-x-auto" id="checkin-snapshot-history"></div></div></div>
 </section>
 <!-- REPORTS -->
@@ -2722,7 +2682,7 @@ body[data-finhub-theme] .acc-column-menu.fh-filter-portal :is(button,input):focu
 <button class="fh-action-button fh-action-button-primary fh-action-button-compact" onclick="openCalendarModal()" type="button"><i class="fa-solid fa-plus" aria-hidden="true"></i> Schedule Item</button>
 </div>
 </div>
-<div class="flex items-center gap-2 justify-end"><span class="text-xs text-gray-500">Scheduled items:</span><button class="px-3 py-1.5 rounded-lg text-xs font-semibold text-white theme-bg" id="calendar-scheduled-calendar-btn" onclick="setCalendarScheduledView('calendar')">Calendar view</button><button class="px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-500" id="calendar-scheduled-list-btn" onclick="setCalendarScheduledView('list')">List view</button></div>
+<div class="flex items-center gap-2 justify-end"><span class="text-xs text-gray-500">Scheduled items:</span><button class="fh-calendar-view-toggle is-active" id="calendar-scheduled-calendar-btn" onclick="setCalendarScheduledView('calendar')" type="button" aria-pressed="true">Calendar view</button><button class="fh-calendar-view-toggle" id="calendar-scheduled-list-btn" onclick="setCalendarScheduledView('list')" type="button" aria-pressed="false">List view</button></div>
 <div class="hidden bg-white dark:bg-gray-900 p-5 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-3" id="calendar-scheduled-list-container">
 <div class="flex flex-wrap items-center justify-between gap-2"><h3 class="font-bold text-sm">Upcoming Scheduled Bills &amp; Income</h3><label class="text-xs text-gray-500">Month <input class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-1 text-xs" id="upcoming-bills-filter" onchange="renderUpcomingCalendarList()" type="month"/></label></div>
 <div class="space-y-2" id="prepopulated-bills-list"></div></div>
@@ -2801,17 +2761,17 @@ body[data-finhub-theme] .acc-column-menu.fh-filter-portal :is(button,input):focu
 <div class="fh-summary-card"><div class="fh-summary-card-label">Principal Paid This Month</div><div class="fh-summary-card-value fh-status-income accounting-num" id="debt-report-principal">$ —</div><div class="fh-summary-card-note" id="debt-report-month-label">Recorded transactions only</div></div>
 <div class="fh-summary-card"><div class="fh-summary-card-label">Interest Paid This Month</div><div class="fh-summary-card-value fh-status-expense accounting-num" id="debt-report-interest">$ —</div><div class="fh-summary-card-note">Recorded transactions only</div></div>
 </div>
-<details class="global-collapsible-section rounded-2xl overflow-hidden fh-disclosure fh-disclosure--debt" open="">
-<summary class="global-collapsible-summary fh-disclosure-trigger fh-disclosure-trigger--debt"><span>Actual Debt Balance Trend</span><span class="global-collapsible-description">Historical balances reconstructed from recorded activity; no projected values.</span></summary>
-<div class="fh-theme-surface border fh-theme-border rounded-b-2xl p-4 fh-disclosure-panel fh-disclosure-panel--debt">
+<details class="fh-disclosure" open="">
+<summary class="fh-disclosure-trigger"><span>Actual Debt Balance Trend</span><span class="global-collapsible-description">Historical balances reconstructed from recorded activity; no projected values.</span></summary>
+<div class="fh-disclosure-panel p-4">
 <div class="flex items-center justify-between gap-2 mb-3"><span class="text-xs font-semibold fh-theme-muted">Actual closing balance by month</span><span class="text-[10px] uppercase tracking-wide fh-status-income dark:fh-status-income font-bold">Actual</span></div>
 <div class="min-h-24" id="debt-report-trend"></div>
 <p class="text-xs fh-theme-muted mt-3" id="debt-report-trend-note"></p>
 </div>
 </details>
-<section class="fh-content-card overflow-hidden">
+<section class="fh-content-card fh-amortization-card">
 <div class="fh-content-card-header p-5 border-b fh-theme-border flex flex-col sm:flex-row sm:items-center justify-between gap-2 fh-section-header">
-<div><h3 class="font-bold text-lg">Cumulative Amortization</h3><p class="text-xs fh-theme-muted mt-1">Actual recorded activity, in chronological order. Payments are cash paid; principal is the amount that reduces the liability.</p></div>
+<div class="min-w-0"><div class="flex items-center gap-2"><h3 class="font-bold text-lg">Cumulative Amortization</h3><span class="acc-opening-info-wrap"><button type="button" class="acc-opening-balance-info" aria-label="About cumulative amortization" aria-describedby="debt-report-amortization-note"><span class="acc-info-glyph" aria-hidden="true">i</span></button><span class="acc-opening-balance-tooltip" id="debt-report-amortization-note" role="tooltip"></span></span></div><p class="text-xs fh-theme-muted mt-1">Actual recorded activity, in chronological order. Payments are cash paid; principal is the amount that reduces the liability.</p></div>
 <div class="flex flex-wrap gap-2"><label class="text-xs fh-theme-muted flex items-center gap-1">From <input class="fh-theme-raised border fh-theme-border rounded-lg px-2 py-1.5" id="debt-report-from" onchange="renderDebtReporting()" type="month"/></label><label class="text-xs fh-theme-muted flex items-center gap-1">To <input class="fh-theme-raised border fh-theme-border rounded-lg px-2 py-1.5" id="debt-report-to" onchange="renderDebtReporting()" type="month"/></label></div>
 </div>
 <div class="overflow-x-auto">
@@ -2821,33 +2781,33 @@ body[data-finhub-theme] .acc-column-menu.fh-filter-portal :is(button,input):focu
 <tfoot class="font-bold fh-theme-raised" id="debt-report-amortization-foot"></tfoot>
 </table>
 </div>
-<p class="px-5 py-3 text-[11px] fh-theme-muted border-t fh-theme-border" id="debt-report-amortization-note"></p>
+
 </section>
-<details class="global-collapsible-section rounded-2xl overflow-hidden fh-disclosure fh-disclosure--debt">
-<summary class="global-collapsible-summary fh-disclosure-trigger fh-disclosure-trigger--debt"><span>Debt Payment History</span><span class="global-collapsible-description">Recorded payments, principal, interest and funding accounts.</span></summary>
-<div class="fh-theme-surface border fh-theme-border rounded-b-2xl p-4 fh-disclosure-panel fh-disclosure-panel--debt">
+<details class="fh-disclosure">
+<summary class="fh-disclosure-trigger"><span>Debt Payment History</span><span class="global-collapsible-description">Recorded payments, principal, interest and funding accounts.</span></summary>
+<div class="fh-disclosure-panel p-4">
 <div class="flex flex-wrap gap-2 mb-3"><label class="text-xs fh-theme-muted flex items-center gap-1">From <input class="fh-theme-raised border fh-theme-border rounded-lg px-2 py-1.5" id="debt-history-from" onchange="renderDebtReporting()" type="date"/></label><label class="text-xs fh-theme-muted flex items-center gap-1">To <input class="fh-theme-raised border fh-theme-border rounded-lg px-2 py-1.5" id="debt-history-to" onchange="renderDebtReporting()" type="date"/></label></div>
 <div class="overflow-x-auto"><table class="fh-data-table w-full min-w-[760px] text-left text-xs"><thead class="fh-theme-muted fh-theme-raised"><tr><th class="px-3 py-2"><div class="debt-filter-head">Date <button aria-label="Filter and sort Date" class="debt-filter-trigger" onclick="toggleDebtHistoryFilter('date',this)" type="button">⌄</button></div></th><th class="px-3 py-2"><div class="debt-filter-head">Debt Account <button aria-label="Filter and sort Debt Account" class="debt-filter-trigger" onclick="toggleDebtHistoryFilter('debt',this)" type="button">⌄</button></div></th><th class="px-3 py-2 text-right"><div class="debt-filter-head">Total Payment <button aria-label="Filter and sort Total Payment" class="debt-filter-trigger" onclick="toggleDebtHistoryFilter('amount',this)" type="button">⌄</button></div></th><th class="px-3 py-2 text-right"><div class="debt-filter-head">Principal <button aria-label="Filter and sort Principal" class="debt-filter-trigger" onclick="toggleDebtHistoryFilter('principal',this)" type="button">⌄</button></div></th><th class="px-3 py-2 text-right"><div class="debt-filter-head">Interest <button aria-label="Filter and sort Interest" class="debt-filter-trigger" onclick="toggleDebtHistoryFilter('interest',this)" type="button">⌄</button></div></th><th class="px-3 py-2"><div class="debt-filter-head">Funding Account <button aria-label="Filter and sort Funding Account" class="debt-filter-trigger" onclick="toggleDebtHistoryFilter('funding',this)" type="button">⌄</button></div></th><th class="px-3 py-2 text-right"><div class="debt-filter-head">Resulting Balance <button aria-label="Filter and sort Resulting Balance" class="debt-filter-trigger" onclick="toggleDebtHistoryFilter('balance',this)" type="button">⌄</button></div></th><th class="px-3 py-2">Original</th></tr></thead><tbody class="divide-y fh-theme-divider" id="debt-report-history-rows"></tbody></table></div>
 <p class="hidden text-xs fh-theme-muted py-4" id="debt-report-history-empty">No recorded debt payments match these filters.</p>
 </div>
 </details>
-<details class="global-collapsible-section rounded-2xl overflow-hidden fh-disclosure fh-disclosure--debt">
-<summary class="global-collapsible-summary fh-disclosure-trigger fh-disclosure-trigger--debt"><span>Upcoming Debt Minimums</span><span class="global-collapsible-description">Calendar reminders only; these are not recorded payments.</span></summary>
-<div class="fh-theme-surface border fh-theme-border rounded-b-2xl p-4 space-y-3 fh-disclosure-panel fh-disclosure-panel--debt">
+<details class="fh-disclosure">
+<summary class="fh-disclosure-trigger"><span>Upcoming Debt Minimums</span><span class="global-collapsible-description">Calendar reminders only; these are not recorded payments.</span></summary>
+<div class="fh-disclosure-panel p-4 space-y-3">
 <label class="text-xs fh-theme-muted flex items-center gap-2">Filter month <input class="fh-theme-raised border fh-theme-border rounded-lg px-2 py-1.5" id="debt-upcoming-filter" onchange="renderDebtUpcomingBills()" type="month"/></label>
 <div id="debt-upcoming-bills-list"></div>
 </div>
 </details>
-<details class="global-collapsible-section rounded-2xl overflow-hidden fh-disclosure fh-disclosure--debt">
-<summary class="global-collapsible-summary fh-disclosure-trigger fh-disclosure-trigger--debt"><span>Debt Payoff Calculator</span><span class="global-collapsible-description">Projections only — changing assumptions never changes actual balances or transactions.</span></summary>
-<div class="fh-theme-surface border fh-theme-border rounded-b-2xl p-4 space-y-4 fh-disclosure-panel fh-disclosure-panel--debt">
+<details class="fh-disclosure">
+<summary class="fh-disclosure-trigger"><span>Debt Payoff Calculator</span><span class="global-collapsible-description">Projections only — changing assumptions never changes actual balances or transactions.</span></summary>
+<div class="fh-disclosure-panel p-4 space-y-4">
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 <div><label class="block text-xs font-semibold fh-theme-muted mb-1" for="debt-strategy">Payoff strategy</label><select class="w-full fh-theme-raised border fh-theme-border rounded-xl px-3 py-2 text-sm" id="debt-strategy" onchange="setDebtStrategy(this.value)"><option value="custom">Manual Priority Order</option><option value="snowball">Snowball — lowest balance first</option><option value="avalanche">Avalanche — highest APR first</option></select></div>
 <div><label class="block text-xs font-semibold fh-theme-muted mb-1" for="sim-extra-per-pay">Additional payment per paycheque</label><input class="w-full fh-theme-raised border fh-theme-border rounded-xl px-3 py-2 text-sm accounting-num" id="sim-extra-per-pay" min="0" onchange="updateExtraPayoff(this.value)" step="0.01" type="number" value="0.00"/><div class="text-[11px] fh-theme-muted mt-1">Monthly equivalent: <span id="debt-extra-monthly-equivalent">$0.00</span> (24 regular paycheques per year).</div></div>
 </div>
 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs"><div class="rounded-xl fh-theme-raised p-3">Estimated result <strong class="block mt-1" id="debt-sim-payoff-date">—</strong></div><div class="rounded-xl fh-theme-raised p-3">Estimated interest saved <strong class="block mt-1" id="debt-interest-saved">$0.00</strong></div><div class="rounded-xl fh-theme-raised p-3">Estimated time saved <strong class="block mt-1" id="debt-time-saved">0 Months</strong></div></div>
 <div><h4 class="font-semibold text-sm mb-2">Compare payoff strategies</h4><div class="overflow-x-auto"><table class="w-full text-left text-xs"><thead class="fh-theme-raised fh-theme-muted"><tr><th class="px-3 py-2">Strategy</th><th class="px-3 py-2 text-right">Estimated months</th><th class="px-3 py-2 text-right">Estimated interest</th><th class="px-3 py-2 text-right">Debt-free date</th></tr></thead><tbody id="debt-strategy-comparison-rows"></tbody></table></div></div>
-<details class="fh-disclosure fh-disclosure--debt"><summary class="text-sm font-semibold cursor-pointer py-2 fh-disclosure-trigger fh-disclosure-trigger--debt">Projected amortization schedule</summary><div class="overflow-x-auto fh-disclosure-panel fh-disclosure-panel--debt"><table class="w-full text-left text-xs"><thead class="fh-theme-raised"><tr><th class="px-2 py-2">Period</th><th class="px-2 py-2 text-right">Ending debt</th><th class="px-2 py-2 text-right">Interest</th><th class="px-2 py-2 text-right">Minimums</th><th class="px-2 py-2 text-right">Extra principal</th></tr></thead><tbody id="debt-projection-schedule-rows"></tbody></table></div><p class="text-xs fh-theme-muted mt-2" id="debt-projection-schedule-note"></p><label class="text-xs fh-theme-muted flex gap-2 items-center mt-3">Account <select class="fh-theme-raised border fh-theme-border rounded-lg px-2 py-1" id="debt-projection-account-filter" onchange="renderDebtProjectionAccountRows()"><option value="all">All debt accounts</option></select></label><div class="overflow-x-auto"><table class="w-full text-left text-xs"><tbody id="debt-projection-account-rows"></tbody></table></div><p class="text-xs fh-theme-muted mt-2" id="debt-projection-account-note">Projected figures only.</p></details>
+<details class="fh-disclosure"><summary class="fh-disclosure-trigger">Projected amortization schedule</summary><div class="fh-disclosure-panel overflow-x-auto"><table class="w-full text-left text-xs"><thead class="fh-theme-raised"><tr><th class="px-2 py-2">Period</th><th class="px-2 py-2 text-right">Ending debt</th><th class="px-2 py-2 text-right">Interest</th><th class="px-2 py-2 text-right">Minimums</th><th class="px-2 py-2 text-right">Extra principal</th></tr></thead><tbody id="debt-projection-schedule-rows"></tbody></table></div><p class="text-xs fh-theme-muted mt-2" id="debt-projection-schedule-note"></p><label class="text-xs fh-theme-muted flex gap-2 items-center mt-3">Account <select class="fh-theme-raised border fh-theme-border rounded-lg px-2 py-1" id="debt-projection-account-filter" onchange="renderDebtProjectionAccountRows()"><option value="all">All debt accounts</option></select></label><div class="overflow-x-auto"><table class="w-full text-left text-xs"><tbody id="debt-projection-account-rows"></tbody></table></div><p class="text-xs fh-theme-muted mt-2" id="debt-projection-account-note">Projected figures only.</p></details>
 <div class="hidden"><span id="extra-payoff-val"></span><span id="debt-total-bal"></span><span id="debt-monthly-minimums"></span><span id="debt-minimum-note"></span><span id="debt-extra-summary"></span><span id="debt-extra-summary-monthly"></span><table><tbody id="debt-overview-rows"></tbody><tfoot id="debt-overview-foot"></tfoot></table><div id="debt-priority-list"></div><select id="debt-account-picker"></select><table><tbody id="debt-payment-rows"></tbody></table><div id="debt-activity-empty"></div></div>
 </div>
 </details>
@@ -3019,7 +2979,7 @@ body[data-finhub-theme] .acc-column-menu.fh-filter-portal :is(button,input):focu
 <button class="text-left rounded-xl border border-orange-300 dark:border-orange-800 p-3 ring-orange-400" onclick="setVisualTheme('pastelbreeze')" type="button"><span class="block h-7 rounded-lg mb-2" style="background:linear-gradient(90deg,#FF8A3D 0 16%,#FFB166 16% 32%,#FFD6A5 32% 48%,#A8E6CF 48% 64%,#FFB5C0 64% 80%,#FFF7F1 80%)"></span><strong class="text-xs">Pastel Breeze</strong><span class="block text-[10px] fh-theme-muted">Warm orange, peach, mint &amp; blush</span></button>
 <button class="text-left rounded-xl border border-violet-300 dark:border-violet-800 p-3 ring-violet-500" onclick="setVisualTheme('purplepulse')" type="button"><span class="block h-7 rounded-lg mb-2" style="background:linear-gradient(90deg,#6A0DAD 0 16%,#9D4EDD 16% 32%,#CBA6FF 32% 48%,#00E5D4 48% 64%,#FF4FA3 64% 80%,#F5EEFF 80%)"></span><strong class="text-xs">Purple Pulse</strong><span class="block text-[10px] fh-theme-muted">Violet, aqua &amp; vibrant pink</span></button>
 <button class="text-left rounded-xl border border-sky-300 dark:border-sky-800 p-3 ring-cyan-500" onclick="setVisualTheme('oceanslate')" type="button"><span class="block h-7 rounded-lg mb-2" style="background:linear-gradient(90deg,#0EA5E9 0 16%,#0F766E 16% 32%,#14B8A6 32% 48%,#38BDF8 48% 64%,#A5F3FC 64% 80%,#F0F9FF 80%)"></span><strong class="text-xs">Ocean Slate</strong><span class="block text-[10px] fh-theme-muted">Cool blue, teal &amp; slate</span></button>
-<button class="text-left rounded-xl border fh-status-income-borderfh-status-income-border p-3 ring-[color:var(--fh-status-income)]" onclick="setVisualTheme('forestmint')" type="button"><span class="block h-7 rounded-lg mb-2" style="background:linear-gradient(90deg,#10B981 0 16%,#059669 16% 32%,#34D399 32% 48%,#A7F3D0 48% 64%,#F59E0B 64% 80%,#F6FDF9 80%)"></span><strong class="text-xs">Forest Mint</strong><span class="block text-[10px] fh-theme-muted">Fresh greens with warm amber</span></button>
+<button class="text-left rounded-xl border fh-status-income-border p-3 ring-[color:var(--fh-status-income)]" onclick="setVisualTheme('forestmint')" type="button"><span class="block h-7 rounded-lg mb-2" style="background:linear-gradient(90deg,#10B981 0 16%,#059669 16% 32%,#34D399 32% 48%,#A7F3D0 48% 64%,#F59E0B 64% 80%,#F6FDF9 80%)"></span><strong class="text-xs">Forest Mint</strong><span class="block text-[10px] fh-theme-muted">Fresh greens with warm amber</span></button>
 <button class="text-left rounded-xl border border-dashed fh-theme-border p-3" onclick="setVisualTheme('custom')" type="button"><span class="block h-7 rounded-lg mb-2" id="custom-theme-swatch" style="background:linear-gradient(90deg,#f3f4f6 0 25%,#4f46e5 25% 50%,#ffffff 50% 75%,#6366f1 75%)"></span><strong class="text-xs">Custom</strong><span class="block text-[10px] fh-theme-muted">Your saved colour settings</span></button>
 </div>
 <p class="text-[10px] fh-theme-muted" id="active-visual-theme-label">Current theme: Classic</p>
@@ -3096,36 +3056,33 @@ body[data-finhub-theme] .acc-column-menu.fh-filter-portal :is(button,input):focu
 <div class="flex flex-wrap justify-between items-center gap-2 border-b fh-theme-border pb-3"><div><h3 class="text-md font-bold theme-text">Statement Import Rules</h3><p class="text-xs fh-theme-muted mt-1">Automatically fill transaction type, vendor, category and debt-payment details when a bank description contains a saved phrase. Explicit CSV columns always take priority.</p></div><button class="fh-action-button fh-action-button-primary px-3 py-1.5 rounded-lg text-xs font-semibold" onclick="openImportRuleModal()"><i class="fa-solid fa-plus mr-1"></i>Add import rule</button></div>
 <div class="space-y-2" id="statement-import-rules-list"></div>
 </div>
-</div>
-</details>
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-<div class="fh-theme-surface p-6 rounded-2xl border fh-theme-border space-y-4 shadow-sm">
-<button class="w-full flex justify-between items-center text-left" onclick="toggleCollapse('sec-advanced-types')">
+<div class="fh-theme-surface fh-settings-transaction-types-panel">
+<button class="fh-settings-nested-toggle w-full flex justify-between items-center text-left" aria-expanded="false" onclick="toggleCollapse('sec-advanced-types')">
 <div>
 <h3 class="text-md font-bold">Advanced: Custom Transaction Types</h3>
 <p class="text-xs fh-theme-muted mt-1">Use the four standard types for everyday entries: Expense, Income, Transfer and Debt.</p>
 </div>
 <i class="fa-solid fa-chevron-down fh-theme-muted transition-transform" id="sec-advanced-types-icon"></i>
 </button>
-<div class="space-y-2 hidden" id="sec-advanced-types-content">
+<div class="fh-settings-nested-content space-y-2 hidden" id="sec-advanced-types-content">
 <div class="space-y-2" id="settings-types-list"></div>
 <button class="px-3 py-1 bg-gray-200 rounded-lg text-xs font-semibold mt-2" onclick="openTypeModal()"><i class="fa-solid fa-plus mr-1"></i> Add Type</button>
 </div>
 </div>
 </div>
-</div></details>
+</details>
 <details class="fh-settings-section" id="settings-group-categories" open="">
 <summary class="cursor-pointer list-none px-5 py-4 font-bold text-sm flex items-center justify-between">Categories &amp; Subcategories <i class="fa-solid fa-chevron-down fh-theme-muted"></i></summary>
 <div class="fh-settings-section-content">
-<div class="fh-theme-surface p-6 rounded-2xl border fh-theme-border space-y-4 shadow-sm">
+<div class="fh-theme-surface fh-settings-category-panel">
 <div class="flex flex-wrap items-center justify-between gap-2"><div><h3 class="text-md font-bold">Expense Buckets &amp; Subcategories</h3><p class="text-[10px] fh-theme-muted mt-1">Used for spending, budgets and expense reporting.</p></div><button class="fh-action-button fh-action-button-primary px-3 py-1.5 rounded-lg text-xs font-semibold" onclick="openCategoryModal()" type="button"><i class="fa-solid fa-plus mr-1"></i>Add Expense Bucket</button></div>
 <div class="space-y-3" id="settings-categories-list"></div>
 </div>
-<div class="fh-theme-surface p-6 rounded-2xl border fh-theme-border space-y-4 shadow-sm">
+<div class="fh-theme-surface fh-settings-category-panel">
 <div><h3 class="text-md font-bold">Debt Categories &amp; Subcategories</h3><p class="text-[10px] fh-theme-muted mt-1">Used only when Type is Debt. Principal reduces the liability; interest is included in expense reporting.</p></div>
 <div class="space-y-3" id="settings-debt-categories-list"></div>
 </div>
-<div class="fh-theme-surface p-6 rounded-2xl border fh-theme-border space-y-4 shadow-sm">
+<div class="fh-theme-surface fh-settings-category-panel">
 <div class="flex flex-wrap items-center justify-between gap-2"><div><h3 class="text-md font-bold">Income Buckets &amp; Subcategories</h3><p class="text-[10px] fh-theme-muted mt-1">Used to classify money received. Kept separate from expense buckets.</p></div><button class="fh-action-button fh-action-button-primary px-3 py-1.5 rounded-lg text-xs font-semibold" onclick="openIncomeCategoryModal()" type="button"><i class="fa-solid fa-plus mr-1"></i>Add Income Bucket</button></div>
 <div class="space-y-3" id="settings-income-categories-list"></div>
 </div>
@@ -3502,13 +3459,11 @@ Bonus" rows="4"></textarea></div>
 <option value="yearly">Yearly (Every year)</option>
 </select>
 </div>
-<div class="flex flex-wrap items-center gap-2 pt-3">
-<button class="px-4 py-2 text-white rounded-xl text-sm font-semibold hidden" id="cal-modal-delete-btn" onclick="deleteCalendarItemFromModal()" type="button"><i class="fa-solid fa-trash mr-1"></i> Delete</button>
-<button class="px-4 py-2 text-white rounded-xl text-sm font-semibold hidden" id="cal-modal-paid-btn" onclick="markCalendarItemPaidFromModal()" type="button"><i class="fa-solid fa-check mr-1"></i> Mark Paid</button>
-<div class="flex-1 flex justify-end space-x-2">
-<button class="px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel" onclick="closeCalendarModal()" type="button">Cancel</button>
-<button class="px-4 py-2 text-white rounded-xl text-sm font-semibold theme-bg" type="submit">Save Item</button>
-</div>
+<div class="fh-calendar-modal-actions flex items-center justify-center gap-2 pt-3">
+<button class="fh-calendar-modal-action fh-calendar-modal-delete hidden" id="cal-modal-delete-btn" onclick="deleteCalendarItemFromModal()" type="button"><i class="fa-solid fa-trash mr-1"></i> Delete</button>
+<button class="fh-calendar-modal-action fh-calendar-modal-paid hidden" id="cal-modal-paid-btn" onclick="markCalendarItemPaidFromModal()" type="button"><i class="fa-solid fa-check mr-1"></i> Paid</button>
+<button class="fh-calendar-modal-action fh-calendar-modal-cancel fh-btn-cancel" onclick="closeCalendarModal()" type="button">Cancel</button>
+<button class="fh-calendar-modal-action fh-calendar-modal-save theme-bg" type="submit">Save</button>
 </div>
 </form>
 </div>
@@ -7657,8 +7612,8 @@ ${acc.name}`);
       if(monthly)monthly.classList.toggle('hidden',safe==='list'||annual);
       if(yearly)yearly.classList.toggle('hidden',safe==='list'||!annual);
       const cb=document.getElementById('calendar-scheduled-calendar-btn'),lb=document.getElementById('calendar-scheduled-list-btn');
-      if(cb)cb.className=safe==='calendar'?'px-3 py-1.5 rounded-lg text-xs font-semibold text-white theme-bg':'px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-500';
-      if(lb)lb.className=safe==='list'?'px-3 py-1.5 rounded-lg text-xs font-semibold text-white theme-bg':'px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-500';
+      if(cb){cb.classList.toggle('is-active',safe==='calendar');cb.setAttribute('aria-pressed',String(safe==='calendar'));}
+      if(lb){lb.classList.toggle('is-active',safe==='list');lb.setAttribute('aria-pressed',String(safe==='list'));}
       if(safe==='list')renderUpcomingCalendarList();
       const monthlyBtn=document.getElementById('btn-view-monthly'),annualBtn=document.getElementById('btn-view-annual');
       if(monthlyBtn)monthlyBtn.className=annual?'px-3 py-1.5 bg-gray-200 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-xl text-xs font-semibold':'px-3 py-1.5 bg-indigo-600 text-white rounded-xl text-xs font-semibold shadow-sm theme-bg';
@@ -7692,24 +7647,14 @@ ${acc.name}`);
           const isInc = b.type === 'income';
           const isDebt = b.type === 'debt';
           
-          let style = '';
-          if (b.paid) {
-            style = 'bg-gray-100 dark:bg-gray-800/70 text-gray-400 border-gray-200 dark:border-gray-700';
-          } else if (isInc) {
-            style = 'fh-status-income-bg fh-status-income dark:fh-status-income fh-status-income-border dark:fh-status-income-border';
-          } else if (isDebt) {
-            style = 'bg-amber-100 text-amber-950 dark:bg-amber-950 dark:text-amber-200 border-amber-300 dark:border-amber-800';
-          } else {
-            style = 'bg-rose-100 text-rose-900 dark:bg-rose-950 dark:text-rose-300 border-rose-300 dark:border-rose-800';
-          }
-
+          const notificationKind = isInc ? 'income' : (isDebt ? 'debt' : 'expense');
           badges += `
-            <div draggable="${!b.paid}" ondragstart="startCalendarBillDrag(event, '${b.id}')" onclick="editCalendarItem('${b.id}', event)" title="${escapeHtml(b.desc || 'Scheduled item')}${b.vendor && !isDebt ? ' · Vendor: ' + escapeHtml(b.vendor) : ''}" class="text-[11px] leading-tight px-1.5 py-1 rounded-md border ${style} font-medium mt-1 cursor-pointer shadow-sm flex items-center gap-1.5 min-w-0  transition-colors">
-              <span class="font-semibold truncate min-w-0 flex-1 ${b.paid ? 'line-through' : ''}">${escapeHtml(b.desc || 'Scheduled item')}</span>
-              <span class="accounting-num font-semibold whitespace-nowrap ${b.paid ? 'line-through' : ''}">${formatFinancial(b.amount, !isInc)}</span>
-              <span role="button" tabindex="0" onclick="toggleCalendarItemPaid('${b.id}', event)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleCalendarItemPaid('${b.id}',event)}" title="${b.paid ? 'Click to unmark as completed' : (isInc ? 'Mark income as received' : 'Mark payment as paid')}" class="shrink-0 whitespace-nowrap text-[10px] font-semibold cursor-pointer hover:underline underline-offset-2 ${b.paid ? 'opacity-70' : 'opacity-90'}">
-                ${b.paid ? (isInc ? 'Received ✓' : 'Paid ✓') : (isInc ? 'Received' : 'Paid')}
+            <div draggable="${!b.paid}" ondragstart="startCalendarBillDrag(event, '${b.id}')" onclick="editCalendarItem('${b.id}', event)" title="${escapeHtml(b.desc || 'Scheduled item')}${b.vendor && !isDebt ? ' · Vendor: ' + escapeHtml(b.vendor) : ''}" class="fh-calendar-notification-row" data-notification-kind="${notificationKind}" data-completed="${b.paid ? 'true' : 'false'}">
+              <span class="fh-calendar-notification-chip" data-notification-kind="${notificationKind}">
+                <span class="fh-calendar-notification-name">${escapeHtml(b.desc || 'Scheduled item')}</span>
+                <span class="accounting-num fh-calendar-notification-amount">${formatFinancial(b.amount, !isInc)}</span>
               </span>
+              <input type="checkbox" class="fh-calendar-notification-checkbox" ${b.paid ? 'checked' : ''} onclick="event.stopPropagation()" onchange="toggleCalendarItemPaid('${b.id}', event)" aria-label="${b.paid ? (isInc ? 'Income received' : 'Payment paid') : (isInc ? 'Mark income as received' : 'Mark payment as paid')}" title="${b.paid ? (isInc ? 'Received' : 'Paid') : (isInc ? 'Mark received' : 'Mark paid')}" />
             </div>
           `;
         });
@@ -7813,7 +7758,7 @@ ${acc.name}`);
       const paidAction = document.getElementById('cal-modal-paid-btn');
       if (paidAction) {
         paidAction.classList.toggle('hidden', !!item.paid);
-        paidAction.innerHTML = `<i class="fa-solid fa-check mr-1"></i> ${item.type === 'income' ? 'Mark Received' : 'Mark Paid'}`;
+        paidAction.innerHTML = `<i class="fa-solid fa-check mr-1"></i> Paid`;
       }
       document.getElementById('cal-date').value = item.date;
       document.getElementById('cal-desc').value = item.desc || '';
@@ -11516,45 +11461,82 @@ ${acc.name}`);
       }
 
       const catList = document.getElementById('settings-categories-list');
-      catList.innerHTML = '';
-      state.categories.forEach((cat, idx) => {
-        let subsHtml = '';
-        (cat.subcategories || []).forEach(sub => {
-          subsHtml += `
-            <div class="flex justify-between items-center text-[11px] text-gray-500 pl-4 py-0.5 border-l-2 border-indigo-500 my-1">
-              <span>${sub.name} ${sub.rollover ? '<strong class="text-indigo-400 ml-1">(Carryover)</strong>' : ''}</span>
-              <span class="font-bold accounting-num">${formatFinancial(sub.limit)}</span>
-            </div>
-          `;
-        });
-
-        catList.innerHTML += `
-          <div class="bg-gray-50 dark:bg-gray-950 p-4 rounded-xl border border-gray-200 dark:border-gray-800 space-y-2">
-            <div class="flex justify-between items-center">
-              <strong class="text-sm text-indigo-600 dark:text-indigo-400 theme-text">${cat.name}</strong>
-              <div class="space-x-2">
-                <button onclick="openCategoryModal(${idx})" class="text-indigo-400  text-xs theme-text"><i class="fa-solid fa-pen"></i></button>
-                <button onclick="deleteCategory(${idx})" class="text-rose-500  text-xs"><i class="fa-solid fa-trash"></i></button>
+      if (catList) {
+        catList.innerHTML = '';
+        (state.categories || []).forEach((cat, idx) => {
+          const subs = cat.subcategories || [];
+          const subsHtml = subs.map(sub => `
+            <span class="fh-category-subcategory">
+              <span>${escapeHtml(sub.name)} ${sub.rollover ? '<strong class="fh-category-rollover">(Carryover)</strong>' : ''}</span>
+              <strong class="fh-category-limit accounting-num">${formatFinancial(sub.limit)}</strong>
+            </span>
+          `).join('');
+          catList.insertAdjacentHTML('beforeend', `
+            <div class="fh-category-row">
+              <div class="fh-category-row-heading">
+                <details class="fh-category-disclosure">
+                  <summary>
+                    <span class="fh-category-name">${escapeHtml(cat.name)}</span>
+                    <span class="fh-category-count">${subs.length} ${subs.length === 1 ? 'subcategory' : 'subcategories'}</span>
+                    <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+                  </summary>
+                  <div class="fh-category-subcategory-list">${subsHtml || '<span class="fh-category-empty">No subcategories defined</span>'}</div>
+                </details>
+                <div class="fh-category-actions">
+                  <button type="button" onclick="openCategoryModal(${idx})" title="Edit expense bucket" aria-label="Edit ${escapeHtml(cat.name)}"><i class="fa-solid fa-pen"></i></button>
+                  <button type="button" onclick="deleteCategory(${idx})" title="Delete expense bucket" aria-label="Delete ${escapeHtml(cat.name)}"><i class="fa-solid fa-trash"></i></button>
+                </div>
               </div>
             </div>
-            <div class="space-y-1">${subsHtml || '<div class="text-[11px] text-gray-400 pl-4">No subcategories defined</div>'}</div>
-          </div>
-        `;
-      });
+          `);
+        });
+      }
+
       const debtCatList = document.getElementById('settings-debt-categories-list');
       if (debtCatList) {
         debtCatList.innerHTML = '';
         (state.debtCategories || []).forEach(cat => {
-          const subsHtml = (cat.subcategories || []).map(sub => `<div class="text-[11px] text-gray-500 pl-4 py-0.5 border-l-2 border-amber-500 my-1">${escapeHtml(sub.name)}</div>`).join('');
-          debtCatList.innerHTML += `<div class="bg-gray-50 dark:bg-gray-950 p-4 rounded-xl border border-gray-200 dark:border-gray-800 space-y-2"><strong class="text-sm text-amber-600 dark:text-amber-400">${escapeHtml(cat.name)}</strong><div>${subsHtml || '<div class="text-[11px] text-gray-400 pl-4">No subcategories defined</div>'}</div></div>`;
+          const subs = cat.subcategories || [];
+          const subsHtml = subs.map(sub => `<span class="fh-category-chip">${escapeHtml(sub.name)}</span>`).join('');
+          debtCatList.insertAdjacentHTML('beforeend', `
+            <div class="fh-category-row">
+              <details class="fh-category-disclosure">
+                <summary>
+                  <span class="fh-category-name">${escapeHtml(cat.name)}</span>
+                  <span class="fh-category-count">${subs.length} ${subs.length === 1 ? 'subcategory' : 'subcategories'}</span>
+                  <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+                </summary>
+                <div class="fh-category-subcategory-list">${subsHtml || '<span class="fh-category-empty">No subcategories defined</span>'}</div>
+              </details>
+            </div>
+          `);
         });
       }
+
       const incomeCatList = document.getElementById('settings-income-categories-list');
       if (incomeCatList) {
         incomeCatList.innerHTML = '';
         (state.incomeCategories || []).forEach((cat, idx) => {
-          const subsHtml = (cat.subcategories || []).map(sub => `<div class="text-[11px] text-gray-500 pl-4 py-0.5 border-l-2 fh-status-income-border my-1">${escapeHtml(sub.name)}</div>`).join('');
-          incomeCatList.innerHTML += `<div class="bg-gray-50 dark:bg-gray-950 p-4 rounded-xl border border-gray-200 dark:border-gray-800 space-y-2"><div class="flex justify-between items-center"><strong class="text-sm fh-status-income dark:fh-status-income">${escapeHtml(cat.name)}</strong><div class="space-x-2"><button onclick="openIncomeCategoryModal(${idx})" class="fh-status-income text-xs" title="Edit income bucket"><i class="fa-solid fa-pen"></i></button><button onclick="deleteIncomeCategory(${idx})" class="text-rose-500 text-xs" title="Delete income bucket"><i class="fa-solid fa-trash"></i></button></div></div><div>${subsHtml || '<div class="text-[11px] text-gray-400 pl-4">No subcategories defined</div>'}</div></div>`;
+          const subs = cat.subcategories || [];
+          const subsHtml = subs.map(sub => `<span class="fh-category-chip">${escapeHtml(sub.name)}</span>`).join('');
+          incomeCatList.insertAdjacentHTML('beforeend', `
+            <div class="fh-category-row">
+              <div class="fh-category-row-heading">
+                <details class="fh-category-disclosure">
+                  <summary>
+                    <span class="fh-category-name fh-category-income-name">${escapeHtml(cat.name)}</span>
+                    <span class="fh-category-count">${subs.length} ${subs.length === 1 ? 'subcategory' : 'subcategories'}</span>
+                    <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+                  </summary>
+                  <div class="fh-category-subcategory-list">${subsHtml || '<span class="fh-category-empty">No subcategories defined</span>'}</div>
+                </details>
+                <div class="fh-category-actions">
+                  <button type="button" onclick="openIncomeCategoryModal(${idx})" title="Edit income bucket" aria-label="Edit ${escapeHtml(cat.name)}"><i class="fa-solid fa-pen"></i></button>
+                  <button type="button" onclick="deleteIncomeCategory(${idx})" title="Delete income bucket" aria-label="Delete ${escapeHtml(cat.name)}"><i class="fa-solid fa-trash"></i></button>
+                </div>
+              </div>
+            </div>
+          `);
         });
       }
       syncCustomColorControls();
@@ -17087,8 +17069,11 @@ html.dark body[data-finhub-theme] .fh-status-income-fill{background:var(--fh-sta
 </style>
 <style id="finhub-drag-handle-upper-left">
 .fh-reorderable-section{position:relative!important;padding-top:1.25rem!important}
+/* Dashboard reorder handles sit over the coloured header instead of reserving a blank top strip. */
+#tab-dashboard .fh-reorderable-section{padding-top:0!important}
+#tab-dashboard .fh-reorderable-section>.fh-section-drag-handle{top:.35rem!important;left:.55rem!important;z-index:12!important}
 .fh-section-drag-handle{position:absolute!important;left:.55rem!important;right:auto!important;top:.35rem!important;z-index:8!important;cursor:grab!important}
-#data-health-details>summary{padding-left:1.7rem} #financial-close-data-health{padding-top:1.1rem!important} #financial-close-data-health>.fh-section-drag-handle{left:.55rem!important;top:.35rem!important}
+#financial-close-data-health{padding-top:1.1rem!important} #financial-close-data-health>.fh-section-drag-handle{left:.55rem!important;top:.35rem!important}
 </style>
 <style id="finhub-back-refresh-position-fix">
 
@@ -17163,7 +17148,7 @@ html.dark body[data-finhub-theme] .fh-status-income-fill{background:var(--fh-sta
   
   
 }
-#finhub-back-button.is-back-disabled { opacity:.32!important; cursor:not-allowed!important; background:rgba(100,116,139,.08)!important; border-color:rgba(100,116,139,.2)!important; color:#94a3b8!important; box-shadow:none!important; }
+
 #finhub-back-button.is-back-enabled { opacity:1!important; cursor:pointer!important; }
 </style>
 <style id="finhub-stage2-correction-sidebar-navigation-final">
@@ -17233,19 +17218,7 @@ html.dark body[data-finhub-theme] .fh-status-income-fill{background:var(--fh-sta
   
 }
 
-/* Preserve the existing Back-button enabled/disabled presentation. */
-#finhub-back-button.is-back-disabled {
-  opacity:.32 !important;
-  cursor:not-allowed !important;
-  background:rgba(100,116,139,.08) !important;
-  border-color:rgba(100,116,139,.2) !important;
-  color:#94a3b8 !important;
-  box-shadow:none !important;
-}
-#finhub-back-button.is-back-enabled {
-  opacity:1 !important;
-  cursor:pointer !important;
-}
+/* Back-button availability is owned by the responsive navigation foundation. */
 
 /* Final expanded vertical sidebar refinement: 14rem -> 12rem (14.3% narrower).
    Horizontal split-screen navigation and collapsed rail retain their existing layouts. */
@@ -17485,21 +17458,7 @@ html:not(.dark) body[data-finhub-theme="oceanpop"] .tab-content h3 {
 }
 </style>
 <style id="finhub-oceanpop-light-accounts-dashboard-match-final">
-/* Accounts summary figures: copy the Dashboard Available to Spend treatment.
-   Ocean Pop light mode only. Dashboard source:
-   .text-2xl.font-bold.fh-status-income.mt-1.accounting-num
-   Ocean Pop light overrides .fh-status-income to #386b00. */
-html:not(.dark) body[data-finhub-theme="oceanpop"] #tab-accounts #accounts-page-assets,
-html:not(.dark) body[data-finhub-theme="oceanpop"] #tab-accounts #accounts-page-debt,
-html:not(.dark) body[data-finhub-theme="oceanpop"] #tab-accounts #accounts-page-networth {
-  font-family:inherit !important;
-  font-size:1.5rem !important;
-  line-height:2rem !important;
-  font-weight:700 !important;
-  letter-spacing:normal !important;
-  font-variant-numeric:tabular-nums lining-nums !important;
-  font-feature-settings:"tnum" 1,"lnum" 1 !important;
-}
+/* Retired: Accounts summary figures use the shared accounting-number contract in every theme. */
 /* Individual account balances remain smaller, with the same numeric face.
    Semantic positive/negative colours are retained, but only for Ocean Pop light. */
 html:not(.dark) body[data-finhub-theme="oceanpop"] #tab-accounts .account-card .accounts-financial-value {
@@ -18173,23 +18132,23 @@ body[data-finhub-theme] #account-detail-modal .acc-opening-balance-save {
   border:1px solid var(--fh-action-primary);border-radius:.55rem;
 }
 body[data-finhub-theme] #account-detail-modal .acc-opening-balance-save:hover {background:var(--fh-action-primary-hover);border-color:var(--fh-action-primary-hover);}
-body[data-finhub-theme] #account-detail-modal .acc-opening-info-wrap {position:relative;display:inline-flex;align-items:center;}
-body[data-finhub-theme] #account-detail-modal .acc-opening-balance-info {
+body[data-finhub-theme] .acc-opening-info-wrap {position:relative;display:inline-flex;align-items:center;}
+body[data-finhub-theme] .acc-opening-balance-info {
   display:inline-flex;align-items:center;justify-content:center;width:1.05rem;height:1.05rem;flex:0 0 1.05rem;
   padding:0;border:0;border-radius:0;background:transparent;color:var(--fh-primary);
   font:inherit;cursor:pointer;box-shadow:none;appearance:none;line-height:1;
 }
-body[data-finhub-theme] #account-detail-modal .acc-opening-balance-info i {font-size:1rem;line-height:1;}
-body[data-finhub-theme] #account-detail-modal .acc-opening-balance-info:hover {background:transparent;color:var(--fh-action-primary-hover);}
-body[data-finhub-theme] #account-detail-modal .acc-opening-balance-info:focus-visible {outline:2px solid var(--fh-primary);outline-offset:3px;box-shadow:none;border-radius:3px;}
-body[data-finhub-theme] #account-detail-modal .acc-opening-balance-tooltip {
-  position:absolute;z-index:10050;left:50%;bottom:calc(100% + .65rem);transform:translateX(-50%);
+body[data-finhub-theme] .acc-opening-balance-info i {font-size:1rem;line-height:1;}
+body[data-finhub-theme] .acc-opening-balance-info:hover {background:transparent;color:var(--fh-action-primary-hover);}
+body[data-finhub-theme] .acc-opening-balance-info:focus-visible {outline:2px solid var(--fh-primary);outline-offset:3px;box-shadow:none;border-radius:3px;}
+body[data-finhub-theme] .acc-opening-balance-tooltip {
+  position:absolute;z-index:100000;left:50%;bottom:calc(100% + .65rem);transform:translateX(-50%);
   width:min(22rem,78vw);padding:.85rem 1rem;border:1px solid var(--fh-surface-border);border-radius:.9rem;
   background:var(--fh-surface-modal);color:var(--fh-surface-text);box-shadow:0 12px 32px rgba(0,0,0,.22);
   font-size:.88rem;font-weight:400;line-height:1.5;text-transform:none;white-space:normal;opacity:0;visibility:hidden;pointer-events:none;
 }
-body[data-finhub-theme] #account-detail-modal .acc-opening-info-wrap:hover .acc-opening-balance-tooltip,
-body[data-finhub-theme] #account-detail-modal .acc-opening-balance-info:focus-visible + .acc-opening-balance-tooltip {opacity:1;visibility:visible;pointer-events:auto;}
+body[data-finhub-theme] .acc-opening-info-wrap:hover .acc-opening-balance-tooltip,
+body[data-finhub-theme] .acc-opening-balance-info:focus-visible + .acc-opening-balance-tooltip {opacity:1;visibility:visible;pointer-events:auto;}
 
 /* Account filter popover: compact, opaque, scrollable, and anchored to its trigger. */
 body[data-finhub-theme] .acc-column-menu[hidden] {display:none!important;}
@@ -18360,10 +18319,10 @@ body[data-finhub-theme] #account-detail-modal .acc-opening-balance-info {
   width:1.15rem !important;height:1.15rem !important;min-width:1.15rem !important;
   flex:0 0 1.15rem !important;padding:0 !important;margin:0 .08rem !important;
   border:0 !important;border-radius:50% !important;background:transparent !important;
-  color:var(--fh-primary) !important;cursor:help !important;box-shadow:none !important;appearance:none !important;
+  color:var(--fh-primary) !important;cursor:pointer !important;box-shadow:none !important;appearance:none !important;
   line-height:1 !important;vertical-align:middle !important;
 }
-body[data-finhub-theme] #account-detail-modal .acc-info-glyph {
+body[data-finhub-theme] .acc-info-glyph {
   display:inline-flex;width:1rem;height:1rem;min-width:1rem;flex:0 0 1rem;
   align-items:center;justify-content:center;box-sizing:border-box;
   border:1.45px solid currentColor;border-radius:50%;background:transparent;color:inherit;
@@ -18409,7 +18368,17 @@ body[data-finhub-theme] #account-detail-modal .acc-detail-action-btn:focus-visib
 
 /* Debt disclosure surface overrides retired; shared fh-disclosure contract now owns this presentation. */
 </style>
-<style id="finhub-authoritative-theme-foundation-phase3a">
+<style id="finhub-canonical-theme-foundation-v1">
+/*
+  FINHUB CANONICAL THEME FOUNDATION — STAGE 2
+  Authoritative ownership for all theme palettes and semantic presentation roles.
+  Theme roots below define the light and dark values; the shared role/alias
+  contract below resolves page, navigation, card, raised, control, modal,
+  text, border, action, hover, selected, focus and financial-status styling.
+  Historical page/component rules remain in place for dependency migration;
+  they are not palette authorities and are retired only after Stage 3 mapping.
+*/
+
 /*
   FinHub semantic theme foundation — Phase 3A.
   Canonical roles are defined once and resolved by each selectable theme.
@@ -18731,7 +18700,7 @@ body[data-finhub-theme] .fh-disclosure > .fh-disclosure-trigger {
   border:0;
   border-bottom:1px solid transparent;
   border-radius:0;
-  background:var(--fh-card);
+  background:var(--fh-raised);
   color:var(--fh-ink);
   font:inherit;
   font-size:.9rem;
@@ -18746,6 +18715,10 @@ body[data-finhub-theme] .fh-disclosure > .fh-disclosure-trigger {
 }
 body[data-finhub-theme] .fh-disclosure > .fh-disclosure-trigger::-webkit-details-marker {display:none;}
 body[data-finhub-theme] .fh-disclosure > .fh-disclosure-trigger::marker {content:"";}
+body[data-finhub-theme] .fh-disclosure > .fh-disclosure-trigger .global-collapsible-description {
+  display:block; margin-left:auto; color:var(--fh-muted); font-size:.75rem;
+  font-weight:400; line-height:1.4; text-align:right;
+}
 body[data-finhub-theme] .fh-disclosure > .fh-disclosure-trigger:hover {
   background:var(--fh-hover);
   color:var(--fh-ink);
@@ -19001,76 +18974,18 @@ body[data-finhub-theme] .dashboard-action-toolbar .fh-action-button {
   min-height:2.5rem;
 }
 /* One shared disclosure component for Monthly Review and Year-End Review. */
-body[data-finhub-theme] .checkin-review-disclosure {
-  display:block !important;
-  width:100% !important;
-  margin:0 !important;
-  padding:0 !important;
-  overflow:hidden !important;
-  border:1px solid var(--fh-border) !important;
-  border-radius:1rem !important;
-  background:var(--fh-card) !important;
-  box-shadow:none !important;
-}
-body[data-finhub-theme] .checkin-review-disclosure > .global-collapsible-summary {
-  box-sizing:border-box !important;
-  display:flex !important;
-  align-items:center !important;
-  justify-content:space-between !important;
-  gap:1rem !important;
-  width:100% !important;
-  min-height:5.1rem !important;
-  margin:0 !important;
-  padding:1rem 1.25rem !important;
-  border:0 !important;
-  border-radius:0 !important;
-  background:var(--fh-card) !important;
-  color:var(--fh-ink) !important;
-  box-shadow:none !important;
-  cursor:pointer !important;
-  list-style:none !important;
-}
-body[data-finhub-theme] .checkin-review-disclosure > .global-collapsible-summary::-webkit-details-marker { display:none !important; }
-body[data-finhub-theme] .checkin-review-disclosure > .global-collapsible-summary > span:first-child {
-  flex:0 1 auto !important;
-  margin:0 !important;
-  color:var(--fh-ink) !important;
-  font-size:1.125rem !important;
-  line-height:1.35 !important;
-  font-weight:720 !important;
-}
-body[data-finhub-theme] .checkin-review-disclosure > .global-collapsible-summary > .global-collapsible-description {
-  flex:0 1 auto !important;
-  max-width:65% !important;
-  margin:0 1.25rem 0 auto !important;
-  padding:0 !important;
-  border:0 !important;
-  border-radius:0 !important;
-  background:transparent !important;
-  color:var(--fh-muted) !important;
-  font-size:.9rem !important;
-  line-height:1.45 !important;
-  font-weight:400 !important;
-  text-align:right !important;
-  box-shadow:none !important;
-}
-body[data-finhub-theme] .checkin-review-disclosure > .global-collapsible-summary:hover { background:var(--fh-hover) !important; }
-body[data-finhub-theme] .checkin-review-disclosure[open] > .global-collapsible-summary { border-bottom:1px solid var(--fh-border) !important; }
-html.dark body[data-finhub-theme] .checkin-review-disclosure,
-html.dark body[data-finhub-theme] .checkin-review-disclosure > .global-collapsible-summary { background:var(--fh-dark-card) !important; }
-html.dark body[data-finhub-theme] .checkin-review-disclosure > .global-collapsible-summary:hover { background:var(--fh-dark-hover) !important; }
+
+
+
+
+
+
+
+
+
 @media(max-width:640px) {
-  body[data-finhub-theme] .checkin-review-disclosure > .global-collapsible-summary {
-    min-height:4.5rem !important;
-    align-items:flex-start !important;
-    flex-direction:column !important;
-    gap:.3rem !important;
-  }
-  body[data-finhub-theme] .checkin-review-disclosure > .global-collapsible-summary > .global-collapsible-description {
-    max-width:100% !important;
-    margin:0 !important;
-    text-align:left !important;
-  }
+  
+  
 }
 
 /* Settings component foundation.
@@ -19087,11 +19002,15 @@ html.dark body[data-finhub-theme] .checkin-review-disclosure > .global-collapsib
 }
 #tab-settings .fh-settings-section > summary {
   display:flex;
+  box-sizing:border-box;
+  width:100%;
   min-height:3.25rem;
   align-items:center;
   justify-content:space-between;
   gap:1rem;
+  margin:0;
   padding:.9rem 1.15rem;
+  border:0;
   border-bottom:1px solid transparent;
   background:var(--fh-raised);
   color:var(--fh-ink);
@@ -19360,6 +19279,219 @@ html.dark body[data-finhub-theme] #tab-biweekly .fh-planner-refresh-button:hover
   background:color-mix(in srgb,var(--fh-primary) 16%,var(--fh-dark-raised,var(--fh-dark-card,var(--fh-raised)))) !important;
   border-color:var(--fh-dark-primary,var(--fh-primary)) !important;
   color:var(--fh-dark-primary,var(--fh-primary)) !important;
+}
+
+
+/* Canonical semantic action contract: one hierarchy for all pages and themes. */
+body[data-finhub-theme] :is(button.fh-semantic-button.fh-btn-primary,button.fh-theme-primary-action,button.finhub-btn-primary,button.finhub-action-save,button.fh-action-button-primary) {
+  background:var(--fh-action-primary,var(--fh-primary)) !important;
+  border:1px solid var(--fh-action-primary,var(--fh-primary)) !important;
+  color:var(--fh-action-text,#FFFFFF) !important;
+  box-shadow:none;
+  transition:background-color .15s ease,border-color .15s ease,color .15s ease,box-shadow .15s ease;
+}
+body[data-finhub-theme] :is(button.fh-semantic-button.fh-btn-primary,button.fh-theme-primary-action,button.finhub-btn-primary,button.finhub-action-save,button.fh-action-button-primary):hover:not(:disabled) {
+  background:var(--fh-action-primary-hover,var(--fh-primary-hover,var(--fh-primary))) !important;
+  border-color:var(--fh-action-primary-hover,var(--fh-primary-hover,var(--fh-primary))) !important;
+  color:var(--fh-action-text,#FFFFFF) !important;
+}
+body[data-finhub-theme] :is(button.fh-semantic-button.fh-btn-primary,button.fh-theme-primary-action,button.finhub-btn-primary,button.finhub-action-save,button.fh-action-button-primary):active:not(:disabled) {
+  background:var(--fh-action-primary-pressed,var(--fh-action-primary-hover,var(--fh-primary))) !important;
+  border-color:var(--fh-action-primary-pressed,var(--fh-action-primary-hover,var(--fh-primary))) !important;
+}
+body[data-finhub-theme] :is(button.fh-semantic-button.fh-btn-primary,button.fh-theme-primary-action,button.finhub-btn-primary,button.finhub-action-save,button.fh-action-button-primary):focus-visible {
+  outline:2px solid var(--fh-primary) !important;
+  outline-offset:2px;
+  box-shadow:0 0 0 3px var(--fh-primary-focus,color-mix(in srgb,var(--fh-primary) 22%,transparent));
+}
+body[data-finhub-theme] :is(button.fh-semantic-button.fh-btn-primary,button.fh-theme-primary-action,button.finhub-btn-primary,button.finhub-action-save,button.fh-action-button-primary):disabled {
+  opacity:.55 !important;
+  cursor:not-allowed !important;
+  box-shadow:none !important;
+}
+body[data-finhub-theme] :is(button.fh-semantic-button.fh-btn-delete,button.fh-theme-danger-action,button.finhub-btn-destructive,button.finhub-action-delete,button.fh-action-button-danger) {
+  background:#B42336 !important;
+  border:1px solid #B42336 !important;
+  color:#FFFFFF !important;
+  box-shadow:none;
+}
+body[data-finhub-theme] :is(button.fh-semantic-button.fh-btn-delete,button.fh-theme-danger-action,button.finhub-btn-destructive,button.finhub-action-delete,button.fh-action-button-danger):hover:not(:disabled) {
+  background:#941D2C !important;
+  border-color:#941D2C !important;
+}
+body[data-finhub-theme] :is(button.fh-semantic-button.fh-btn-cancel,button.fh-theme-neutral-action,button.finhub-btn-dismiss,button.finhub-action-cancel) {
+  background:var(--fh-card,var(--surface-primary,#FFFFFF)) !important;
+  border:1px solid var(--fh-border,var(--border-primary,#DCE5EF)) !important;
+  color:var(--fh-ink,var(--text-primary,#243447)) !important;
+  box-shadow:none !important;
+  transition:background-color .15s ease,border-color .15s ease,color .15s ease;
+}
+body[data-finhub-theme] :is(button.fh-semantic-button.fh-btn-cancel,button.fh-theme-neutral-action,button.finhub-btn-dismiss,button.finhub-action-cancel):hover:not(:disabled) {
+  background:color-mix(in srgb,var(--fh-primary) 9%,var(--fh-card)) !important;
+  border-color:var(--fh-primary) !important;
+}
+html.dark body[data-finhub-theme] :is(button.fh-semantic-button.fh-btn-cancel,button.fh-theme-neutral-action,button.finhub-btn-dismiss,button.finhub-action-cancel) {
+  background:var(--fh-dark-card,var(--fh-card)) !important;
+  border-color:var(--fh-dark-border,var(--fh-border)) !important;
+  color:var(--fh-dark-ink,var(--fh-ink)) !important;
+}
+html.dark body[data-finhub-theme] :is(button.fh-semantic-button.fh-btn-cancel,button.fh-theme-neutral-action,button.finhub-btn-dismiss,button.finhub-action-cancel):hover:not(:disabled) {
+  background:color-mix(in srgb,var(--fh-primary) 14%,var(--fh-dark-card,var(--fh-card))) !important;
+  border-color:var(--fh-primary) !important;
+}
+
+/* Canonical calendar notification: one continuous status-coloured surface with an integrated completion checkbox. */
+.fh-calendar-notification-row{display:flex;align-items:center;justify-content:space-between;gap:.55rem;min-width:0;width:100%;box-sizing:border-box;margin-top:.3rem;padding:.34rem .48rem;border:1px solid transparent;border-radius:.65rem;background:var(--fh-card);color:var(--fh-ink);cursor:pointer;transition:background-color .15s ease,border-color .15s ease,filter .15s ease;}
+.fh-calendar-notification-row[data-notification-kind="income"]{background:color-mix(in srgb,var(--fh-status-income) 9%,var(--fh-card));border-color:color-mix(in srgb,var(--fh-status-income) 34%,var(--fh-border));color:var(--fh-status-income);}
+.fh-calendar-notification-row[data-notification-kind="expense"]{background:color-mix(in srgb,var(--fh-status-expense) 12%,var(--fh-card));border-color:color-mix(in srgb,var(--fh-status-expense) 38%,var(--fh-border));color:var(--fh-status-expense);}
+.fh-calendar-notification-row[data-notification-kind="debt"]{background:color-mix(in srgb,#D97706 14%,var(--fh-card));border-color:color-mix(in srgb,#D97706 42%,var(--fh-border));color:color-mix(in srgb,#A16207 78%,var(--fh-ink));}
+.fh-calendar-notification-row:hover{filter:brightness(.97);border-color:currentColor;}
+html.dark .fh-calendar-notification-row[data-notification-kind="income"]{background:var(--fh-status-income-soft-dark,var(--fh-status-income-soft));border-color:var(--fh-status-income-border);color:var(--fh-status-income-dark,var(--fh-status-income));}
+html.dark .fh-calendar-notification-row[data-notification-kind="expense"]{background:color-mix(in srgb,var(--fh-status-expense) 20%,var(--fh-card));border-color:color-mix(in srgb,var(--fh-status-expense) 48%,var(--fh-border));}
+html.dark .fh-calendar-notification-row[data-notification-kind="debt"]{background:color-mix(in srgb,#D97706 22%,var(--fh-card));border-color:color-mix(in srgb,#D97706 50%,var(--fh-border));color:#FCD38D;}
+.fh-calendar-notification-chip{display:flex;align-items:center;gap:.45rem;flex:1 1 auto;min-width:0;max-width:none;padding:0;border:0;border-radius:0;background:transparent;color:inherit;font-size:.7rem;font-weight:650;line-height:1.2;}
+.fh-calendar-notification-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.fh-calendar-notification-amount{flex:0 0 auto;white-space:nowrap;font-size:.7rem;color:inherit;}
+.fh-calendar-notification-checkbox{appearance:none;-webkit-appearance:none;display:inline-grid;place-content:center;flex:0 0 1.05rem;width:1.05rem;height:1.05rem;margin:0;border:1.5px solid color-mix(in srgb,currentColor 65%,transparent);border-radius:.28rem;background:color-mix(in srgb,currentColor 12%,transparent);color:#fff;cursor:pointer;transition:background-color .15s ease,border-color .15s ease,box-shadow .15s ease;}
+.fh-calendar-notification-checkbox::before{content:"";width:.52rem;height:.3rem;border:solid currentColor;border-width:0 0 2px 2px;transform:rotate(-45deg) scale(0);transform-origin:center;transition:transform .12s ease;}
+.fh-calendar-notification-checkbox:checked{background:color-mix(in srgb,var(--fh-ink) 48%,transparent);border-color:color-mix(in srgb,var(--fh-ink) 72%,transparent);}
+.fh-calendar-notification-checkbox:checked::before{transform:rotate(-45deg) scale(1);}
+.fh-calendar-notification-checkbox:hover{border-color:currentColor;background:color-mix(in srgb,currentColor 22%,transparent);}
+.fh-calendar-notification-checkbox:focus-visible{outline:2px solid var(--fh-focus,var(--fh-primary));outline-offset:3px;}
+@media(max-width:420px){.fh-calendar-notification-row{gap:.38rem;padding:.3rem .38rem}.fh-calendar-notification-chip{gap:.3rem}.fh-calendar-notification-checkbox{flex-basis:.95rem;width:.95rem;height:.95rem;}}
+
+/* Calendar modal action row: equal-size, centered semantic actions. */
+#calendar-modal .fh-calendar-modal-actions { display:flex; align-items:center; justify-content:center; gap:.55rem; width:100%; }
+#calendar-modal .fh-calendar-modal-action { flex:1 1 0; min-width:0; min-height:2.55rem; display:inline-flex; align-items:center; justify-content:center; padding:.55rem .45rem; border:1px solid var(--fh-border); border-radius:.7rem; font-size:.82rem; line-height:1.1; font-weight:700; white-space:nowrap; transition:background-color .16s ease,border-color .16s ease,color .16s ease,filter .16s ease; }
+#calendar-modal .fh-calendar-modal-delete { background:#C6283D; border-color:#C6283D; color:#fff; }
+#calendar-modal .fh-calendar-modal-delete:hover { background:#A91F32; border-color:#A91F32; }
+#calendar-modal .fh-calendar-modal-paid { background:var(--fh-status-income-soft); border-color:var(--fh-status-income-border); color:var(--fh-status-income); }
+html.dark #calendar-modal .fh-calendar-modal-paid { background:var(--fh-status-income-soft-dark,var(--fh-status-income-soft)); border-color:var(--fh-status-income-border); color:var(--fh-status-income-dark,var(--fh-status-income)); }
+#calendar-modal .fh-calendar-modal-paid:hover { filter:brightness(.96); }
+html.dark #calendar-modal .fh-calendar-modal-paid:hover { filter:brightness(1.12); }
+#calendar-modal .fh-calendar-modal-cancel { background:var(--fh-raised); border-color:var(--fh-border); color:var(--fh-ink); }
+#calendar-modal .fh-calendar-modal-cancel:hover { background:var(--fh-surface-hover,var(--fh-raised)); border-color:var(--fh-primary); }
+#calendar-modal .fh-calendar-modal-save { background:var(--fh-primary); border-color:var(--fh-primary); color:#fff; }
+#calendar-modal .fh-calendar-modal-save:hover { filter:brightness(.94); }
+#calendar-modal .fh-calendar-modal-action:focus-visible { outline:2px solid var(--fh-primary); outline-offset:2px; }
+@media (max-width:380px) { #calendar-modal .fh-calendar-modal-actions { gap:.35rem; } #calendar-modal .fh-calendar-modal-action { padding:.5rem .25rem; font-size:.74rem; } }
+
+/* Calendar scheduled-view selector: one semantic toggle component for both states. */
+#calendar-scheduled-calendar-btn.fh-calendar-view-toggle,
+#calendar-scheduled-list-btn.fh-calendar-view-toggle {
+  display:inline-flex; align-items:center; justify-content:center;
+  min-height:2rem; padding:.375rem .8rem; border:1px solid var(--fh-border);
+  border-radius:.7rem; background:var(--fh-raised); color:var(--fh-ink);
+  font-size:.75rem; line-height:1.15; font-weight:700;
+  transition:background-color .16s ease,border-color .16s ease,color .16s ease;
+}
+#calendar-scheduled-calendar-btn.fh-calendar-view-toggle:hover,
+#calendar-scheduled-list-btn.fh-calendar-view-toggle:hover {
+  border-color:var(--fh-primary); background:var(--fh-surface-hover,var(--fh-raised));
+}
+#calendar-scheduled-calendar-btn.fh-calendar-view-toggle.is-active,
+#calendar-scheduled-list-btn.fh-calendar-view-toggle.is-active {
+  border-color:var(--fh-primary); background:var(--fh-primary); color:#fff;
+}
+#calendar-scheduled-calendar-btn.fh-calendar-view-toggle:focus-visible,
+#calendar-scheduled-list-btn.fh-calendar-view-toggle:focus-visible {
+  outline:2px solid var(--fh-primary); outline-offset:2px;
+}
+
+/* Dashboard collapsible headers: full-bleed shared surface, matching Paycheque Planner. */
+body[data-finhub-theme] #tab-dashboard .dashboard-block {
+  padding-top:0;
+}
+body[data-finhub-theme] #tab-dashboard .dashboard-block-header {
+  display:flex; align-items:stretch; justify-content:space-between;
+  width:100%; min-width:0; margin:0; padding:0;
+  background:var(--fh-raised); color:var(--fh-ink);
+  border-radius:calc(var(--fh-radius-card,1rem) - 1px) calc(var(--fh-radius-card,1rem) - 1px) 0 0;
+  transition:background-color .16s ease,color .16s ease;
+}
+body[data-finhub-theme] #tab-dashboard .dashboard-block-header-trigger {
+  display:flex; align-items:center; justify-content:space-between;
+  flex:1 1 auto; width:100%; min-width:0; margin:0;
+  background:var(--fh-raised); color:var(--fh-ink);
+  transition:background-color .16s ease,color .16s ease;
+}
+body[data-finhub-theme] #tab-dashboard .dashboard-block-header:hover,
+body[data-finhub-theme] #tab-dashboard .dashboard-block-header:hover .dashboard-block-header-trigger,
+body[data-finhub-theme] #tab-dashboard .dashboard-block-header-trigger:hover {
+  background:var(--fh-hover,var(--fh-raised)); color:var(--fh-ink); opacity:1;
+}
+body[data-finhub-theme] #tab-dashboard .dashboard-block-header-trigger:focus-visible {
+  outline:2px solid var(--fh-primary); outline-offset:-2px;
+}
+body[data-finhub-theme] #tab-dashboard .dashboard-block-header-trigger > :first-child {
+  min-width:0;
+}
+body[data-finhub-theme] #tab-dashboard .dashboard-block-header-trigger p {
+  color:var(--fh-muted);
+}
+body[data-finhub-theme] #tab-dashboard .dashboard-block-header > .dashboard-order-controls {
+  display:flex; align-items:center; flex:0 0 auto; padding-right:.75rem;
+}
+/* The amortization tooltip must escape the card's normal content clipping. */
+body[data-finhub-theme] #tab-debt .fh-amortization-card {position:relative;overflow:visible;}
+
+
+/* Compact collapsible category rows for expense, debt and income buckets. */
+#tab-settings .fh-settings-category-panel {
+  display:grid; gap:.75rem;
+  padding:1rem;
+  border:1px solid var(--fh-border);
+  border-radius:1rem;
+  background:var(--fh-card); color:var(--fh-ink);
+}
+#tab-settings .fh-settings-category-panel [id$="-categories-list"] {display:grid;gap:.5rem;}
+#tab-settings .fh-category-row {
+  min-width:0; padding:.5rem .7rem;
+  border:1px solid var(--fh-border); border-radius:.75rem;
+  background:var(--fh-raised); color:var(--fh-ink);
+}
+#tab-settings .fh-category-row-heading {display:flex;align-items:center;justify-content:space-between;gap:.65rem;min-width:0;}
+#tab-settings .fh-category-disclosure {flex:1 1 auto;min-width:0;}
+#tab-settings .fh-category-disclosure > summary {
+  display:flex;align-items:center;gap:.5rem;min-height:1.8rem;
+  cursor:pointer;list-style:none;
+}
+#tab-settings .fh-category-disclosure > summary::-webkit-details-marker,
+#tab-settings .fh-category-disclosure > summary::marker {display:none;content:"";}
+#tab-settings .fh-category-name {min-width:0;font-size:.82rem;line-height:1.25;font-weight:700;color:var(--fh-ink);}
+#tab-settings .fh-category-income-name {color:var(--fh-status-income);}
+#tab-settings .fh-category-count {font-size:.67rem;color:var(--fh-muted);white-space:nowrap;}
+#tab-settings .fh-category-disclosure > summary > i {margin-left:auto;flex:0 0 auto;color:var(--fh-muted);font-size:.68rem;transition:transform .16s ease;}
+#tab-settings .fh-category-disclosure:not([open]) > summary > i {transform:rotate(-90deg);}
+#tab-settings .fh-category-subcategory-list {display:flex;flex-wrap:wrap;align-items:center;gap:.35rem;padding:.4rem 0 .1rem;}
+#tab-settings .fh-category-chip,
+#tab-settings .fh-category-subcategory {
+  display:inline-flex;align-items:center;gap:.45rem;max-width:100%;
+  padding:.22rem .5rem;border:1px solid var(--fh-border);border-radius:.45rem;
+  background:var(--fh-surface-hover,var(--fh-card));color:var(--fh-muted);
+  font-size:.68rem;line-height:1.25;
+}
+#tab-settings .fh-category-limit {font-weight:700;color:var(--fh-ink);}
+#tab-settings .fh-category-rollover {color:var(--fh-primary);font-weight:700;}
+#tab-settings .fh-category-empty {font-size:.68rem;color:var(--fh-muted);}
+#tab-settings .fh-category-actions {display:flex;align-items:center;gap:.2rem;flex:0 0 auto;}
+#tab-settings .fh-category-actions button {
+  display:inline-flex;align-items:center;justify-content:center;width:1.9rem;height:1.9rem;
+  border:1px solid transparent;border-radius:.5rem;background:transparent;color:var(--fh-muted);
+  transition:background-color .15s ease,border-color .15s ease,color .15s ease;
+}
+#tab-settings .fh-category-actions button:hover {color:var(--fh-ink);border-color:var(--fh-border);background:var(--fh-surface-hover,var(--fh-card));}
+#tab-settings .fh-settings-transaction-types-panel {
+  width:100%;min-width:0;padding:1rem;border:1px solid var(--fh-border);
+  border-radius:1rem;background:var(--fh-card);color:var(--fh-ink);
+}
+#tab-settings .fh-settings-nested-toggle {display:flex;align-items:center;gap:1rem;color:var(--fh-ink);}
+#tab-settings .fh-settings-nested-content {padding-top:.75rem;}
+@media(max-width:520px) {
+  #tab-settings .fh-category-row {padding:.45rem .55rem;}
+  #tab-settings .fh-category-row-heading {gap:.35rem;}
+  #tab-settings .fh-category-count {font-size:.61rem;}
+  #tab-settings .fh-category-actions button {width:1.75rem;height:1.75rem;}
 }
 </style>
 <style id="finhub-account-sign-colours-and-true-icon-rail-fix">
