@@ -1307,13 +1307,13 @@ body#app-body > #finhub-sidebar {
 #finhub-sidebar #finhub-back-button:disabled,
 #finhub-sidebar #finhub-back-button.is-back-disabled {
   opacity:1 !important; cursor:not-allowed !important; filter:none !important;
-  background:rgba(167,139,250,.22) !important;
-  border:1px solid rgba(196,181,253,.48) !important;
-  color:#F0EAFE !important; box-shadow:none !important;
+  background:#E8DDFB !important;
+  border:1px solid #B9A0E8 !important;
+  color:#49356F !important; box-shadow:none !important;
 }
 #finhub-sidebar #finhub-back-button:disabled i,
 #finhub-sidebar #finhub-back-button.is-back-disabled i {
-  color:#F0EAFE !important; opacity:1 !important;
+  color:#49356F !important; opacity:1 !important;
 }
 /* Keep the disabled Back action legible and consistently sized in the compact icon rail. */
 #finhub-sidebar.sidebar-icon-rail #finhub-back-button:disabled,
@@ -1322,13 +1322,13 @@ body#app-body > #finhub-sidebar {
   width:44px !important; min-width:44px !important; max-width:44px !important;
   height:44px !important; min-height:44px !important; padding:0 !important;
   border-radius:11px !important;
-  background:rgba(167,139,250,.22) !important;
-  border:1px solid rgba(196,181,253,.48) !important;
-  color:#F0EAFE !important; opacity:1 !important; filter:none !important;
+  background:#E8DDFB !important;
+  border:1px solid #B9A0E8 !important;
+  color:#49356F !important; opacity:1 !important; filter:none !important;
 }
 #finhub-sidebar.sidebar-icon-rail #finhub-back-button:disabled i,
 #finhub-sidebar.sidebar-icon-rail #finhub-back-button.is-back-disabled i {
-  color:#F0EAFE !important; opacity:1 !important; font-size:1rem !important;
+  color:#49356F !important; opacity:1 !important; font-size:1rem !important;
 }
 #finhub-sidebar #sidebar-summary { display:none; }
 body#app-body > main {
@@ -2316,8 +2316,8 @@ body[data-finhub-theme] .acc-column-menu.fh-filter-portal :is(button,input):focu
 <button class="fh-action-button fh-action-button-primary" onclick="openAccountModal()" type="button"><i class="fa-solid fa-plus" aria-hidden="true"></i> Add Account</button>
 </div>
 </div>
-<section class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm p-4" id="available-to-spend-card">
-<div class="flex flex-wrap items-start justify-between gap-3">
+<section class="fh-available-spend-card" id="available-to-spend-card">
+<div class="fh-available-spend-primary">
 <div class="min-w-0">
 <div class="text-xs font-semibold uppercase tracking-wider text-gray-500">Available to Spend</div>
 <div class="text-2xl font-bold fh-status-income dark:fh-status-income mt-1 accounting-num blur-target" id="available-to-spend-value">$0.00</div>
@@ -2325,7 +2325,7 @@ body[data-finhub-theme] .acc-column-menu.fh-filter-portal :is(button,input):focu
 </div>
 <button class="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline whitespace-nowrap" onclick="openAvailableToSpendSettings()" type="button"><i class="fa-solid fa-sliders mr-1"></i>Manage</button>
 </div>
-<div class="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800 flex flex-wrap items-center justify-between gap-2">
+<div class="fh-available-spend-unallocated">
 <span class="text-xs text-gray-500">Unallocated spending money</span>
 <strong class="text-sm font-bold accounting-num fh-status-income dark:fh-status-income" id="available-to-spend-unallocated">$0.00</strong>
 </div>
@@ -2339,39 +2339,51 @@ body[data-finhub-theme] .acc-column-menu.fh-filter-portal :is(button,input):focu
 </div>
 </div>
 <div class="dashboard-block bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden" data-dashboard-block="budget-performance">
-<div class="dashboard-block-header flex items-center justify-between gap-3">
-<button aria-expanded="true" class="dashboard-block-header-trigger flex-1 w-full p-5 text-left" id="budget-performance-toggle" onclick="toggleDashboardBudgetPerformance()" type="button">
-<h3 class="font-bold text-md"><i class="fa-solid fa-chart-simple fh-status-income mr-2"></i>Budget Performance</h3>
-<p class="text-xs text-gray-400 mt-1">Actual spending compared with your category budgets. Select a category to edit its budget.</p>
+<div class="dashboard-block-header fh-dashboard-disclosure-header">
+<button class="dashboard-block-header-trigger fh-dashboard-disclosure-trigger" type="button" aria-controls="budget-performance-content" aria-expanded="true" onclick="toggleDashboardBudgetPerformance()">
+<span class="fh-dashboard-disclosure-copy"><span class="fh-dashboard-disclosure-title"><i class="fa-solid fa-chart-simple fh-status-income" aria-hidden="true"></i><span>Budget Performance</span></span><span class="fh-dashboard-disclosure-description">Actual spending compared with your category budgets. Select a category to edit its budget.</span></span>
+<i class="fa-solid fa-chevron-down fh-dashboard-disclosure-chevron" id="budget-performance-chevron" aria-hidden="true"></i>
 </button>
-<button aria-controls="budget-performance-content" aria-label="Collapse or expand Budget Performance" class="shrink-0 p-2 rounded-lg 0/10 :var(--fh-primary)]" onclick="toggleDashboardBudgetPerformance()" type="button"><i class="fa-solid fa-chevron-down text-gray-400 transition-transform" id="budget-performance-chevron"></i></button>
 </div>
 <div class="px-5 pb-5 space-y-3" id="budget-performance-content"><div class="space-y-3" id="mo-budget-list"></div></div>
 </div>
-<div class="dashboard-block bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm p-5" data-dashboard-block="debt-savings">
-<h3 class="font-bold text-md mb-3"><i class="fa-solid fa-piggy-bank text-rose-500 mr-2"></i>Debt Payments &amp; Savings</h3>
+<div class="dashboard-block bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm" data-dashboard-block="debt-savings">
+<div class="dashboard-block-header fh-dashboard-disclosure-header">
+<button class="dashboard-block-header-trigger fh-dashboard-disclosure-trigger" type="button" aria-controls="sec-dashboard-debt-savings-content" aria-expanded="true" onclick="toggleCollapse('sec-dashboard-debt-savings')">
+<span class="fh-dashboard-disclosure-copy"><span class="fh-dashboard-disclosure-title"><i class="fa-solid fa-piggy-bank text-rose-500" aria-hidden="true"></i><span>Debt Payments &amp; Savings</span></span><span class="fh-dashboard-disclosure-description">Recorded debt payments and savings contributions.</span></span>
+<i class="fa-solid fa-chevron-down fh-dashboard-disclosure-chevron" id="sec-dashboard-debt-savings-icon" aria-hidden="true"></i>
+</button>
+</div>
+<div class="fh-dashboard-disclosure-content" id="sec-dashboard-debt-savings-content">
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
 <div class="rounded-xl bg-gray-50 dark:bg-gray-950 p-3"><div class="text-xs text-gray-500">Debt payments recorded</div><strong class="text-2xl font-bold fh-status-expense accounting-num tabular-nums" id="mo-debt-payments">$ –</strong></div>
 <div class="rounded-xl bg-gray-50 dark:bg-gray-950 p-3"><div class="text-xs text-gray-500">Savings contributions</div><strong class="text-2xl font-bold fh-status-income accounting-num tabular-nums" id="mo-savings">$ –</strong></div>
 </div>
 <p class="text-xs text-gray-500 mt-3">Debt payments are based on recorded debt-payment transactions. Savings are based on transactions categorized as savings.</p>
 </div>
-<div class="dashboard-block bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm p-5" data-dashboard-block="cashflow-trend">
-<h3 class="font-bold text-md mb-3"><i class="fa-solid fa-chart-line text-cyan-500 mr-2"></i>Cash Flow Trend</h3>
+</div>
+<div class="dashboard-block bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm" data-dashboard-block="cashflow-trend">
+<div class="dashboard-block-header fh-dashboard-disclosure-header">
+<button class="dashboard-block-header-trigger fh-dashboard-disclosure-trigger" type="button" aria-controls="sec-dashboard-cashflow-trend-content" aria-expanded="true" onclick="toggleCollapse('sec-dashboard-cashflow-trend')">
+<span class="fh-dashboard-disclosure-copy"><span class="fh-dashboard-disclosure-title"><i class="fa-solid fa-chart-line text-cyan-500" aria-hidden="true"></i><span>Cash Flow Trend</span></span><span class="fh-dashboard-disclosure-description">Income and expenses over the six months ending with the selected month.</span></span>
+<i class="fa-solid fa-chevron-down fh-dashboard-disclosure-chevron" id="sec-dashboard-cashflow-trend-icon" aria-hidden="true"></i>
+</button>
+</div>
+<div class="fh-dashboard-disclosure-content" id="sec-dashboard-cashflow-trend-content">
 <p class="text-xs text-gray-500 mb-3">Income and expenses over the six months ending with the selected month. Green shows income; red shows expenses. The amount at right is net cash flow.</p>
 <div class="space-y-2" id="mo-trend-list"></div>
+</div>
 </div>
 <!-- NET WORTH TREND -->
 <!-- SPENDING BY CATEGORY -->
 <div class="dashboard-block bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden" data-dashboard-block="spending">
-<button class="dashboard-block-header-trigger w-full p-5 flex justify-between items-center text-left" onclick="toggleCollapse('sec-spending-chart')">
-<div class="flex items-center space-x-2">
-<i class="fa-solid fa-chart-column text-amber-500"></i>
-<div><h3 class="font-bold text-md">Spending by Category</h3><p class="text-xs text-gray-400 mt-1" id="spending-chart-period">Expense transactions in the selected period.</p></div>
-</div>
-<i class="fa-solid fa-chevron-down text-gray-400 transition-transform" id="sec-spending-chart-icon"></i>
+<div class="dashboard-block-header fh-dashboard-disclosure-header">
+<button class="dashboard-block-header-trigger fh-dashboard-disclosure-trigger" type="button" aria-controls="sec-spending-chart-content" aria-expanded="true" onclick="toggleCollapse('sec-spending-chart')">
+<span class="fh-dashboard-disclosure-copy"><span class="fh-dashboard-disclosure-title"><i class="fa-solid fa-chart-column text-amber-500" aria-hidden="true"></i><span>Spending by Category</span></span><span class="fh-dashboard-disclosure-description"><span id="spending-chart-period">Expense transactions in the selected period.</span></span></span>
+<i class="fa-solid fa-chevron-down fh-dashboard-disclosure-chevron" id="sec-spending-chart-icon" aria-hidden="true"></i>
 </button>
-<div class="p-5 border-t border-gray-200 dark:border-gray-800" id="sec-spending-chart-content">
+</div>
+<div class="p-5" id="sec-spending-chart-content">
 <div class="flex flex-wrap justify-between items-center gap-2 mb-4"><label class="text-xs text-gray-500">Breakdown <select class="ml-2 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1" id="spending-chart-level" onchange="renderSpendingCategoryChart()"><option selected="" value="subcategory">Subcategory</option><option value="category">Category / bucket</option></select></label><span class="text-xs font-semibold accounting-num" id="spending-chart-total"></span></div><div class="grid grid-cols-1 md:grid-cols-2 gap-5 items-center" id="spending-category-chart"></div>
 <div class="hidden mt-5 pt-4 border-t border-gray-200 dark:border-gray-800" id="spending-category-detail"></div>
 </div>
@@ -2380,12 +2392,11 @@ body[data-finhub-theme] .acc-column-menu.fh-filter-portal :is(button,input):focu
 <!-- ACCOUNT BALANCES & CLASSIFICATIONS -->
 <!-- UPCOMING CASH FLOW -->
 <div class="dashboard-block bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden" data-dashboard-block="upcoming">
-<div class="dashboard-block-header border-b border-gray-200 dark:border-gray-800 flex items-center justify-between gap-3">
-<button class="dashboard-block-header-trigger flex-1 w-full p-5 flex items-center justify-between gap-3 text-left" onclick="toggleCollapse('sec-dashboard-upcoming')" type="button">
-<div><h3 class="font-bold text-md"><i class="fa-solid fa-calendar-days text-indigo-500 mr-2"></i>Upcoming Bills &amp; Paydays</h3><p class="text-xs text-gray-400 mt-1">Live from the Bill &amp; Income Calendar. Select an item to open it in the calendar.</p></div>
-<i class="fa-solid fa-chevron-down text-gray-400 transition-transform" id="sec-dashboard-upcoming-icon"></i>
+<div class="dashboard-block-header fh-dashboard-disclosure-header">
+<button class="dashboard-block-header-trigger fh-dashboard-disclosure-trigger" type="button" aria-controls="sec-dashboard-upcoming-content" aria-expanded="true" onclick="toggleCollapse('sec-dashboard-upcoming')">
+<span class="fh-dashboard-disclosure-copy"><span class="fh-dashboard-disclosure-title"><i class="fa-solid fa-calendar-days text-indigo-500" aria-hidden="true"></i><span>Upcoming Bills &amp; Paydays</span></span><span class="fh-dashboard-disclosure-description">Live from the Bill &amp; Income Calendar. Select an item to open it in the calendar.</span></span>
+<i class="fa-solid fa-chevron-down fh-dashboard-disclosure-chevron" id="sec-dashboard-upcoming-icon" aria-hidden="true"></i>
 </button>
-<div class="dashboard-order-controls"></div>
 </div>
 <div class="p-4 space-y-2" id="sec-dashboard-upcoming-content">
 <div class="flex flex-wrap items-center justify-between gap-2 mb-3"><span class="text-xs text-gray-500">Show scheduled income and bills for:</span><input class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-1.5 text-xs font-semibold" id="dashboard-upcoming-month" onchange="renderDashboardUpcoming()" type="month"/></div>
@@ -2925,13 +2936,9 @@ body[data-finhub-theme] .acc-column-menu.fh-filter-portal :is(button,input):focu
 <h3 class="text-md font-bold theme-text"><i class="fa-solid fa-cloud-arrow-up mr-2"></i>Backup &amp; Transfer Between Devices</h3>
 <p class="text-xs fh-theme-muted mt-1">Move your FinHub data between your laptop, phone, or tablet using a backup file. Save the exported file somewhere both devices can access, such as Google Drive or iCloud.</p>
 </div>
-<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-<button class="fh-action-button fh-action-button-primary px-4 py-3 rounded-xl text-sm font-semibold shadow-md" onclick="saveLatestBackup()"><i class="fa-solid fa-floppy-disk mr-2"></i>Save / Update Latest Backup</button><span class="text-[10px] fh-theme-muted">Quick separate backup: Ctrl+S / Cmd+S</span>
-<button class="fh-action-button fh-action-button-primary px-4 py-3 rounded-xl text-sm font-semibold" onclick="saveBackupAs()"><i class="fa-solid fa-file-arrow-down mr-2"></i>Save As…</button>
-<button class="fh-action-button fh-action-button-primary px-4 py-3 rounded-xl text-sm font-semibold" onclick="exportDatedArchive()"><i class="fa-solid fa-box-archive mr-2"></i>Save Dated Archive</button>
-<button class="fh-action-button fh-action-button-primary px-4 py-3 rounded-xl text-sm font-semibold" onclick="document.getElementById('backup-import-file').click()"><i class="fa-solid fa-upload mr-2"></i>Import Backup</button>
+<div class="fh-backup-actions-grid"><button class="fh-action-button fh-action-button-primary px-4 py-3 rounded-xl text-sm font-semibold shadow-md" onclick="saveLatestBackup()"><i class="fa-solid fa-floppy-disk mr-2"></i>Save / Update Latest Backup</button><button class="fh-action-button fh-action-button-primary px-4 py-3 rounded-xl text-sm font-semibold" onclick="saveBackupAs()"><i class="fa-solid fa-file-arrow-down mr-2"></i>Save As…</button><button class="fh-action-button fh-action-button-primary px-4 py-3 rounded-xl text-sm font-semibold" onclick="exportDatedArchive()"><i class="fa-solid fa-box-archive mr-2"></i>Save Dated Archive</button><button class="fh-action-button fh-action-button-primary px-4 py-3 rounded-xl text-sm font-semibold" onclick="document.getElementById('backup-import-file').click()"><i class="fa-solid fa-upload mr-2"></i>Import Backup</button></div>
 <input accept=".json,.xlsx,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" class="hidden" id="backup-import-file" onchange="importData(event)" type="file">
-</input></div>
+<p class="fh-backup-shortcut-hint text-[10px] fh-theme-muted">Quick separate backup: Ctrl+S / Cmd+S</p>
 <div class="rounded-xl fh-theme-raised border fh-theme-border p-3 space-y-2">
 <div class="flex items-center justify-between gap-2"><strong class="text-xs">Latest backup destination</strong><span class="text-[10px] fh-theme-muted" id="backup-destination-status">Not selected yet</span></div>
 <p class="text-[11px] fh-theme-muted">Choose where <strong>FinHub_LATEST_BACKUP.json</strong> lives. In supported browsers, FinHub can remember that file and ask permission to overwrite it on future backups. Otherwise, it downloads a fresh copy and you choose the save location in your browser.</p>
@@ -2974,7 +2981,7 @@ body[data-finhub-theme] .acc-column-menu.fh-filter-portal :is(button,input):focu
 <button class="text-left rounded-xl border fh-theme-border p-3 ring-indigo-400" onclick="setVisualTheme('classic')" type="button"><span class="block h-7 rounded-lg mb-2" style="background:linear-gradient(90deg,#f3f4f6 50%,#4f46e5 50%)"></span><strong class="text-xs">Classic</strong><span class="block text-[10px] fh-theme-muted">Original FinHub look</span></button>
 <button class="text-left rounded-xl border fh-theme-border p-3 ring-slate-400" onclick="setVisualTheme('silver')" type="button"><span class="block h-7 rounded-lg mb-2" style="background:linear-gradient(90deg,#e7ebef 50%,#536474 50%)"></span><strong class="text-xs">Silver Bengal</strong><span class="block text-[10px] fh-theme-muted">Silver, charcoal, icy blue</span></button>
 <button class="text-left rounded-xl border fh-theme-border p-3 ring-rose-400" onclick="setVisualTheme('colorful')" type="button"><span class="block h-7 rounded-lg mb-2" style="background:linear-gradient(90deg,#fff1f5 30%,#c34f7b 30% 55%,#b69ad8 55% 78%,#e7a0b7 78%)"></span><strong class="text-xs">Rose Garden</strong><span class="block text-[10px] fh-theme-muted">Blush, berry, lavender &amp; plum</span></button>
-<button class="text-left rounded-xl border fh-theme-border p-3 ring-cyan-400" onclick="setVisualTheme('oceanpop')" type="button"><span class="block h-7 rounded-lg mb-2 ocean-pop-palette"></span><strong class="text-xs">Ocean Pop</strong><span class="block text-[10px] fh-theme-muted">Aqua, lime, hot pink &amp; navy</span></button>
+<button class="text-left rounded-xl border fh-theme-border p-3 ring-cyan-400" onclick="setVisualTheme('oceanpop')" type="button"><span class="block h-7 rounded-lg mb-2 ocean-pop-palette" style="background:linear-gradient(90deg,#00FBEA 0 25%,#D8FF76 25% 50%,#FF2687 50% 75%,#132A44 75%)"></span><strong class="text-xs">Ocean Pop</strong><span class="block text-[10px] fh-theme-muted">Aqua, lime, hot pink &amp; navy</span></button>
 <button class="text-left rounded-xl border fh-theme-border p-3 ring-violet-500" onclick="setVisualTheme('midnightpop')" type="button"><span class="block h-7 rounded-lg mb-2" style="background:linear-gradient(90deg,#F5F1FA 0 25%,#7543D6 25% 50%,#20BDB5 50% 75%,#D96B9C 75%)"></span><strong class="text-xs">Midnight Pop</strong><span class="block text-[10px] fh-theme-muted">Lavender, plum, violet, aqua &amp; pink</span></button>
 <button class="text-left rounded-xl border border-orange-300 dark:border-orange-800 p-3 ring-orange-400" onclick="setVisualTheme('pastelbreeze')" type="button"><span class="block h-7 rounded-lg mb-2" style="background:linear-gradient(90deg,#FF8A3D 0 16%,#FFB166 16% 32%,#FFD6A5 32% 48%,#A8E6CF 48% 64%,#FFB5C0 64% 80%,#FFF7F1 80%)"></span><strong class="text-xs">Pastel Breeze</strong><span class="block text-[10px] fh-theme-muted">Warm orange, peach, mint &amp; blush</span></button>
 <button class="text-left rounded-xl border border-violet-300 dark:border-violet-800 p-3 ring-violet-500" onclick="setVisualTheme('purplepulse')" type="button"><span class="block h-7 rounded-lg mb-2" style="background:linear-gradient(90deg,#6A0DAD 0 16%,#9D4EDD 16% 32%,#CBA6FF 32% 48%,#00E5D4 48% 64%,#FF4FA3 64% 80%,#F5EEFF 80%)"></span><strong class="text-xs">Purple Pulse</strong><span class="block text-[10px] fh-theme-muted">Violet, aqua &amp; vibrant pink</span></button>
@@ -5060,7 +5067,11 @@ Bonus" rows="4"></textarea></div>
           page.insertBefore(dragging, after ? section.nextSibling : section);
           persistSectionOrder(page);
         });
-        section.appendChild(handle);
+        const dashboardHeader = section.matches('#tab-dashboard [data-dashboard-block]')
+          ? section.querySelector('.fh-dashboard-disclosure-header')
+          : null;
+        if (dashboardHeader) dashboardHeader.insertBefore(handle, dashboardHeader.firstChild);
+        else section.appendChild(handle);
       });
     }
     function initPageSectionReordering() {
@@ -11483,8 +11494,8 @@ ${acc.name}`);
                   <div class="fh-category-subcategory-list">${subsHtml || '<span class="fh-category-empty">No subcategories defined</span>'}</div>
                 </details>
                 <div class="fh-category-actions">
-                  <button type="button" onclick="openCategoryModal(${idx})" title="Edit expense bucket" aria-label="Edit ${escapeHtml(cat.name)}"><i class="fa-solid fa-pen"></i></button>
-                  <button type="button" onclick="deleteCategory(${idx})" title="Delete expense bucket" aria-label="Delete ${escapeHtml(cat.name)}"><i class="fa-solid fa-trash"></i></button>
+                  <button type="button" class="fh-inline-action" onclick="openCategoryModal(${idx})" title="Edit expense bucket" aria-label="Edit ${escapeHtml(cat.name)}"><i class="fa-solid fa-pen"></i></button>
+                  <button type="button" class="fh-inline-action" onclick="deleteCategory(${idx})" title="Delete expense bucket" aria-label="Delete ${escapeHtml(cat.name)}"><i class="fa-solid fa-trash"></i></button>
                 </div>
               </div>
             </div>
@@ -11531,8 +11542,8 @@ ${acc.name}`);
                   <div class="fh-category-subcategory-list">${subsHtml || '<span class="fh-category-empty">No subcategories defined</span>'}</div>
                 </details>
                 <div class="fh-category-actions">
-                  <button type="button" onclick="openIncomeCategoryModal(${idx})" title="Edit income bucket" aria-label="Edit ${escapeHtml(cat.name)}"><i class="fa-solid fa-pen"></i></button>
-                  <button type="button" onclick="deleteIncomeCategory(${idx})" title="Delete income bucket" aria-label="Delete ${escapeHtml(cat.name)}"><i class="fa-solid fa-trash"></i></button>
+                  <button type="button" class="fh-inline-action" onclick="openIncomeCategoryModal(${idx})" title="Edit income bucket" aria-label="Edit ${escapeHtml(cat.name)}"><i class="fa-solid fa-pen"></i></button>
+                  <button type="button" class="fh-inline-action" onclick="deleteIncomeCategory(${idx})" title="Delete income bucket" aria-label="Delete ${escapeHtml(cat.name)}"><i class="fa-solid fa-trash"></i></button>
                 </div>
               </div>
             </div>
@@ -15975,7 +15986,7 @@ document.addEventListener('toggle', function(event) {
   const semanticClasses = ['fh-semantic-button','fh-btn-primary','fh-btn-delete','fh-btn-cancel'];
   const classify = (button) => {
     if (!(button instanceof HTMLButtonElement) || button.closest('#finhub-sidebar .sidebar-back-refresh')) return;
-    if (button.classList.contains('fh-inline-action')) return;
+    if (button.classList.contains('fh-inline-action') || button.closest('#tab-settings .fh-category-actions')) return;
 
     // Explicit semantic markup is authoritative. Never strip a component's
     // intentional variant simply because its label is not in the classifier.
@@ -16689,7 +16700,7 @@ html.dark #tab-accounts .account-card strong.accounts-financial-value.text-rose-
 (() => {
   const classify = (button) => {
     if (!(button instanceof HTMLButtonElement)) return;
-    if (button.classList.contains('fh-action-button')) return;
+    if (button.classList.contains('fh-action-button') || button.classList.contains('fh-inline-action') || button.closest('#tab-settings .fh-category-actions')) return;
     const label = (button.getAttribute('aria-label') || button.title || button.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase();
     if (!label) return;
     button.classList.remove('fh-theme-primary-action','fh-theme-danger-action','fh-theme-neutral-action');
@@ -19076,8 +19087,12 @@ body[data-finhub-theme] .dashboard-action-toolbar .fh-action-button {
   background:color-mix(in srgb,var(--fh-status-warning) 12%,var(--fh-card));
   border-color:color-mix(in srgb,var(--fh-status-warning) 42%,var(--fh-border));
   color:var(--fh-ink);
+  font-size:.78rem;
+  line-height:1.5;
+  padding:.65rem .85rem;
 }
-#tab-settings .fh-settings-status-warning strong { color:var(--fh-ink); }
+#tab-settings .fh-settings-status-warning strong { color:var(--fh-ink);font-weight:750; }
+#tab-settings .fh-settings-status-warning p {font-size:inherit;line-height:inherit;margin:0;}
 #tab-settings .fh-settings-subsection {
   overflow:hidden;
   border:1px solid var(--fh-border);
@@ -19474,13 +19489,39 @@ body[data-finhub-theme] #tab-debt .fh-amortization-card {position:relative;overf
 #tab-settings .fh-category-limit {font-weight:700;color:var(--fh-ink);}
 #tab-settings .fh-category-rollover {color:var(--fh-primary);font-weight:700;}
 #tab-settings .fh-category-empty {font-size:.68rem;color:var(--fh-muted);}
-#tab-settings .fh-category-actions {display:flex;align-items:center;gap:.2rem;flex:0 0 auto;}
+#tab-settings .fh-category-actions {display:flex;align-items:center;gap:.65rem;flex:0 0 auto;}
 #tab-settings .fh-category-actions button {
-  display:inline-flex;align-items:center;justify-content:center;width:1.9rem;height:1.9rem;
-  border:1px solid transparent;border-radius:.5rem;background:transparent;color:var(--fh-muted);
-  transition:background-color .15s ease,border-color .15s ease,color .15s ease;
+  appearance:none !important;
+  display:inline-flex;align-items:center;justify-content:center;
+  width:1.5rem;height:1.5rem;min-width:1.5rem;padding:0;
+  border:0 !important;border-radius:.35rem;
+  background:transparent !important;box-shadow:none !important;
+  color:var(--fh-muted);font-size:.82rem;line-height:1;
+  opacity:.88;
+  transition:background-color .15s ease,color .15s ease,opacity .15s ease;
 }
-#tab-settings .fh-category-actions button:hover {color:var(--fh-ink);border-color:var(--fh-border);background:var(--fh-surface-hover,var(--fh-card));}
+#tab-settings .fh-category-actions button[onclick^="open"] {color:var(--fh-primary);}
+#tab-settings .fh-category-actions button[onclick^="delete"] {color:var(--fh-status-expense,#c43d55);}
+#tab-settings .fh-category-actions button:hover {opacity:1;background:var(--fh-surface-hover,var(--fh-card)) !important;}
+#tab-settings .fh-category-actions button[onclick^="delete"]:hover {color:var(--fh-status-expense,#c43d55);}
+#tab-settings .fh-category-actions button i {font-size:.82rem;}
+/* Symmetrical backup actions: shortcut help is outside the action grid. */
+#tab-settings .fh-backup-actions-grid {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:.75rem;
+  align-items:stretch;
+}
+#tab-settings .fh-backup-actions-grid > button {
+  display:flex;align-items:center;justify-content:center;
+  width:100%;min-width:0;min-height:3.25rem;
+  padding:.7rem 1rem;text-align:center;
+}
+#tab-settings .fh-backup-shortcut-hint {margin:.45rem 0 0;text-align:right;}
+@media(max-width:560px) {
+  #tab-settings .fh-backup-actions-grid {grid-template-columns:minmax(0,1fr);}
+  #tab-settings .fh-backup-shortcut-hint {text-align:left;}
+}
 #tab-settings .fh-settings-transaction-types-panel {
   width:100%;min-width:0;padding:1rem;border:1px solid var(--fh-border);
   border-radius:1rem;background:var(--fh-card);color:var(--fh-ink);
@@ -19492,6 +19533,74 @@ body[data-finhub-theme] #tab-debt .fh-amortization-card {position:relative;overf
   #tab-settings .fh-category-row-heading {gap:.35rem;}
   #tab-settings .fh-category-count {font-size:.61rem;}
   #tab-settings .fh-category-actions button {width:1.75rem;height:1.75rem;}
+}
+/* Available to Spend: balanced internal spacing and vertically centered content. */
+#available-to-spend-card.fh-available-spend-card {
+  box-sizing:border-box;padding:1.25rem 1.5rem;
+  border-radius:1.25rem;border:1px solid var(--fh-border);
+  background:var(--fh-card);color:var(--fh-ink);
+  box-shadow:var(--fh-card-shadow,0 1px 3px rgba(20,30,50,.08));
+}
+#available-to-spend-card .fh-available-spend-primary {
+  display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;
+  gap:.85rem;min-height:5.1rem;
+}
+#available-to-spend-card .fh-available-spend-primary > div:first-child {
+  display:flex;flex-direction:column;justify-content:center;
+}
+#available-to-spend-card .fh-available-spend-primary > button {
+  align-self:center;flex:0 0 auto;padding:.4rem .55rem;border-radius:.55rem;
+}
+#available-to-spend-card .fh-available-spend-unallocated {
+  display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;
+  gap:.75rem;margin-top:.8rem;padding-top:.8rem;border-top:1px solid var(--fh-border);
+}
+@media(max-width:520px) {
+  #available-to-spend-card.fh-available-spend-card {padding:1rem;}
+  #available-to-spend-card .fh-available-spend-primary {min-height:4.5rem;}
+}
+/* Unified dashboard disclosures: all five sections use the same theme-aware header. */
+body[data-finhub-theme] #tab-dashboard .dashboard-block {overflow:hidden;}
+body[data-finhub-theme] #tab-dashboard .fh-dashboard-disclosure-header {
+ display:flex;align-items:stretch;min-height:4.5rem;width:100%;margin:0;padding:0;
+ background:var(--fh-raised);color:var(--fh-ink);border-radius:0;
+}
+body[data-finhub-theme] #tab-dashboard .fh-dashboard-disclosure-trigger {
+ display:flex;align-items:center;justify-content:space-between;flex:1 1 auto;
+ width:100%;min-width:0;margin:0;padding:1rem 1.25rem;gap:1rem;
+ background:transparent;border:0;border-radius:0;color:inherit;text-align:left;
+}
+body[data-finhub-theme] #tab-dashboard .fh-dashboard-disclosure-copy {
+ display:flex;flex-direction:column;justify-content:center;min-width:0;gap:.25rem;
+}
+body[data-finhub-theme] #tab-dashboard .fh-dashboard-disclosure-title {
+ display:flex;align-items:center;gap:.65rem;font-size:1rem;font-weight:700;line-height:1.4;
+}
+body[data-finhub-theme] #tab-dashboard .fh-dashboard-disclosure-title i {
+ width:1.1rem;flex:0 0 1.1rem;text-align:center;
+}
+body[data-finhub-theme] #tab-dashboard .fh-dashboard-disclosure-description {
+ color:var(--fh-muted);font-size:.78rem;line-height:1.45;font-weight:400;
+}
+body[data-finhub-theme] #tab-dashboard .fh-dashboard-disclosure-chevron {
+ flex:0 0 auto;color:var(--fh-muted);transition:transform .16s ease;
+}
+body[data-finhub-theme] #tab-dashboard .fh-dashboard-disclosure-header:hover,
+body[data-finhub-theme] #tab-dashboard .fh-dashboard-disclosure-header:focus-within {
+ background:var(--fh-hover,var(--fh-raised));
+}
+body[data-finhub-theme] #tab-dashboard .fh-dashboard-disclosure-header > .fh-section-drag-handle {
+ position:static !important;inset:auto !important;
+ top:auto !important;right:auto !important;bottom:auto !important;left:auto !important;
+ flex:0 0 1.75rem;width:1.75rem !important;height:1.75rem !important;
+ margin:auto 0 auto 1rem;opacity:.55;
+}
+body[data-finhub-theme] #tab-dashboard .fh-dashboard-disclosure-content {
+ padding:1.25rem;background:var(--fh-card);
+}
+@media(max-width:640px) {
+ body[data-finhub-theme] #tab-dashboard .fh-dashboard-disclosure-trigger {padding:.85rem .9rem;}
+ body[data-finhub-theme] #tab-dashboard .fh-dashboard-disclosure-header > .fh-section-drag-handle {margin-left:.65rem;}
 }
 </style>
 <style id="finhub-account-sign-colours-and-true-icon-rail-fix">
@@ -19526,6 +19635,21 @@ html.dark body[data-finhub-theme] #account-detail-modal .acc-balance-value.acc-b
 html.dark body[data-finhub-theme] #account-detail-modal .acc-opening-balance-input.acc-balance-negative {color:var(--fh-status-expense-dark,color-mix(in srgb,var(--fh-status-expense,#C75E5E) 68%,white 32%)) !important;}
 html.dark body[data-finhub-theme] #account-detail-modal .acc-balance-value.acc-balance-positive,
 html.dark body[data-finhub-theme] #account-detail-modal .acc-opening-balance-input.acc-balance-positive {color:var(--fh-status-income-dark,var(--fh-status-income,#62D7AC)) !important;}
+/* Disabled Back remains legible in both modes; light and dark palettes are explicit. */
+.dark #finhub-sidebar #finhub-back-button:disabled,
+.dark #finhub-sidebar #finhub-back-button.is-back-disabled {
+  background:#44345F !important;
+  border-color:#8067A8 !important;
+  color:#F3EAFE !important;
+  opacity:1 !important;
+}
+.dark #finhub-sidebar #finhub-back-button:disabled i,
+.dark #finhub-sidebar #finhub-back-button.is-back-disabled i {
+  color:#F3EAFE !important;
+  opacity:1 !important;
+}
 </style>
 </body>
-</html>
+</html></div>
+</div>
+
