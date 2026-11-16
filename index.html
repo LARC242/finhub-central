@@ -1360,13 +1360,10 @@ body#app-body > #finhub-sidebar {
 #finhub-sidebar #finhub-back-button:disabled,
 #finhub-sidebar #finhub-back-button.is-back-disabled {
   opacity:1 !important; cursor:not-allowed !important; filter:none !important;
-  background:#E8DDFB !important;
-  border:1px solid #B9A0E8 !important;
-  color:#49356F !important; box-shadow:none !important;
 }
 #finhub-sidebar #finhub-back-button:disabled i,
 #finhub-sidebar #finhub-back-button.is-back-disabled i {
-  color:#49356F !important; opacity:1 !important;
+  color:inherit !important; opacity:1 !important;
 }
 /* Keep the disabled Back action legible and consistently sized in the compact icon rail. */
 #finhub-sidebar.sidebar-icon-rail #finhub-back-button:disabled,
@@ -1375,13 +1372,11 @@ body#app-body > #finhub-sidebar {
   width:44px !important; min-width:44px !important; max-width:44px !important;
   height:44px !important; min-height:44px !important; padding:0 !important;
   border-radius:11px !important;
-  background:#E8DDFB !important;
-  border:1px solid #B9A0E8 !important;
-  color:#49356F !important; opacity:1 !important; filter:none !important;
+  opacity:1 !important; filter:none !important;
 }
 #finhub-sidebar.sidebar-icon-rail #finhub-back-button:disabled i,
 #finhub-sidebar.sidebar-icon-rail #finhub-back-button.is-back-disabled i {
-  color:#49356F !important; opacity:1 !important; font-size:1rem !important;
+  color:inherit !important; opacity:1 !important; font-size:1rem !important;
 }
 #finhub-sidebar #sidebar-summary { display:none; }
 body#app-body > main {
@@ -2957,6 +2952,80 @@ body[data-finhub-theme] #account-detail-modal .acc-filter-trigger.has-active-fil
 }
 </style>
 
+<style id="fh-foundation-design-system-v1">
+/* FinHub foundational design system v1.
+   This stage defines reusable primitives only; page migrations happen separately. */
+body[data-finhub-theme] {
+  --fh-ds-space-1: .25rem;
+  --fh-ds-space-2: .5rem;
+  --fh-ds-space-3: .75rem;
+  --fh-ds-space-4: 1rem;
+  --fh-ds-space-5: 1.25rem;
+  --fh-ds-space-6: 1.5rem;
+  --fh-ds-radius-sm: .5rem;
+  --fh-ds-radius-md: .75rem;
+  --fh-ds-radius-lg: 1rem;
+  --fh-ds-border: var(--fh-ui-border);
+  --fh-ds-page: var(--fh-ui-page);
+  --fh-ds-card: var(--fh-ui-card);
+  --fh-ds-raised: var(--fh-ui-raised);
+  --fh-ds-ink: var(--fh-ui-ink);
+  --fh-ds-muted: var(--fh-ui-muted);
+  --fh-ds-focus: var(--fh-primary, #64748b);
+}
+
+/* Page-level primitives */
+.fh-ds-page-header { display:flex; align-items:flex-end; justify-content:space-between; gap:var(--fh-ds-space-4); min-width:0; margin:0 0 var(--fh-ds-space-6); }
+.fh-ds-page-header-copy { min-width:0; }
+.fh-ds-page-title { margin:0; color:var(--fh-ds-ink); font-size:1.5rem; line-height:1.25; font-weight:750; letter-spacing:-.025em; }
+.fh-ds-page-description { margin:.35rem 0 0; color:var(--fh-ds-muted); font-size:.875rem; line-height:1.45; }
+.fh-ds-page-actions { display:flex; align-items:center; justify-content:flex-end; flex-wrap:wrap; gap:var(--fh-ds-space-2); }
+.fh-ds-page-section { min-width:0; margin-block:var(--fh-ds-space-6); }
+.fh-ds-section-heading { display:flex; align-items:center; justify-content:space-between; gap:var(--fh-ds-space-3); min-width:0; margin:0 0 var(--fh-ds-space-3); }
+.fh-ds-section-title { margin:0; color:var(--fh-ds-ink); font-size:1.125rem; line-height:1.35; font-weight:700; }
+.fh-ds-section-description { margin:.2rem 0 0; color:var(--fh-ds-muted); font-size:.8125rem; line-height:1.45; }
+
+/* Cards and summary panels: surface colours always come from the active theme. */
+.fh-ds-card { min-width:0; color:var(--fh-ds-ink); background:var(--fh-ds-card); border:1px solid var(--fh-ds-border); border-radius:var(--fh-ds-radius-lg); }
+.fh-ds-card-padding { padding:var(--fh-ds-space-4); }
+.fh-ds-summary-card { min-width:0; padding:var(--fh-ds-space-4); color:var(--fh-ds-ink); background:var(--fh-ds-raised); border:1px solid var(--fh-ds-border); border-radius:var(--fh-ds-radius-md); }
+.fh-ds-summary-label { color:var(--fh-ds-muted); font-size:.75rem; line-height:1.35; font-weight:650; }
+.fh-ds-summary-value { margin-top:.35rem; color:var(--fh-ds-ink); font-size:1.375rem; line-height:1.2; font-weight:750; font-variant-numeric:tabular-nums; }
+.fh-ds-summary-note { margin-top:.35rem; color:var(--fh-ds-muted); font-size:.75rem; line-height:1.4; }
+
+/* Two related disclosure levels: primary page sections and compact nested sections. */
+.fh-ds-disclosure { min-width:0; overflow:hidden; color:var(--fh-ds-ink); background:var(--fh-ds-card); border:1px solid var(--fh-ds-border); border-radius:var(--fh-ds-radius-lg); }
+.fh-ds-disclosure > summary { display:flex; align-items:center; justify-content:space-between; gap:var(--fh-ds-space-3); min-height:3.25rem; padding:.85rem 1rem; color:var(--fh-ds-ink); cursor:pointer; list-style:none; }
+.fh-ds-disclosure > summary::-webkit-details-marker { display:none; }
+.fh-ds-disclosure > summary::marker { content:""; }
+.fh-ds-disclosure > summary:focus-visible { outline:2px solid var(--fh-ds-focus); outline-offset:-3px; }
+.fh-ds-disclosure > summary:hover { background:var(--fh-ds-raised); }
+.fh-ds-disclosure-primary > summary { min-height:3.5rem; padding:1rem 1.125rem; font-size:.9375rem; font-weight:700; }
+.fh-ds-disclosure-nested { border-radius:var(--fh-ds-radius-md); background:var(--fh-ds-raised); }
+.fh-ds-disclosure-nested > summary { min-height:2.75rem; padding:.65rem .85rem; font-size:.8125rem; font-weight:650; }
+.fh-ds-disclosure-panel { min-width:0; padding:var(--fh-ds-space-4); border-top:1px solid var(--fh-ds-border); }
+.fh-ds-disclosure-nested > .fh-ds-disclosure-panel { padding:var(--fh-ds-space-3); }
+.fh-ds-disclosure-chevron { flex:0 0 auto; color:var(--fh-ds-muted); transition:transform .16s ease; }
+.fh-ds-disclosure[open] > summary .fh-ds-disclosure-chevron { transform:rotate(180deg); }
+
+/* Action roles. Existing app actions are not restyled until each page is migrated. */
+.fh-ds-button { display:inline-flex; align-items:center; justify-content:center; gap:.45rem; min-height:2.375rem; padding:.55rem .85rem; border:1px solid transparent; border-radius:var(--fh-ds-radius-sm); font:inherit; font-size:.8125rem; line-height:1.2; font-weight:650; cursor:pointer; transition:background-color .15s ease,border-color .15s ease,color .15s ease; }
+.fh-ds-button:focus-visible { outline:2px solid var(--fh-ds-focus); outline-offset:2px; }
+.fh-ds-button:disabled { opacity:.5; cursor:not-allowed; }
+.fh-ds-button-primary { color:#fff; background:var(--fh-action-primary,var(--fh-primary)); }
+.fh-ds-button-secondary { color:var(--fh-ds-ink); background:var(--fh-ds-card); border-color:var(--fh-ds-border); }
+.fh-ds-button-subtle { color:var(--fh-ds-muted); background:transparent; border-color:transparent; }
+.fh-ds-button-danger { color:var(--fh-status-expense,#dc2626); background:transparent; border-color:currentColor; }
+.fh-ds-button-toggle { color:var(--fh-ds-muted); background:var(--fh-ds-raised); border-color:var(--fh-ds-border); }
+
+@media (max-width:767px) {
+  .fh-ds-page-header { align-items:stretch; flex-direction:column; gap:var(--fh-ds-space-3); }
+  .fh-ds-page-actions { justify-content:flex-start; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .fh-ds-button,.fh-ds-disclosure-chevron { transition:none !important; }
+}
+</style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 min-h-screen flex flex-col md:flex-row transition-colors duration-200 relative" id="app-body">
 <!-- UNDO TOAST NOTIFICATION -->
@@ -3009,7 +3078,7 @@ body[data-finhub-theme] #account-detail-modal .acc-filter-trigger.has-active-fil
 <i class="fa-solid fa-gear w-5"></i><span class="sidebar-nav-label">Settings</span>
 </button></div></nav>
 <div class="px-3 pt-3 sidebar-back-refresh">
-<button aria-label="Go back to the previous FinHub page" class="sidebar-back-button" disabled="" id="finhub-back-button" onclick="goBackFinHubPage()" title="Back to previous page" type="button"><i class="fa-solid fa-arrow-left"></i><span>Back</span></button>
+<button aria-label="Go back to the previous FinHub page" class="sidebar-back-button theme-bg border border-black/10 text-white shadow" disabled="" id="finhub-back-button" onclick="goBackFinHubPage()" title="Back to previous page" type="button"><i class="fa-solid fa-arrow-left"></i><span>Back</span></button>
 <button aria-label="Refresh displayed FinHub information" class="w-full inline-flex items-center justify-center gap-2 rounded-lg px-2 py-2 text-[11px] font-bold text-white shadow theme-bg border border-black/10" id="finhub-global-refresh" onclick="refreshFinHubView()" title="Refresh displayed FinHub information" type="button">
 <i class="fa-solid fa-rotate"></i><span data-refresh-label="">Refresh FinHub</span>
 </button>
@@ -23262,18 +23331,19 @@ html.dark body[data-finhub-theme] #account-detail-modal .acc-balance-value.acc-b
 html.dark body[data-finhub-theme] #account-detail-modal .acc-opening-balance-input.acc-balance-negative {color:var(--fh-status-expense-dark,color-mix(in srgb,var(--fh-status-expense,#C75E5E) 68%,white 32%)) !important;}
 html.dark body[data-finhub-theme] #account-detail-modal .acc-balance-value.acc-balance-positive,
 html.dark body[data-finhub-theme] #account-detail-modal .acc-opening-balance-input.acc-balance-positive {color:var(--fh-status-income-dark,var(--fh-status-income,#62D7AC)) !important;}
-/* Disabled Back remains legible in both modes; light and dark palettes are explicit. */
-.dark #finhub-sidebar #finhub-back-button:disabled,
-.dark #finhub-sidebar #finhub-back-button.is-back-disabled {
-  background:#44345F !important;
-  border-color:#8067A8 !important;
-  color:#F3EAFE !important;
-  opacity:1 !important;
+/* Disabled Back uses the active theme's dark action/surface tokens. */
+.dark body[data-finhub-theme] #finhub-sidebar #finhub-back-button:disabled,
+.dark body[data-finhub-theme] #finhub-sidebar #finhub-back-button.is-back-disabled {
+  background: color-mix(in srgb, var(--fh-dark-action, var(--fh-action, var(--fh-primary))) 18%, var(--fh-card, var(--surface-primary))) !important;
+  border-color: color-mix(in srgb, var(--fh-dark-action, var(--fh-action, var(--fh-primary))) 52%, var(--fh-border, transparent)) !important;
+  color: var(--fh-dark-action, var(--fh-action, var(--fh-primary))) !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
 }
-.dark #finhub-sidebar #finhub-back-button:disabled i,
-.dark #finhub-sidebar #finhub-back-button.is-back-disabled i {
-  color:#F3EAFE !important;
-  opacity:1 !important;
+.dark body[data-finhub-theme] #finhub-sidebar #finhub-back-button:disabled i,
+.dark body[data-finhub-theme] #finhub-sidebar #finhub-back-button.is-back-disabled i {
+  color: var(--fh-dark-action, var(--fh-action, var(--fh-primary))) !important;
+  opacity: 1 !important;
 }
 </style>
 <style id="finhub-shared-transaction-type-card-standard">
