@@ -6262,6 +6262,27 @@ Bonus" rows="4"></textarea></div>
       const items = [];
       const seen = new Set();
 
+      // Dashboard's first panel has a dedicated toggle function rather than
+      // toggleCollapse(). Include it explicitly so page-level controls cover it too.
+      if (page.id === 'tab-dashboard') {
+        const content = page.querySelector('#budget-performance-content');
+        const button = page.querySelector('#budget-performance-toggle');
+        const icon = page.querySelector('#budget-performance-chevron');
+        if (content && button) {
+          items.push({
+            key: 'dashboard-budget-performance',
+            isOpen: () => !content.hidden && !content.classList.contains('hidden'),
+            setOpen: open => {
+              content.hidden = !open;
+              content.classList.toggle('hidden', !open);
+              button.setAttribute('aria-expanded', String(open));
+              if (icon) icon.style.transform = open ? 'rotate(0deg)' : 'rotate(-90deg)';
+              state.dashboardBudgetCollapsed = !open;
+            }
+          });
+        }
+      }
+
       // Native details disclosures. Calendar date/event controls are intentionally excluded.
       if (page.id !== 'tab-calendar') {
         page.querySelectorAll('details').forEach((details, index) => {
@@ -6331,7 +6352,9 @@ Bonus" rows="4"></textarea></div>
 
     function ensurePageDisclosureToolbar(page) {
       if (!page || page.id === 'tab-calendar') return;
-      let toolbar = page.querySelector(':scope > .fh-page-disclosure-toolbar');
+      // The Dashboard toolbar is intentionally nested in its action row. Search
+      // the whole page so repeated initialization never creates a duplicate.
+      let toolbar = page.querySelector('.fh-page-disclosure-toolbar');
       if (!toolbar) {
         toolbar = document.createElement('div');
         toolbar.className = 'fh-page-disclosure-toolbar';
@@ -6365,7 +6388,7 @@ Bonus" rows="4"></textarea></div>
     }
 
     function updatePageDisclosureToolbar(page) {
-      const toolbar = page?.querySelector(':scope > .fh-page-disclosure-toolbar');
+      const toolbar = page?.querySelector('.fh-page-disclosure-toolbar');
       if (!toolbar) return;
       const items = getPageDisclosureItems(page);
       const expand = toolbar.querySelector('[data-fh-disclosure-action="expand"]');
@@ -6395,7 +6418,7 @@ Bonus" rows="4"></textarea></div>
     }, true);
 
     document.addEventListener('click', event => {
-      const toggleButton = event.target.closest('.tab-content button[onclick*="toggleCollapse("]');
+      const toggleButton = event.target.closest('.tab-content button[onclick*="toggleCollapse("], .tab-content #budget-performance-toggle');
       if (!toggleButton) return;
       const page = toggleButton.closest('.tab-content');
       if (!page) return;
