@@ -23893,5 +23893,366 @@ body[data-finhub-theme] #tab-debt .fh-amortization-card { overflow:hidden; }
 @media (max-width:767px) { #ledger-auto-fit-all { display:none !important; } }
 </style>
 
+<style id="finhub-v83-mobile-navigation-and-table-usability">
+/* Phone navigation: retain the labelled drawer, trim unused right-side space,
+   and keep navigation scrolling independent from its anchored action footer. */
+:root { --finhub-drawer-width:min(250px,86vw); }
+@media (max-width:599px) {
+  body#app-body > aside#finhub-sidebar.finhub-sidebar {
+    width:min(250px,86vw) !important;
+    min-width:0 !important;
+    max-width:86vw !important;
+  }
+  #finhub-sidebar > .finhub-sidebar-primary {
+    min-height:0 !important;
+    flex:1 1 auto !important;
+    overflow:hidden !important;
+  }
+  #finhub-sidebar nav[aria-label="Main navigation"] {
+    flex:1 1 auto !important;
+    min-height:0 !important;
+    overflow-x:hidden !important;
+    overflow-y:auto !important;
+    overscroll-behavior:contain !important;
+    padding-left:9px !important;
+    padding-right:9px !important;
+  }
+  #finhub-sidebar .nav-btn {
+    width:100% !important;
+    min-width:0 !important;
+    min-height:42px !important;
+    box-sizing:border-box !important;
+  }
+  #finhub-sidebar .nav-btn[aria-current="page"],
+  #finhub-sidebar .nav-btn.active,
+  #finhub-sidebar .nav-btn.bg-indigo-600 {
+    width:100% !important;
+    max-width:100% !important;
+  }
+  #finhub-sidebar .sidebar-back-refresh {
+    flex:0 0 auto !important;
+    margin-top:auto !important;
+    padding:8px 9px calc(10px + env(safe-area-inset-bottom)) !important;
+  }
+  #finhub-sidebar .sidebar-back-refresh > button {
+    min-height:42px !important;
+    flex:1 1 0 !important;
+  }
+}
+
+/* Transaction Log: keep its full filtering and selection tools usable on a phone.
+   The list/card view remains the compact representation; the table view remains
+   available with horizontal scrolling rather than silently dropping columns. */
+@media (max-width:640px) {
+  #ledger-table-toolbar {
+    position:relative !important;
+    z-index:2 !important;
+    width:100% !important;
+    min-width:0 !important;
+    overflow:visible !important;
+  }
+  #ledger-table-toolbar > div {
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:stretch !important;
+    gap:.55rem !important;
+    padding:.55rem !important;
+  }
+  #ledger-table-toolbar > div > div {
+    min-width:0 !important;
+    width:100% !important;
+    display:flex !important;
+    flex-wrap:wrap !important;
+    align-items:center !important;
+    gap:.4rem !important;
+  }
+  #ledger-table-toolbar #ledger-global-search {
+    flex:1 1 100% !important;
+    width:100% !important;
+    min-width:0 !important;
+    box-sizing:border-box !important;
+  }
+  #ledger-table-toolbar button,
+  #ledger-table-toolbar label { min-height:34px; }
+  #ledger-active-filter-chips {
+    max-width:100% !important;
+    overflow-x:auto !important;
+    flex-wrap:nowrap !important;
+    padding-bottom:.25rem !important;
+    overscroll-behavior-x:contain;
+  }
+  #ledger-active-filter-chips > * { flex:0 0 auto !important; }
+  #ledger-filter-popover {
+    left:8px !important;
+    right:8px !important;
+    width:auto !important;
+    max-width:none !important;
+    max-height:min(72dvh,620px) !important;
+  }
+  #ledger-filter-options { max-height:min(38dvh,330px) !important; }
+  #ledger-table-container { max-width:100% !important; }
+  #ledger-table-container table { min-width:980px !important; }
+  #ledger-mobile-cards { width:100% !important; min-width:0 !important; }
+  #ledger-mobile-cards .ledger-mobile-row { min-width:0 !important; }
+}
+
+/* Account activity is a six-column accounting table with live column filters.
+   Preserve the filter menus and all values on phones; allow deliberate horizontal
+   scrolling instead of hiding header controls or compressing monetary columns. */
+@media (max-width:640px) {
+  #account-detail-modal { padding:6px !important; align-items:stretch !important; }
+  #account-detail-modal > div {
+    width:100% !important;
+    max-width:none !important;
+    height:calc(100dvh - 12px) !important;
+    max-height:calc(100dvh - 12px) !important;
+    padding:10px !important;
+    gap:.5rem !important;
+    border-radius:14px !important;
+  }
+  #account-detail-modal #acc-detail-title {
+    min-width:0 !important;
+    font-size:.92rem !important;
+    line-height:1.25 !important;
+  }
+  #account-detail-modal .overflow-auto {
+    max-width:100% !important;
+    overflow-x:auto !important;
+    overflow-y:auto !important;
+    -webkit-overflow-scrolling:touch !important;
+    overscroll-behavior:contain !important;
+  }
+  #account-detail-modal #acc-activity-table {
+    width:990px !important;
+    min-width:990px !important;
+    table-layout:fixed !important;
+  }
+  #account-detail-modal #acc-activity-table th,
+  #account-detail-modal #acc-activity-table td {
+    font-size:10px !important;
+    padding:6px 7px !important;
+  }
+  #account-detail-modal [data-filter-menu] {
+    max-width:min(290px,calc(100vw - 34px)) !important;
+  }
+}
+
+/* Phone-safe dialog geometry for the primary editing and review workflows. */
+@media (max-width:640px) {
+  #transaction-modal,
+  #bulk-edit-modal,
+  #recon-modal,
+  #category-modal,
+  #income-category-modal,
+  #zbb-item-modal,
+  #transfer-modal,
+  #account-modal,
+  #debt-detail-modal,
+  #debt-payment-modal,
+  #joint-bill-modal,
+  #calendar-modal {
+    padding:6px !important;
+    align-items:stretch !important;
+  }
+  #transaction-modal > div,
+  #bulk-edit-modal > div,
+  #recon-modal > div,
+  #category-modal > div,
+  #income-category-modal > div,
+  #zbb-item-modal > div,
+  #transfer-modal > div,
+  #account-modal > div,
+  #debt-detail-modal > div,
+  #debt-payment-modal > div,
+  #joint-bill-modal > div,
+  #calendar-modal > div {
+    box-sizing:border-box !important;
+    width:100% !important;
+    max-width:100% !important;
+    max-height:calc(100dvh - 12px) !important;
+    overflow-x:hidden !important;
+    overflow-y:auto !important;
+    overscroll-behavior:contain !important;
+    -webkit-overflow-scrolling:touch !important;
+  }
+}
+</style>
 </body>
 </html>
+
+
+<style id="finhub-v84-mobile-drawer-containment-and-header-layout">
+/* V84 foundational correction: mobile drawer descendants must size to the
+   drawer's content box, not retain desktop/tablet intrinsic widths. */
+@media (max-width:1100px) {
+  body#app-body > aside#finhub-sidebar.finhub-sidebar {
+    box-sizing:border-box !important;
+    width:min(304px,86vw) !important;
+    min-width:0 !important;
+    max-width:min(304px,86vw) !important;
+    overflow:hidden !important;
+    contain:layout inline-size;
+  }
+  #finhub-sidebar,
+  #finhub-sidebar * {
+    box-sizing:border-box;
+  }
+  #finhub-sidebar > .finhub-sidebar-primary,
+  #finhub-sidebar .finhub-sidebar-header,
+  #finhub-sidebar nav[aria-label="Main navigation"],
+  #finhub-sidebar .nav-group,
+  #finhub-sidebar .sidebar-back-refresh,
+  #finhub-sidebar #sidebar-summary {
+    width:100% !important;
+    min-width:0 !important;
+    max-width:100% !important;
+  }
+  #finhub-sidebar .finhub-sidebar-header {
+    flex-wrap:nowrap !important;
+    padding-inline:12px !important;
+  }
+  #finhub-sidebar .sidebar-brand-row,
+  #finhub-sidebar .sidebar-brand-copy,
+  #finhub-sidebar .sidebar-brand-actions {
+    min-width:0 !important;
+    max-width:100% !important;
+  }
+  #finhub-sidebar .sidebar-brand-copy { overflow:hidden !important; }
+  #finhub-sidebar .sidebar-brand-copy h1 {
+    max-width:100% !important;
+    overflow-wrap:anywhere !important;
+    white-space:normal !important;
+  }
+  #finhub-sidebar nav[aria-label="Main navigation"] {
+    flex:1 1 0% !important;
+    padding-inline:9px !important;
+    overflow-x:hidden !important;
+    overflow-y:auto !important;
+  }
+  #finhub-sidebar .nav-group { flex:0 0 auto !important; }
+  #finhub-sidebar .nav-btn,
+  #finhub-sidebar .nav-group-bills .nav-btn-secondary {
+    display:flex !important;
+    flex:1 1 auto !important;
+    width:100% !important;
+    min-width:0 !important;
+    max-width:100% !important;
+    overflow:hidden !important;
+  }
+  #finhub-sidebar .sidebar-nav-label {
+    flex:1 1 0% !important;
+    min-width:0 !important;
+    max-width:100% !important;
+    overflow-wrap:anywhere !important;
+    white-space:normal !important;
+  }
+  #finhub-sidebar .sidebar-back-refresh {
+    flex-wrap:nowrap !important;
+    padding-inline:9px !important;
+  }
+  #finhub-sidebar .sidebar-back-refresh > button {
+    flex:1 1 0% !important;
+    width:100% !important;
+    min-width:0 !important;
+    max-width:100% !important;
+  }
+  #finhub-sidebar #sidebar-summary {
+    display:block !important;
+    flex:0 0 auto !important;
+    width:auto !important;
+    min-width:0 !important;
+    max-width:calc(100% - 20px) !important;
+    margin:0 10px 10px !important;
+    padding:10px !important;
+    overflow:hidden !important;
+  }
+  #finhub-sidebar #sidebar-summary > *,
+  #finhub-sidebar #sidebar-summary .grid,
+  #finhub-sidebar #sidebar-summary .grid > div {
+    min-width:0 !important;
+    max-width:100% !important;
+  }
+  #finhub-sidebar #sidebar-summary #sidebar-networth,
+  #finhub-sidebar #sidebar-summary strong {
+    overflow-wrap:anywhere !important;
+    word-break:normal !important;
+    font-size:clamp(.78rem,3.2vw,1.15rem) !important;
+  }
+}
+/* The menu trigger is a real header column: reserve space for it and for the
+   right-side privacy/theme controls so neither can cover the page title. */
+@media (max-width:1100px) {
+  body#app-body > main {
+    padding-top:20px !important;
+  }
+  body#app-body > main .tab-content > .flex.flex-col.md\:flex-row.md\:items-center,
+  body#app-body > main .tab-content > .dashboard-heading,
+  body#app-body > main .tab-content > .fh-page-header,
+  body#app-body > main .tab-content > header:first-child {
+    min-width:0 !important;
+  }
+  body#app-body > main .tab-content > .flex.flex-col.md\:flex-row.md\:items-center {
+    display:grid !important;
+    grid-template-columns:minmax(0,1fr) !important;
+    row-gap:1rem !important;
+  }
+  body#app-body > main .dashboard-heading,
+  body#app-body > main .fh-page-header-copy {
+    min-width:0 !important;
+    max-width:100% !important;
+    padding-left:58px !important;
+    padding-right:148px !important;
+  }
+  body#app-body > main .dashboard-heading h2,
+  body#app-body > main .fh-page-header-copy h2,
+  body#app-body > main .fh-page-header-title {
+    min-width:0 !important;
+    max-width:100% !important;
+    white-space:normal !important;
+    overflow-wrap:normal !important;
+    word-break:normal !important;
+  }
+  body#app-body > main .dashboard-heading p,
+  body#app-body > main .fh-page-header-description {
+    max-width:100% !important;
+    overflow-wrap:anywhere !important;
+  }
+  body#app-body > main .dashboard-action-toolbar {
+    min-width:0 !important;
+    max-width:100% !important;
+    justify-content:flex-start !important;
+  }
+  #finhub-menu-trigger {
+    position:fixed !important;
+    top:18px !important;
+    left:14px !important;
+    z-index:10030 !important;
+  }
+}
+@media (max-width:599px) {
+  body#app-body > main { padding:72px 12px 20px !important; }
+  body#app-body > main .dashboard-heading,
+  body#app-body > main .fh-page-header-copy {
+    padding-left:48px !important;
+    padding-right:104px !important;
+  }
+  #finhub-menu-trigger { top:12px !important; left:10px !important; }
+}
+</style>
+
+<style id="finhub-v85-drawer-open-control-layering">
+/* The drawer owns its close action while open. Keep the fixed hamburger
+   trigger out of the drawer header so it cannot cover the brand mark. */
+@media (max-width:599px) {
+  body#app-body.finhub-drawer-open #finhub-menu-trigger {
+    display:none !important;
+    visibility:hidden !important;
+    pointer-events:none !important;
+  }
+  body#app-body:not(.finhub-drawer-open) #finhub-menu-trigger {
+    display:inline-flex !important;
+    visibility:visible !important;
+    pointer-events:auto !important;
+  }
+}
+</style>
