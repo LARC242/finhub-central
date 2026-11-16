@@ -2921,7 +2921,7 @@ body[data-finhub-theme] #account-detail-modal .acc-filter-trigger.has-active-fil
 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
 <div>
 <h2 class="text-2xl font-bold">Recurring Income &amp; Expense Calendar</h2>
-<p class="text-sm text-gray-500 dark:text-gray-400">Color-coded matching ZBB waterfall categories and paycheque cycles</p>
+<p class="text-sm text-gray-500 dark:text-gray-400">View scheduled income, bills and debt payments by month or year.</p>
 </div>
 <div class="flex items-center space-x-2">
 <button class="px-3 py-1.5 text-white rounded-xl text-xs font-semibold shadow-sm theme-bg" id="btn-view-monthly" onclick="toggleCalendarView('monthly')">Monthly View</button>
@@ -2978,7 +2978,7 @@ body[data-finhub-theme] #account-detail-modal .acc-filter-trigger.has-active-fil
 <div class="space-y-3 text-sm">
 <div class="flex justify-between"><span class="text-gray-500">Fixed bills:</span><span class="font-bold accounting-num" id="joint-fixed-share">$ - </span></div>
 <div class="flex justify-between"><span class="text-gray-500">Variable bills:</span><span class="font-bold accounting-num" id="joint-variable-share">$ - </span></div>
-<div class="border-t border-gray-200 dark:border-gray-800 pt-3 flex justify-between font-bold text-md"><span>Total Sent:</span><span class="text-pink-600 dark:text-pink-400 accounting-num" id="joint-total-sent-disp">$ - </span></div>
+<div class="border-t border-gray-200 dark:border-gray-800 pt-3 flex justify-between font-bold text-md"><span>Original Share Total:</span><span class="text-pink-600 dark:text-pink-400 accounting-num" id="joint-total-sent-disp">$ - </span></div><div class="flex justify-between items-center text-sm"><span class="text-gray-500">Adjusted Amount Owed:</span><strong class="accounting-num" id="joint-adjusted-owed-disp">$ - </strong></div>
 <div class="pt-3 border-t border-gray-200 dark:border-gray-800 space-y-2">
 <div class="flex justify-between items-center text-xs text-gray-500"><span>Transfers Sent Logged:</span><input class="w-24 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded px-2 py-1 text-right font-bold text-xs accounting-num" id="joint-transfers-sent-input" onchange="saveTransfersSent(this.value)" step="0.01" type="number"/></div>
 <div class="flex justify-between font-bold text-sm"><span>Remaining Due This Month:</span><span class="text-rose-600 dark:text-rose-400 accounting-num" id="joint-remaining-due">$ - </span></div>
@@ -3032,10 +3032,14 @@ body[data-finhub-theme] #account-detail-modal .acc-filter-trigger.has-active-fil
 <p class="text-xs fh-theme-muted mt-3" id="debt-report-trend-note"></p>
 </div>
 </details>
-<section class="fh-content-card fh-amortization-card">
-<div class="fh-content-card-header p-5 border-b fh-theme-border flex flex-col sm:flex-row sm:items-center justify-between gap-2 fh-section-header">
-<div class="min-w-0"><div class="flex items-center gap-2"><h3 class="font-bold text-lg">Cumulative Amortization</h3><span class="acc-opening-info-wrap"><button type="button" class="acc-opening-balance-info" aria-label="About cumulative amortization" aria-describedby="debt-report-amortization-note"><span class="acc-info-glyph" aria-hidden="true">i</span></button><span class="acc-opening-balance-tooltip" id="debt-report-amortization-note" role="tooltip"></span></span></div><p class="text-xs fh-theme-muted mt-1">Actual recorded activity, in chronological order. Payments are cash paid; principal is the amount that reduces the liability.</p></div>
-<div class="flex flex-wrap gap-2"><label class="text-xs fh-theme-muted flex items-center gap-1">From <input class="fh-theme-raised border fh-theme-border rounded-lg px-2 py-1.5" id="debt-report-from" onchange="renderDebtReporting()" type="month"/></label><label class="text-xs fh-theme-muted flex items-center gap-1">To <input class="fh-theme-raised border fh-theme-border rounded-lg px-2 py-1.5" id="debt-report-to" onchange="renderDebtReporting()" type="month"/></label></div>
+<details class="fh-disclosure fh-amortization-card">
+<summary class="fh-disclosure-trigger">
+<span class="fh-debt-disclosure-title">Cumulative Amortization</span><span class="global-collapsible-description">Actual recorded activity, in chronological order. Payments are cash paid; principal is the amount that reduces the liability.</span>
+</summary>
+<div class="fh-disclosure-panel p-4 space-y-3">
+<div class="flex flex-wrap justify-end gap-2">
+<label class="text-xs fh-theme-muted flex items-center gap-1">From <input class="fh-theme-raised border fh-theme-border rounded-lg px-2 py-1.5" id="debt-report-from" onchange="renderDebtReporting()" type="month"/></label>
+<label class="text-xs fh-theme-muted flex items-center gap-1">To <input class="fh-theme-raised border fh-theme-border rounded-lg px-2 py-1.5" id="debt-report-to" onchange="renderDebtReporting()" type="month"/></label>
 </div>
 <div class="overflow-x-auto">
 <table class="fh-data-table w-full min-w-[850px] text-left text-xs">
@@ -3044,8 +3048,8 @@ body[data-finhub-theme] #account-detail-modal .acc-filter-trigger.has-active-fil
 <tfoot class="font-bold fh-theme-raised" id="debt-report-amortization-foot"></tfoot>
 </table>
 </div>
-
-</section>
+</div>
+</details>
 <details class="fh-disclosure">
 <summary class="fh-disclosure-trigger"><span>Debt Payment History</span><span class="global-collapsible-description">Recorded payments, principal, interest and funding accounts.</span></summary>
 <div class="fh-disclosure-panel p-4">
@@ -3110,6 +3114,7 @@ body[data-finhub-theme] #account-detail-modal .acc-filter-trigger.has-active-fil
 </div>
 </div>
 <div class="flex items-center gap-1.5">
+<button class="ledger-subtle-control" id="ledger-auto-fit-all" onclick="autoFitLedgerColumns()" title="Fit all visible columns to the current table width" type="button"><i class="fa-solid fa-arrows-left-right-to-line mr-1"></i>Auto-Fit All</button>
 <button aria-expanded="false" class="ledger-subtle-control" id="ledger-table-options-toggle" onclick="toggleLedgerColumnSettings()" title="Show or hide table options" type="button"><i class="fa-solid fa-sliders mr-1"></i>Table options</button>
 <button aria-expanded="false" class="ledger-subtle-control hidden" id="ledger-list-options-toggle" onclick="toggleLedgerListSettings()" title="Choose details shown in List View" type="button"><i class="fa-solid fa-list-check mr-1"></i>List details</button>
 <button class="ledger-subtle-control" onclick="exportLedgerCsv()" title="Export transactions" type="button"><i class="fa-solid fa-download mr-1"></i>Export</button>
@@ -3139,6 +3144,7 @@ body[data-finhub-theme] #account-detail-modal .acc-filter-trigger.has-active-fil
 </input></div>
 </div>
 </div>
+<div id="ledger-active-filter-chips" class="flex flex-wrap items-center gap-2 px-1 mb-2" aria-live="polite"></div>
 
 <div aria-label="List View filters" class="hidden flex flex-wrap items-center gap-2 mb-3" id="ledger-filter-strip"></div>
 <div class="hidden space-y-1.5" id="ledger-mobile-cards"></div>
@@ -3293,6 +3299,7 @@ body[data-finhub-theme] #account-detail-modal .acc-filter-trigger.has-active-fil
 <button class="fh-action-button fh-action-button-secondary px-3 py-2 rounded-lg text-xs font-semibold" onclick="resetCustomAppearance()" type="button">Reset custom appearance</button>
 </div>
 </div></details>
+</div></details>
 <details class="fh-settings-section" id="settings-group-automation">
 <summary class="cursor-pointer list-none px-5 py-4 font-bold text-sm flex items-center justify-between">Automation Rules <i class="fa-solid fa-chevron-down fh-theme-muted"></i></summary>
 <div class="fh-settings-section-content">
@@ -3332,6 +3339,8 @@ body[data-finhub-theme] #account-detail-modal .acc-filter-trigger.has-active-fil
 <details class="fh-settings-section" id="settings-group-categories" open="">
 <summary class="cursor-pointer list-none px-5 py-4 font-bold text-sm flex items-center justify-between">Categories &amp; Subcategories <i class="fa-solid fa-chevron-down fh-theme-muted"></i></summary>
 <div class="fh-settings-section-content">
+<div class="fh-settings-category-layout">
+<div class="fh-settings-category-column">
 <div class="fh-theme-surface fh-settings-category-panel">
 <div class="flex flex-wrap items-center justify-between gap-2"><div><h3 class="text-md font-bold">Expense Buckets &amp; Subcategories</h3><p class="text-[10px] fh-theme-muted mt-1">Used for spending, budgets and expense reporting.</p></div><button class="fh-action-button fh-action-button-primary px-3 py-1.5 rounded-lg text-xs font-semibold" onclick="openCategoryModal()" type="button"><i class="fa-solid fa-plus mr-1"></i>Add Expense Bucket</button></div>
 <div class="space-y-3" id="settings-categories-list"></div>
@@ -3340,9 +3349,13 @@ body[data-finhub-theme] #account-detail-modal .acc-filter-trigger.has-active-fil
 <div><h3 class="text-md font-bold">Debt Categories &amp; Subcategories</h3><p class="text-[10px] fh-theme-muted mt-1">Used only when Type is Debt. Principal reduces the liability; interest is included in expense reporting.</p></div>
 <div class="space-y-3" id="settings-debt-categories-list"></div>
 </div>
+</div>
+<div class="fh-settings-category-column">
 <div class="fh-theme-surface fh-settings-category-panel">
 <div class="flex flex-wrap items-center justify-between gap-2"><div><h3 class="text-md font-bold">Income Buckets &amp; Subcategories</h3><p class="text-[10px] fh-theme-muted mt-1">Used to classify money received. Kept separate from expense buckets.</p></div><button class="fh-action-button fh-action-button-primary px-3 py-1.5 rounded-lg text-xs font-semibold" onclick="openIncomeCategoryModal()" type="button"><i class="fa-solid fa-plus mr-1"></i>Add Income Bucket</button></div>
 <div class="space-y-3" id="settings-income-categories-list"></div>
+</div>
+</div>
 </div>
 </div>
 </details>
@@ -3364,7 +3377,7 @@ body[data-finhub-theme] #account-detail-modal .acc-filter-trigger.has-active-fil
 <!-- MODAL: BULK EDIT TRANSACTIONS -->
 <div class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50" id="bulk-edit-modal">
 <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto p-5 space-y-4 shadow-2xl">
-<div class="flex justify-between items-center"><div><h3 class="text-lg font-bold">Bulk Edit Transactions</h3><p class="text-xs text-gray-400" id="bulk-edit-count">Selected transactions</p></div><button class="text-gray-400" onclick="closeBulkEditModal()"><i class="fa-solid fa-xmark"></i></button></div>
+<div class="flex justify-between items-center"><div><h3 class="text-lg font-bold">Bulk Edit Transactions</h3><p class="text-xs text-gray-400" id="bulk-edit-count">Selected transactions</p></div><button aria-label="Close bulk edit dialog" title="Close bulk edit dialog" class="text-gray-400" onclick="closeBulkEditModal()"><i aria-hidden="true" class="fa-solid fa-xmark"></i></button></div>
 <p class="text-xs text-gray-500">Only fields you change will be applied. Leave a field set to “No change” to preserve each transaction's current value.</p>
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
 <label class="text-xs font-semibold text-gray-500">Vendor<input class="mt-1 w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm" id="bulk-vendor" placeholder="No change" type="text"/></label>
@@ -3415,7 +3428,7 @@ body[data-finhub-theme] #account-detail-modal .acc-filter-trigger.has-active-fil
 <!-- MODAL: BANK STATEMENT MATCH & RECONCILIATION -->
 <div class="fixed inset-0 bg-black/70 flex items-center justify-center p-3 hidden z-50" id="recon-modal">
 <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-4xl max-h-[92vh] overflow-y-auto p-5 space-y-4 shadow-2xl">
-<div class="flex items-start justify-between gap-3"><div><h3 class="text-lg font-bold">Statement Helper · Match &amp; Reconcile</h3><p class="text-xs text-gray-400 mt-1">Choose an account, upload or paste a statement, then review the suggested matches before importing.</p></div><button class="text-gray-400" onclick="closeReconciliationModal()"><i class="fa-solid fa-xmark"></i></button></div>
+<div class="flex items-start justify-between gap-3"><div><h3 class="text-lg font-bold">Statement Helper · Match &amp; Reconcile</h3><p class="text-xs text-gray-400 mt-1">Choose an account, upload or paste a statement, then review the suggested matches before importing.</p></div><button aria-label="Close statement reconciliation dialog" title="Close statement reconciliation dialog" class="text-gray-400" onclick="closeReconciliationModal()"><i aria-hidden="true" class="fa-solid fa-xmark"></i></button></div>
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">1. Statement account</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="recon-account" onchange="renderStatementBalanceCheck()"></select></div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">2. Upload statement</label><div class="flex flex-wrap items-center gap-2"><input accept=".csv,.txt,.pdf,text/csv,text/plain,application/pdf" class="min-w-0 flex-1 text-xs" id="recon-file" onchange="loadStatementFile(event)" type="file"/><button class="px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-xs font-semibold" onclick="downloadStatementTemplate()" type="button"><i class="fa-solid fa-download mr-1"></i>CSV template</button></div><p class="text-[10px] text-gray-400 mt-1">Upload a bank CSV or PDF statement, or paste statement data. PDF imports are reviewed before they enter your ledger.</p></div>
@@ -3446,7 +3459,7 @@ body[data-finhub-theme] #account-detail-modal .acc-filter-trigger.has-active-fil
 <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-6xl h-[94vh] max-h-[94vh] overflow-hidden flex flex-col p-4 space-y-2 shadow-2xl">
 <div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-800 pb-3">
 <h3 class="text-lg font-bold" id="acc-detail-title">Account Transactions &amp; Settings</h3>
-<button class="text-gray-400" onclick="closeAccountDetailModal()"><i class="fa-solid fa-xmark text-lg"></i></button>
+<button aria-label="Close account details dialog" title="Close account details dialog" class="text-gray-400" onclick="closeAccountDetailModal()"><i aria-hidden="true" class="fa-solid fa-xmark text-lg"></i></button>
 </div>
 <details class="rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950" id="account-settings-summary">
 <summary class="cursor-pointer px-3 py-2 text-xs font-semibold text-gray-500">Account settings &amp; balance summary</summary>
@@ -3739,7 +3752,7 @@ Bonus" rows="4"></textarea></div>
 <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
 <div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-800 pb-3">
 <h3 class="text-lg font-bold" id="cal-modal-title">Schedule Recurring Item</h3>
-<button class="text-gray-400" onclick="closeCalendarModal()" type="button"><i class="fa-solid fa-xmark text-lg"></i></button>
+<button aria-label="Close calendar item dialog" title="Close calendar item dialog" class="text-gray-400" onclick="closeCalendarModal()" type="button"><i aria-hidden="true" class="fa-solid fa-xmark text-lg"></i></button>
 </div>
 <form class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3" id="calendar-form" onsubmit="saveCalendarItem(event)">
 <input id="cal-edit-id" type="hidden" value=""/>
@@ -6255,6 +6268,16 @@ Bonus" rows="4"></textarea></div>
       host.innerHTML = `<table class="w-full min-w-[900px] text-xs"><thead class="fh-theme-raised"><tr><th class="px-3 py-2 text-left">Account</th><th class="px-3 py-2 text-right">Opening</th><th class="px-3 py-2 text-right">Net activity</th><th class="px-3 py-2 text-right">Expected</th><th class="px-3 py-2 text-right">Stored</th><th class="px-3 py-2 text-right">Variance</th><th class="px-3 py-2 text-left">Result &amp; exceptions</th></tr></thead><tbody>${rows||'<tr><td colspan="7" class="p-4 text-center text-gray-500">No accounts to reconcile.</td></tr>'}</tbody></table>${globalHtml}<p class="text-[10px] text-gray-500 mt-2">No account balances or transactions were changed. Variances are reported only; FinHub does not create balancing adjustments.</p>`;
     }
 
+    function accountTypeLabelColor(type) {
+      const value = String(type || '').toLowerCase();
+      if (/credit.?card|visa|mastercard|master card|amex/.test(value)) return '#D65A78';
+      if (/line of credit|\bloc\b/.test(value)) return '#D18A28';
+      if (/loan|mortgage|student/.test(value)) return '#D18A28';
+      if (/saving|tfsa|rrsp|investment/.test(value)) return '#269B70';
+      if (/chequing|checking/.test(value)) return '#2496D2';
+      return 'var(--fh-muted-text, #7C668D)';
+    }
+
     function renderAccountsPage() {
       const accounts=(state.accounts||[]).filter(a=>!a.archived);
       const visible=accounts.filter(a=>!a.hidden);
@@ -6301,7 +6324,7 @@ Bonus" rows="4"></textarea></div>
             
           </div>
           <div class="pl-7 flex items-center justify-between gap-2">
-            <span class="text-[10px] text-gray-500">${escapeHtml(a.institution||a.individualType||'Account')}</span>
+            <span class="text-[10px] font-semibold accounts-type-label" style="color:${accountTypeLabelColor(a.individualType)}">${escapeHtml(a.individualType||'Account')}</span>
             <strong class="text-sm accounting-num accounts-financial-value ${group==='assets'?'fh-status-income':'text-rose-600'}">${formatFinancial(a.balance,group==='debts')}</strong>
           </div>
           <div class="pl-7 grid grid-cols-[minmax(0,1fr)_auto] gap-2 items-center">
@@ -6693,8 +6716,10 @@ Bonus" rows="4"></textarea></div>
       title.textContent = `${category} · ${matches.length} transaction${matches.length === 1 ? '' : 's'}`;
       const close = document.createElement('button');
       close.type = 'button';
-      close.className = 'text-[11px] text-indigo-500 hover:underline';
-      close.textContent = 'Close';
+      close.className = 'fh-category-detail-close fh-modal-close';
+      close.innerHTML = '<i class="fa-solid fa-xmark" aria-hidden="true"></i>';
+      close.setAttribute('aria-label', 'Close category transactions');
+      close.title = 'Close';
       close.addEventListener('click', () => detail.classList.add('hidden'));
       heading.append(title, close);
       detail.appendChild(heading);
@@ -7044,8 +7069,8 @@ Bonus" rows="4"></textarea></div>
       const selectedDates=window.accSelectedDates instanceof Set ? window.accSelectedDates : null;
       const typeFilter=document.getElementById('acc-type-filter')?.value||'';
       const type=typeFilter || document.getElementById('acc-activity-type')?.value||'';
-      const from=document.getElementById('acc-activity-from')?.value||'';
-      const to=document.getElementById('acc-activity-to')?.value||'';
+      const from=ledgerDateKey(document.getElementById('acc-activity-from')?.value||'');
+      const to=ledgerDateKey(document.getElementById('acc-activity-to')?.value||'');
       const period=document.getElementById('acc-activity-period')?.value||'all';
       const now=new Date(); const y=now.getFullYear(),m=now.getMonth();
       const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
@@ -7060,7 +7085,7 @@ Bonus" rows="4"></textarea></div>
       const min=minRaw===''?null:Number(minRaw), max=maxRaw===''?null:Number(maxRaw);
       const sort=document.getElementById('acc-activity-sort')?.value||'date-desc';const effectiveSort=sort==='date-desc'&&window.accRunningSort?window.accRunningSort:sort;
       const all=window.currentAccountActivityEntries||[];
-      const picks=window.accColumnSelections||{};const currentAccForFilter=state.accounts.find(a=>String(a.id)===String(window.currentEditingAccountId));let runningForFilter=(Number(currentAccForFilter?.balance)||0)-all.reduce((n,e)=>n+(Number(e.change)||0),0);const runningFilterMap=new Map();all.forEach(e=>{runningForFilter+=Number(e.change)||0;runningFilterMap.set(String(e.id),runningForFilter.toFixed(2));});const entries=all.filter(e => (!search || `${e.vendor||''} ${e.description||''} ${e.type||''}`.toLowerCase().includes(search)) && (!vendorSearch || String(e.vendor||'').toLowerCase().includes(vendorSearch)) && (!descriptionSearch || String(e.description||'').toLowerCase().includes(descriptionSearch)) && (!window.accColumnActive.has('vendor')||picks.vendor.has(String(e.vendor||'').trim())) && (!window.accColumnActive.has('description')||picks.description.has(String(e.description||'').trim())) && (!window.accColumnActive.has('type')||picks.type.has(String(e.type||'').trim())) && (!window.accColumnActive.has('amount')||picks.amount.has((Number(e.change)||0).toFixed(2))) && (!window.accColumnActive.has('running')||picks.running.has(runningFilterMap.get(String(e.id)))) && (!window.accDateFilterActive || (selectedDates instanceof Set && selectedDates.has(String(e.date||'')))) && (!type || e.type===type) && (!from || String(e.date||'')>=from) && (!to || String(e.date||'')<=to) && (!periodFrom || String(e.date||'')>=periodFrom) && (!periodTo || String(e.date||'')<=periodTo) && (min===null || Math.abs(Number(e.change)||0)>=min) && (max===null || Math.abs(Number(e.change)||0)<=max)).sort((a,b)=>{const av=String(a.date||''),bv=String(b.date||'');switch(effectiveSort){case'date-asc':return av.localeCompare(bv);case'vendor-asc':return String(a.vendor||'').localeCompare(String(b.vendor||''));case'vendor-desc':return String(b.vendor||'').localeCompare(String(a.vendor||''));case'description-asc':return String(a.description||'').localeCompare(String(b.description||''));case'description-desc':return String(b.description||'').localeCompare(String(a.description||''));case'type-asc':return String(a.type||'').localeCompare(String(b.type||''));case'type-desc':return String(b.type||'').localeCompare(String(a.type||''));case'amount-desc':return (Number(b.change)||0)-(Number(a.change)||0);case'amount-asc':return (Number(a.change)||0)-(Number(b.change)||0);case'running-asc':return Number(runningFilterMap.get(String(a.id))||0)-Number(runningFilterMap.get(String(b.id))||0);case'running-desc':return Number(runningFilterMap.get(String(b.id))||0)-Number(runningFilterMap.get(String(a.id))||0);default:return bv.localeCompare(av);}});
+      const picks=window.accColumnSelections||{};const currentAccForFilter=state.accounts.find(a=>String(a.id)===String(window.currentEditingAccountId));let runningForFilter=(Number(currentAccForFilter?.balance)||0)-all.reduce((n,e)=>n+(Number(e.change)||0),0);const runningFilterMap=new Map();all.forEach(e=>{runningForFilter+=Number(e.change)||0;runningFilterMap.set(String(e.id),runningForFilter.toFixed(2));});const entries=all.filter(e => (!search || `${e.vendor||''} ${e.description||''} ${e.type||''}`.toLowerCase().includes(search)) && (!vendorSearch || String(e.vendor||'').toLowerCase().includes(vendorSearch)) && (!descriptionSearch || String(e.description||'').toLowerCase().includes(descriptionSearch)) && (!window.accColumnActive.has('vendor')||picks.vendor.has(String(e.vendor||'').trim())) && (!window.accColumnActive.has('description')||picks.description.has(String(e.description||'').trim())) && (!window.accColumnActive.has('type')||picks.type.has(String(e.type||'').trim())) && (!window.accColumnActive.has('amount')||picks.amount.has((Number(e.change)||0).toFixed(2))) && (!window.accColumnActive.has('running')||picks.running.has(runningFilterMap.get(String(e.id)))) && (!window.accDateFilterActive || (selectedDates instanceof Set && selectedDates.has(String(e.date||'')))) && (!type || e.type===type) && (!from || (ledgerDateKey(e.date)||'')>=from) && (!to || (ledgerDateKey(e.date)||'')<=to) && (!periodFrom || (ledgerDateKey(e.date)||'')>=periodFrom) && (!periodTo || (ledgerDateKey(e.date)||'')<=periodTo) && (min===null || Math.abs(Number(e.change)||0)>=min) && (max===null || Math.abs(Number(e.change)||0)<=max)).sort((a,b)=>{const av=ledgerDateKey(a.date)||'',bv=ledgerDateKey(b.date)||'';switch(effectiveSort){case'date-asc':return av.localeCompare(bv);case'vendor-asc':return String(a.vendor||'').localeCompare(String(b.vendor||''));case'vendor-desc':return String(b.vendor||'').localeCompare(String(a.vendor||''));case'description-asc':return String(a.description||'').localeCompare(String(b.description||''));case'description-desc':return String(b.description||'').localeCompare(String(a.description||''));case'type-asc':return String(a.type||'').localeCompare(String(b.type||''));case'type-desc':return String(b.type||'').localeCompare(String(a.type||''));case'amount-desc':return (Number(b.change)||0)-(Number(a.change)||0);case'amount-asc':return (Number(a.change)||0)-(Number(b.change)||0);case'running-asc':return Number(runningFilterMap.get(String(a.id))||0)-Number(runningFilterMap.get(String(b.id))||0);case'running-desc':return Number(runningFilterMap.get(String(b.id))||0)-Number(runningFilterMap.get(String(a.id))||0);default:return bv.localeCompare(av);}});
       const tbody=document.getElementById('acc-detail-rows'); if(!tbody)return;
       const acc=state.accounts.find(a=>String(a.id)===String(window.currentEditingAccountId)); if(!acc)return;
       const total=entries.reduce((sum,e)=>sum+(Number(e.change)||0),0);
@@ -7829,7 +7854,8 @@ ${acc.name}`);
         dedicatedGoals.push(`<div class="rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950 p-3"><div class="flex justify-between gap-3"><div><div class="font-semibold text-sm">${escapeHtml(account.name)}</div><div class="text-[10px] text-gray-400">Dedicated savings account · ${escapeHtml(goal.name)}</div></div><strong class="text-base accounting-num">${formatFinancial(balance)}</strong></div>${target > 0 ? `<div class="mt-2 h-1.5 rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden"><div class="h-full bg-indigo-600 theme-bg" style="width:${pct}%"></div></div><div class="mt-1 flex justify-between text-[10px] text-gray-400"><span>${pct.toFixed(0)}% of ${formatFinancial(target)}</span><span>${goal.targetDate ? `Target ${escapeHtml(goal.targetDate)}` : 'No target date'}</span></div>` : '<div class="mt-1 text-[10px] text-gray-400">Set an optional target in the Savings budget line.</div>'}</div>`);
       });
       const unassigned = ledger.buckets.filter(bucket => !getSinkingBucketAccount(bucket));
-      const migrationInfo = ledger.migrationNote ? `<div class="flex justify-end -mt-2 mb-1"><button type="button" data-fh-info="bucket-migration" data-fh-info-title="Sinking Funds opening-balance note" data-fh-info-body="${escapeHtml(ledger.migrationNote)}" aria-label="View Sinking Funds opening-balance note" aria-expanded="false" class="fh-info-trigger"><i class="fa-solid fa-circle-info" aria-hidden="true"></i><span class="ml-1 text-[10px] font-medium">Opening balance note</span></button></div>` : '';
+      const migrationNoteText = String(ledger.migrationNote || '').trim();
+      const migrationInfo = migrationNoteText ? `<div class="fh-sinking-migration-note-row"><button type="button" data-fh-info="bucket-migration" data-fh-info-title="Sinking Funds opening-balance note" data-fh-info-body="${escapeHtml(migrationNoteText)}" aria-label="View opening balance note" aria-expanded="false" class="fh-info-trigger"><i class="fa-solid fa-circle-info" aria-hidden="true"></i><span>Opening balance note</span></button></div>` : '';
       host.innerHTML = `${migrationInfo}${accountCards.join('') || '<p class="text-xs text-gray-400">No virtual buckets are set up yet. Add a bucket and attach it to a real savings account.</p>'}${dedicatedGoals.length ? `<div class="pt-2 border-t border-gray-200 dark:border-gray-800 space-y-2"><div class="text-xs font-bold text-gray-500 uppercase tracking-wide">Other Dedicated Savings Accounts</div><div class="grid grid-cols-1 md:grid-cols-2 gap-2">${dedicatedGoals.join('')}</div></div>` : ''}${unassigned.length ? '<p class="text-[10px] text-amber-600 dark:text-amber-400">One or more buckets need an active savings account assigned. Edit each affected bucket to choose an account.</p>' : ''}`;
     }
 
@@ -7918,8 +7944,8 @@ ${acc.name}`);
       const warnings = findings.filter(f => f.level === 'warning').length;
       const status = errors ? 'Needs correction' : warnings ? 'Review recommended' : 'No structural issues detected';
       const tone = errors ? 'border-rose-300 bg-rose-50 dark:border-rose-900 dark:bg-rose-950/20' : warnings ? 'border-amber-300 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/20' : 'border-emerald-300 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/20';
-      const rows = findings.length ? findings.map(f => `<li class="text-xs ${f.level === 'error' ? 'text-rose-700 dark:text-rose-300' : f.level === 'warning' ? 'text-amber-800 dark:text-amber-300' : 'text-gray-600 dark:text-gray-300'}">${escapeHtml(f.text)}</li>`).join('') : '<li class="text-xs fh-status-income">Budget structure, split amounts and pool allocations passed the current checks.</li>';
-      host.innerHTML = `<div class="space-y-2"><div class="flex flex-wrap items-center justify-between gap-2"><div class="flex items-center gap-2"><div class="text-xs font-bold">Budget integrity review</div><button type="button" data-fh-info="budget-structure" aria-label="About budget integrity review" title="About this review" class="inline-flex items-center justify-center w-5 h-5 rounded-full border border-gray-300 dark:border-gray-700 text-[10px] text-gray-500 hover:text-current">i</button></div><div class="text-xs font-semibold">${status} · ${errors} errors · ${warnings} warnings</div></div><ul class="list-disc pl-5 space-y-1">${rows}</ul></div>`;
+      const rows = findings.length ? findings.map(renderIntegrityFindingRow).join('') : '<li class="text-xs fh-status-income">Budget structure, split amounts and pool allocations passed the current checks.</li>';
+      host.innerHTML = `<div class="space-y-2"><div class="flex flex-wrap items-center justify-between gap-2"><div class="flex items-center gap-2"><div class="text-xs font-bold">Budget structure</div><button type="button" data-fh-info="budget-structure" aria-label="About budget structure checks" title="About these checks" class="inline-flex items-center justify-center w-5 h-5 rounded-full border border-gray-300 dark:border-gray-700 text-[10px] text-gray-500 hover:text-current">i</button></div><div class="text-xs font-semibold">${status} · ${errors} errors · ${warnings} warnings</div></div><ul class="list-disc pl-5 space-y-1">${rows}</ul></div>`;
     }
     function getVariablePoolAmbiguousTransactionIds(period) {
       const records = [1,2,3].map(cycle => ({ cycle, rec: getZbbPoolRecord(period, cycle) }))
@@ -8099,8 +8125,8 @@ ${acc.name}`);
       const infos = findings.filter(f => f.level === 'info').length;
       const status = errors ? 'Action required' : warnings ? 'Review recommended' : 'No exceptions detected';
       const tone = errors ? 'border-rose-300 bg-rose-50 dark:border-rose-900 dark:bg-rose-950/20' : warnings ? 'border-amber-300 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/20' : 'border-emerald-300 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/20';
-      const rows = findings.map(f => `<li class="text-xs ${f.level==='error'?'text-rose-700 dark:text-rose-300':f.level==='warning'?'text-amber-800 dark:text-amber-300':f.level==='clear'?'fh-status-income':'text-gray-600 dark:text-gray-300'}">${escapeHtml(f.text)}</li>`).join('');
-      host.innerHTML = `<div class="space-y-2"><div class="flex flex-wrap items-center justify-between gap-2"><div class="flex items-center gap-2"><div class="text-xs font-bold">Budget actuals &amp; funding integrity</div><button type="button" data-fh-info="funding-integrity" aria-label="About budget actuals and funding integrity" title="About this review" class="inline-flex items-center justify-center w-5 h-5 rounded-full border border-gray-300 dark:border-gray-700 text-[10px] text-gray-500 hover:text-current">i</button></div><div class="text-xs font-semibold">${status} · ${errors} errors · ${warnings} warnings · ${infos} notes</div></div><ul class="list-disc pl-5 space-y-1">${rows}</ul></div>`;
+      const rows = findings.map(renderIntegrityFindingRow).join('');
+      host.innerHTML = `<div class="space-y-2"><div class="flex flex-wrap items-center justify-between gap-2"><div class="flex items-center gap-2"><div class="text-xs font-bold">Actuals &amp; funding checks</div><button type="button" data-fh-info="funding-integrity" aria-label="About actuals and funding checks" title="About these checks" class="inline-flex items-center justify-center w-5 h-5 rounded-full border border-gray-300 dark:border-gray-700 text-[10px] text-gray-500 hover:text-current">i</button></div><div class="text-xs font-semibold">${status} · ${errors} errors · ${warnings} warnings · ${infos} notes</div></div><ul class="list-disc pl-5 space-y-1">${rows}</ul></div>`;
     }
 
     // Phase 3.3: compare monthly budget lines with ledger-backed actuals.
@@ -8243,16 +8269,60 @@ ${acc.name}`);
       saveData();
       renderZbbPlanner();
     }
+    function getIntegrityExceptionPresentation(description) {
+      const text=String(description||'');
+      const rules=[
+        [/^Ledger .* has no corresponding budget line\./i, 'Unmapped ledger category', 'This transaction category has no matching budget line. It remains in ledger reporting and has not been assigned elsewhere.'],
+        [/^Transaction Log contains (\d+) expense category label\(s\) not matched to a variable budget line:/i, 'Unmapped expense categories', 'Some ledger expense categories do not have matching variable budget lines. Review the category names before changing any mappings.'],
+        [/^(\d+) scheduled item\(s\) have outstanding amounts in (\d{4}-\d{2})/i, 'Scheduled payments outstanding', 'Some scheduled items still have an unpaid balance for this month. Check their remaining amounts and due dates.'],
+        [/^Unpaid scheduled items total /i, 'Reserved amount differs from unpaid bills', 'This is a comparison only. A manual reserve does not prove that individual bills are funded.'],
+        [/^Variable category “(.+?)” is over its monthly plan by (.+?) \(/i, 'Category over budget', text],
+        [/^Paycheque (\d+): variable category allocations exceed the shared pool by (.+)\./i, 'Variable pool exceeded', `Paycheque $1 exceeds its shared variable pool by $2.`],
+        [/^One or both regular paycheques are over-allocated\./i, 'Paycheque over-allocated', 'One or both regular paycheques have more allocated than available. Review the remaining balances.'],
+        [/^Sinking-fund bucket\(s\) reference missing or inactive asset account/i, 'Sinking-fund account unavailable', 'One or more buckets point to an account that is missing or inactive. Review the bucket account assignments.'],
+        [/^Sinking-fund allocations exceed the real balance in “(.+?)” by (.+)\./i, 'Sinking funds exceed account cash', text],
+        [/^Scheduled item “(.+?)” is partially paid:/i, 'Scheduled item partly paid', text],
+        [/^Scheduled item “(.+?)” is marked paid but has no linked ledger transaction\./i, 'Paid item has no linked transaction', text],
+        [/^Ledger transaction “(.+?)” is linked to more than one scheduled item\./i, 'Transaction linked more than once', 'A ledger transaction is linked to multiple scheduled items. Each payment should satisfy no more than one item.']
+      ];
+      for(const [pattern,title,detail] of rules){
+        const match=text.match(pattern);
+        if(match){
+          let explanation=typeof detail==='string'?detail:text;
+          if(detail.includes('$1')&&match.length>1) explanation=detail.replace('$1',match[1]).replace('$2',match[2]||'');
+          return {title,detail:explanation};
+        }
+      }
+      return {title:text.length>74?`${text.slice(0,71).trimEnd()}…`:text,detail:text};
+    }
+    function renderIntegrityFindingRow(f) {
+      const presentation=getIntegrityExceptionPresentation(f.text);
+      const tone=f.level==='error'?'text-rose-700 dark:text-rose-300':f.level==='warning'?'text-amber-800 dark:text-amber-300':f.level==='clear'?'fh-status-income':'text-gray-600 dark:text-gray-300';
+      const detail=presentation.detail!==presentation.title
+        ? `<details class="fh-integrity-finding-detail"><summary>Details</summary><p>${escapeHtml(presentation.detail)}</p></details>`
+        : '';
+      return `<li class="${tone}"><span class="font-semibold">${escapeHtml(presentation.title)}</span>${detail}</li>`;
+    }
     function renderIntegrityExceptionRegister(period, entries) {
       const open=entries.filter(e=>e.status!=='resolved');
+      const resolved=entries.length-open.length;
+      const eventLabel=action=>({
+        exception_detected:'Detected',
+        acknowledged:'Reviewed',
+        auto_resolved_on_recheck:'Resolved on recheck',
+        reopened_on_recheck:'Reopened on recheck'
+      }[action]||'Updated');
       const rows=entries.slice(0,20).map(e=>{
-        const events=(state.integrityExceptionEvents||[]).filter(v=>v.exceptionId===e.id);
-        const latestEvent=events.slice().sort((a,b)=>String(a.at).localeCompare(String(b.at))).slice(-1)[0];
-        const ack=latestEvent?.action==='acknowledged'?latestEvent:null;
-        const status=e.status==='resolved'?'Resolved':ack?'Acknowledged':'Open';
-        return `<div class="rounded-lg border border-gray-200 dark:border-gray-800 p-2 space-y-1"><div class="flex flex-wrap items-center justify-between gap-2"><span class="text-[10px] font-semibold uppercase tracking-wide">${escapeHtml(e.level)} · ${status}</span>${e.status==='resolved'?'':`<button type="button" class="text-xs fh-theme-link underline" onclick="acknowledgeIntegrityException('${e.id}')">Acknowledge with reason</button>`}</div><div class="text-xs">${escapeHtml(e.description)}</div><div class="text-[10px] text-gray-500">First seen ${escapeHtml(String(e.firstSeenAt||'').replace('T',' ').slice(0,19))}${ack?` · Reviewed: ${escapeHtml(ack.reason)}`:''}${e.resolvedAt?` · Resolved ${escapeHtml(String(e.resolvedAt).replace('T',' ').slice(0,19))}`:''}</div></div>`;
+        const events=(state.integrityExceptionEvents||[]).filter(v=>v.exceptionId===e.id).sort((a,b)=>String(a.at).localeCompare(String(b.at)));
+        const latestEvent=events[events.length-1];
+        const ack=events.filter(v=>v.action==='acknowledged').slice(-1)[0];
+        const status=e.status==='resolved'?'Resolved':latestEvent?.action==='acknowledged'?'Reviewed':'Open';
+        const presentation=getIntegrityExceptionPresentation(e.description);
+        const dateLabel=value=>value?new Date(value).toLocaleString():'';
+        const history=events.map(v=>`<div class="flex flex-wrap justify-between gap-x-3 gap-y-1 border-t border-gray-100 dark:border-gray-800 py-1.5 text-[10px]"><span class="font-medium">${eventLabel(v.action)}${v.reason?` · ${escapeHtml(v.reason)}`:''}</span><time class="text-gray-500">${escapeHtml(dateLabel(v.at))}</time></div>`).join('');
+        return `<article class="fh-integrity-exception-row"><div class="flex flex-wrap items-center justify-between gap-2"><div class="min-w-0"><span class="text-[10px] font-semibold uppercase tracking-wide">${escapeHtml(e.level)} · ${status}</span><div class="text-xs font-semibold mt-0.5">${escapeHtml(presentation.title)}</div></div>${e.status==='resolved'?'':`<button type="button" class="text-[11px] fh-theme-link underline whitespace-nowrap" onclick="acknowledgeIntegrityException('${e.id}')">Review</button>`}</div><p class="text-[11px] text-gray-600 dark:text-gray-300 mt-1">${escapeHtml(presentation.detail)}</p><div class="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-gray-500 mt-1"><span>First seen ${escapeHtml(dateLabel(e.firstSeenAt))}</span>${e.resolvedAt?`<span>Resolved ${escapeHtml(dateLabel(e.resolvedAt))}</span>`:''}${ack?.reason?`<span>Review note: ${escapeHtml(ack.reason)}</span>`:''}</div><details class="fh-integrity-event-history mt-1"><summary>History · ${events.length} events</summary><div class="pt-1">${history||'<p class="text-[10px] text-gray-500">No recorded events.</p>'}</div></details></article>`;
       }).join('');
-      return `<details class="rounded-xl border border-gray-200 dark:border-gray-800 p-3 space-y-2"><summary class="flex flex-wrap justify-between gap-2 cursor-pointer list-none"><strong class="text-xs">Exception register &amp; review history</strong><span class="text-[10px] text-gray-500">${open.length} open · ${entries.length-open.length} resolved</span></summary><div class="pt-2 space-y-2">${rows||'<p class="text-xs text-gray-500">No exceptions have been recorded for this period.</p>'}<p class="text-[10px] text-gray-500">Acknowledgement records who reviewed an issue only through a reason and timestamp; it does not suppress the finding. Resolution is recorded only when a subsequent check for this same period no longer detects it. The event history is append-only within this local FinHub file, but is not tamper-proof.</p></div></details>`;
+      return `<details class="fh-monthly-subpanel"><summary class="fh-monthly-subpanel-summary"><strong>Exception register</strong><span class="fh-monthly-summary-meta">${open.length} open · ${resolved} resolved</span></summary><div class="fh-monthly-subpanel-body space-y-2">${rows||'<p class="text-xs text-gray-500">No exceptions recorded for this month.</p>'}<p class="text-[10px] text-gray-500">Reviewing an exception records a reason; it does not clear the issue. An exception is resolved only when a later check no longer finds it. Local history is append-only in this file, but is not tamper-proof.</p></div></details>`;
     }
     function renderBudgetLedgerReconciliation(period,zbb) {
       const host=document.getElementById('zbb-budget-ledger-reconciliation-panel');
@@ -8268,7 +8338,7 @@ ${acc.name}`);
         return `<tr class="border-t border-gray-100 dark:border-gray-800"><td class="px-2 py-2"><div class="font-semibold">${escapeHtml(row.name)}</div><div class="text-[10px] text-gray-400">${escapeHtml(row.section)} · ${escapeHtml(row.source)}</div></td><td class="px-2 py-2 text-right accounting-num">${formatFinancial(row.budgetCents/100)}</td><td class="px-2 py-2 text-right accounting-num">${row.actualCents===null?'Not comparable':formatFinancial(row.actualCents/100)}</td><td class="px-2 py-2 text-right accounting-num">${varianceLabel}</td></tr>`;
       }).join('');
       const findings=result.findings.map(f=>`<li class="text-xs ${f.level==='error'?'text-rose-700 dark:text-rose-300':f.level==='warning'?'text-amber-800 dark:text-amber-300':'text-gray-600 dark:text-gray-300'}">${escapeHtml(f.text)}</li>`).join('');
-      host.innerHTML=`<details class="rounded-xl border border-gray-200 dark:border-gray-800 p-3 space-y-3"><summary class="flex flex-wrap justify-between items-center gap-2 cursor-pointer list-none"><span class="text-sm font-bold">Budget-to-ledger reconciliation</span><span class="text-xs font-semibold">${status} · ${errors} errors · ${warnings} differences</span><i class="fa-solid fa-chevron-down text-xs" aria-hidden="true"></i></summary><div class="pt-3 space-y-3"><div class="flex flex-wrap justify-between gap-2"><div><div class="text-sm font-bold">Budget-to-ledger reconciliation details</div><div class="text-[10px] text-gray-400">${escapeHtml(period)} · linked income + expense subcategory matching</div></div><div class="text-xs font-semibold">${status} · ${errors} errors · ${warnings} differences</div></div><div class="overflow-x-auto"><table class="w-full text-xs"><thead><tr class="text-[10px] uppercase tracking-wide text-gray-400"><th class="px-2 py-1 text-left">Budget line / source</th><th class="px-2 py-1 text-right">Planned</th><th class="px-2 py-1 text-right">Ledger actual</th><th class="px-2 py-1 text-right">Variance</th></tr></thead><tbody>${rows||'<tr><td colspan="4" class="px-2 py-3 text-gray-400">No budget lines available to reconcile.</td></tr>'}</tbody></table></div><ul class="list-disc pl-5 space-y-1">${findings||'<li class="text-xs fh-status-income">No mapping or settlement exceptions were detected.</li>'}</ul><p class="text-[10px] text-gray-500 dark:text-gray-400">Income is matched by its category or an explicitly linked scheduled income item when there is one planned income line; variable expenses are matched by normalized subcategory, with parent category retained for context. Fixed bills and debt payments are matched to scheduled items by exact normalized description, then measured using valid linked ledger payments. Savings goals show linked balance references only; transfers and account balances are not misrepresented as expenses. Unmatched items are left unassigned rather than guessed.</p>${renderIntegrityExceptionRegister(period,exceptionEntries)}</div></div></details>`;
+      host.innerHTML=`<details class="fh-monthly-subpanel"><summary class="fh-monthly-subpanel-summary"><strong>Budget-to-ledger reconciliation</strong><span class="fh-monthly-summary-meta">${errors?`${errors} errors`:warnings?`${warnings} differences to review`:'No mapping differences'}</span></summary><div class="fh-monthly-subpanel-body space-y-3"><div class="flex flex-wrap items-center justify-between gap-2"><span class="text-[11px] text-gray-500">${escapeHtml(period)} · Planned amounts compared with linked ledger activity</span><span class="text-xs font-semibold">${errors} errors · ${warnings} differences</span></div><div class="overflow-x-auto"><table class="w-full text-xs"><thead><tr class="text-[10px] uppercase tracking-wide text-gray-400"><th class="px-2 py-1 text-left">Budget line / source</th><th class="px-2 py-1 text-right">Planned</th><th class="px-2 py-1 text-right">Ledger actual</th><th class="px-2 py-1 text-right">Variance</th></tr></thead><tbody>${rows||'<tr><td colspan="4" class="px-2 py-3 text-gray-400">No budget lines available to reconcile.</td></tr>'}</tbody></table></div><ul class="fh-monthly-findings">${findings||'<li class="text-xs fh-status-income">No mapping or settlement exceptions were detected.</li>'}</ul><details class="fh-monthly-help"><summary>How matching works</summary><p>Income is matched by category or an explicitly linked scheduled income item. Variable expenses are matched by normalized subcategory. Fixed bills and debt payments are matched to scheduled items by exact normalized description and linked ledger payments. Savings goals show linked balance references only. Transfers and account balances are not treated as expenses. Unmatched items remain unassigned rather than being guessed.</p></details>${renderIntegrityExceptionRegister(period,exceptionEntries)}</div></details>`;
     }
 
     function renderZbbBudgetVsActual(period, zbb, cycle) {
@@ -8371,7 +8441,7 @@ ${acc.name}`);
       const monthlyRemaining = cycle1.remaining + cycle2.remaining;
       const monthlyPanel = document.getElementById('zbb-monthly-rollup');
       if (monthlyPanel) monthlyPanel.innerHTML = `
-        <div class="flex items-center justify-between mb-3"><div><h3 class="font-bold text-sm">Calendar-month roll-up</h3><p class="text-[10px] text-gray-400">Paycheques 1 and 2 only. A third paycheque is calculated separately and is never folded into the regular monthly baseline.</p></div><span class="text-[10px] text-indigo-400">Monthly view</span></div>
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-3"><div><h3 class="font-bold text-sm">Monthly totals</h3><p class="text-[10px] text-gray-500">Paycheques 1 &amp; 2 · Third cheque shown separately when applicable</p></div></div>
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 text-xs">
           <div class="p-2 rounded-lg bg-gray-50 dark:bg-gray-950"><div class="text-gray-400">Income</div><strong>${formatFinancial(monthlyIncome)}</strong></div>
           <div class="p-2 rounded-lg bg-gray-50 dark:bg-gray-950"><div class="text-gray-400">Fixed bills</div><strong>${formatFinancial(monthlyBills, true)}</strong></div>
@@ -8435,7 +8505,7 @@ ${acc.name}`);
           const rows = (itemsList || []).map(item => {
             const split = item.split || [50,50,0];
             const alloc = [0,1,2].map(i => item.splitMode === 'dollar' ? (Number(split[i])||0) : (Number(item.monthly)||0) * ((Number(split[i])||0)/100));
-            return `<div class="grid grid-cols-[minmax(0,1.5fr)_repeat(3,minmax(62px,0.7fr))_auto] gap-2 items-center bg-gray-50 dark:bg-gray-950 p-3 rounded-xl border border-gray-200 dark:border-gray-800 text-xs"><div class="min-w-0"><div class="font-semibold truncate">${escapeHtml(item.name)}</div><div class="text-[10px] text-gray-400">Monthly bill · ${money(item.monthly)}</div></div><div class="text-right"><div class="text-[9px] text-gray-400">P1</div><strong class="accounting-num">${money(alloc[0])}</strong></div><div class="text-right"><div class="text-[9px] text-gray-400">P2</div><strong class="accounting-num">${money(alloc[1])}</strong></div><div class="text-right"><div class="text-[9px] text-gray-400">P3</div><strong class="accounting-num">${money(alloc[2])}</strong></div><div class="flex gap-2"><button onclick="openZbbItemModal('bill','${item.id}')" class="text-indigo-400" title="Edit allocations"><i class="fa-solid fa-pen"></i></button><button onclick="deleteZbbItem('bill','${item.id}')" class="text-rose-500" title="Delete bill"><i class="fa-solid fa-trash"></i></button></div></div>`;
+            return `<div class="grid grid-cols-[minmax(0,1.5fr)_repeat(3,minmax(62px,0.7fr))_auto] gap-2 items-center bg-gray-50 dark:bg-gray-950 p-3 rounded-xl border border-gray-200 dark:border-gray-800 text-xs"><div class="min-w-0"><div class="font-semibold truncate">${escapeHtml(item.name)}</div><div class="text-[10px] text-gray-400">Monthly bill · ${money(item.monthly)}</div></div><div class="text-right"><div class="text-[9px] text-gray-400">P1</div><strong class="accounting-num">${money(alloc[0])}</strong></div><div class="text-right"><div class="text-[9px] text-gray-400">P2</div><strong class="accounting-num">${money(alloc[1])}</strong></div><div class="text-right"><div class="text-[9px] text-gray-400">P3</div><strong class="accounting-num">${money(alloc[2])}</strong></div><div class="flex gap-2"><button onclick="openZbbItemModal('bill','${item.id}')" class="text-indigo-400" title="Edit allocations"><i class="fa-solid fa-pen"></i></button><button onclick="deleteZbbItem('bill','${item.id}')" class="fh-zbb-delete-button text-rose-500" title="Delete bill" aria-label="Delete bill ${escapeHtml(item.name)}"><i class="fa-solid fa-trash"></i></button></div></div>`;
           }).join('');
           container.innerHTML = `<div class="grid grid-cols-[minmax(0,1.5fr)_repeat(3,minmax(62px,0.7fr))_auto] gap-2 px-3 text-[10px] uppercase tracking-wide text-gray-400"><div>Monthly bill</div><div class="text-right">Paycheque 1</div><div class="text-right">Paycheque 2</div><div class="text-right">Third cheque</div><div></div></div>${rows || '<p class="text-xs text-gray-400 py-3">No monthly bills added yet.</p>'}<p class="text-[10px] text-gray-400">Edit any bill to adjust its custom dollar or percentage allocation. Allocations are budget funding, not recorded bill payments.</p>`;
           return;
@@ -8452,7 +8522,7 @@ ${acc.name}`);
           if (sectionKey === 'variable') {
             const share = variablePoolState.poolBudget > 0 ? (amt / variablePoolState.poolBudget * 100) : 0;
             const itemIdArg = encodeURIComponent(String(item.id)).replace(/'/g, '%27');
-            container.insertAdjacentHTML('beforeend', `<div class="grid grid-cols-[minmax(0,1fr)_125px_70px_auto] gap-2 items-center bg-gray-50 dark:bg-gray-950 p-3 rounded-xl border border-gray-200 dark:border-gray-800 text-xs"><div class="min-w-0"><div class="font-semibold truncate">${escapeHtml(item.name)}</div><div class="text-[10px] text-gray-400">Assigned from the shared pool</div></div><input type="number" min="0" step="0.01" value="${amt.toFixed(2)}" data-zbb-allocation-input="1" data-zbb-id="${escapeHtml(String(item.id))}" aria-label="${escapeHtml(item.name)} paycheque allocation" class="w-full text-right bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1.5 text-xs accounting-num"><div class="text-right text-gray-500 accounting-num" data-zbb-share="${escapeHtml(String(item.id))}">${share.toFixed(1)}%</div><div class="flex gap-2 justify-end"><button type="button" data-zbb-action="edit-variable" data-zbb-id="${escapeHtml(String(item.id))}" class="text-indigo-400" title="Edit variable bucket"><i class="fa-solid fa-pen"></i></button><button type="button" data-zbb-action="delete-variable" data-zbb-id="${escapeHtml(String(item.id))}" class="text-rose-500" title="Delete variable bucket"><i class="fa-solid fa-trash"></i></button></div></div>`);
+            container.insertAdjacentHTML('beforeend', `<div class="grid grid-cols-[minmax(0,1fr)_125px_70px_auto] gap-2 items-center bg-gray-50 dark:bg-gray-950 p-3 rounded-xl border border-gray-200 dark:border-gray-800 text-xs"><div class="min-w-0"><div class="font-semibold truncate">${escapeHtml(item.name)}</div><div class="text-[10px] text-gray-400">Assigned from the shared pool</div></div><input type="number" min="0" step="0.01" value="${amt.toFixed(2)}" data-zbb-allocation-input="1" data-zbb-id="${escapeHtml(String(item.id))}" aria-label="${escapeHtml(item.name)} paycheque allocation" class="w-full text-right bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1.5 text-xs accounting-num"><div class="text-right text-gray-500 accounting-num" data-zbb-share="${escapeHtml(String(item.id))}">${share.toFixed(1)}%</div><div class="flex gap-2 justify-end"><button type="button" data-zbb-action="edit-variable" data-zbb-id="${escapeHtml(String(item.id))}" class="text-indigo-400" title="Edit variable bucket"><i class="fa-solid fa-pen"></i></button><button type="button" data-zbb-action="delete-variable" data-zbb-id="${escapeHtml(String(item.id))}" class="fh-zbb-delete-button text-rose-500" title="Delete variable bucket" aria-label="Delete variable bucket ${escapeHtml(item.name)}"><i class="fa-solid fa-trash"></i></button></div></div>`);
             return;
           }
           const itemIdArg = encodeURIComponent(String(item.id)).replace(/'/g, '%27');
@@ -8468,7 +8538,7 @@ ${acc.name}`);
                   <div class="text-[10px] text-gray-400">${pctOfIncome}% of Income</div>
                 </div>
                 <button onclick="openZbbItemModalEncoded('${sectionKey}','${itemIdArg}')" class="text-indigo-400  theme-text"><i class="fa-solid fa-pen"></i></button>
-                <button onclick="deleteZbbItemEncoded('${sectionKey}','${itemIdArg}')" class="text-rose-500 "><i class="fa-solid fa-trash"></i></button>
+                <button onclick="deleteZbbItemEncoded('${sectionKey}','${itemIdArg}')" class="fh-zbb-delete-button text-rose-500" title="Delete ${escapeHtml(item.name)}" aria-label="Delete ${escapeHtml(item.name)}"><i class="fa-solid fa-trash"></i></button>
               </div>
             </div>
           `;
@@ -8496,7 +8566,7 @@ ${acc.name}`);
         variableStatus.setAttribute('role', excess > 0.005 ? 'status' : '');
         variableStatus.setAttribute('aria-live', 'polite');
       }
-      if (variableHost) variableHost.querySelectorAll('[data-zbb-id]').forEach(node => { const row=node.parentElement; if(row && !row.querySelector('[data-zbb-action="delete-variable"]')) { const b=document.createElement('button'); b.type='button'; b.dataset.zbbAction='delete-variable'; b.dataset.zbbId=node.dataset.zbbId; b.className='ml-2 text-rose-500'; b.title='Delete or archive'; b.innerHTML='<i class="fa-solid fa-xmark"></i>'; row.appendChild(b); } });
+      if (variableHost) variableHost.querySelectorAll('[data-zbb-id]').forEach(node => { const row=node.parentElement; if(row && !row.querySelector('.fh-zbb-delete-button,[data-zbb-action="delete-variable"]')) { const b=document.createElement('button'); b.type='button'; b.dataset.zbbAction='delete-variable'; b.dataset.zbbId=node.dataset.zbbId; b.className='fh-zbb-delete-button text-rose-500'; b.title='Delete or archive'; b.setAttribute('aria-label','Delete or archive variable bucket'); b.innerHTML='<i class="fa-solid fa-trash"></i>'; row.appendChild(b); } });
       const variableListEl = document.getElementById('zbb-variable-list');
       if (variableListEl && !variableListEl.dataset.zbbHandlersAttached) {
         variableListEl.dataset.zbbHandlersAttached = '1';
@@ -8932,9 +9002,20 @@ ${acc.name}`);
     // Recurring calendar items are stored as a series anchor plus concrete dated
     // occurrences. Generated occurrences are ordinary calendar items, so the
     // existing Mark Paid / linked transaction workflow continues to apply.
+    // Shared strict ISO calendar-date validation. Date constructors normalize
+    // impossible dates (for example February 31), so compare the UTC components
+    // before allowing a date into recurring or financial workflows.
+    function isValidISODateString(dateStr) {
+      const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(dateStr || '').trim());
+      if (!m) return false;
+      const year = Number(m[1]), month = Number(m[2]), day = Number(m[3]);
+      const check = new Date(Date.UTC(year, month - 1, day));
+      return Number.isFinite(check.getTime()) && check.getUTCFullYear() === year && check.getUTCMonth() === month - 1 && check.getUTCDate() === day;
+    }
     function calendarDateParts(dateStr) {
-      const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(dateStr || ''));
-      return m ? { year: Number(m[1]), month: Number(m[2]) - 1, day: Number(m[3]) } : null;
+      if (!isValidISODateString(dateStr)) return null;
+      const [year, month, day] = String(dateStr).split('-').map(Number);
+      return { year, month: month - 1, day };
     }
     function calendarDateString(date) {
       return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
@@ -9062,12 +9143,17 @@ ${acc.name}`);
           const isDebt = b.type === 'debt';
           
           const notificationKind = isInc ? 'income' : (isDebt ? 'debt' : 'expense');
+          const settlement = getCalendarBillSettlement(b);
+          const paymentDateInfo = settlement.validTransactions.length
+            ? `<button type="button" class="fh-calendar-paid-date-info" onclick="event.stopPropagation();showCalendarPaymentDates('${String(b.id).replace(/'/g, "\\'")}')" aria-label="View actual payment dates for ${escapeHtml(b.desc || 'scheduled item')}" title="View actual payment dates"><i class="fa-solid fa-circle-info" aria-hidden="true"></i></button>`
+            : '';
           badges += `
             <div draggable="${!b.paid}" ondragstart="startCalendarBillDrag(event, '${b.id}')" onclick="editCalendarItem('${b.id}', event)" title="${escapeHtml(b.desc || 'Scheduled item')}${b.vendor && !isDebt ? ' · Vendor: ' + escapeHtml(b.vendor) : ''}" class="fh-calendar-notification-row" data-notification-kind="${notificationKind}" data-completed="${b.paid ? 'true' : 'false'}">
               <span class="fh-calendar-notification-chip" data-notification-kind="${notificationKind}">
                 <span class="fh-calendar-notification-name">${escapeHtml(b.desc || 'Scheduled item')}</span>
                 <span class="accounting-num fh-calendar-notification-amount">${formatFinancial(b.amount, !isInc)}</span>
               </span>
+              ${paymentDateInfo}
               <input type="checkbox" class="fh-calendar-notification-checkbox" ${b.paid ? 'checked' : ''} onclick="event.stopPropagation()" onchange="toggleCalendarItemPaid('${b.id}', event)" aria-label="${b.paid ? (isInc ? 'Income received' : 'Payment paid') : (isInc ? 'Mark income as received' : 'Mark payment as paid')}" title="${b.paid ? (isInc ? 'Received' : 'Paid') : (isInc ? 'Mark received' : 'Mark paid')}" />
             </div>
           `;
@@ -9118,6 +9204,56 @@ ${acc.name}`);
         const exp = bList.filter(b => b.type !== 'income').reduce((s, b) => s + b.amount, 0);
         grid.innerHTML += `<div class="bg-gray-50 dark:bg-gray-950 p-4 rounded-xl border border-gray-200 dark:border-gray-800"><div class="font-bold">${monthNames[m]}</div><div class="text-xs fh-status-income mt-1">Inc: ${formatFinancial(inc)}</div><div class="text-xs text-rose-600 mt-1">Exp: ${formatFinancial(exp, true)}</div></div>`;
       }
+    }
+
+    function showCalendarPaymentDates(billId) {
+      const bill=(state.calendarBills||[]).find(item=>String(item.id)===String(billId));
+      if(!bill)return;
+      const settlement=getCalendarBillSettlement(bill);
+      const isIncome=bill.type==='income';
+      const actionLabel=isIncome?'Received':'Paid';
+      const scheduled=ledgerDateKey(bill.date)||'';
+      const transactions=settlement.validTransactions.slice().sort((a,b)=>(ledgerDateKey(a.date)||'').localeCompare(ledgerDateKey(b.date)||''));
+      const actualCents=transactions.reduce((sum,tx)=>sum+transactionAmountToCents(Math.abs(Number(tx.amount)||0))-getTransactionReversedAmountCents(tx.id),0);
+      const scheduledCents=transactionAmountToCents(Math.abs(Number(bill.amount)||0));
+      const dateRows=transactions.map(tx=>{
+        const date=ledgerDateKey(tx.date);
+        const netCents=Math.max(0,transactionAmountToCents(Math.abs(Number(tx.amount)||0))-getTransactionReversedAmountCents(tx.id));
+        return `<div class="flex items-center justify-between gap-3 py-2 border-b fh-theme-border text-sm"><span>${escapeHtml(date?formatDateMDY(date):'Date not recorded')}</span><strong class="accounting-num">${formatFinancial(netCents/100)}</strong></div>`;
+      }).join('');
+      const status=settlement.missingIds.length||transactions.length!==settlement.transactions.length
+        ? 'Payment records need review'
+        : actualCents<=0 ? 'Not paid yet'
+        : actualCents<scheduledCents ? 'Partially paid'
+        : actualCents>scheduledCents ? 'Overpaid'
+        : 'Paid in full';
+      const overlay=document.createElement('div');
+      overlay.id='fh-calendar-payment-details-overlay';
+      overlay.className='fixed inset-0 z-[10050] flex items-center justify-center p-4';
+      overlay.setAttribute('role','presentation');
+      overlay.innerHTML=`
+        <div class="absolute inset-0 bg-black/50" data-fh-payment-close="true"></div>
+        <section role="dialog" aria-modal="true" aria-labelledby="fh-calendar-payment-title" class="relative w-full max-w-md rounded-2xl border shadow-2xl p-5 space-y-4 fh-theme-surface fh-theme-border">
+          <header class="flex items-start justify-between gap-3">
+            <div class="min-w-0"><h2 id="fh-calendar-payment-title" class="text-base font-bold fh-theme-text">${escapeHtml(bill.desc||'Scheduled item')}</h2><p class="text-xs fh-theme-muted mt-1">${escapeHtml(isIncome?'Income':'Payment')} details</p></div>
+            <button type="button" data-fh-payment-close="true" class="w-7 h-7 shrink-0 rounded-md flex items-center justify-center fh-theme-muted hover:fh-theme-text" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+          </header>
+          <div class="space-y-3">
+            <div class="flex items-center justify-between gap-3 text-sm"><span class="fh-theme-muted">Scheduled date</span><strong>${escapeHtml(scheduled?formatDateMDY(scheduled):'Not recorded')}</strong></div>
+            <div class="flex items-center justify-between gap-3 text-sm"><span class="fh-theme-muted">${actionLabel} date${transactions.length===1?'':'s'}</span><strong>${transactions.length===1?escapeHtml(ledgerDateKey(transactions[0].date)?formatDateMDY(ledgerDateKey(transactions[0].date)):'Not recorded'):transactions.length?`${transactions.length} transactions`: 'Not paid yet'}</strong></div>
+            <div class="flex items-center justify-between gap-3 text-sm"><span class="fh-theme-muted">Scheduled amount</span><strong class="accounting-num">${formatFinancial(scheduledCents/100)}</strong></div>
+            <div class="flex items-center justify-between gap-3 text-sm"><span class="fh-theme-muted">Total ${isIncome?'received':'paid'}</span><strong class="accounting-num">${formatFinancial(actualCents/100)}</strong></div>
+            ${transactions.length>1?`<div class="pt-1"><div class="text-xs font-semibold mb-1">Transaction breakdown</div>${dateRows}</div>`:''}
+            <div class="rounded-lg px-3 py-2 text-xs fh-theme-subtle"><span class="font-semibold">Status:</span> ${status}</div>
+          </div>
+          <footer class="flex justify-end"><button type="button" data-fh-payment-close="true" class="px-4 py-2 rounded-lg text-sm font-semibold theme-bg text-white">Close</button></footer>
+        </section>`;
+      const close=()=>{overlay.remove();document.removeEventListener('keydown',onKey);};
+      const onKey=e=>{if(e.key==='Escape')close();};
+      overlay.addEventListener('click',e=>{if(e.target.closest('[data-fh-payment-close="true"]'))close();});
+      document.addEventListener('keydown',onKey);
+      document.body.appendChild(overlay);
+      overlay.querySelector('button[aria-label="Close"]')?.focus();
     }
 
     function toggleCalendarItemPaid(id, e) {
@@ -9803,7 +9939,7 @@ ${acc.name}`);
       let fixedTot = 0, varTot = 0, fixedShare = 0, varShare = 0, adjustedFixedShare = 0, adjustedVarShare = 0;
 
       billsForMonth.forEach(b => {
-        const myShare = b.amount * (b.splitPct / 100);
+        const myShare = jointOriginalBillShareCents(b) / 100;
         const adjustedShare = jointAdjustedBillCents(b) / 100;
         if (b.classification === 'fixed') { fixedTot += b.amount; fixedShare += myShare; adjustedFixedShare += adjustedShare; }
         else { varTot += b.amount; varShare += myShare; adjustedVarShare += adjustedShare; }
@@ -9846,6 +9982,8 @@ ${acc.name}`);
       document.getElementById('joint-fixed-share').innerText = formatFinancial(fixedShare);
       document.getElementById('joint-variable-share').innerText = formatFinancial(varShare);
       document.getElementById('joint-total-sent-disp').innerText = formatFinancial(totalSent);
+      const adjustedOwedEl = document.getElementById('joint-adjusted-owed-disp');
+      if (adjustedOwedEl) adjustedOwedEl.innerText = formatFinancial(adjustedAmountOwedCents / 100);
       document.getElementById('joint-remaining-due').innerText = formatFinancial(remaining);
       const creditRow = document.getElementById('joint-current-credit-row');
       const creditValue = document.getElementById('joint-current-credit');
@@ -9873,18 +10011,27 @@ ${acc.name}`);
       const monthLabel = monthNames[parseInt(m, 10) - 1] + ' ' + y;
       const bills = (state.jointBills || []).filter(b => b.ym === ym);
 
-      let fixedShare = 0, varShare = 0;
+      let fixedShareCents = 0, varShareCents = 0;
       bills.forEach(b => {
-        const share = jointOriginalBillShareCents(b) / 100;
-        if (b.classification === 'fixed') fixedShare += share;
-        else varShare += share;
+        const shareCents = jointOriginalBillShareCents(b);
+        if (b.classification === 'fixed') fixedShareCents += shareCents;
+        else varShareCents += shareCents;
       });
-      const totalSent = fixedShare + varShare;
+      const fixedShare = fixedShareCents / 100;
+      const varShare = varShareCents / 100;
+      const totalSent = (fixedShareCents + varShareCents) / 100;
+      const adjustedOwed = jointSettlementCentsForMonth(ym) / 100;
+      const transfersLogged = jointTransfersLoggedForMonth(ym) / 100;
+      const remainingDue = Math.max(0, adjustedOwed - transfersLogged);
+      const currentCredit = Math.max(0, transfersLogged - adjustedOwed);
 
       let text = `E-Transfer Breakdown - ${monthLabel}\n`;
       text += `Fixed bills ${formatFinancial(fixedShare)}\n`;
       text += `Variable bills ${formatFinancial(varShare)}\n`;
-      text += `Total Sent: ${formatFinancial(totalSent)}`;
+      text += `Original Share Total: ${formatFinancial(totalSent)}\n`;
+      text += `Adjusted Amount Owed: ${formatFinancial(adjustedOwed)}\n`;
+      text += `Transfers Sent Logged: ${formatFinancial(transfersLogged)}\n`;
+      text += currentCredit > 0 ? `Credit / Overpayment: ${formatFinancial(currentCredit)}` : `Remaining Due: ${formatFinancial(remainingDue)}`;
       navigator.clipboard.writeText(text).then(() => alert("E-Transfer Breakdown copied to clipboard!"));
     }
 
@@ -9892,14 +10039,20 @@ ${acc.name}`);
     // Joint household e-Transfers use FinHub's native split-expense transaction model:
     // one account movement, one parent ledger record, and auditable category allocations.
     function jointOriginalBillShareCents(bill) {
-      return Math.max(0, Math.round((Number(bill?.amount) || 0) * 100 * (Number(bill?.splitPct) || 0) / 100));
+      // Preserve the sign of the bill: refunds/credits must reduce the household obligation.
+      // Round the bill amount to cents first, then calculate and round the allocated share.
+      const amountCents = Math.round((Number(bill?.amount) || 0) * 100);
+      const splitPct = Number(bill?.splitPct);
+      const safeSplitPct = Number.isFinite(splitPct) ? splitPct : 0;
+      return Math.round(amountCents * safeSplitPct / 100);
     }
     function jointAdjustmentDeltaCents(billId, ym) {
       return (state.jointAdjustments || []).filter(a => a.ym === ym && String(a.billId) === String(billId) && !a.reversedAt)
         .reduce((sum, a) => sum + (a.type === 'additional' ? Math.abs(Number(a.amountCents) || 0) : -Math.abs(Number(a.amountCents) || 0)), 0);
     }
     function jointAdjustedBillCents(bill) {
-      return Math.max(0, jointOriginalBillShareCents(bill) + jointAdjustmentDeltaCents(bill.id, bill.ym));
+      // Keep signed credits intact; monthly settlement nets them against positive obligations.
+      return jointOriginalBillShareCents(bill) + jointAdjustmentDeltaCents(bill.id, bill.ym);
     }
     function jointSettlementCentsForMonth(ym) {
       return (state.jointBills || []).filter(b => b.ym === ym).reduce((sum, b) => sum + jointAdjustedBillCents(b), 0);
@@ -10404,6 +10557,11 @@ ${acc.name}`);
       const ids = Array.from(selectedLedgerIds).filter(id => state.transactions.some(t => String(t.id) === String(id)));
       if (!ids.length) { selectedLedgerIds.clear(); updateLedgerSelectionUI(); return; }
       const rows = ids.map(id => state.transactions.find(t => String(t.id) === String(id))).filter(Boolean);
+      const reconciledRows = rows.filter(transactionHasStatementReconciliation);
+      if (reconciledRows.length) {
+        alert(`Bulk deletion stopped. ${reconciledRows.length} selected transaction(s) are linked to statement reconciliation or have matches awaiting review. Unmatch those statement rows first, then retry the deletion.`);
+        return;
+      }
       const missingDebtPaymentLinks = rows.filter(t => t.debtPaymentId && !(state.debtPayments || []).some(p => String(p.id) === String(t.debtPaymentId)));
       if (missingDebtPaymentLinks.length) { alert('Bulk deletion stopped. At least one selected debt-payment transaction has no matching debt-payment record. Repair the missing link before deleting it so the liability balance is not left incorrect.'); return; }
       const selectedIds = new Set(rows.map(t => String(t.id)));
@@ -10662,15 +10820,20 @@ ${acc.name}`);
         return;
       }
       if (typeValue) {
-        const protectedRows = valid.filter(t => t.calendarBillId || t.debtPaymentId || (t.transferToAccountId && !(typeValue==='Transfer' && transferMode==='match' && String(t.transferToAccountId)===String(transferToAccountId))));
+        const isExplicitTransferPairing = typeValue === 'Transfer' && transferMode === 'match';
+        const protectedRows = valid.filter(t =>
+          t.calendarBillId || t.debtPaymentId ||
+          (t.transferToAccountId && !(isExplicitTransferPairing && String(t.transferToAccountId) === String(transferToAccountId))) ||
+          (!isExplicitTransferPairing && transactionHasStatementReconciliation(t))
+        );
         if (protectedRows.length) {
           const protectedIds = new Set(protectedRows.map(t => String(t.id)));
           bulkTypeRows = valid.filter(t => !protectedIds.has(String(t.id)));
           if (!bulkTypeRows.length) {
-            alert(`None of the ${valid.length} selected transactions can have their type changed because they are linked to scheduled payments or existing internal transfers. Edit those through their linked workflow instead.`);
+            alert(`None of the ${valid.length} selected transactions can have their type changed because they are linked to scheduled items, existing internal transfers, or statement reconciliation. Unmatch reconciled rows first and edit linked records through their dedicated workflow.`);
             return;
           }
-          if (!confirm(`${protectedRows.length} selected transaction(s) linked to scheduled payments or existing internal transfers will be skipped. Continue with the other ${bulkTypeRows.length}?`)) return;
+          if (!confirm(`${protectedRows.length} selected transaction(s) linked to scheduled items, existing internal transfers, or statement reconciliation will be skipped. Continue with the other ${bulkTypeRows.length}?`)) return;
         }
       }
 
@@ -10826,6 +10989,54 @@ ${acc.name}`);
         button.setAttribute('aria-pressed', active ? 'true' : 'false');
       });
     }
+    function ledgerDateKey(value) {
+      const raw = String(value || '').trim();
+      if (!raw) return '';
+      let m = raw.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+      if (m) return `${m[1]}-${String(m[2]).padStart(2,'0')}-${String(m[3]).padStart(2,'0')}`;
+      m = raw.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
+      if (m) return `${m[3]}-${String(m[1]).padStart(2,'0')}-${String(m[2]).padStart(2,'0')}`;
+      const parsed = new Date(raw);
+      if (!Number.isNaN(parsed.getTime())) return `${parsed.getFullYear()}-${String(parsed.getMonth()+1).padStart(2,'0')}-${String(parsed.getDate()).padStart(2,'0')}`;
+      return '';
+    }
+    function ledgerDateChipLabel(value) {
+      const key = ledgerDateKey(value);
+      return key || String(value || 'Invalid date');
+    }
+    function clearLedgerFilterChip(key) {
+      if (key === 'global-search') {
+        const el = document.getElementById('ledger-global-search'); if (el) el.value = '';
+      } else if (key === 'period') {
+        const preset=document.getElementById('ledger-period-preset'); if(preset)preset.value='all';
+        const from=document.getElementById('ledger-date-from'); if(from)from.value='';
+        const to=document.getElementById('ledger-date-to'); if(to)to.value='';
+        document.getElementById('ledger-custom-date-range')?.classList.add('hidden');
+        window.closeLedgerFilterPeriod=null; window.closeLedgerFilterOnlyUnmatched=false; window.dataHealthTransactionIds=null;
+      } else {
+        ledgerFilterSelections[key]=[]; ledgerFilterSearchTerms[key]='';
+      }
+      renderLedgerFilterStrip(); renderLedger();
+    }
+    function renderLedgerActiveFilterChips() {
+      const host=document.getElementById('ledger-active-filter-chips'); if(!host)return;
+      const chips=[];
+      const preset=document.getElementById('ledger-period-preset')?.value||'all';
+      const from=document.getElementById('ledger-date-from')?.value||'';
+      const to=document.getElementById('ledger-date-to')?.value||'';
+      const presetLabels={current:'This month',last:'Last month','3months':'Last 3 months',year:'This year'};
+      if(preset!=='all') chips.push({key:'period',label:preset==='custom'?`Date: ${from?ledgerDateChipLabel(from):'Any'} – ${to?ledgerDateChipLabel(to):'Any'}`:`Date: ${presetLabels[preset]||preset}`});
+      if(window.closeLedgerFilterPeriod) chips.push({key:'period',label:`Date: ${window.closeLedgerFilterPeriod}`});
+      if(window.closeLedgerFilterOnlyUnmatched) chips.push({key:'period',label:'Unmatched only'});
+      if(Array.isArray(window.dataHealthTransactionIds)&&window.dataHealthTransactionIds.length) chips.push({key:'period',label:`Data review: ${window.dataHealthTransactionIds.length} transactions`});
+      for(const [key,label] of LEDGER_FILTERS){
+        (ledgerFilterSelections[key]||[]).forEach(value=>chips.push({key,label:`${label}: ${value}`}));
+        const term=(ledgerFilterSearchTerms[key]||'').trim(); if(term)chips.push({key,label:`${label} contains “${term}”`});
+      }
+      const globalSearch=(document.getElementById('ledger-global-search')?.value||'').trim();
+      if(globalSearch)chips.push({key:'global-search',label:`Search: ${globalSearch}`});
+      host.innerHTML=chips.length?`<span class="text-[10px] font-semibold text-gray-500 mr-1">Active filters</span>${chips.map(c=>`<button type="button" onclick="clearLedgerFilterChip('${escapeHtml(c.key)}')" class="inline-flex items-center gap-1 rounded-full border border-indigo-200 dark:border-indigo-900 bg-indigo-50 dark:bg-indigo-950/40 px-2.5 py-1 text-[10px] font-semibold text-indigo-700 dark:text-indigo-300" title="Remove ${escapeHtml(c.label)}">${escapeHtml(c.label)} <i class="fa-solid fa-xmark" aria-hidden="true"></i></button>`).join('')}<button type="button" onclick="clearLedgerFilters()" class="text-[10px] underline text-gray-500">Clear all</button>`:'';
+    }
     function renderLedgerFilterStrip() {
       const strip = document.getElementById('ledger-filter-strip');
       if (!strip) return;
@@ -10842,6 +11053,7 @@ ${acc.name}`);
         return `<button type="button" class="ledger-filter-button ${count ? 'has-selection' : ''}" aria-label="Filter ${escapeHtml(label)}" onclick="openLedgerFilter('${key}',this)">${escapeHtml(label)}${count ? `<span class="rounded-full bg-indigo-600 text-white px-1.5 py-0.5 text-[9px]">${count}</span>` : ''}<i class="fa-solid fa-chevron-down text-[9px] text-gray-400"></i></button>`;
       }).join('');
       updateLedgerColumnFilterIndicators();
+      renderLedgerActiveFilterChips();
     }
     function openLedgerFilter(key, button) {
       if (activeLedgerFilter === key && !document.getElementById('ledger-filter-popover').classList.contains('hidden')) { closeLedgerFilter(); return; }
@@ -10870,21 +11082,21 @@ ${acc.name}`);
     function renderLedgerSortOptions(key) {
       const panel = document.getElementById('ledger-sort-options');
       if (!panel) return;
-      const sortSelect = document.getElementById('ledger-sort-order');
+      const current = state.ledgerSortOrder || 'date-desc';
       const choices = key === 'date'
         ? [['date-asc','Oldest to Newest','fa-arrow-up-wide-short'],['date-desc','Newest to Oldest','fa-arrow-down-wide-short']]
         : key === 'amount'
           ? [['amount-asc','Lowest to Highest','fa-arrow-up-wide-short'],['amount-desc','Highest to Lowest','fa-arrow-down-wide-short']]
           : [];
       if (!choices.length) { panel.classList.add('hidden'); panel.innerHTML = ''; return; }
-      const current = sortSelect?.value || 'date-desc';
       panel.classList.remove('hidden');
       panel.innerHTML = `<div class="text-[10px] font-bold uppercase tracking-wide text-gray-500 mb-1">Sort</div><div class="flex flex-col gap-1">${choices.map(([value,label,icon]) => `<button type="button" onclick="setLedgerSortOrder('${value}')" class="flex items-center gap-2 text-left px-2.5 py-2 rounded-lg text-xs ${current === value ? ' text-indigo-600 dark:text-indigo-300 font-semibold' : ' dark:'}"><i class="fa-solid ${icon} w-4"></i>${label}${current === value ? '<i class="fa-solid fa-check ml-auto"></i>' : ''}</button>`).join('')}</div><div class="border-b border-gray-200 dark:border-gray-700 mt-3"></div>`;
     }
     function setLedgerSortOrder(value) {
-      const select = document.getElementById('ledger-sort-order');
-      if (!select) return;
-      select.value = value;
+      const allowed = ['date-asc','date-desc','amount-asc','amount-desc'];
+      if (!allowed.includes(value)) return;
+      state.ledgerSortOrder = value;
+      saveData();
       renderLedger();
       renderLedgerSortOptions(activeLedgerFilter);
     }
@@ -11288,6 +11500,7 @@ ${acc.name}`);
     }
 
     function renderLedger() {
+      if (!['date-asc','date-desc','amount-asc','amount-desc'].includes(state.ledgerSortOrder)) state.ledgerSortOrder = 'date-desc';
       updateLedgerColumnFilterIndicators();
       // Scheduled bills are managed in the Bill & Income Calendar.
 
@@ -11299,6 +11512,7 @@ ${acc.name}`);
       tbody.innerHTML = '';
 
       const globalSearch = (document.getElementById('ledger-global-search')?.value || '').trim().toLowerCase();
+      renderLedgerActiveFilterChips();
       const matchedTxs = state.transactions.filter(t => {
         if (globalSearch) {
           const accountName = (state.accounts.find(a => String(a.id) === String(t.accountId)) || {}).name || '';
@@ -11308,14 +11522,14 @@ ${acc.name}`);
         if (!window.closeLedgerFilterPeriod) {
           const preset = document.getElementById('ledger-period-preset')?.value || 'all';
           const now = new Date(); const currentYM = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-          const txDate = String(t.date || '');
+          const txDate = ledgerDateKey(t.date);
           if (preset === 'current' && txDate.slice(0,7) !== currentYM) return false;
           if (preset === 'last') { const d=new Date(now.getFullYear(),now.getMonth()-1,1); const ym=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; if(txDate.slice(0,7)!==ym)return false; }
           if (preset === '3months') { const start=new Date(now.getFullYear(),now.getMonth()-2,1); const ym=txDate.slice(0,7); if(!/^\d{4}-\d{2}$/.test(ym)||ym<`${start.getFullYear()}-${String(start.getMonth()+1).padStart(2,'0')}`||ym>currentYM)return false; }
           if (preset === 'year' && txDate.slice(0,4)!==String(now.getFullYear())) return false;
-          if (preset === 'custom') { const from=document.getElementById('ledger-date-from')?.value||''; const to=document.getElementById('ledger-date-to')?.value||''; if(from && txDate<from)return false; if(to && txDate>to)return false; }
+          if (preset === 'custom') { const from=ledgerDateKey(document.getElementById('ledger-date-from')?.value||''); const to=ledgerDateKey(document.getElementById('ledger-date-to')?.value||''); if((from||to)&&!txDate)return false; if(from && txDate<from)return false; if(to && txDate>to)return false; }
         }
-        if (window.closeLedgerFilterPeriod && (String(window.closeLedgerFilterPeriod).length===4 ? String(t.date || '').slice(0,4) : String(t.date || '').slice(0,7)) !== String(window.closeLedgerFilterPeriod)) return false;
+        if (window.closeLedgerFilterPeriod && (String(window.closeLedgerFilterPeriod).length===4 ? ledgerDateKey(t.date).slice(0,4) : ledgerDateKey(t.date).slice(0,7)) !== String(window.closeLedgerFilterPeriod)) return false;
         if (Array.isArray(window.dataHealthTransactionIds) && window.dataHealthTransactionIds.length && !window.dataHealthTransactionIds.some(id => String(id) === String(t.id))) return false;
         if (window.closeLedgerFilterOnlyUnmatched && (t.statementMatchId || t.statementMatchGroupId)) return false;
         const acc = state.accounts.find(a => a.id === t.accountId);
@@ -11345,12 +11559,25 @@ ${acc.name}`);
         return true;
       });
 
-      const sortOrder = document.getElementById('ledger-sort-order')?.value || 'date-desc';
+      const sortOrder = state.ledgerSortOrder || 'date-desc';
+      const originalOrder = new Map(state.transactions.map((transaction, index) => [String(transaction.id), index]));
+      const dateCompare = (a, b, direction = 1) => {
+        const aKey = ledgerDateKey(a.date), bKey = ledgerDateKey(b.date);
+        // Invalid/missing dates always sort last, regardless of direction.
+        if (!aKey && !bKey) return (originalOrder.get(String(a.id)) ?? 0) - (originalOrder.get(String(b.id)) ?? 0);
+        if (!aKey) return 1;
+        if (!bKey) return -1;
+        const compared = aKey.localeCompare(bKey) * direction;
+        return compared || ((originalOrder.get(String(a.id)) ?? 0) - (originalOrder.get(String(b.id)) ?? 0));
+      };
       matchedTxs.sort((a, b) => {
-        if (sortOrder === 'date-asc') return String(a.date || '').localeCompare(String(b.date || '')) || String(a.id).localeCompare(String(b.id));
-        if (sortOrder === 'amount-desc') return (Number(b.amount) || 0) - (Number(a.amount) || 0) || String(b.date || '').localeCompare(String(a.date || ''));
-        if (sortOrder === 'amount-asc') return (Number(a.amount) || 0) - (Number(b.amount) || 0) || String(b.date || '').localeCompare(String(a.date || ''));
-        return String(b.date || '').localeCompare(String(a.date || '')) || String(b.id).localeCompare(String(a.id));
+        if (sortOrder === 'date-asc') return dateCompare(a, b, 1);
+        if (sortOrder === 'date-desc') return dateCompare(a, b, -1);
+        const amountA = Number(a.amount), amountB = Number(b.amount);
+        const safeA = Number.isFinite(amountA) ? amountA : 0;
+        const safeB = Number.isFinite(amountB) ? amountB : 0;
+        const amountOrder = sortOrder === 'amount-asc' ? safeA - safeB : safeB - safeA;
+        return amountOrder || dateCompare(a, b, -1);
       });
       window.currentFilteredLedgerTransactions = matchedTxs.slice();
 
@@ -12809,6 +13036,19 @@ ${acc.name}`);
       }
       return !!(t.statementMatchId || t.statementMatchGroupId);
     }
+    // A transaction with any statement-link metadata must be unmatched before
+    // destructive operations or ordinary type reclassification. Include the
+    // review flag because it represents a previously reconciled relationship
+    // that still needs an explicit user decision.
+    function transactionHasStatementReconciliation(t) {
+      if (!t) return false;
+      return !!(
+        t.statementMatchId || t.statementMatchGroupId || t.statementMatchNeedsReview ||
+        t.transferAddedSideRowId ||
+        (Array.isArray(t.transferStatementMatches) && t.transferStatementMatches.length) ||
+        (Array.isArray(t.transferMergedEntries) && t.transferMergedEntries.length)
+      );
+    }
     function addTransferStatementMatch(t, accountId, row) {
       t.transferStatementMatches = Array.isArray(t.transferStatementMatches) ? t.transferStatementMatches : [];
       t.transferStatementMatches = t.transferStatementMatches.filter(m => !(String(m.accountId)===String(accountId) && String(m.rowId||'')===String(row.id||'')));
@@ -13163,6 +13403,11 @@ ${acc.name}`);
     function validateStatementImportRow(row) {
       if (!row) return 'Statement row not found.';
       normalizeStoredStatementImportRow(row);
+      if (!isValidISODateString(row.date)) return 'Enter a real calendar date in YYYY-MM-DD format before importing this statement row.';
+      const reviewAmount = Number(row.amount);
+      if (!Number.isFinite(reviewAmount) || Math.abs(reviewAmount) <= 0 || !statementAmountHasCentPrecision(reviewAmount)) {
+        return 'Enter a valid statement amount greater than $0.00 with no more than two decimal places.';
+      }
       const statementAccount = (state.accounts || []).find(a => String(a.id) === String(row.accountId) && ['asset','debt'].includes(a.type) && !a.archived);
       if (!statementAccount) return 'Choose an active asset or liability account as the statement account.';
       if (statementAccount.type === 'debt' && !['Expense','Income'].includes(row.importType || row.type)) return 'For a credit-card statement, import purchases and credits as Expense or Income rows. Debt payments and transfers must be reconciled from the funding bank account.';
@@ -13597,8 +13842,8 @@ ${acc.name}`);
       const t = state.transactions[idx];
       const linkedBillsForTransaction = getCalendarBillsLinkedToTransactionId(t.id);
       const reversalOriginalForBill = t.reversalOfTransactionId ? (state.transactions||[]).find(row=>String(row.id)===String(t.reversalOfTransactionId)) : null;
-      if (t.type === 'Transfer' && t.transferToAccountId && ((Array.isArray(t.transferStatementMatches) && t.transferStatementMatches.length) || t.transferAddedSideRowId || (Array.isArray(t.transferMergedEntries) && t.transferMergedEntries.length))) {
-        alert('This transfer is linked to statement reconciliation. Unmatch its statement rows from both accounts before deleting it, so the reconciliation history is not left orphaned.');
+      if (transactionHasStatementReconciliation(t)) {
+        alert('This transaction is linked to statement reconciliation or has a match awaiting review. Unmatch its statement row(s) from every affected account before deleting it, so the reconciliation history is not left orphaned.');
         return;
       }
       if (t.debtPaymentId && !(state.debtPayments || []).some(p => String(p.id) === String(t.debtPaymentId))) {
@@ -14129,7 +14374,7 @@ ${acc.name}`);
       const monthPicker = document.getElementById('debt-upcoming-filter');
       if (monthPicker && !monthPicker.value) { const now = new Date(); monthPicker.value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`; }
       const filterYM = monthPicker?.value || '';
-      const upcomingDebts = (state.calendarBills || []).filter(b => !b.recurrenceOccurrenceDeleted && b.type === 'debt' && !b.paid && (!filterYM || String(b.date || '').startsWith(filterYM))).sort((a,b) => String(a.date || '').localeCompare(String(b.date || '')));
+      const upcomingDebts = (state.calendarBills || []).filter(b => !b.recurrenceOccurrenceDeleted && b.type === 'debt' && !b.paid && (!filterYM || (ledgerDateKey(b.date)||'').startsWith(filterYM))).sort((a,b) => (ledgerDateKey(a.date)||'9999-99-99').localeCompare(ledgerDateKey(b.date)||'9999-99-99'));
       if (!upcomingDebts.length) {
         container.innerHTML = `<div class="text-xs text-gray-400 py-1">No unpaid debt minimums scheduled for ${escapeHtml(filterYM || 'the selected period')}.</div>`;
         return;
@@ -14578,8 +14823,9 @@ ${acc.name}`);
       const txs=(state.transactions||[]).filter(t=>['Debt Payment','Debt Payment Reversal'].includes(t.type)).filter(t=>{
         const payment=(state.debtPayments||[]).find(p=>String(p.id)===String(t.debtPaymentId||'')||String(p.transactionId)===String(t.id));
         const debtId=t.debtAccountId||payment?.accountId;
-        return selected.some(a=>String(a.id)===String(debtId)) && (!fromDate||t.date>=fromDate) && (!toDate||t.date<=toDate);
-      }).sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
+        const txDate=ledgerDateKey(t.date); const fromKey=ledgerDateKey(fromDate); const toKey=ledgerDateKey(toDate);
+        return selected.some(a=>String(a.id)===String(debtId)) && (!fromKey||(!!txDate&&txDate>=fromKey)) && (!toKey||(!!txDate&&txDate<=toKey));
+      }).sort((a,b)=>(ledgerDateKey(b.date)||'0000-00-00').localeCompare(ledgerDateKey(a.date)||'0000-00-00'));
       const runningAfter=new Map();
       histories.forEach(h=>h.entries.forEach(e=>runningAfter.set(String(e.id),e.runningBalance)));
       window.debtHistoryFilterRows = txs.map(t=>{
@@ -14591,7 +14837,7 @@ ${acc.name}`);
         const interest=(Number(t.debtInterestAmount??payment?.interestAmount??Math.max(0,(Number(t.amount)||0)-Math.abs(principal)))||0)*sign;
         const amount=(Number(t.amount)||0)*sign;
         const balance=runningAfter.get(String(t.id));
-        const values={date:String(t.date||''),debt:String(debt?.name||'Unknown debt'),amount,principal,interest,funding:String(funding?.name||'Not recorded'),balance:balance===undefined?null:Number(balance)};
+        const values={date:ledgerDateKey(t.date)||String(t.date||''),debt:String(debt?.name||'Unknown debt'),amount,principal,interest,funding:String(funding?.name||'Not recorded'),balance:balance===undefined?null:Number(balance)};
         const html=`<tr><td class="px-3 py-3 whitespace-nowrap">${escapeHtml(values.date)}</td><td class="px-3 py-3">${escapeHtml(values.debt)}</td><td class="px-3 py-3 text-right accounting-num">${debtReportMoney(amount)}</td><td class="px-3 py-3 text-right accounting-num">${debtReportMoney(principal)}</td><td class="px-3 py-3 text-right accounting-num">${debtReportMoney(interest)}</td><td class="px-3 py-3">${escapeHtml(values.funding)}</td><td class="px-3 py-3 text-right accounting-num">${balance===undefined?'—':debtReportMoney(balance)}</td><td class="px-3 py-3"><button type="button" class="text-indigo-600 dark:text-indigo-400 font-semibold" onclick="openTransactionModal('${escapeHtml(t.id)}')">Open transaction</button></td></tr>`;
         return {values,html};
       });
@@ -14632,7 +14878,7 @@ ${acc.name}`);
     function setDebtHistorySort(key,direction){window.debtHistorySort={key,direction};renderDebtHistoryFilteredRows();}
     function setDebtHistoryRange(key,side,value){window.debtHistoryRanges=window.debtHistoryRanges||{};const range=window.debtHistoryRanges[key]||(window.debtHistoryRanges[key]={});if(value===''||!Number.isFinite(Number(value)))delete range[side];else range[side]=Number(value);if(!Object.keys(range).length)delete window.debtHistoryRanges[key];if((window.debtHistoryRanges[key]&&Object.keys(window.debtHistoryRanges[key]).length)||(window.debtHistorySelections[key]&&window.debtHistorySelections[key].size))window.debtHistoryActive.add(key);else window.debtHistoryActive.delete(key);renderDebtHistoryFilteredRows();}
     function clearDebtHistoryFilter(key){if(window.debtHistorySelections[key])window.debtHistorySelections[key].clear();if(window.debtHistoryRanges)delete window.debtHistoryRanges[key];window.debtHistoryActive.delete(key);renderDebtHistoryChoices(key,activeDebtHistoryMenu?.querySelector('.debt-history-search')?.value||'');renderDebtHistoryFilteredRows();}
-    function renderDebtHistoryFilteredRows(){updateDebtHistoryFilterIndicators();const body=document.getElementById('debt-report-history-rows');if(!body)return;const selections=window.debtHistorySelections||{};let rows=(window.debtHistoryFilterRows||[]).filter(row=>[...window.debtHistoryActive].every(key=>{const range=window.debtHistoryRanges&&window.debtHistoryRanges[key];if(range&&['amount','principal','interest','balance'].includes(key)){const n=Number(row.values[key]);return Number.isFinite(n)&&(range.min===undefined||n>=range.min)&&(range.max===undefined||n<=range.max);}const set=selections[key]||new Set();return set.has(typeof row.values[key]==='number'?row.values[key].toFixed(2):String(row.values[key]??''));}));const sort=window.debtHistorySort||{key:'date',direction:'desc'};rows.sort((a,b)=>{const av=a.values[sort.key],bv=b.values[sort.key];let cmp;if(typeof av==='number'||typeof bv==='number')cmp=(Number(av)||0)-(Number(bv)||0);else cmp=String(av??'').localeCompare(String(bv??''),undefined,{numeric:true,sensitivity:'base'});return sort.direction==='desc'?-cmp:cmp;});body.innerHTML=rows.map(r=>r.html).join('');const empty=document.getElementById('debt-report-history-empty');if(empty)empty.classList.toggle('hidden',rows.length>0);}
+    function renderDebtHistoryFilteredRows(){updateDebtHistoryFilterIndicators();const body=document.getElementById('debt-report-history-rows');if(!body)return;const selections=window.debtHistorySelections||{};let rows=(window.debtHistoryFilterRows||[]).filter(row=>[...window.debtHistoryActive].every(key=>{const range=window.debtHistoryRanges&&window.debtHistoryRanges[key];if(range&&['amount','principal','interest','balance'].includes(key)){const n=Number(row.values[key]);return Number.isFinite(n)&&(range.min===undefined||n>=range.min)&&(range.max===undefined||n<=range.max);}const set=selections[key]||new Set();return set.has(typeof row.values[key]==='number'?row.values[key].toFixed(2):String(row.values[key]??''));}));const sort=window.debtHistorySort||{key:'date',direction:'desc'};rows.sort((a,b)=>{const av=a.values[sort.key],bv=b.values[sort.key];let cmp;if(typeof av==='number'||typeof bv==='number')cmp=(Number(av)||0)-(Number(bv)||0);else cmp=sort.key==='date'?(ledgerDateKey(av)||'').localeCompare(ledgerDateKey(bv)||''):String(av??'').localeCompare(String(bv??''),undefined,{numeric:true,sensitivity:'base'});return sort.direction==='desc'?-cmp:cmp;});body.innerHTML=rows.map(r=>r.html).join('');const empty=document.getElementById('debt-report-history-empty');if(empty)empty.classList.toggle('hidden',rows.length>0);}
     document.addEventListener('pointerdown',e=>{if(activeDebtHistoryMenu&&!e.target.closest('.debt-history-filter-menu')&&!e.target.closest('.debt-filter-trigger'))closeDebtHistoryFilter();});
     document.addEventListener('keydown',e=>{if(e.key==='Escape'&&activeDebtHistoryMenu)closeDebtHistoryFilter();});
 
@@ -15253,6 +15499,10 @@ ${acc.name}`);
       const linkedBill = linkedBills[0] || null;
       if (!linked || linked.type !== 'Debt Payment' || !debtAccount || !fundingAccount || (linked.debtPaymentId && String(linked.debtPaymentId) !== String(payment.id)) || (linked.debtAccountId && String(linked.debtAccountId) !== String(payment.accountId)) || String(linked.accountId) !== String(payment.fundingAccountId)) {
         alert('This debt payment has missing or inconsistent linked records/accounts. FinHub will not delete it until the relationship is repaired.');
+        return;
+      }
+      if (transactionHasStatementReconciliation(linked)) {
+        alert('This debt payment is linked to statement reconciliation or has a match awaiting review. Unmatch its statement row before deleting the payment.');
         return;
       }
       if (getDebtPaymentLinkedReversals(linked.id).length) {
@@ -17057,6 +17307,37 @@ function openTransactionModal(requestedEditId = null) {
     function restoreLedgerColumns(){const p=ledgerPrefs();p.hidden=[];saveData();applyLedgerColumns();openLedgerColumnSettings();}
     function moveLedgerColumn(from,to){const p=ledgerPrefs(),a=p.order.indexOf(from),b=p.order.indexOf(to);if(a<0||b<0||a===b)return;p.order.splice(a,1);p.order.splice(b,0,from);saveData();applyLedgerColumns();}
     function toggleLedgerColumn(key,show){if(key==='vendor'&&!show)return;const p=ledgerPrefs();p.hidden=show?p.hidden.filter(x=>x!==key):[...new Set([...p.hidden,key])];saveData();applyLedgerColumns();}
+    function autoFitLedgerColumns(){
+      const prefs=ledgerPrefs(),table=document.querySelector('#ledger-table-container table');
+      const header=table?.querySelector('thead tr:first-child'),body=table?.querySelector('tbody#ledger-rows');
+      const viewport=table?.closest('#ledger-table-container')||table?.parentElement;
+      if(!table||!header||!body||!viewport)return;
+      const visible=[...header.children].filter(th=>th.dataset.colKey&&!prefs.hidden.includes(th.dataset.colKey));
+      if(!visible.length)return;
+      const available=Math.max(280,Math.floor(viewport.clientWidth||table.parentElement?.clientWidth||table.getBoundingClientRect().width));
+      const minFor=key=>ledgerColumnMinWidth(key);
+      const maxFor=()=>640;
+      const measured=visible.map(th=>{
+        const key=th.dataset.colKey;
+        const clean=th.cloneNode(true);clean.querySelectorAll('button,.ledger-resize-handle').forEach(el=>el.remove());
+        let natural=Math.ceil(clean.scrollWidth+24);
+        [...body.rows].forEach(row=>{const cell=[...row.cells].find(td=>String(td.dataset.label||'').trim()===(ledgerCols.find(x=>x[1]===key)||[])[0]);if(cell){const style=getComputedStyle(cell);natural=Math.max(natural,Math.min(360,Math.ceil(cell.scrollWidth+parseFloat(style.paddingLeft||0)+parseFloat(style.paddingRight||0)+8)));}});
+        return {key,min:minFor(key),max:maxFor(),ideal:Math.max(minFor(key),Math.min(maxFor(),natural))};
+      });
+      const minTotal=measured.reduce((a,c)=>a+c.min,0),idealTotal=measured.reduce((a,c)=>a+c.ideal,0);
+      let widths=measured.map(c=>c.ideal);
+      if(idealTotal>available){
+        let excess=idealTotal-available,active=measured.map((c,i)=>i).filter(i=>widths[i]>measured[i].min);
+        while(excess>0.5&&active.length){const share=excess/active.length;let used=0;active.forEach(i=>{const cut=Math.min(share,widths[i]-measured[i].min);widths[i]-=cut;used+=cut;});excess-=used;active=active.filter(i=>widths[i]>measured[i].min+.5);if(!used)break;}
+      }else if(idealTotal<available){
+        let spare=available-idealTotal,active=measured.map((c,i)=>i).filter(i=>widths[i]<measured[i].max);
+        while(spare>0.5&&active.length){const share=spare/active.length;let used=0;active.forEach(i=>{const add=Math.min(share,measured[i].max-widths[i]);widths[i]+=add;used+=add;});spare-=used;active=active.filter(i=>widths[i]<measured[i].max-.5);if(!used)break;}
+      }
+      measured.forEach((c,i)=>{prefs.widths[c.key]=clampLedgerColumnWidth(c.key,Math.round(widths[i]));});
+      saveData();applyLedgerColumns();
+      const button=document.getElementById('ledger-auto-fit-all');
+      if(button){button.title=minTotal>available?'Columns fitted to the narrowest readable widths; horizontal scrolling remains available.':'All visible columns fitted to the current table width.';}
+    }
     function resetLedgerColumnWidths(){ledgerPrefs().widths={};saveData();applyLedgerColumns();}
     function applyLedgerColumns(){
       const p=ledgerPrefs(),table=document.querySelector('#ledger-table-container table');if(!table)return;
@@ -20196,6 +20477,88 @@ html.dark body[data-finhub-theme] :is(#transaction-modal,#bulk-edit-modal,#recon
 html.dark body[data-finhub-theme] :is(#transaction-modal,#bulk-edit-modal,#recon-modal,#vendor-rule-modal,#merchant-rule-modal,#import-rule-modal,#account-modal,#account-detail-modal,#debt-detail-modal,#debt-payment-modal,#interest-charge-modal,#joint-bill-modal,#transfer-modal,#zbb-item-modal,#category-modal,#income-category-modal,#type-modal,#calendar-modal,#available-to-spend-modal,#sinking-bucket-modal,#sinking-bucket-activity-modal,#backup-import-preview-modal) :is(.text-gray-400,.text-gray-500,.text-gray-600) {
   color: var(--fh-cohesion-muted) !important;
 }
+
+
+/* FinHub v58 foundational component contract.
+   Shared component geometry is defined once; active theme tokens supply all colours. */
+body[data-finhub-theme] {
+  --fh-component-heading-size: 1rem;
+  --fh-component-heading-line: 1.35;
+  --fh-component-heading-weight: 720;
+  --fh-component-section-gap: 1rem;
+  --fh-component-header-radius: .85rem;
+}
+body[data-finhub-theme] .fh-page-section {
+  display:flex;
+  flex-direction:column;
+  gap:var(--fh-component-section-gap);
+  min-width:0;
+}
+body[data-finhub-theme] .fh-page-section-heading {
+  display:flex;
+  flex-direction:column;
+  gap:.3rem;
+  min-width:0;
+  color:var(--fh-ink);
+}
+body[data-finhub-theme] .fh-page-section-heading :is(h2,h3,h4) {
+  margin:0;
+  color:var(--fh-ink);
+  font-size:var(--fh-component-heading-size);
+  line-height:var(--fh-component-heading-line);
+  font-weight:var(--fh-component-heading-weight);
+  letter-spacing:-.012em;
+  text-align:left;
+}
+body[data-finhub-theme] .fh-page-section-heading p {
+  margin:0;
+  color:var(--fh-muted);
+  font-size:.875rem;
+  line-height:1.5;
+}
+body[data-finhub-theme] .fh-section-header,
+body[data-finhub-theme] .fh-content-card-header {
+  box-sizing:border-box;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:.75rem;
+  min-width:0;
+  padding:.85rem 1rem;
+  border:1px solid var(--fh-border);
+  border-radius:var(--fh-component-header-radius);
+  background:var(--fh-raised);
+  color:var(--fh-ink);
+}
+body[data-finhub-theme] .fh-section-header :is(h2,h3,h4),
+body[data-finhub-theme] .fh-content-card-header :is(h2,h3,h4) {
+  margin:0;
+  color:inherit;
+  font-size:var(--fh-component-heading-size);
+  line-height:var(--fh-component-heading-line);
+  font-weight:var(--fh-component-heading-weight);
+}
+body[data-finhub-theme] .fh-page-section-heading :is(button,a):focus-visible,
+body[data-finhub-theme] .fh-section-header :is(button,a):focus-visible,
+body[data-finhub-theme] .fh-content-card-header :is(button,a):focus-visible {
+  outline:2px solid var(--fh-focus);
+  outline-offset:2px;
+}
+@media(max-width:680px) {
+  body[data-finhub-theme] .fh-section-header,
+  body[data-finhub-theme] .fh-content-card-header {
+    align-items:flex-start;
+    flex-wrap:wrap;
+    padding:.75rem .85rem;
+  }
+  body[data-finhub-theme] .fh-page-section { gap:.85rem; }
+}
+@media(prefers-reduced-motion:reduce) {
+  body[data-finhub-theme] .fh-disclosure > .fh-disclosure-trigger,
+  body[data-finhub-theme] .fh-disclosure > .fh-disclosure-trigger::after {
+    transition:none !important;
+  }
+}
 </style>
 <style id="finhub-accounts-and-checkin-light-mode-cohesion-2026-11-14">
 /* Light-mode-only visual alignment. Scoped to Accounts, Check-In headers and
@@ -22286,6 +22649,51 @@ html.dark body[data-finhub-theme] select option {background-color:var(--fh-dark-
       #tab-biweekly .fh-bva-row .grid { grid-template-columns:minmax(0,1fr) repeat(3,minmax(54px,auto)); gap:.35rem; }
       #tab-biweekly .fh-bva-row { padding:.5rem; }
     }
+
+
+/* FinHub v59 — unified header hover contract.
+   Header hover must be identical across close/review disclosures and dashboard cards.
+   It deliberately overrides legacy utility hover rules only for header surfaces. */
+body[data-finhub-theme] :is(
+  .fh-disclosure > .fh-disclosure-trigger,
+  .fh-dashboard-disclosure-header,
+  .dashboard-block-header,
+  .dashboard-block-header-trigger,
+  .fh-dashboard-disclosure-trigger
+) {
+  color:var(--fh-ink) !important;
+  transition:background-color .15s ease,color .15s ease,border-color .15s ease;
+}
+body[data-finhub-theme] :is(
+  .fh-disclosure > .fh-disclosure-trigger:hover,
+  .fh-dashboard-disclosure-header:hover,
+  .fh-dashboard-disclosure-header:hover > .fh-dashboard-disclosure-trigger,
+  .dashboard-block-header:hover,
+  .dashboard-block-header:hover > .dashboard-block-header-trigger,
+  .dashboard-block-header-trigger:hover,
+  .fh-dashboard-disclosure-trigger:hover
+) {
+  background-color:var(--fh-hover) !important;
+  color:var(--fh-ink) !important;
+  border-color:var(--fh-border);
+  box-shadow:none !important;
+  opacity:1 !important;
+  filter:none !important;
+}
+/* Keep disclosure borders visually stable while the header surface changes. */
+body[data-finhub-theme] .fh-disclosure > .fh-disclosure-trigger:hover {
+  border-bottom-color:transparent;
+}
+/* Non-interactive card headers do not acquire a hover state from child info buttons. */
+body[data-finhub-theme] .fh-section-header,
+body[data-finhub-theme] .fh-content-card-header {
+  transition:background-color .15s ease,color .15s ease,border-color .15s ease;
+}
+@media(prefers-reduced-motion:reduce) {
+  body[data-finhub-theme] :is(.fh-disclosure > .fh-disclosure-trigger,.fh-dashboard-disclosure-header,.dashboard-block-header,.dashboard-block-header-trigger,.fh-dashboard-disclosure-trigger) {
+    transition:none !important;
+  }
+}
 </style>
 <div id="finhub-text-entry-modal" class="hidden fixed inset-0 z-[120] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="finhub-text-entry-title">
 <div class="absolute inset-0 bg-black/60" data-text-entry-dismiss></div>
@@ -22314,5 +22722,1176 @@ html.dark body[data-finhub-theme] select option {background-color:var(--fh-dark-
   window.addEventListener('resize',close);window.addEventListener('scroll',close,true);
 })();
 </script>
+
+<style id="finhub-v60-full-width-disclosure-headers">
+/*
+  Foundational disclosure-header alignment:
+  Account panels use the same edge-to-edge header geometry as Paycheque Planner.
+  The outer details element owns the card border/radius; the summary owns the
+  full-width header surface. Content padding moves to the panel body.
+*/
+body[data-finhub-theme] #tab-accounts .accounts-group-panel,
+body[data-finhub-theme] #tab-accounts #account-integrity-panel {
+  box-sizing:border-box;
+  min-width:0;
+  padding:0 !important;
+  overflow:hidden;
+  border:1px solid var(--fh-card-border,var(--fh-border)) !important;
+  border-radius:var(--fh-component-card-radius,1rem) !important;
+  background:var(--fh-card-bg,var(--fh-card)) !important;
+  background-clip:padding-box;
+}
+body[data-finhub-theme] #tab-accounts .accounts-group-panel > summary,
+body[data-finhub-theme] #tab-accounts #account-integrity-panel > summary {
+  box-sizing:border-box;
+  display:flex;
+  width:100%;
+  min-width:0;
+  min-height:3.25rem;
+  margin:0 !important;
+  padding:.9rem 1.15rem !important;
+  align-items:center;
+  justify-content:space-between;
+  gap:.75rem;
+  border:0 !important;
+  border-bottom:1px solid transparent !important;
+  border-radius:0 !important;
+  background:var(--fh-raised,var(--fh-card-bg)) !important;
+  color:var(--fh-ink,var(--fh-card-text)) !important;
+  cursor:pointer;
+  list-style:none;
+  user-select:none;
+  transition:background-color .16s ease,border-color .16s ease;
+}
+body[data-finhub-theme] #tab-accounts .accounts-group-panel > summary:hover,
+body[data-finhub-theme] #tab-accounts #account-integrity-panel > summary:hover {
+  background:var(--fh-hover,var(--fh-raised)) !important;
+}
+body[data-finhub-theme] #tab-accounts .accounts-group-panel[open] > summary,
+body[data-finhub-theme] #tab-accounts #account-integrity-panel[open] > summary {
+  border-bottom-color:var(--fh-border) !important;
+}
+body[data-finhub-theme] #tab-accounts .accounts-group-panel > summary::-webkit-details-marker,
+body[data-finhub-theme] #tab-accounts #account-integrity-panel > summary::-webkit-details-marker,
+body[data-finhub-theme] #tab-accounts .accounts-group-panel > summary::marker,
+body[data-finhub-theme] #tab-accounts #account-integrity-panel > summary::marker {
+  display:none;
+  content:"";
+}
+body[data-finhub-theme] #tab-accounts .accounts-group-panel > summary > h3 {
+  margin:0 !important;
+  min-width:0;
+}
+body[data-finhub-theme] #tab-accounts .accounts-group-panel > summary .accounts-group-chevron,
+body[data-finhub-theme] #tab-accounts #account-integrity-panel > summary > span:last-child > i {
+  flex:0 0 auto;
+  transition:transform .18s ease;
+}
+body[data-finhub-theme] #tab-accounts .accounts-group-panel[open] > summary .accounts-group-chevron,
+body[data-finhub-theme] #tab-accounts #account-integrity-panel[open] > summary > span:last-child > i {
+  transform:rotate(180deg);
+}
+body[data-finhub-theme] #tab-accounts .accounts-group-panel > :not(summary) {
+  box-sizing:border-box;
+  margin:0 !important;
+  padding:1rem !important;
+}
+body[data-finhub-theme] #tab-accounts #account-integrity-panel > :not(summary) {
+  box-sizing:border-box;
+  margin:0 !important;
+  padding:1rem !important;
+}
+body[data-finhub-theme] #tab-accounts .accounts-group-panel > summary:focus-visible,
+body[data-finhub-theme] #tab-accounts #account-integrity-panel > summary:focus-visible {
+  outline:2px solid var(--fh-focus,var(--fh-primary));
+  outline-offset:-3px;
+}
+@media(max-width:680px) {
+  body[data-finhub-theme] #tab-accounts .accounts-group-panel > summary,
+  body[data-finhub-theme] #tab-accounts #account-integrity-panel > summary {
+    align-items:flex-start;
+    padding:.8rem .9rem !important;
+  }
+  body[data-finhub-theme] #tab-accounts .accounts-group-panel > :not(summary),
+  body[data-finhub-theme] #tab-accounts #account-integrity-panel > :not(summary) {
+    padding:.8rem !important;
+  }
+}
+@media(prefers-reduced-motion:reduce) {
+  body[data-finhub-theme] #tab-accounts .accounts-group-panel > summary,
+  body[data-finhub-theme] #tab-accounts #account-integrity-panel > summary,
+  body[data-finhub-theme] #tab-accounts .accounts-group-panel > summary .accounts-group-chevron,
+  body[data-finhub-theme] #tab-accounts #account-integrity-panel > summary > span:last-child > i {
+    transition:none !important;
+  }
+}
+</style>
+
+
+<style id="finhub-v61-split-screen-dashboard">
+/* Split-screen dashboard: stable card geometry and balanced widget density. */
+#tab-dashboard .fh-monthly-performance-grid {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  align-items:start;
+  gap:1rem;
+}
+#tab-dashboard .fh-monthly-performance-grid > .dashboard-block {
+  min-width:0;
+  width:100%;
+}
+#tab-dashboard [data-dashboard-block="spending"] #spending-category-chart {
+  display:grid !important;
+  grid-template-columns:minmax(135px,.82fr) minmax(0,1.18fr) !important;
+  align-items:center;
+  gap:1rem !important;
+  min-width:0;
+}
+#tab-dashboard [data-dashboard-block="spending"] #spending-category-chart > * {
+  min-width:0;
+  max-width:100%;
+}
+#tab-dashboard [data-dashboard-block="spending"] .spending-donut {
+  width:clamp(145px,13vw,190px) !important;
+  height:clamp(145px,13vw,190px) !important;
+  min-width:145px !important;
+  min-height:145px !important;
+  max-width:190px !important;
+  max-height:190px !important;
+  flex:0 0 auto;
+  position:relative;
+}
+#tab-dashboard [data-dashboard-block="spending"] .spending-legend {
+  width:100%;
+  min-width:0;
+  max-height:230px;
+  overflow-y:auto;
+  overflow-x:hidden;
+  padding:.15rem .3rem .15rem 0;
+  scrollbar-gutter:stable;
+}
+#tab-dashboard [data-dashboard-block="spending"] .spending-legend button {
+  display:flex;
+  width:100%;
+  min-width:0;
+  align-items:center;
+  justify-content:space-between;
+  gap:.45rem;
+  padding:.38rem .42rem !important;
+  border-radius:.55rem;
+  font-size:.72rem !important;
+  line-height:1.25 !important;
+  text-align:left;
+}
+#tab-dashboard [data-dashboard-block="spending"] .spending-legend button > span:first-child {
+  flex:1 1 auto;
+  min-width:0;
+}
+#tab-dashboard [data-dashboard-block="spending"] .spending-legend button > span:first-child > span:last-child {
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+#tab-dashboard [data-dashboard-block="spending"] .spending-legend button strong {
+  flex:0 0 auto;
+  max-width:58%;
+  font-size:.68rem !important;
+  white-space:nowrap;
+  font-variant-numeric:tabular-nums;
+}
+#tab-dashboard #budget-performance-content {
+  padding:1rem !important;
+  min-width:0;
+}
+#tab-dashboard #mo-budget-list {
+  display:flex;
+  flex-direction:column;
+  gap:.8rem;
+  min-width:0;
+}
+#tab-dashboard #mo-budget-list > button {
+  box-sizing:border-box;
+  display:block;
+  width:100%;
+  min-width:0;
+  margin:0 !important;
+  padding:.65rem .7rem !important;
+  border-radius:.7rem;
+  border:1px solid transparent;
+  transition:background-color .15s ease,border-color .15s ease;
+}
+#tab-dashboard #mo-budget-list > button:hover {
+  background:var(--fh-hover,rgba(148,163,184,.09)) !important;
+  border-color:var(--fh-border,rgba(148,163,184,.2));
+}
+#tab-dashboard #mo-budget-list > button > div:first-child {
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) minmax(7.5rem,auto);
+  align-items:start;
+  gap:.65rem !important;
+}
+#tab-dashboard #mo-budget-list > button > div:first-child > span {
+  min-width:0;
+  line-height:1.35;
+}
+#tab-dashboard #mo-budget-list > button > div:first-child > strong {
+  min-width:0;
+  max-width:100%;
+  text-align:right;
+  white-space:nowrap;
+  line-height:1.35;
+  font-size:.9rem;
+  font-variant-numeric:tabular-nums;
+}
+#tab-dashboard #mo-budget-list > button > div:last-child {
+  margin-top:.55rem !important;
+  height:.55rem !important;
+  border-radius:999px;
+}
+#tab-dashboard #mo-budget-list > button > div:last-child > div {
+  border-radius:999px;
+}
+#tab-dashboard [data-dashboard-block="upcoming"] .fh-dashboard-disclosure-content {
+  min-width:0;
+}
+@media (max-width:1050px) {
+  #tab-dashboard .fh-monthly-performance-grid {
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+    gap:.8rem;
+  }
+  #tab-dashboard [data-dashboard-block="spending"] #spending-category-chart {
+    grid-template-columns:minmax(115px,.75fr) minmax(0,1.25fr) !important;
+    gap:.65rem !important;
+  }
+  #tab-dashboard [data-dashboard-block="spending"] .spending-donut {
+    width:clamp(125px,15vw,165px) !important;
+    height:clamp(125px,15vw,165px) !important;
+    min-width:125px !important;
+    min-height:125px !important;
+  }
+  #tab-dashboard #mo-budget-list > button > div:first-child {
+    grid-template-columns:minmax(0,1fr) minmax(6.5rem,auto);
+  }
+}
+@media (max-width:760px) {
+  #tab-dashboard .fh-monthly-performance-grid {
+    grid-template-columns:minmax(0,1fr);
+  }
+  #tab-dashboard [data-dashboard-block="spending"] #spending-category-chart {
+    grid-template-columns:minmax(125px,.75fr) minmax(0,1.25fr) !important;
+  }
+}
+@media (max-width:420px) {
+  #tab-dashboard [data-dashboard-block="spending"] #spending-category-chart {
+    grid-template-columns:minmax(0,1fr) !important;
+    justify-items:center;
+  }
+  #tab-dashboard [data-dashboard-block="spending"] .spending-legend {
+    width:100%;
+    max-height:220px;
+  }
+  #tab-dashboard #mo-budget-list > button > div:first-child {
+    grid-template-columns:minmax(0,1fr);
+  }
+  #tab-dashboard #mo-budget-list > button > div:first-child > strong {
+    text-align:left;
+  }
+}
+@media(prefers-reduced-motion:reduce) {
+  #tab-dashboard #mo-budget-list > button { transition:none !important; }
+}
+</style>
+
+
+<style id="finhub-v62-compact-spending-legend">
+/* Compact category legend: reclaim vertical space and reduce unnecessary scrolling. */
+#tab-dashboard [data-dashboard-block="spending"] #spending-category-chart {
+  grid-template-columns:minmax(0,1fr) !important;
+  justify-items:stretch;
+  align-items:center;
+  gap:.55rem !important;
+}
+#tab-dashboard [data-dashboard-block="spending"] .spending-donut {
+  width:clamp(138px,11vw,168px) !important;
+  height:clamp(138px,11vw,168px) !important;
+  min-width:138px !important;
+  min-height:138px !important;
+  max-width:168px !important;
+  max-height:168px !important;
+  margin:.1rem auto .25rem !important;
+}
+#tab-dashboard [data-dashboard-block="spending"] .spending-legend {
+  display:grid !important;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  align-content:start;
+  align-items:stretch;
+  gap:.22rem .45rem !important;
+  width:100%;
+  max-height:430px;
+  overflow-y:auto;
+  overflow-x:hidden;
+  padding:.1rem .2rem .1rem 0;
+  scrollbar-gutter:stable;
+}
+#tab-dashboard [data-dashboard-block="spending"] .spending-legend button {
+  box-sizing:border-box;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:.3rem !important;
+  min-width:0;
+  min-height:34px;
+  padding:.28rem .32rem !important;
+  border-radius:.45rem;
+  font-size:.68rem !important;
+  line-height:1.12 !important;
+}
+#tab-dashboard [data-dashboard-block="spending"] .spending-legend button > span:first-child {
+  display:flex;
+  align-items:center;
+  gap:.35rem !important;
+  min-width:0;
+  flex:1 1 auto;
+}
+#tab-dashboard [data-dashboard-block="spending"] .spending-legend button > span:first-child > span:last-child {
+  display:block;
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+#tab-dashboard [data-dashboard-block="spending"] .spending-legend button > span:first-child > span:first-child {
+  width:10px !important;
+  height:10px !important;
+  flex:0 0 10px;
+}
+#tab-dashboard [data-dashboard-block="spending"] .spending-legend button strong {
+  flex:0 0 auto;
+  max-width:48%;
+  font-size:.62rem !important;
+  line-height:1.1 !important;
+  white-space:nowrap;
+  font-variant-numeric:tabular-nums;
+}
+#tab-dashboard [data-dashboard-block="spending"] #spending-category-detail {
+  margin-top:.45rem !important;
+  padding-top:.45rem !important;
+}
+@media(max-width:760px) {
+  #tab-dashboard [data-dashboard-block="spending"] .spending-legend {
+    max-height:390px;
+    gap:.18rem .35rem !important;
+  }
+}
+@media(max-width:420px) {
+  #tab-dashboard [data-dashboard-block="spending"] .spending-legend {
+    grid-template-columns:minmax(0,1fr);
+    max-height:360px;
+  }
+  #tab-dashboard [data-dashboard-block="spending"] .spending-legend button {
+    min-height:32px;
+  }
+}
+</style>
+
+
+<style id="finhub-v63-spending-legend-polish">
+/* Refine legend density: slightly larger type, shorter rows, tighter row rhythm. */
+#tab-dashboard [data-dashboard-block="spending"] .spending-legend {
+  grid-auto-rows:minmax(34px,auto) !important;
+  align-content:start !important;
+  align-items:start !important;
+  column-gap:.55rem !important;
+  row-gap:.08rem !important;
+}
+#tab-dashboard [data-dashboard-block="spending"] .spending-legend button {
+  min-height:34px !important;
+  height:auto !important;
+  padding:.2rem .3rem !important;
+  gap:.3rem !important;
+  font-size:.76rem !important;
+  line-height:1.18 !important;
+}
+#tab-dashboard [data-dashboard-block="spending"] .spending-legend button > span:first-child {
+  gap:.38rem !important;
+}
+#tab-dashboard [data-dashboard-block="spending"] .spending-legend button > span:first-child > span:first-child {
+  width:11px !important;
+  height:11px !important;
+  flex-basis:11px !important;
+}
+#tab-dashboard [data-dashboard-block="spending"] .spending-legend button strong {
+  max-width:50% !important;
+  font-size:.68rem !important;
+  line-height:1.15 !important;
+}
+#tab-dashboard [data-dashboard-block="spending"] #spending-category-detail > div:first-child {
+  align-items:center;
+  margin-bottom:.35rem !important;
+}
+#tab-dashboard [data-dashboard-block="spending"] #spending-category-detail .fh-category-detail-close {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:2rem;
+  height:2rem;
+  min-width:2rem;
+  padding:0;
+  border:1px solid var(--fh-border,var(--border-color,rgba(148,163,184,.28)));
+  border-radius:999px;
+  background:var(--fh-raised,var(--panel-bg,transparent));
+  color:var(--fh-ink,var(--text-color,currentColor));
+  font-size:1.15rem;
+  line-height:1;
+  font-weight:500;
+  cursor:pointer;
+  transition:background-color .15s ease,border-color .15s ease;
+}
+#tab-dashboard [data-dashboard-block="spending"] #spending-category-detail .fh-category-detail-close:hover {
+  background:var(--fh-hover,var(--panel-bg,rgba(148,163,184,.1)));
+  border-color:var(--fh-primary,var(--fh-border));
+}
+#tab-dashboard [data-dashboard-block="spending"] #spending-category-detail .fh-category-detail-close:focus-visible {
+  outline:2px solid var(--fh-focus,var(--fh-primary));
+  outline-offset:2px;
+}
+@media(max-width:420px) {
+  #tab-dashboard [data-dashboard-block="spending"] .spending-legend {
+    row-gap:.04rem !important;
+  }
+}
+@media(prefers-reduced-motion:reduce) {
+  #tab-dashboard [data-dashboard-block="spending"] #spending-category-detail .fh-category-detail-close {
+    transition:none !important;
+  }
+}
+</style>
+
+
+<style id="finhub-v64-compact-legend-uniform-modal-close">
+/* Legend: compact the actual grid tracks, not just the buttons inside them. */
+#tab-dashboard [data-dashboard-block="spending"] .spending-legend {
+  grid-auto-rows:min-content !important;
+  align-content:start !important;
+  align-items:start !important;
+  row-gap:.02rem !important;
+  column-gap:.45rem !important;
+}
+#tab-dashboard [data-dashboard-block="spending"] .spending-legend button {
+  min-height:29px !important;
+  height:auto !important;
+  padding:.12rem .25rem !important;
+  font-size:.82rem !important;
+  line-height:1.12 !important;
+}
+#tab-dashboard [data-dashboard-block="spending"] .spending-legend button > span:first-child {
+  gap:.34rem !important;
+}
+#tab-dashboard [data-dashboard-block="spending"] .spending-legend button strong {
+  font-size:.70rem !important;
+  line-height:1.12 !important;
+}
+#tab-dashboard [data-dashboard-block="spending"] .spending-legend button:hover {
+  background:var(--fh-hover,rgba(148,163,184,.08));
+}
+
+/* One quiet, unboxed X control for modal/window headers. */
+.fh-modal-close,
+#tab-dashboard [data-dashboard-block="spending"] #spending-category-detail .fh-category-detail-close {
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  flex:0 0 1.75rem !important;
+  width:1.75rem !important;
+  height:1.75rem !important;
+  min-width:1.75rem !important;
+  min-height:1.75rem !important;
+  padding:0 !important;
+  border:0 !important;
+  border-radius:.35rem !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  color:var(--fh-muted,var(--fh-ink,currentColor)) !important;
+  font-size:1rem !important;
+  line-height:1 !important;
+  cursor:pointer;
+  transition:color .14s ease,background-color .14s ease;
+}
+.fh-modal-close:hover,
+#tab-dashboard [data-dashboard-block="spending"] #spending-category-detail .fh-category-detail-close:hover {
+  color:var(--fh-ink,currentColor) !important;
+  background:var(--fh-hover,rgba(148,163,184,.12)) !important;
+  border:0 !important;
+}
+.fh-modal-close:focus-visible,
+#tab-dashboard [data-dashboard-block="spending"] #spending-category-detail .fh-category-detail-close:focus-visible {
+  outline:2px solid var(--fh-focus,var(--fh-primary));
+  outline-offset:2px;
+}
+.fh-modal-close i,
+#tab-dashboard [data-dashboard-block="spending"] #spending-category-detail .fh-category-detail-close i {
+  font-size:1rem !important;
+  line-height:1;
+}
+@media(prefers-reduced-motion:reduce) {
+  .fh-modal-close,
+  #tab-dashboard [data-dashboard-block="spending"] #spending-category-detail .fh-category-detail-close {
+    transition:none !important;
+  }
+}
+</style>
+
+
+<style id="finhub-v65-monthly-overview-clarity">
+/* Monthly Overview subpanels use the same raised/hover tokens as Planner headers. */
+#tab-biweekly .fh-monthly-subpanel {
+  min-width:0;
+  overflow:hidden;
+  border:1px solid var(--fh-border);
+  border-radius:1rem;
+  background:var(--fh-card);
+  color:var(--fh-ink);
+}
+#tab-biweekly .fh-monthly-subpanel-summary {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:.75rem;
+  min-height:2.9rem;
+  padding:.8rem 1rem;
+  background:var(--fh-raised);
+  color:var(--fh-ink);
+  cursor:pointer;
+  list-style:none;
+  transition:background-color .16s ease,border-color .16s ease;
+}
+#tab-biweekly .fh-monthly-subpanel-summary::-webkit-details-marker,
+#tab-biweekly .fh-monthly-subpanel-summary::marker { display:none; content:""; }
+#tab-biweekly .fh-monthly-subpanel-summary:hover {
+  background:var(--fh-hover,var(--fh-raised));
+}
+#tab-biweekly .fh-monthly-subpanel[open] > .fh-monthly-subpanel-summary {
+  border-bottom:1px solid var(--fh-border);
+}
+#tab-biweekly .fh-monthly-summary-meta {
+  color:var(--fh-muted,var(--fh-ink));
+  font-size:.7rem;
+  font-weight:600;
+  text-align:right;
+}
+#tab-biweekly .fh-monthly-subpanel-summary::after {
+  content:"";
+  flex:0 0 .48rem;
+  width:.48rem;
+  height:.48rem;
+  margin-left:.25rem;
+  border-right:2px solid currentColor;
+  border-bottom:2px solid currentColor;
+  transform:rotate(45deg);
+  transition:transform .16s ease;
+}
+#tab-biweekly .fh-monthly-subpanel:not([open]) > .fh-monthly-subpanel-summary::after {
+  transform:rotate(-45deg);
+}
+#tab-biweekly .fh-monthly-subpanel-body { padding:.85rem 1rem 1rem; }
+#tab-biweekly .fh-monthly-findings {
+  display:grid;
+  gap:.35rem;
+  margin:0;
+  padding-left:1.1rem;
+}
+#tab-biweekly .fh-monthly-findings li { font-size:.72rem; line-height:1.4; }
+#tab-biweekly .fh-integrity-exception-row {
+  padding:.65rem .7rem;
+  border:1px solid var(--fh-border);
+  border-radius:.7rem;
+  background:var(--fh-card);
+}
+#tab-biweekly .fh-integrity-event-history > summary,
+#tab-biweekly .fh-monthly-help > summary {
+  width:max-content;
+  max-width:100%;
+  color:var(--fh-muted,var(--fh-ink));
+  font-size:.68rem;
+  font-weight:600;
+  cursor:pointer;
+}
+#tab-biweekly .fh-integrity-event-history > div,
+#tab-biweekly .fh-monthly-help > p {
+  color:var(--fh-muted,var(--fh-ink));
+  font-size:.68rem;
+  line-height:1.45;
+}
+#tab-biweekly .fh-monthly-help {
+  padding:.65rem .75rem;
+  border-radius:.65rem;
+  background:var(--fh-raised);
+}
+@media(max-width:640px) {
+  #tab-biweekly .fh-monthly-subpanel-summary {
+    align-items:flex-start;
+    padding:.75rem .8rem;
+  }
+  #tab-biweekly .fh-monthly-summary-meta { max-width:48%; }
+  #tab-biweekly .fh-monthly-subpanel-body { padding:.75rem .8rem; }
+}
+@media(prefers-reduced-motion:reduce) {
+  #tab-biweekly .fh-monthly-subpanel-summary,
+  #tab-biweekly .fh-monthly-subpanel-summary::after { transition:none !important; }
+}
+</style>
+
+
+<style id="finhub-v65b-finding-details">
+#tab-biweekly .fh-monthly-findings,
+#tab-biweekly #zbb-budget-integrity-panel ul,
+#tab-biweekly #zbb-budget-funding-integrity-panel ul {
+  display:grid;
+  gap:.38rem;
+  margin:0;
+  padding-left:1.05rem;
+}
+#tab-biweekly .fh-integrity-finding-detail {
+  margin-top:.12rem;
+  color:var(--fh-muted,var(--fh-ink));
+  font-size:.66rem;
+}
+#tab-biweekly .fh-integrity-finding-detail > summary {
+  width:max-content;
+  cursor:pointer;
+  text-decoration:underline;
+  text-underline-offset:2px;
+}
+#tab-biweekly .fh-integrity-finding-detail > p {
+  margin-top:.2rem;
+  line-height:1.4;
+}
+
+</style>
+
+<style id="finhub-v66-planner-icon-controls">
+#tab-biweekly button:has(> i.fa-trash),
+#tab-biweekly button:has(> i.fa-trash-can) {
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  flex:0 0 2rem !important;
+  width:2rem !important;
+  min-width:2rem !important;
+  height:2rem !important;
+  min-height:2rem !important;
+  padding:0 !important;
+  margin:0 !important;
+  border:1px solid transparent !important;
+  border-radius:.55rem !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  line-height:1 !important;
+  vertical-align:middle;
+}
+#tab-biweekly button:has(> i.fa-trash):hover,
+#tab-biweekly button:has(> i.fa-trash-can):hover {
+  background:color-mix(in srgb, var(--fh-danger, #dc3545) 10%, transparent) !important;
+  border-color:color-mix(in srgb, var(--fh-danger, #dc3545) 22%, transparent) !important;
+}
+#tab-biweekly button:has(> i.fa-trash) > i,
+#tab-biweekly button:has(> i.fa-trash-can) > i {
+  display:block;
+  font-size:.88rem !important;
+  line-height:1 !important;
+}
+#tab-biweekly .fh-sinking-migration-note-row {
+  display:flex;
+  justify-content:flex-end;
+  align-items:center;
+  min-width:0;
+  margin:-.35rem 0 .1rem;
+}
+#tab-biweekly .fh-sinking-migration-note-row > button {
+  display:inline-flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:.35rem;
+  max-width:100%;
+  white-space:nowrap;
+  font-size:.68rem;
+  line-height:1.2;
+}
+@media(max-width:640px) {
+  #tab-biweekly .fh-sinking-migration-note-row { justify-content:flex-start; }
+}
+
+</style>
+
+<style id="finhub-v67-summary-hover-border">
+/* Summary headers keep the same border on hover; only their theme surface changes. */
+body[data-finhub-theme] summary:hover {
+  border-color:var(--fh-border) !important;
+  box-shadow:none !important;
+}
+body[data-finhub-theme] summary:hover:not([aria-expanded="true"]) {
+  border-bottom-color:var(--fh-border) !important;
+}
+</style>
+
+<style id="finhub-v71-calendar-payment-date-info">
+.fh-calendar-notification-row { display:flex; align-items:center; gap:.2rem; min-width:0; }
+.fh-calendar-paid-date-info { flex:0 0 auto; display:inline-flex; align-items:center; justify-content:center; width:1rem; height:1rem; padding:0; border:0; background:transparent; color:var(--fh-muted,var(--fh-ink)); font-size:.65rem; cursor:pointer; }
+.fh-calendar-paid-date-info:hover { color:var(--fh-primary); }
+.fh-calendar-paid-date-info:focus-visible { outline:2px solid var(--fh-focus,var(--fh-primary)); outline-offset:2px; border-radius:3px; }
+</style>
+
+
+<style id="finhub-v72-theme-aware-back-button">
+/* Back navigation uses the active palette rather than a fixed lavender disabled state. */
+#finhub-sidebar #finhub-back-button,
+#finhub-sidebar #finhub-back-button:disabled,
+#finhub-sidebar #finhub-back-button.is-back-disabled {
+  background:color-mix(in srgb,var(--fh-primary,#64748b) 14%,var(--fh-card,#fff)) !important;
+  border:1px solid color-mix(in srgb,var(--fh-primary,#64748b) 38%,var(--fh-border,#cbd5e1)) !important;
+  color:var(--fh-primary,#64748b) !important;
+  box-shadow:none !important;
+  opacity:1 !important;
+  filter:none !important;
+}
+#finhub-sidebar #finhub-back-button:not(:disabled):not(.is-back-disabled):hover {
+  background:color-mix(in srgb,var(--fh-primary,#64748b) 23%,var(--fh-card,#fff)) !important;
+  border-color:var(--fh-primary,#64748b) !important;
+}
+#finhub-sidebar #finhub-back-button:disabled,
+#finhub-sidebar #finhub-back-button.is-back-disabled { cursor:not-allowed !important; }
+#finhub-sidebar #finhub-back-button i,
+#finhub-sidebar #finhub-back-button:disabled i,
+#finhub-sidebar #finhub-back-button.is-back-disabled i {
+  color:var(--fh-primary,#64748b) !important;
+  opacity:1 !important;
+}
+#finhub-sidebar #finhub-back-button:focus-visible {
+  outline:2px solid var(--fh-primary,#64748b) !important;
+  outline-offset:3px !important;
+}
+</style>
+
+
+<style id="finhub-v73-calendar-payment-details-modal">
+#fh-calendar-payment-details-overlay .fh-theme-surface { background:var(--fh-card,var(--fh-surface,#fff)) !important; color:var(--fh-text,var(--fh-ink,#1f2937)) !important; }
+#fh-calendar-payment-details-overlay .fh-theme-border { border-color:var(--fh-border,#d1d5db) !important; }
+#fh-calendar-payment-details-overlay .fh-theme-text { color:var(--fh-text,var(--fh-ink,#1f2937)) !important; }
+#fh-calendar-payment-details-overlay .fh-theme-muted { color:var(--fh-muted,#64748b) !important; }
+#fh-calendar-payment-details-overlay .fh-theme-subtle { background:color-mix(in srgb,var(--fh-primary,#64748b) 9%,var(--fh-card,#fff)) !important; color:var(--fh-text,var(--fh-ink,#1f2937)) !important; }
+</style>
+
+<style id="finhub-v73-mobile-navigation-refinement">
+@media (max-width:767px) {
+  /* Approved 18% reduction from the previous 76vw drawer; labels and touch targets remain intact. */
+  #finhub-sidebar {
+    width:min(62.3vw,287px) !important;
+    max-width:min(62.3vw,287px) !important;
+    flex:0 0 min(62.3vw,287px) !important;
+  }
+  /* One shared icon column keeps every label on the same vertical guide. */
+  #finhub-sidebar nav .nav-btn,
+  #finhub-sidebar nav .nav-group-bills .nav-btn-secondary {
+    box-sizing:border-box !important;
+    display:grid !important;
+    grid-template-columns:26px minmax(0,1fr) !important;
+    align-items:center !important;
+    justify-content:stretch !important;
+    column-gap:14px !important;
+    width:100% !important;
+    min-width:0 !important;
+    padding:10px 18px !important;
+    text-align:left !important;
+  }
+  #finhub-sidebar nav .nav-btn > i,
+  #finhub-sidebar nav .nav-group-bills .nav-btn-secondary > i {
+    display:inline-flex !important;
+    grid-column:1 !important;
+    width:26px !important;
+    min-width:26px !important;
+    flex:none !important;
+    justify-content:center !important;
+    align-items:center !important;
+    margin:0 !important;
+  }
+  #finhub-sidebar nav .nav-btn > .sidebar-nav-label,
+  #finhub-sidebar nav .nav-group-bills .nav-btn-secondary > .sidebar-nav-label {
+    display:block !important;
+    grid-column:2 !important;
+    min-width:0 !important;
+    text-align:left !important;
+    white-space:normal !important;
+    line-height:1.25 !important;
+  }
+  #finhub-sidebar nav .nav-group-bills .nav-btn-secondary {
+    margin-left:0 !important;
+    padding-left:18px !important;
+    font-size:inherit !important;
+  }
+}
+/* The actual control uses .sidebar-back-button, not an ID-specific theme hook.
+   Override all earlier fixed lavender rules, including the compact icon-rail rules. */
+body[data-finhub-theme] #finhub-sidebar .sidebar-back-button:disabled,
+body[data-finhub-theme] #finhub-sidebar .sidebar-back-button.is-back-disabled,
+html.dark body[data-finhub-theme] #finhub-sidebar .sidebar-back-button:disabled,
+html.dark body[data-finhub-theme] #finhub-sidebar .sidebar-back-button.is-back-disabled {
+  background:color-mix(in srgb,var(--fh-primary) 15%,var(--fh-card)) !important;
+  border:1px solid color-mix(in srgb,var(--fh-primary) 48%,var(--fh-border)) !important;
+  color:var(--fh-primary) !important;
+  box-shadow:none !important;
+  opacity:1 !important;
+  filter:none !important;
+}
+body[data-finhub-theme] #finhub-sidebar .sidebar-back-button:disabled i,
+body[data-finhub-theme] #finhub-sidebar .sidebar-back-button.is-back-disabled i,
+html.dark body[data-finhub-theme] #finhub-sidebar .sidebar-back-button:disabled i,
+html.dark body[data-finhub-theme] #finhub-sidebar .sidebar-back-button.is-back-disabled i {
+  color:var(--fh-primary) !important;
+  opacity:1 !important;
+}
+body[data-finhub-theme] #finhub-sidebar .sidebar-back-button:disabled:hover,
+body[data-finhub-theme] #finhub-sidebar .sidebar-back-button.is-back-disabled:hover {
+  background:color-mix(in srgb,var(--fh-primary) 15%,var(--fh-card)) !important;
+}
+</style>
+<style id="finhub-v74-final-back-button-theme-override">
+/* The disabled control is .sidebar-back-button; keep it theme-aware in every mode. */
+#finhub-sidebar .sidebar-back-button:disabled,
+#finhub-sidebar .sidebar-back-button.is-back-disabled {
+  background:color-mix(in srgb,var(--fh-primary,#64748b) 15%,var(--fh-card,#fff)) !important;
+  border:1px solid color-mix(in srgb,var(--fh-primary,#64748b) 48%,var(--fh-border,#cbd5e1)) !important;
+  color:var(--fh-primary,#64748b) !important;
+  box-shadow:none !important;
+  opacity:1 !important;
+  filter:none !important;
+}
+#finhub-sidebar .sidebar-back-button:disabled i,
+#finhub-sidebar .sidebar-back-button.is-back-disabled i {
+  color:var(--fh-primary,#64748b) !important;
+  opacity:1 !important;
+}
+#finhub-sidebar .sidebar-back-button:disabled:hover,
+#finhub-sidebar .sidebar-back-button.is-back-disabled:hover {
+  background:color-mix(in srgb,var(--fh-primary,#64748b) 15%,var(--fh-card,#fff)) !important;
+}
+</style>
+
+
+<style id="finhub-v75-authoritative-disabled-back-theme">
+/* Override the original high-specificity compact-rail lavender rules.
+   These selectors intentionally match the original #sidebar.sidebar-icon-rail
+   #back-button:disabled rule and come after all legacy theme declarations. */
+#finhub-sidebar.sidebar-icon-rail #finhub-back-button:disabled,
+#finhub-sidebar.sidebar-icon-rail #finhub-back-button.is-back-disabled,
+.dark #finhub-sidebar.sidebar-icon-rail #finhub-back-button:disabled,
+.dark #finhub-sidebar.sidebar-icon-rail #finhub-back-button.is-back-disabled {
+  background:color-mix(in srgb,var(--fh-primary,#64748b) 15%,var(--fh-card,#fff)) !important;
+  border:1px solid color-mix(in srgb,var(--fh-primary,#64748b) 48%,var(--fh-border,#cbd5e1)) !important;
+  color:var(--fh-primary,#64748b) !important;
+  box-shadow:none !important;
+  opacity:1 !important;
+  filter:none !important;
+}
+#finhub-sidebar.sidebar-icon-rail #finhub-back-button:disabled i,
+#finhub-sidebar.sidebar-icon-rail #finhub-back-button.is-back-disabled i,
+.dark #finhub-sidebar.sidebar-icon-rail #finhub-back-button:disabled i,
+.dark #finhub-sidebar.sidebar-icon-rail #finhub-back-button.is-back-disabled i {
+  color:var(--fh-primary,#64748b) !important;
+  opacity:1 !important;
+}
+#finhub-sidebar.sidebar-icon-rail #finhub-back-button:disabled:hover,
+#finhub-sidebar.sidebar-icon-rail #finhub-back-button.is-back-disabled:hover,
+.dark #finhub-sidebar.sidebar-icon-rail #finhub-back-button:disabled:hover,
+.dark #finhub-sidebar.sidebar-icon-rail #finhub-back-button.is-back-disabled:hover {
+  background:color-mix(in srgb,var(--fh-primary,#64748b) 15%,var(--fh-card,#fff)) !important;
+}
+</style>
+
+
+<style id="finhub-v77-unified-planner-delete-controls">
+/* One consistent delete affordance for income, fixed bills, debt and variable buckets. */
+#tab-biweekly .fh-zbb-delete-button {
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  flex:0 0 2rem !important;
+  width:2rem !important;
+  min-width:2rem !important;
+  height:2rem !important;
+  min-height:2rem !important;
+  padding:0 !important;
+  margin:0 !important;
+  border:1px solid transparent !important;
+  border-radius:.55rem !important;
+  background:transparent !important;
+  color:var(--fh-danger,#ef4444) !important;
+  box-shadow:none !important;
+  line-height:1 !important;
+  vertical-align:middle;
+  cursor:pointer;
+}
+#tab-biweekly .fh-zbb-delete-button > i {
+  display:block !important;
+  color:var(--fh-danger,#ef4444) !important;
+  font-size:.9rem !important;
+  line-height:1 !important;
+}
+#tab-biweekly .fh-zbb-delete-button:hover {
+  background:color-mix(in srgb,var(--fh-danger,#ef4444) 10%,transparent) !important;
+  border-color:color-mix(in srgb,var(--fh-danger,#ef4444) 22%,transparent) !important;
+}
+#tab-biweekly .fh-zbb-delete-button:focus-visible {
+  outline:2px solid var(--fh-danger,#ef4444) !important;
+  outline-offset:2px !important;
+}
+</style>
+
+<style id="finhub-v78-amortization-categories-hover-foundation">
+body[data-finhub-theme] #tab-debt .fh-amortization-card { overflow:hidden; }
+#tab-debt .fh-amortization-card > .fh-disclosure-trigger { width:100%; box-sizing:border-box; }
+#tab-debt .fh-amortization-card .global-collapsible-description { margin-left:0; text-align:left; }
+#tab-settings .fh-settings-category-layout { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); align-items:start; gap:1rem; min-width:0; }
+#tab-settings .fh-settings-category-column { display:grid; gap:1rem; min-width:0; }
+@media(max-width:900px) { #tab-settings .fh-settings-category-layout { grid-template-columns:minmax(0,1fr); } }
+#tab-settings .fh-category-row { transition:background-color .15s ease,border-color .15s ease; }
+#tab-settings .fh-category-row:hover,
+#tab-settings .fh-category-row:focus-within { background:var(--fh-hover,var(--fh-surface-hover,var(--fh-raised))) !important; border-color:var(--fh-primary,var(--fh-border)) !important; }
+#tab-settings .fh-category-disclosure > summary { width:100%; box-sizing:border-box; background:transparent !important; }
+#tab-settings .fh-category-disclosure > summary:hover { background:transparent !important; }
+</style>
+<style id="finhub-v79-equal-category-columns-unified-debt-headers">
+/* Equal visual weight for the two category groups. */
+#tab-settings .fh-settings-category-layout {
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  align-items:start;
+  gap:1rem;
+}
+#tab-settings .fh-settings-category-column { min-width:0; }
+/* One consistent disclosure header system across the Debt page. */
+#tab-debt details.fh-disclosure > summary.fh-disclosure-trigger {
+  display:flex;
+  box-sizing:border-box;
+  width:100%;
+  min-height:3.5rem;
+  align-items:center;
+  justify-content:space-between;
+  gap:1rem;
+  padding:1rem 1.15rem;
+}
+#tab-debt details.fh-disclosure > summary.fh-disclosure-trigger > span:first-child,
+#tab-debt .fh-debt-disclosure-title {
+  flex:0 1 auto;
+  min-width:0;
+  margin:0;
+  font-size:1rem !important;
+  line-height:1.35 !important;
+  font-weight:700 !important;
+  letter-spacing:0 !important;
+  color:var(--fh-ink) !important;
+}
+#tab-debt details.fh-disclosure > summary.fh-disclosure-trigger .global-collapsible-description {
+  flex:1 1 auto;
+  min-width:0;
+  margin:0 1rem 0 auto !important;
+  font-size:.75rem !important;
+  line-height:1.4 !important;
+  font-weight:400 !important;
+  text-align:right !important;
+  color:var(--fh-muted) !important;
+}
+#tab-debt details.fh-disclosure > summary.fh-disclosure-trigger::after {
+  flex:0 0 .55rem;
+  margin-left:0;
+}
+@media(max-width:700px) {
+  #tab-debt details.fh-disclosure > summary.fh-disclosure-trigger {
+    align-items:flex-start;
+    flex-wrap:wrap;
+    gap:.35rem .75rem;
+  }
+  #tab-debt details.fh-disclosure > summary.fh-disclosure-trigger .global-collapsible-description {
+    flex:1 1 100%;
+    order:2;
+    margin:0 !important;
+    text-align:left !important;
+  }
+  #tab-debt details.fh-disclosure > summary.fh-disclosure-trigger::after {
+    margin-left:auto;
+  }
+}
+</style>
+
+<style id="finhub-v80-category-modal-layout">
+/* Category editors: consistent spacing, readable fields and safe viewport sizing. */
+#category-modal,
+#income-category-modal {
+  box-sizing:border-box;
+  padding:clamp(.75rem,3vw,1.5rem) !important;
+  overflow-y:auto !important;
+  align-items:center !important;
+}
+#category-modal > .fh-modal-surface,
+#income-category-modal > .fh-modal-surface {
+  box-sizing:border-box;
+  width:min(100%,38rem) !important;
+  max-width:38rem !important;
+  max-height:calc(100dvh - 2rem) !important;
+  overflow-y:auto !important;
+  padding:clamp(1.1rem,2.5vw,1.75rem) !important;
+  display:flex;
+  flex-direction:column;
+  gap:1.15rem !important;
+  border-radius:1.25rem !important;
+}
+#category-modal .fh-modal-surface > h3,
+#income-category-modal .fh-modal-surface > h3 {
+  margin:0 !important;
+  font-size:1.2rem !important;
+  line-height:1.3 !important;
+  font-weight:750 !important;
+  overflow-wrap:anywhere;
+}
+#category-form,
+#income-category-form {
+  display:flex;
+  flex-direction:column;
+  gap:1rem !important;
+  min-width:0;
+}
+#category-form > div,
+#income-category-form > div {
+  display:flex;
+  flex-direction:column;
+  gap:.4rem;
+  min-width:0;
+}
+#category-form label,
+#income-category-form label {
+  display:block;
+  margin:0 !important;
+  font-size:.82rem !important;
+  line-height:1.4 !important;
+  font-weight:650 !important;
+  color:var(--fh-muted) !important;
+}
+#category-form input[type="text"],
+#income-category-form input[type="text"],
+#category-form textarea,
+#income-category-form textarea {
+  box-sizing:border-box;
+  width:100%;
+  min-width:0;
+  border:1px solid var(--fh-border) !important;
+  border-radius:.85rem !important;
+  background:var(--fh-control) !important;
+  color:var(--fh-ink) !important;
+  padding:.8rem .9rem !important;
+  font-size:.95rem !important;
+  line-height:1.45 !important;
+  box-shadow:none !important;
+}
+#category-form input[type="text"],
+#income-category-form input[type="text"] { min-height:2.9rem; }
+#category-form textarea,
+#income-category-form textarea {
+  min-height:8.5rem;
+  max-height:15rem;
+  resize:vertical;
+  font-size:.85rem !important;
+  line-height:1.55 !important;
+  white-space:pre-wrap;
+}
+#category-form textarea::placeholder,
+#income-category-form textarea::placeholder {
+  color:var(--fh-muted);
+  opacity:.8;
+}
+#category-form input:focus,
+#income-category-form input:focus,
+#category-form textarea:focus,
+#income-category-form textarea:focus {
+  outline:2px solid var(--fh-focus,var(--fh-primary)) !important;
+  outline-offset:1px;
+  border-color:var(--fh-primary) !important;
+}
+#category-form > .flex,
+#income-category-form > .flex {
+  display:flex;
+  gap:.75rem !important;
+  padding-top:.25rem !important;
+  margin:0 !important;
+}
+#category-form button,
+#income-category-form button {
+  min-height:2.8rem;
+  border-radius:.8rem !important;
+  font-size:.9rem !important;
+  font-weight:700 !important;
+}
+#category-form .fh-btn-cancel,
+#income-category-form .fh-btn-cancel {
+  background:var(--fh-raised) !important;
+  color:var(--fh-ink) !important;
+  border:1px solid var(--fh-border) !important;
+}
+#category-form button[type="submit"],
+#income-category-form button[type="submit"] {
+  background:var(--fh-primary) !important;
+  color:var(--fh-on-primary,#fff) !important;
+  border:1px solid var(--fh-primary) !important;
+}
+@media(max-width:520px) {
+  #category-modal,
+  #income-category-modal { padding:.65rem !important; }
+  #category-modal > .fh-modal-surface,
+  #income-category-modal > .fh-modal-surface {
+    max-height:calc(100dvh - 1.3rem) !important;
+    padding:1rem !important;
+    gap:.9rem !important;
+  }
+  #category-form > .flex,
+  #income-category-form > .flex { flex-direction:column-reverse; }
+  #category-form button,
+  #income-category-form button { width:100%; flex:1 1 auto; }
+}
+</style>
+
+
+<style id="finhub-v82-responsive-foundation-and-table-autofit">
+/* Responsive foundation: preserve the desktop composition; adapt content below 1024px. */
+@media (max-width:1023px) {
+  main, .main-content, #main-content { min-width:0 !important; max-width:100% !important; }
+  .fh-page-shell, .tab-content, .fh-page-section { min-width:0 !important; }
+  .fh-summary-grid { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
+  .fh-action-grid { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
+  .fh-page-header { min-width:0 !important; flex-wrap:wrap !important; align-items:flex-start !important; }
+  .fh-page-header-copy { min-width:0 !important; flex:1 1 15rem !important; }
+  .fh-page-header-copy h2, .fh-page-header-title { overflow-wrap:anywhere !important; }
+  .overflow-x-auto, [data-table-scroll], .fh-table-scroll { max-width:100% !important; overscroll-behavior-x:contain; }
+  .fh-modal-surface, [role="dialog"] > div { max-width:calc(100vw - 2rem); }
+}
+@media (min-width:640px) and (max-width:1023px) {
+  .fh-page-shell { gap:1rem !important; }
+  #tab-biweekly .fh-summary-grid, #tab-biweekly .grid.grid-cols-1.md\:grid-cols-2 { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
+  .fh-modal-surface { width:min(94vw,760px) !important; max-height:88dvh !important; overflow:auto !important; }
+}
+@media (max-width:639px) {
+  .fh-summary-grid, .fh-action-grid, .fh-action-grid-exports { grid-template-columns:minmax(0,1fr) !important; }
+  .fh-page-header { display:flex !important; flex-direction:row !important; align-items:flex-start !important; gap:.65rem !important; }
+  .fh-page-header-copy { flex:1 1 0 !important; min-width:0 !important; }
+  .fh-page-header-copy h2, .fh-page-header-title { font-size:1.2rem !important; line-height:1.35 !important; white-space:normal !important; overflow-wrap:anywhere !important; }
+  .fh-page-header-copy p, .fh-page-header-description { font-size:.78rem !important; line-height:1.4 !important; }
+  .fh-page-header-control { flex:1 1 100% !important; min-width:0 !important; }
+  .fh-modal-surface, [role="dialog"] > div { width:calc(100vw - 1rem) !important; max-width:calc(100vw - 1rem) !important; max-height:calc(100dvh - 1rem) !important; overflow:auto !important; margin:.5rem auto !important; }
+  .fh-page-shell, .tab-content { gap:.85rem !important; }
+  .ledger-table-controls { align-items:stretch !important; }
+  .ledger-table-controls > div:last-child { flex-wrap:wrap !important; }
+  #ledger-auto-fit-all { display:none !important; }
+  button, [role="button"], input, select, textarea { scroll-margin:5rem; }
+}
+/* The ledger keeps its native card presentation on phones; Auto-Fit is a desktop/tablet table action. */
+@media (max-width:767px) { #ledger-auto-fit-all { display:none !important; } }
+</style>
+
 </body>
 </html>
