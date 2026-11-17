@@ -5,7 +5,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>FinHub Central - Financial Command Center</title>
-<meta content="stage3b-buttons-actions-number-typography-reporting-engine-v1" name="finhub-build-stage"/><meta name="finhub-revision" content="v95-desktop-rail-tablet-topbar-phone-drawer"/>
+<meta content="stage3b-buttons-actions-number-typography-reporting-engine-v1" name="finhub-build-stage"/><meta content="v95-desktop-rail-tablet-topbar-phone-drawer" name="finhub-revision"/>
 <meta content="2" name="finhub-schema-version"/>
 <link href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23132A44'/%3E%3Cpath d='M18 45V19h28v7H26v5h17v7H26v7z' fill='%2300FBEA'/%3E%3Ccircle cx='47' cy='16' r='7' fill='%23FF2687'/%3E%3Ccircle cx='15' cy='49' r='5' fill='%23D8FF76'/%3E%3C/svg%3E" rel="icon" type="image/svg+xml"/>
 <script src="https://cdn.tailwindcss.com"></script>
@@ -1142,6 +1142,12 @@ html.dark .finhub-number-neutral { color:#94a3b8 !important; }
 }
 .fh-section-drag-handle:hover,
 .fh-section-drag-handle:focus-visible { opacity:1; }
+.tab-content > details.fh-reorderable-section { padding-left:0; }
+.tab-content > details.fh-reorderable-section > .fh-section-drag-handle {
+  top:.48rem !important;
+  left:auto !important;
+  right:2.65rem !important;
+}
 .fh-section-drag-handle:active { cursor:grabbing !important; }
 .fh-section-dragging { opacity:.42 !important; transform:scale(.995); }
 .fh-section-drop-target { outline:2px dashed var(--fh-accent,#8b5cf6) !important; outline-offset:3px; }
@@ -2326,7 +2332,6 @@ body[data-finhub-theme] .acc-column-menu.fh-filter-portal :is(button,input):focu
 }
 .ledger-column-filter-trigger.has-active-filter { color:var(--fh-primary) !important; }
 </style>
-
 <style id="finhub-account-filter-indicator-standard">
 body[data-finhub-theme] #account-detail-modal .acc-filter-funnel {display:none;}
 body[data-finhub-theme] #account-detail-modal .acc-filter-trigger.has-active-filter .acc-filter-funnel {display:inline-block;color:var(--fh-primary);}
@@ -2339,7 +2344,6 @@ body[data-finhub-theme] #account-detail-modal .acc-filter-trigger.has-active-fil
 .debt-filter-trigger.has-active-filter .debt-history-chevron{display:none;}
 .debt-filter-trigger.has-active-filter{color:var(--fh-primary)!important;background:var(--fh-surface-hover);}
 </style>
-
 <style id="fh-info-popover-foundation">
 #fh-global-info-popover{position:fixed;z-index:2147483000;display:none;width:min(340px,calc(100vw - 28px));max-height:min(65vh,420px);overflow:auto;padding:12px 14px;border:1px solid var(--border-primary,rgba(148,163,184,.45));border-radius:12px;background:var(--surface-elevated,var(--surface-primary,#fff));color:var(--text-primary,inherit);box-shadow:0 16px 44px rgba(0,0,0,.32);font-size:12px;line-height:1.55;white-space:normal}
 #fh-global-info-popover[data-open="true"]{display:block}
@@ -2420,16 +2424,6 @@ body[data-finhub-theme] #account-detail-modal .acc-filter-trigger.has-active-fil
   #tab-dashboard .fh-spending-transaction-table th:nth-child(4),#tab-dashboard .fh-spending-transaction-table td:nth-child(4){width:16%}
 }
 </style>
-
-
-
-
-
-
-
-
-
-
 <style id="finhub-v106-rail-alignment-and-breakpoint-authority">
 /* One clear navigation contract: desktop = vertical rail; tablet = icon-only top rail. */
 @media screen and (min-width:1024px) {
@@ -2659,8 +2653,6 @@ body[data-finhub-theme] #account-detail-modal .acc-filter-trigger.has-active-fil
   }
 }
 </style>
-
-
 <style id="finhub-v107-navigation-control-alignment">
 /* V107: target the actual runtime-created sidebar toggle and actual utility buttons.
    Desktop remains a vertical rail at all desktop widths. */
@@ -2802,8 +2794,6 @@ body[data-finhub-theme] #account-detail-modal .acc-filter-trigger.has-active-fil
   }
 }
 </style>
-
-
 <style id="finhub-v108-sidebar-authoritative-layout">
 /* One authoritative desktop sidebar layout. Use the real controls:
    .finhub-sidebar-expand-toggle and inline togglePrivacyBlur()/toggleTheme(). */
@@ -2951,7 +2941,6 @@ body[data-finhub-theme] #account-detail-modal .acc-filter-trigger.has-active-fil
   }
 }
 </style>
-
 <style id="fh-foundation-design-system-v1">
 /* FinHub foundational design system v1.
    This stage defines reusable primitives only; page migrations happen separately. */
@@ -3026,6 +3015,354 @@ body[data-finhub-theme] {
   .fh-ds-button,.fh-ds-disclosure-chevron { transition:none !important; }
 }
 </style>
+<style id="finhub-sidebar-networth-disclosure">
+#sidebar-networth-content[hidden] { display:none !important; }
+#sidebar-networth-toggle { min-height:1.5rem; cursor:pointer; }
+#sidebar-networth-toggle:hover { color:var(--fh-primary,var(--fh-ink)) !important; }
+#sidebar-networth-toggle:focus-visible {
+  outline:2px solid var(--fh-primary,var(--fh-ink)) !important;
+  outline-offset:3px;
+}
+</style>
+<style id="finhub-debt-disclosure-filled-headers">
+body[data-finhub-theme] #tab-debt details.fh-disclosure > summary.fh-disclosure-trigger {
+ min-height:3.5rem !important; padding:.9rem 1.15rem !important;
+ background:var(--fh-raised) !important; background-image:none !important;
+ border-top:0 !important; box-shadow:none !important;
+}
+body[data-finhub-theme] #tab-debt details.fh-disclosure > summary.fh-disclosure-trigger::before {
+ content:none !important; display:none !important;
+}
+body[data-finhub-theme] #tab-debt details.fh-disclosure > summary.fh-disclosure-trigger:hover {
+ background:var(--fh-hover) !important; background-image:none !important;
+}
+</style><style id="finhub-debt-header-and-drag-handle-refinement">
+/* Match Dashboard's unobtrusive six-dot drag grip on Debt page sections. */
+#tab-debt > details.fh-reorderable-section {
+  padding-top:0 !important;
+}
+#tab-debt > details.fh-reorderable-section > .fh-section-drag-handle {
+  position:absolute !important;
+  top:.42rem !important;
+  left:.62rem !important;
+  right:auto !important;
+  width:1.8rem !important;
+  height:1.8rem !important;
+  padding:0 !important;
+  border:0 !important;
+  border-radius:.35rem !important;
+  background:transparent !important;
+  color:var(--fh-muted,var(--fh-ink)) !important;
+  box-shadow:none !important;
+  opacity:.58 !important;
+}
+#tab-debt > details.fh-reorderable-section > .fh-section-drag-handle:hover,
+#tab-debt > details.fh-reorderable-section > .fh-section-drag-handle:focus-visible {
+  background:var(--fh-hover) !important;
+  opacity:1 !important;
+}
+#tab-debt > details.fh-reorderable-section > summary.fh-disclosure-trigger {
+  padding-left:3.1rem !important;
+}
+
+/* Remove the reserved top strip and make the complete disclosure header one filled surface. */
+body[data-finhub-theme] #tab-debt > details.fh-reorderable-section {
+  padding-top:0 !important;
+  background:var(--fh-raised) !important;
+  background-image:none !important;
+  overflow:hidden;
+}
+body[data-finhub-theme] #tab-debt > details.fh-reorderable-section > summary.fh-disclosure-trigger {
+  display:flex !important;
+  min-height:3.5rem !important;
+  margin:0 !important;
+  padding-top:.9rem !important;
+  padding-bottom:.9rem !important;
+  background-color:var(--fh-raised) !important;
+  background-image:none !important;
+  border:0 !important;
+  box-shadow:none !important;
+}
+body[data-finhub-theme] #tab-debt > details.fh-reorderable-section > summary.fh-disclosure-trigger::before {
+  content:none !important;
+  display:none !important;
+}
+body[data-finhub-theme] #tab-debt > details.fh-reorderable-section > summary.fh-disclosure-trigger:hover {
+  background-color:var(--fh-hover) !important;
+  background-image:none !important;
+}
+</style>
+<style id="finhub-debt-collapsed-drag-handle-visibility">
+/* Debt section drag grips remain visible in both disclosure states. */
+#tab-debt > details.fh-reorderable-section > .fh-section-drag-handle {
+  display:inline-flex !important;
+  visibility:visible !important;
+  opacity:.68 !important;
+  z-index:20 !important;
+  pointer-events:auto !important;
+}
+#tab-debt > details.fh-reorderable-section:not([open]) > .fh-section-drag-handle {
+  opacity:.72 !important;
+}
+#tab-debt > details.fh-reorderable-section > .fh-section-drag-handle:hover,
+#tab-debt > details.fh-reorderable-section > .fh-section-drag-handle:focus-visible {
+  opacity:1 !important;
+}
+#tab-debt > details.fh-reorderable-section > summary.fh-disclosure-trigger {
+  position:relative !important;
+  z-index:1 !important;
+}
+</style>
+<style id="finhub-theme-filter-chips-and-mobile-control-icons">
+/* Active transaction filters: compact, theme-complementary chips at every viewport. */
+#ledger-active-filter-chips {
+  display:flex !important;
+  align-items:center !important;
+  flex-wrap:wrap !important;
+  gap:.45rem !important;
+  min-width:0 !important;
+}
+#ledger-active-filter-chips > button:not([onclick*="clearLedgerFilters"]) {
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:.4rem !important;
+  min-height:1.85rem !important;
+  height:auto !important;
+  max-width:100% !important;
+  padding:.32rem .62rem !important;
+  border:1px solid color-mix(in srgb,var(--fh-action-primary,var(--fh-primary,#64748b)) 30%,var(--fh-border,#cbd5e1)) !important;
+  border-radius:999px !important;
+  background:color-mix(in srgb,var(--fh-action-primary,var(--fh-primary,#64748b)) 10%,var(--fh-card,#fff)) !important;
+  color:var(--fh-ink,var(--text-primary,#334155)) !important;
+  font-size:.72rem !important;
+  line-height:1.25 !important;
+  font-weight:600 !important;
+  white-space:normal !important;
+  overflow-wrap:anywhere !important;
+  box-shadow:none !important;
+}
+#ledger-active-filter-chips > button:not([onclick*="clearLedgerFilters"]) i {
+  flex:0 0 auto;
+  color:var(--fh-action-primary,var(--fh-primary,#64748b)) !important;
+  opacity:.8;
+}
+#ledger-active-filter-chips > button[onclick*="clearLedgerFilters"] {
+  min-height:1.85rem !important;
+  padding:.25rem .4rem !important;
+  font-size:.72rem !important;
+}
+@media (max-width:900px) {
+  #ledger-active-filter-chips { gap:.35rem !important; }
+  #ledger-active-filter-chips > button:not([onclick*="clearLedgerFilters"]) {
+    min-height:1.75rem !important;
+    padding:.28rem .55rem !important;
+    font-size:.68rem !important;
+  }
+}
+
+/* Mobile privacy and light/dark controls use the active theme accent, never indigo utilities. */
+#privacy-toggle-button-mobile,
+#theme-toggle-button-mobile,
+#finhub-mobile-menu-toggle,
+#mobile-menu-toggle {
+  color:var(--fh-action-primary,var(--fh-primary,var(--fh-ink))) !important;
+  background:color-mix(in srgb,var(--fh-action-primary,var(--fh-primary,#64748b)) 10%,var(--fh-card,transparent)) !important;
+  border:1px solid color-mix(in srgb,var(--fh-action-primary,var(--fh-primary,#64748b)) 28%,var(--fh-border,transparent)) !important;
+  border-radius:.7rem !important;
+}
+#privacy-toggle-button-mobile i,
+#theme-toggle-button-mobile i,
+#finhub-mobile-menu-toggle i,
+#mobile-menu-toggle i {
+  color:var(--fh-action-primary,var(--fh-primary,var(--fh-ink))) !important;
+}
+#privacy-toggle-button-mobile:hover,
+#theme-toggle-button-mobile:hover,
+#finhub-mobile-menu-toggle:hover,
+#mobile-menu-toggle:hover {
+  background:var(--fh-hover,var(--fh-raised)) !important;
+}
+</style>
+<style id="finhub-calendar-split-view-refinement">
+/* Calendar layout foundation: cells and event controls must be allowed to shrink cleanly. */
+#calendar-monthly-container { min-width:0; }
+#calendar-grid { min-width:0; align-items:stretch; }
+#calendar-grid > div {
+  min-width:0;
+  min-height:8.5rem;
+  overflow:hidden;
+}
+#calendar-grid > div > div { min-width:0; }
+.fh-calendar-notification-row {
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) auto auto;
+  align-items:center !important;
+  gap:.35rem !important;
+  min-width:0 !important;
+  max-width:100% !important;
+  padding:.35rem .42rem !important;
+}
+.fh-calendar-notification-chip {
+  display:flex !important;
+  flex-wrap:wrap !important;
+  align-items:baseline !important;
+  justify-content:space-between !important;
+  gap:.12rem .35rem !important;
+  min-width:0 !important;
+  width:100% !important;
+  max-width:100% !important;
+}
+.fh-calendar-notification-name {
+  flex:1 1 100%;
+  min-width:0;
+  white-space:normal !important;
+  overflow-wrap:anywhere;
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+  overflow:hidden;
+}
+.fh-calendar-notification-amount {
+  flex:0 1 auto !important;
+  min-width:0;
+  max-width:100%;
+  white-space:normal !important;
+  overflow-wrap:anywhere;
+  line-height:1.15;
+}
+.fh-calendar-paid-date-info {
+  width:1.1rem !important;
+  height:1.1rem !important;
+  font-size:.72rem !important;
+}
+.fh-calendar-notification-checkbox {
+  width:1.05rem !important;
+  height:1.05rem !important;
+  flex:0 0 1.05rem !important;
+}
+
+/* Split-screen/tablet widths: keep the seven-column month view, but use compact,
+   stacked event details so amounts and action icons never collide. */
+@media (min-width:641px) and (max-width:1100px) {
+  #calendar-monthly-container { padding:1rem !important; }
+  #calendar-grid { gap:.45rem !important; }
+  #calendar-grid > div {
+    padding:.45rem !important;
+    min-height:7.5rem;
+    border-radius:.75rem !important;
+  }
+  #calendar-grid > div > div { gap:.35rem !important; }
+  .fh-calendar-notification-row {
+    grid-template-columns:minmax(0,1fr) auto auto;
+    gap:.22rem !important;
+    padding:.32rem .3rem !important;
+    border-radius:.55rem !important;
+  }
+  .fh-calendar-notification-chip { gap:.08rem !important; }
+  .fh-calendar-notification-name,
+  .fh-calendar-notification-amount { font-size:.64rem !important; }
+  .fh-calendar-paid-date-info { width:.95rem !important; height:.95rem !important; font-size:.62rem !important; }
+  .fh-calendar-notification-checkbox {
+    width:.92rem !important; height:.92rem !important; flex-basis:.92rem !important;
+  }
+}
+
+/* Phones retain the existing stacked-day calendar presentation. */
+@media (max-width:640px) {
+  #calendar-grid { grid-template-columns:1fr !important; }
+  #calendar-grid > div {
+    min-height:0 !important;
+    padding:.65rem !important;
+  }
+  #calendar-grid > div > div {
+    display:grid !important;
+    grid-template-columns:repeat(auto-fit,minmax(min(100%,10rem),1fr));
+    gap:.4rem !important;
+  }
+  .fh-calendar-notification-row {
+    grid-template-columns:minmax(0,1fr) auto auto;
+    padding:.38rem .45rem !important;
+  }
+  .fh-calendar-notification-name,
+  .fh-calendar-notification-amount { font-size:.7rem !important; }
+}
+</style>
+<style id="finhub-calendar-compact-one-row-event-chips">
+/* Keep each scheduled item on one compact line: merchant/name, amount, info, status. */
+.fh-calendar-notification-row {
+  display:flex !important;
+  flex-flow:row nowrap !important;
+  align-items:center !important;
+  justify-content:flex-start !important;
+  gap:.3rem !important;
+  min-width:0 !important;
+  width:100% !important;
+  padding:.28rem .38rem !important;
+}
+.fh-calendar-notification-chip {
+  display:flex !important;
+  flex:1 1 auto !important;
+  flex-flow:row nowrap !important;
+  align-items:center !important;
+  justify-content:flex-start !important;
+  gap:.35rem !important;
+  min-width:0 !important;
+  width:auto !important;
+  max-width:100% !important;
+  white-space:nowrap !important;
+}
+.fh-calendar-notification-name {
+  display:block !important;
+  flex:1 1 auto !important;
+  min-width:0 !important;
+  max-width:100% !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  white-space:nowrap !important;
+  -webkit-line-clamp:unset !important;
+  -webkit-box-orient:initial !important;
+  overflow-wrap:normal !important;
+}
+.fh-calendar-notification-amount {
+  display:inline-block !important;
+  flex:0 0 auto !important;
+  min-width:0 !important;
+  max-width:none !important;
+  white-space:nowrap !important;
+  overflow-wrap:normal !important;
+  line-height:1.1 !important;
+}
+.fh-calendar-paid-date-info {
+  flex:0 0 1rem !important;
+  width:1rem !important;
+  height:1rem !important;
+  margin:0 !important;
+}
+.fh-calendar-notification-checkbox {
+  flex:0 0 1rem !important;
+  width:1rem !important;
+  height:1rem !important;
+  margin:0 !important;
+}
+@media (min-width:641px) and (max-width:1100px) {
+  .fh-calendar-notification-row { gap:.22rem !important; padding:.25rem .3rem !important; }
+  .fh-calendar-notification-chip { gap:.22rem !important; }
+  .fh-calendar-notification-name,
+  .fh-calendar-notification-amount { font-size:.64rem !important; }
+  .fh-calendar-paid-date-info,
+  .fh-calendar-notification-checkbox {
+    flex-basis:.9rem !important;
+    width:.9rem !important;
+    height:.9rem !important;
+  }
+}
+@media (max-width:640px) {
+  .fh-calendar-notification-row { gap:.3rem !important; }
+  .fh-calendar-notification-name,
+  .fh-calendar-notification-amount { font-size:.7rem !important; }
+}
+</style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 min-h-screen flex flex-col md:flex-row transition-colors duration-200 relative" id="app-body">
 <!-- UNDO TOAST NOTIFICATION -->
@@ -3085,11 +3422,16 @@ body[data-finhub-theme] {
 </div>
 </div>
 <div class="p-4 border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50 m-3 rounded-2xl border" id="sidebar-summary">
-<div class="text-xs text-gray-500 font-medium uppercase tracking-wider text-center">Live Net Worth</div>
+<button aria-controls="sidebar-networth-content" aria-expanded="true" class="w-full inline-flex items-center justify-between gap-2 text-xs text-gray-500 font-medium uppercase tracking-wider text-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--fh-primary)]" id="sidebar-networth-toggle" onclick="toggleSidebarNetWorth()" title="Show or hide Live Net Worth details" type="button">
+<span class="flex-1 text-center">Live Net Worth</span>
+<i aria-hidden="true" class="fa-solid fa-chevron-down text-[10px] transition-transform duration-150" id="sidebar-networth-chevron"></i>
+</button>
+<div id="sidebar-networth-content">
 <div class="text-xl font-bold fh-status-income dark:fh-status-income mt-1 text-center accounting-num blur-target tabular-nums" id="sidebar-networth">$ - </div>
 <div class="grid grid-cols-2 gap-3 text-xs text-gray-500 mt-3">
 <div class="min-w-0 text-left">Assets <strong class="block text-gray-700 dark:text-gray-300 accounting-num blur-target tabular-nums" id="sidebar-assets">$ - </strong></div>
 <div class="min-w-0 text-right">Debt <strong class="block text-rose-600 dark:text-rose-400 accounting-num blur-target tabular-nums" id="sidebar-liabilities">$ - </strong></div>
+</div>
 </div>
 </div>
 </aside>
@@ -3104,8 +3446,8 @@ body[data-finhub-theme] {
 <button class="dashboard-reset-link" onclick="resetDashboardOrder()" title="Reset dashboard layout" type="button"><i class="fa-solid fa-rotate-left"></i><span>Reset layout</span></button>
 </div>
 <div class="flex flex-wrap items-center gap-2 dashboard-action-toolbar">
-<button class="fh-action-button fh-action-button-primary" onclick="openTransferModal()" type="button"><i class="fa-solid fa-right-left" aria-hidden="true"></i> Quick Transfer</button>
-<button class="fh-action-button fh-action-button-primary" onclick="openAccountModal()" type="button"><i class="fa-solid fa-plus" aria-hidden="true"></i> Add Account</button>
+<button class="fh-action-button fh-action-button-primary" onclick="openTransferModal()" type="button"><i aria-hidden="true" class="fa-solid fa-right-left"></i> Quick Transfer</button>
+<button class="fh-action-button fh-action-button-primary" onclick="openAccountModal()" type="button"><i aria-hidden="true" class="fa-solid fa-plus"></i> Add Account</button>
 </div>
 </div>
 <section class="fh-available-spend-card" id="available-to-spend-card">
@@ -3133,18 +3475,18 @@ body[data-finhub-theme] {
 <div class="fh-monthly-performance-grid">
 <div class="dashboard-block bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden" data-dashboard-block="budget-performance">
 <div class="dashboard-block-header fh-dashboard-disclosure-header">
-<button id="budget-performance-toggle" class="dashboard-block-header-trigger fh-dashboard-disclosure-trigger" type="button" aria-controls="budget-performance-content" aria-expanded="true" onclick="toggleDashboardBudgetPerformance()">
-<span class="fh-dashboard-disclosure-copy"><span class="fh-dashboard-disclosure-title"><i class="fa-solid fa-chart-simple fh-status-income" aria-hidden="true"></i><span>Budget Performance</span></span><span class="fh-dashboard-disclosure-description">Actual spending compared with your category budgets. Select a category to edit its budget.</span></span>
-<i class="fa-solid fa-chevron-down fh-dashboard-disclosure-chevron" id="budget-performance-chevron" aria-hidden="true"></i>
+<button aria-controls="budget-performance-content" aria-expanded="true" class="dashboard-block-header-trigger fh-dashboard-disclosure-trigger" id="budget-performance-toggle" onclick="toggleDashboardBudgetPerformance()" type="button">
+<span class="fh-dashboard-disclosure-copy"><span class="fh-dashboard-disclosure-title"><i aria-hidden="true" class="fa-solid fa-chart-simple fh-status-income"></i><span>Budget Performance</span></span><span class="fh-dashboard-disclosure-description">Actual spending compared with your category budgets. Select a category to edit its budget.</span></span>
+<i aria-hidden="true" class="fa-solid fa-chevron-down fh-dashboard-disclosure-chevron" id="budget-performance-chevron"></i>
 </button>
 </div>
 <div class="px-5 pb-5 space-y-3" id="budget-performance-content"><div class="space-y-3" id="mo-budget-list"></div></div>
 </div>
 <div class="dashboard-block bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm" data-dashboard-block="debt-savings">
 <div class="dashboard-block-header fh-dashboard-disclosure-header">
-<button class="dashboard-block-header-trigger fh-dashboard-disclosure-trigger" type="button" aria-controls="sec-dashboard-debt-savings-content" aria-expanded="true" onclick="toggleCollapse('sec-dashboard-debt-savings')">
-<span class="fh-dashboard-disclosure-copy"><span class="fh-dashboard-disclosure-title"><i class="fa-solid fa-piggy-bank text-rose-500" aria-hidden="true"></i><span>Debt Payments &amp; Savings</span></span><span class="fh-dashboard-disclosure-description">Recorded debt payments and savings contributions.</span></span>
-<i class="fa-solid fa-chevron-down fh-dashboard-disclosure-chevron" id="sec-dashboard-debt-savings-icon" aria-hidden="true"></i>
+<button aria-controls="sec-dashboard-debt-savings-content" aria-expanded="true" class="dashboard-block-header-trigger fh-dashboard-disclosure-trigger" onclick="toggleCollapse('sec-dashboard-debt-savings')" type="button">
+<span class="fh-dashboard-disclosure-copy"><span class="fh-dashboard-disclosure-title"><i aria-hidden="true" class="fa-solid fa-piggy-bank text-rose-500"></i><span>Debt Payments &amp; Savings</span></span><span class="fh-dashboard-disclosure-description">Recorded debt payments and savings contributions.</span></span>
+<i aria-hidden="true" class="fa-solid fa-chevron-down fh-dashboard-disclosure-chevron" id="sec-dashboard-debt-savings-icon"></i>
 </button>
 </div>
 <div class="fh-dashboard-disclosure-content" id="sec-dashboard-debt-savings-content">
@@ -3157,9 +3499,9 @@ body[data-finhub-theme] {
 </div>
 <div class="dashboard-block bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm" data-dashboard-block="cashflow-trend">
 <div class="dashboard-block-header fh-dashboard-disclosure-header">
-<button class="dashboard-block-header-trigger fh-dashboard-disclosure-trigger" type="button" aria-controls="sec-dashboard-cashflow-trend-content" aria-expanded="true" onclick="toggleCollapse('sec-dashboard-cashflow-trend')">
-<span class="fh-dashboard-disclosure-copy"><span class="fh-dashboard-disclosure-title"><i class="fa-solid fa-chart-line text-cyan-500" aria-hidden="true"></i><span>Cash Flow Trend</span></span><span class="fh-dashboard-disclosure-description">Income and expenses over the six months ending with the selected month.</span></span>
-<i class="fa-solid fa-chevron-down fh-dashboard-disclosure-chevron" id="sec-dashboard-cashflow-trend-icon" aria-hidden="true"></i>
+<button aria-controls="sec-dashboard-cashflow-trend-content" aria-expanded="true" class="dashboard-block-header-trigger fh-dashboard-disclosure-trigger" onclick="toggleCollapse('sec-dashboard-cashflow-trend')" type="button">
+<span class="fh-dashboard-disclosure-copy"><span class="fh-dashboard-disclosure-title"><i aria-hidden="true" class="fa-solid fa-chart-line text-cyan-500"></i><span>Cash Flow Trend</span></span><span class="fh-dashboard-disclosure-description">Income and expenses over the six months ending with the selected month.</span></span>
+<i aria-hidden="true" class="fa-solid fa-chevron-down fh-dashboard-disclosure-chevron" id="sec-dashboard-cashflow-trend-icon"></i>
 </button>
 </div>
 <div class="fh-dashboard-disclosure-content" id="sec-dashboard-cashflow-trend-content">
@@ -3171,9 +3513,9 @@ body[data-finhub-theme] {
 <!-- SPENDING BY CATEGORY -->
 <div class="dashboard-block bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden" data-dashboard-block="spending">
 <div class="dashboard-block-header fh-dashboard-disclosure-header">
-<button class="dashboard-block-header-trigger fh-dashboard-disclosure-trigger" type="button" aria-controls="sec-spending-chart-content" aria-expanded="true" onclick="toggleCollapse('sec-spending-chart')">
-<span class="fh-dashboard-disclosure-copy"><span class="fh-dashboard-disclosure-title"><i class="fa-solid fa-chart-column text-amber-500" aria-hidden="true"></i><span>Spending by Category</span></span><span class="fh-dashboard-disclosure-description"><span id="spending-chart-period">Expense transactions in the selected period.</span></span></span>
-<i class="fa-solid fa-chevron-down fh-dashboard-disclosure-chevron" id="sec-spending-chart-icon" aria-hidden="true"></i>
+<button aria-controls="sec-spending-chart-content" aria-expanded="true" class="dashboard-block-header-trigger fh-dashboard-disclosure-trigger" onclick="toggleCollapse('sec-spending-chart')" type="button">
+<span class="fh-dashboard-disclosure-copy"><span class="fh-dashboard-disclosure-title"><i aria-hidden="true" class="fa-solid fa-chart-column text-amber-500"></i><span>Spending by Category</span></span><span class="fh-dashboard-disclosure-description"><span id="spending-chart-period">Expense transactions in the selected period.</span></span></span>
+<i aria-hidden="true" class="fa-solid fa-chevron-down fh-dashboard-disclosure-chevron" id="sec-spending-chart-icon"></i>
 </button>
 </div>
 <div class="p-5" id="sec-spending-chart-content">
@@ -3186,9 +3528,9 @@ body[data-finhub-theme] {
 <!-- UPCOMING CASH FLOW -->
 <div class="dashboard-block bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden" data-dashboard-block="upcoming">
 <div class="dashboard-block-header fh-dashboard-disclosure-header">
-<button class="dashboard-block-header-trigger fh-dashboard-disclosure-trigger" type="button" aria-controls="sec-dashboard-upcoming-content" aria-expanded="true" onclick="toggleCollapse('sec-dashboard-upcoming')">
-<span class="fh-dashboard-disclosure-copy"><span class="fh-dashboard-disclosure-title"><i class="fa-solid fa-calendar-days text-indigo-500" aria-hidden="true"></i><span>Upcoming Bills &amp; Paydays</span></span><span class="fh-dashboard-disclosure-description">Live from the Bill &amp; Income Calendar. Select an item to open it in the calendar.</span></span>
-<i class="fa-solid fa-chevron-down fh-dashboard-disclosure-chevron" id="sec-dashboard-upcoming-icon" aria-hidden="true"></i>
+<button aria-controls="sec-dashboard-upcoming-content" aria-expanded="true" class="dashboard-block-header-trigger fh-dashboard-disclosure-trigger" onclick="toggleCollapse('sec-dashboard-upcoming')" type="button">
+<span class="fh-dashboard-disclosure-copy"><span class="fh-dashboard-disclosure-title"><i aria-hidden="true" class="fa-solid fa-calendar-days text-indigo-500"></i><span>Upcoming Bills &amp; Paydays</span></span><span class="fh-dashboard-disclosure-description">Live from the Bill &amp; Income Calendar. Select an item to open it in the calendar.</span></span>
+<i aria-hidden="true" class="fa-solid fa-chevron-down fh-dashboard-disclosure-chevron" id="sec-dashboard-upcoming-icon"></i>
 </button>
 </div>
 <div class="p-4 space-y-2" id="sec-dashboard-upcoming-content">
@@ -3197,7 +3539,6 @@ body[data-finhub-theme] {
 </div>
 </div>
 </div>
-
 <!-- VARIABLE SPENDING BUDGETS -->
 <!-- HISTORICAL NET WORTH SNAPSHOTS -->
 </section>
@@ -3206,34 +3547,33 @@ body[data-finhub-theme] {
 <section class="tab-content hidden space-y-6" id="tab-accounts">
 <div class="flex flex-wrap items-end justify-between gap-3">
 <div><h2 class="text-2xl font-bold">Accounts</h2><p class="text-sm text-gray-500 dark:text-gray-400">Review balances, reconciliation status and account activity.</p></div>
-<button class="fh-action-button fh-action-button-primary" onclick="openAccountModal()" type="button"><i class="fa-solid fa-plus" aria-hidden="true"></i> Add Account</button>
+<button class="fh-action-button fh-action-button-primary" onclick="openAccountModal()" type="button"><i aria-hidden="true" class="fa-solid fa-plus"></i> Add Account</button>
 </div>
 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
 <div class="monthly-kpi"><div>Assets &amp; cash</div><strong class="fh-status-income accounting-num" id="accounts-page-assets">$ –</strong></div>
 <div class="monthly-kpi"><div>Credit &amp; debt</div><strong class="text-rose-600 accounting-num" id="accounts-page-debt">$ –</strong></div>
 <div class="monthly-kpi"><div>Net worth</div><strong class="accounting-num" id="accounts-page-networth">$ –</strong></div>
 </div>
-
 <details class="monthly-panel space-y-3" id="account-integrity-panel">
-  <summary class="flex flex-wrap items-center justify-between gap-3 cursor-pointer list-none">
-    <span class="font-bold">Account Balance Integrity <span class="block text-xs font-normal text-gray-500 mt-1">Read-only reconciliation of opening balances, ledger activity and current balances.</span></span>
-    <span class="flex items-center gap-2"><button class="fh-action-button fh-action-button-secondary" type="button" onclick="event.preventDefault();event.stopPropagation();runAccountBalanceIntegrityAudit()"><i class="fa-solid fa-scale-balanced" aria-hidden="true"></i> Run reconciliation</button><i class="fa-solid fa-chevron-down text-xs" aria-hidden="true"></i></span>
-  </summary>
-  <div class="text-xs text-gray-500" id="account-integrity-summary">Run the check to compare every account against its saved opening balance and recorded activity.</div>
-  <div class="overflow-x-auto" id="account-integrity-results"></div>
+<summary class="flex flex-wrap items-center justify-between gap-3 cursor-pointer list-none">
+<span class="font-bold">Account Balance Integrity <span class="block text-xs font-normal text-gray-500 mt-1">Read-only reconciliation of opening balances, ledger activity and current balances.</span></span>
+<span class="flex items-center gap-2"><button class="fh-action-button fh-action-button-secondary" onclick="event.preventDefault();event.stopPropagation();runAccountBalanceIntegrityAudit()" type="button"><i aria-hidden="true" class="fa-solid fa-scale-balanced"></i> Run reconciliation</button><i aria-hidden="true" class="fa-solid fa-chevron-down text-xs"></i></span>
+</summary>
+<div class="text-xs text-gray-500" id="account-integrity-summary">Run the check to compare every account against its saved opening balance and recorded activity.</div>
+<div class="overflow-x-auto" id="account-integrity-results"></div>
 </details>
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
-<details class="monthly-panel accounts-group-panel space-y-3" id="accounts-assets-panel" open>
+<details class="monthly-panel accounts-group-panel space-y-3" id="accounts-assets-panel" open="">
 <summary class="mb-3">
 <h3 class="font-bold fh-status-income">Assets &amp; cash</h3>
-<i class="fa-solid fa-chevron-down accounts-group-chevron text-xs" aria-hidden="true"></i>
+<i aria-hidden="true" class="fa-solid fa-chevron-down accounts-group-chevron text-xs"></i>
 </summary>
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" id="accounts-page-assets-list"></div>
 </details>
-<details class="monthly-panel accounts-group-panel space-y-3" id="accounts-debt-panel" open>
+<details class="monthly-panel accounts-group-panel space-y-3" id="accounts-debt-panel" open="">
 <summary class="mb-3">
 <h3 class="font-bold text-rose-600">Liabilities &amp; debt</h3>
-<i class="fa-solid fa-chevron-down accounts-group-chevron text-xs" aria-hidden="true"></i>
+<i aria-hidden="true" class="fa-solid fa-chevron-down accounts-group-chevron text-xs"></i>
 </summary>
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" id="accounts-page-debt-list"></div>
 </details>
@@ -3254,97 +3594,90 @@ body[data-finhub-theme] {
 </div></div>
 <div class="fh-reorderable-section rounded-xl" id="financial-close-data-health"><h4 class="font-semibold text-sm mb-2">Data Health &amp; Integrity</h4><details class="fh-disclosure" data-fh-drag-ready="false" id="data-health-details" open=""><summary class="fh-disclosure-trigger"><span><strong class="text-sm">Data Health &amp; Integrity</strong><span class="block text-xs text-gray-500 mt-1">Read-only checks for common data quality issues</span></span></summary><div class="fh-disclosure-panel p-4"><div class="flex items-center justify-between gap-2 mb-3"><p class="text-xs text-gray-500">These checks flag records for review; they do not change your data.</p><button class="border rounded-lg px-3 py-1.5 text-xs" onclick="renderDataHealth()" type="button">Run checks</button></div><div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs" id="data-health-results"></div></div></details></div>
 </div>
-
 <div class="hidden space-y-4" id="checkin-panel-yearly"><div class="space-y-3"><details class="fh-disclosure" data-global-collapsible="true"><summary class="fh-disclosure-trigger"><span>Year-End Review</span><span class="global-collapsible-description">Review the full year, confirm monthly close coverage and save a year-end snapshot.</span></summary><div class="fh-disclosure-panel p-4 space-y-3"><div class="flex flex-wrap items-center justify-between gap-2"><div><h3 class="text-sm font-bold">Year-End Close</h3><p class="text-xs text-gray-500">Review the year, work through the checklist and save a snapshot. Closing does not lock transactions.</p></div><div class="flex gap-2"><input class="border rounded-lg px-2 py-1 text-xs w-24" id="year-end-period" max="2200" min="2000" type="number"/><button class="border rounded-lg px-3 py-1 text-xs" onclick="refreshYearEndCloseReview()" type="button">Refresh review</button></div></div><div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs" id="year-end-summary"></div><div class="rounded-xl bg-gray-50 dark:bg-gray-950 p-3 space-y-2"><div class="flex items-center justify-between text-sm font-semibold"><span id="year-end-progress-label">0 of 8 complete</span><span id="year-end-progress-percent">0%</span></div><div class="h-2.5 rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden"><div class="h-full rounded-full fh-theme-progress" id="year-end-progress-bar" style="width:0%"></div></div></div><div class="space-y-2 text-xs" id="year-end-checklist"></div><div class="flex flex-wrap gap-2"><button class="px-3 py-2 rounded-lg text-xs fh-theme-primary-button" onclick="completeYearEndClose()">Save year-end snapshot</button><button class="hidden px-3 py-2 border rounded-lg text-xs" id="year-end-reopen" onclick="reopenYearEndClose()">Reopen year</button></div><div class="text-xs text-gray-500" id="year-end-history"></div></div></details></div></div>
 <div class="hidden space-y-4" id="checkin-panel-history"><div class="rounded-2xl border border-gray-200 dark:border-gray-800 p-4"><h3 class="text-lg font-bold mb-3">Snapshot History</h3><div class="overflow-x-auto" id="checkin-snapshot-history"></div></div></div>
 </section>
 <!-- REPORTS -->
 <section class="tab-content hidden space-y-6 fh-page-shell" id="tab-reports">
-  <header class="fh-page-header">
-    <div class="fh-page-header-copy">
-      <h2>Reports &amp; Exports</h2>
-      <p>Generate reports or export your FinHub data.</p>
-    </div>
-  </header>
-
-  <section class="fh-page-section" aria-labelledby="reports-section-title">
-    <div class="fh-page-section-heading">
-      <h3 id="reports-section-title">Imports &amp; Exports</h3>
-    </div>
-
-    <article class="fh-action-card fh-action-card-featured" id="reports-statement-helper">
-      <div class="fh-action-card-heading">
-        <span class="fh-action-icon fh-action-icon-primary" aria-hidden="true">
-          <i class="fa-solid fa-file-csv"></i>
-        </span>
-        <h3>Statement Importer</h3>
-      </div>
-      <p>Import a bank statement, match entries to FinHub transactions and review reconciliation differences.</p>
-      <div class="fh-action-card-actions">
-        <button type="button" class="fh-action-button fh-action-button-primary" onclick="openReconciliationModal()">
-          <i class="fa-solid fa-file-csv" aria-hidden="true"></i>
+<header class="fh-page-header">
+<div class="fh-page-header-copy">
+<h2>Reports &amp; Exports</h2>
+<p>Generate reports or export your FinHub data.</p>
+</div>
+</header>
+<section aria-labelledby="reports-section-title" class="fh-page-section">
+<div class="fh-page-section-heading">
+<h3 id="reports-section-title">Imports &amp; Exports</h3>
+</div>
+<article class="fh-action-card fh-action-card-featured" id="reports-statement-helper">
+<div class="fh-action-card-heading">
+<span aria-hidden="true" class="fh-action-icon fh-action-icon-primary">
+<i class="fa-solid fa-file-csv"></i>
+</span>
+<h3>Statement Importer</h3>
+</div>
+<p>Import a bank statement, match entries to FinHub transactions and review reconciliation differences.</p>
+<div class="fh-action-card-actions">
+<button class="fh-action-button fh-action-button-primary" onclick="openReconciliationModal()" type="button">
+<i aria-hidden="true" class="fa-solid fa-file-csv"></i>
           Open Statement Importer
         </button>
-      </div>
-    </article>
-
-    <div class="fh-action-grid fh-action-grid-exports">
-      <article class="fh-action-card">
-        <div class="fh-action-card-heading">
-          <span class="fh-action-icon fh-action-icon-income" aria-hidden="true"><i class="fa-solid fa-file-excel"></i></span>
-          <h3>Financial workbook</h3>
-        </div>
-        <p>A multi-sheet Excel report with financial summaries and supporting detail.</p>
-        <div class="fh-action-card-actions">
-          <button type="button" class="fh-action-button fh-action-button-secondary" onclick="exportFinancialWorkbook()">Export Excel reports</button>
-        </div>
-      </article>
-
-      <article class="fh-action-card">
-        <div class="fh-action-card-heading">
-          <span class="fh-action-icon fh-action-icon-info" aria-hidden="true"><i class="fa-solid fa-file-csv"></i></span>
-          <h3>Transactions CSV</h3>
-        </div>
-        <p>Export transaction records for review or use in another spreadsheet.</p>
-        <div class="fh-action-card-actions">
-          <button type="button" class="fh-action-button fh-action-button-secondary" onclick="exportTransactionsCSV()">Export transactions CSV</button>
-        </div>
-      </article>
-    </div>
-  </section>
-
-  <section class="fh-page-section" aria-labelledby="reports-backup-title">
-    <div class="fh-page-section-heading">
-      <h3 id="reports-backup-title">Backup &amp; Restoration</h3>
-      <p>Create a separate backup or restore previously exported FinHub data.</p>
-    </div>
-    <div class="fh-action-grid">
-      <article class="fh-action-card">
-        <div class="fh-action-card-heading">
-          <span class="fh-action-icon fh-action-icon-primary" aria-hidden="true"><i class="fa-solid fa-database"></i></span>
-          <h3>JSON backup</h3>
-        </div>
-        <p>Create a full backup of your FinHub data.</p>
-        <div class="fh-action-card-actions">
-          <button type="button" class="fh-action-button fh-action-button-secondary" onclick="exportData()">Download JSON backup</button>
-        </div>
-      </article>
-
-      <article class="fh-action-card">
-        <div class="fh-action-card-heading">
-          <span class="fh-action-icon fh-action-icon-primary" aria-hidden="true"><i class="fa-solid fa-upload"></i></span>
-          <h3>Import backup</h3>
-        </div>
-        <p>Restore a previously exported FinHub backup.</p>
-        <div class="fh-action-card-actions">
-          <label class="fh-action-button fh-action-button-secondary fh-file-button">
+</div>
+</article>
+<div class="fh-action-grid fh-action-grid-exports">
+<article class="fh-action-card">
+<div class="fh-action-card-heading">
+<span aria-hidden="true" class="fh-action-icon fh-action-icon-income"><i class="fa-solid fa-file-excel"></i></span>
+<h3>Financial workbook</h3>
+</div>
+<p>A multi-sheet Excel report with financial summaries and supporting detail.</p>
+<div class="fh-action-card-actions">
+<button class="fh-action-button fh-action-button-secondary" onclick="exportFinancialWorkbook()" type="button">Export Excel reports</button>
+</div>
+</article>
+<article class="fh-action-card">
+<div class="fh-action-card-heading">
+<span aria-hidden="true" class="fh-action-icon fh-action-icon-info"><i class="fa-solid fa-file-csv"></i></span>
+<h3>Transactions CSV</h3>
+</div>
+<p>Export transaction records for review or use in another spreadsheet.</p>
+<div class="fh-action-card-actions">
+<button class="fh-action-button fh-action-button-secondary" onclick="exportTransactionsCSV()" type="button">Export transactions CSV</button>
+</div>
+</article>
+</div>
+</section>
+<section aria-labelledby="reports-backup-title" class="fh-page-section">
+<div class="fh-page-section-heading">
+<h3 id="reports-backup-title">Backup &amp; Restoration</h3>
+<p>Create a separate backup or restore previously exported FinHub data.</p>
+</div>
+<div class="fh-action-grid">
+<article class="fh-action-card">
+<div class="fh-action-card-heading">
+<span aria-hidden="true" class="fh-action-icon fh-action-icon-primary"><i class="fa-solid fa-database"></i></span>
+<h3>JSON backup</h3>
+</div>
+<p>Create a full backup of your FinHub data.</p>
+<div class="fh-action-card-actions">
+<button class="fh-action-button fh-action-button-secondary" onclick="exportData()" type="button">Download JSON backup</button>
+</div>
+</article>
+<article class="fh-action-card">
+<div class="fh-action-card-heading">
+<span aria-hidden="true" class="fh-action-icon fh-action-icon-primary"><i class="fa-solid fa-upload"></i></span>
+<h3>Import backup</h3>
+</div>
+<p>Restore a previously exported FinHub backup.</p>
+<div class="fh-action-card-actions">
+<label class="fh-action-button fh-action-button-secondary fh-file-button">
             Choose backup file
             <input accept=".json,.xlsx,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" class="fh-visually-hidden-file" onchange="importData(event)" type="file"/>
-          </label>
-        </div>
-      </article>
-    </div>
-  </section>
+</label>
+</div>
+</article>
+</div>
+</section>
 </section>
 <!-- TAB 2: PAYCHEQUE ZBB PLANNER -->
 <section class="tab-content hidden space-y-6" id="tab-biweekly">
@@ -3415,7 +3748,7 @@ body[data-finhub-theme] {
 <div class="fh-planner-two-column-grid fh-planner-masonry">
 <div class="fh-planner-column">
 <!-- STEP 1: INCOME -->
-<details class="fh-planner-section" data-planner-section="income" open><summary class="fh-planner-summary">
+<details class="fh-planner-section" data-planner-section="income" open=""><summary class="fh-planner-summary">
 <div>
 <h3 class="text-md font-bold fh-status-income dark:fh-status-income"><i class="fa-solid fa-wallet mr-2"></i>1. Income Sources (Cycle <span class="cycle-num-label">1</span>)</h3>
 <p class="text-xs text-gray-400 mt-0.5">Subtotal: <strong class="accounting-num" id="zbb-sub-income-disp">$ - </strong></p>
@@ -3425,7 +3758,7 @@ body[data-finhub-theme] {
 <div class="space-y-2" id="zbb-income-list"></div>
 </div></details>
 <!-- STEP 3: DEBT PAYMENTS -->
-<details class="fh-planner-section" data-planner-section="debt" open><summary class="fh-planner-summary">
+<details class="fh-planner-section" data-planner-section="debt" open=""><summary class="fh-planner-summary">
 <div>
 <h3 class="text-md font-bold text-amber-600 dark:text-amber-400"><i class="fa-solid fa-credit-card mr-2"></i>3. Less: Debt</h3>
 <p class="text-xs text-gray-400 mt-0.5">Subtotal: <strong class="accounting-num" id="zbb-sub-debt-disp">$ - </strong> | Remaining Bal: <strong class="accounting-num" id="zbb-rem-debt-disp">$ - </strong></p>
@@ -3438,7 +3771,7 @@ body[data-finhub-theme] {
 </div>
 <div class="fh-planner-column">
 <!-- STEP 2: FIXED EXPENSES -->
-<details class="fh-planner-section" data-planner-section="fixed" open><summary class="fh-planner-summary">
+<details class="fh-planner-section" data-planner-section="fixed" open=""><summary class="fh-planner-summary">
 <div>
 <h3 class="text-md font-bold text-rose-600 dark:text-rose-400"><i class="fa-solid fa-file-invoice-dollar mr-2"></i>2. Less: Fixed Expenses</h3>
 <p class="text-xs text-gray-400 mt-0.5">This paycheque allocation: <strong class="accounting-num" id="zbb-sub-bills-disp">$ - </strong> | Remaining Bal: <strong class="accounting-num" id="zbb-rem-bills-disp">$ - </strong></p>
@@ -3448,7 +3781,7 @@ body[data-finhub-theme] {
 <div class="space-y-2" id="zbb-bills-list"></div>
 </div></details>
 <!-- STEP 4: VARIABLE EXPENSES -->
-<details class="fh-planner-section" data-planner-section="variable" open><summary class="fh-planner-summary">
+<details class="fh-planner-section" data-planner-section="variable" open=""><summary class="fh-planner-summary">
 <div>
 <h3 class="text-md font-bold text-amber-600 dark:text-amber-400"><i class="fa-solid fa-cart-shopping mr-2"></i>4. Less: Variable Expenses</h3>
 <p class="text-xs text-gray-400 mt-0.5">Total variable pool: <strong class="accounting-num" id="zbb-sub-variable-disp">$ - </strong> | Remaining after pool: <strong class="accounting-num" id="zbb-rem-variable-disp">$ - </strong></p>
@@ -3456,11 +3789,10 @@ body[data-finhub-theme] {
 <button class="px-3 py-1 text-white rounded-lg text-xs font-semibold theme-bg" onclick="event.preventDefault(); event.stopPropagation(); openZbbItemModal('variable')"><i class="fa-solid fa-plus mr-1"></i> Add Variable Exp</button>
 </summary><div class="fh-planner-section-content">
 <div class="space-y-2" id="zbb-variable-list"></div>
-
 </div></details>
 </div>
 </div>
-<details class="fh-planner-section fh-planner-fullwidth-section" data-planner-section="savings" open><summary class="fh-planner-summary">
+<details class="fh-planner-section fh-planner-fullwidth-section" data-planner-section="savings" open=""><summary class="fh-planner-summary">
 <div>
 <h3 class="text-md font-bold text-indigo-600 dark:text-indigo-400 theme-text"><i class="fa-solid fa-piggy-bank mr-2"></i>5. Less: Savings (Zero-Based Goal)</h3>
 <p class="text-xs text-gray-400 mt-0.5">Subtotal: <strong class="accounting-num" id="zbb-sub-savings-disp">$ - </strong> | Final Balance: <strong class="accounting-num" id="zbb-rem-savings-disp">$ - </strong></p>
@@ -3470,7 +3802,7 @@ body[data-finhub-theme] {
 <div class="space-y-2" id="zbb-savings-list"></div>
 </div></details>
 <div class="fh-planner-paired-sections fh-planner-pair-goals">
-<details class="fh-planner-section" data-planner-section="savings-goals" open>
+<details class="fh-planner-section" data-planner-section="savings-goals" open="">
 <summary class="fh-planner-summary">Savings Goals &amp; Target Date Tracker <span class="text-xs font-normal text-gray-400 ml-2">Progress, targets and estimated completion</span></summary>
 <div class="p-4">
 <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-4 shadow-sm">
@@ -3479,13 +3811,13 @@ body[data-finhub-theme] {
 </div>
 </div>
 </details>
-<details class="fh-planner-section" data-planner-section="sinking-funds-manager" open>
+<details class="fh-planner-section" data-planner-section="sinking-funds-manager" open="">
 <summary class="fh-planner-summary">Sinking Funds Bucket Manager <span class="text-xs font-normal text-gray-400 ml-2">Virtual allocations against real savings-account balances</span></summary>
 <div class="p-4">
 <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-4 shadow-sm">
 <div class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 dark:border-gray-800 pb-3">
 <div><h3 class="text-md font-bold text-indigo-600 dark:text-indigo-400 theme-text"><i class="fa-solid fa-layer-group mr-2"></i>Sinking Funds Bucket Manager</h3><p class="text-xs text-gray-400 mt-1">Keep one real bank balance, with separate virtual balances for your savings buckets.</p></div>
-<div class="flex items-center gap-2"><button type="button" data-fh-info="bucket-balances" aria-label="How bucket balances work" title="How bucket balances work" class="inline-flex items-center justify-center w-6 h-6 rounded-full border border-gray-300 dark:border-gray-700 text-[11px] text-gray-500 hover:text-current">i</button><button class="px-3 py-2 text-white rounded-lg text-xs font-semibold theme-bg" onclick="openSinkingBucketModal()" type="button"><i class="fa-solid fa-plus mr-1"></i> Add Bucket</button></div>
+<div class="flex items-center gap-2"><button aria-label="How bucket balances work" class="inline-flex items-center justify-center w-6 h-6 rounded-full border border-gray-300 dark:border-gray-700 text-[11px] text-gray-500 hover:text-current" data-fh-info="bucket-balances" title="How bucket balances work" type="button">i</button><button class="px-3 py-2 text-white rounded-lg text-xs font-semibold theme-bg" onclick="openSinkingBucketModal()" type="button"><i class="fa-solid fa-plus mr-1"></i> Add Bucket</button></div>
 </div>
 <div class="space-y-4" id="sinking-bucket-manager"></div>
 </div>
@@ -3493,7 +3825,7 @@ body[data-finhub-theme] {
 </details>
 </div>
 <div class="fh-planner-paired-sections fh-planner-pair-reporting">
-<details class="fh-planner-section" data-planner-section="monthly-overview" open>
+<details class="fh-planner-section" data-planner-section="monthly-overview" open="">
 <summary class="fh-planner-summary">Monthly Budget Overview <span class="text-xs font-normal text-gray-400 ml-2">Paycheques 1 and 2, with the third cheque shown separately</span></summary>
 <div class="px-5 pb-5 space-y-3">
 <div id="zbb-monthly-rollup"></div>
@@ -3504,7 +3836,7 @@ body[data-finhub-theme] {
 <div id="zbb-budget-ledger-reconciliation-panel"></div>
 </div>
 </details>
-<details class="fh-planner-section" data-planner-section="budget-vs-actual" open>
+<details class="fh-planner-section" data-planner-section="budget-vs-actual" open="">
 <summary class="fh-planner-summary"><div><h3 class="text-md font-bold"><i class="fa-solid fa-scale-balanced mr-2 theme-text"></i>Budget vs. Actual</h3><p class="text-xs text-gray-400 mt-0.5">Compare your planned variable spending with recorded transactions for the selected paycheque.</p></div><span class="text-xs text-gray-400">Paycheque <span id="zbb-bva-cycle-label">1</span></span></summary>
 <div class="px-5 pb-5 space-y-4" id="zbb-budget-vs-actual"></div>
 </details>
@@ -3520,11 +3852,11 @@ body[data-finhub-theme] {
 <div class="flex items-center space-x-2">
 <button class="px-3 py-1.5 text-white rounded-xl text-xs font-semibold shadow-sm theme-bg" id="btn-view-monthly" onclick="toggleCalendarView('monthly')">Monthly View</button>
 <button class="px-3 py-1.5 bg-gray-200 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-xl text-xs font-semibold" id="btn-view-annual" onclick="toggleCalendarView('annual')">Annual Overview</button>
-<button class="fh-action-button fh-action-button-primary fh-action-button-compact" onclick="openTransferModal()" type="button"><i class="fa-solid fa-right-left" aria-hidden="true"></i> Transfer</button>
-<button class="fh-action-button fh-action-button-primary fh-action-button-compact" onclick="openCalendarModal()" type="button"><i class="fa-solid fa-plus" aria-hidden="true"></i> Schedule Item</button>
+<button class="fh-action-button fh-action-button-primary fh-action-button-compact" onclick="openTransferModal()" type="button"><i aria-hidden="true" class="fa-solid fa-right-left"></i> Transfer</button>
+<button class="fh-action-button fh-action-button-primary fh-action-button-compact" onclick="openCalendarModal()" type="button"><i aria-hidden="true" class="fa-solid fa-plus"></i> Schedule Item</button>
 </div>
 </div>
-<div class="flex items-center gap-2 justify-end"><span class="text-xs text-gray-500">Scheduled items:</span><button class="fh-calendar-view-toggle is-active" id="calendar-scheduled-calendar-btn" onclick="setCalendarScheduledView('calendar')" type="button" aria-pressed="true">Calendar view</button><button class="fh-calendar-view-toggle" id="calendar-scheduled-list-btn" onclick="setCalendarScheduledView('list')" type="button" aria-pressed="false">List view</button></div>
+<div class="flex items-center gap-2 justify-end"><span class="text-xs text-gray-500">Scheduled items:</span><button aria-pressed="true" class="fh-calendar-view-toggle is-active" id="calendar-scheduled-calendar-btn" onclick="setCalendarScheduledView('calendar')" type="button">Calendar view</button><button aria-pressed="false" class="fh-calendar-view-toggle" id="calendar-scheduled-list-btn" onclick="setCalendarScheduledView('list')" type="button">List view</button></div>
 <div class="hidden bg-white dark:bg-gray-900 p-5 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-3" id="calendar-scheduled-list-container">
 <div class="flex flex-wrap items-center justify-between gap-2"><h3 class="font-bold text-sm">Upcoming Scheduled Bills &amp; Income</h3><label class="text-xs text-gray-500">Month <input class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-1 text-xs" id="upcoming-bills-filter" onchange="renderUpcomingCalendarList()" type="month"/></label></div>
 <div class="space-y-2" id="prepopulated-bills-list"></div></div>
@@ -3579,10 +3911,10 @@ body[data-finhub-theme] {
 <div class="hidden flex justify-between text-xs font-semibold" id="joint-current-credit-row"><span class="text-emerald-700 dark:text-emerald-400">Credit / Overpayment This Month:</span><span class="text-emerald-700 dark:text-emerald-400 accounting-num" id="joint-current-credit">$0.00</span></div>
 </div>
 <div class="rounded-xl border border-gray-200 dark:border-gray-800 p-3 space-y-2" id="joint-prior-outstanding-panel">
-  <div class="flex items-center justify-between gap-2"><span class="text-xs font-bold">Outstanding from prior months</span><span class="text-xs font-bold accounting-num text-rose-600 dark:text-rose-400" id="joint-prior-outstanding-total">$0.00</span></div>
-  <div class="flex items-center justify-between gap-2"><span class="text-[11px] text-gray-500">Prior-month credits / overpayments</span><strong class="text-[11px] text-emerald-700 dark:text-emerald-400 accounting-num" id="joint-prior-credit-total">$0.00</strong></div>
-  <div class="text-[11px] text-gray-500">Prior-month balances and credits remain separate from this month's new obligations.</div>
-  <div id="joint-prior-outstanding-list" class="space-y-1"></div>
+<div class="flex items-center justify-between gap-2"><span class="text-xs font-bold">Outstanding from prior months</span><span class="text-xs font-bold accounting-num text-rose-600 dark:text-rose-400" id="joint-prior-outstanding-total">$0.00</span></div>
+<div class="flex items-center justify-between gap-2"><span class="text-[11px] text-gray-500">Prior-month credits / overpayments</span><strong class="text-[11px] text-emerald-700 dark:text-emerald-400 accounting-num" id="joint-prior-credit-total">$0.00</strong></div>
+<div class="text-[11px] text-gray-500">Prior-month balances and credits remain separate from this month's new obligations.</div>
+<div class="space-y-1" id="joint-prior-outstanding-list"></div>
 </div>
 <textarea class="w-full min-h-[3.5rem] bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-2 text-xs resize-y" id="joint-month-notes" onchange="saveJointNotes(this.value)" onkeyup="saveJointNotesHeight(this)" onmouseup="saveJointNotesHeight(this)" ontouchend="saveJointNotesHeight(this)" placeholder="Add monthly notes..." rows="2"></textarea>
 </div>
@@ -3597,9 +3929,9 @@ body[data-finhub-theme] {
 <div class="space-y-3" id="joint-variable-list"></div>
 </div>
 <div class="bg-white dark:bg-gray-900 p-5 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-3 shadow-sm">
-  <div class="flex items-center justify-between gap-3"><h3 class="text-sm font-bold">Manual Adjustments</h3><span class="text-[10px] text-gray-500">Not payments · No bank balance impact</span></div>
-  <p class="text-[11px] text-gray-500">Record bill amounts your spouse covers, reduces, or asks you to contribute. Original bills remain unchanged.</p>
-  <div id="joint-adjustment-history" class="space-y-2"><div class="text-xs text-gray-400">No adjustments for this month.</div></div>
+<div class="flex items-center justify-between gap-3"><h3 class="text-sm font-bold">Manual Adjustments</h3><span class="text-[10px] text-gray-500">Not payments · No bank balance impact</span></div>
+<p class="text-[11px] text-gray-500">Record bill amounts your spouse covers, reduces, or asks you to contribute. Original bills remain unchanged.</p>
+<div class="space-y-2" id="joint-adjustment-history"><div class="text-xs text-gray-400">No adjustments for this month.</div></div>
 </div>
 </div>
 </div>
@@ -3648,7 +3980,7 @@ body[data-finhub-theme] {
 <summary class="fh-disclosure-trigger"><span>Debt Payment History</span><span class="global-collapsible-description">Recorded payments, principal, interest and funding accounts.</span></summary>
 <div class="fh-disclosure-panel p-4">
 <div class="flex flex-wrap gap-2 mb-3"><label class="text-xs fh-theme-muted flex items-center gap-1">From <input class="fh-theme-raised border fh-theme-border rounded-lg px-2 py-1.5" id="debt-history-from" onchange="renderDebtReporting()" type="date"/></label><label class="text-xs fh-theme-muted flex items-center gap-1">To <input class="fh-theme-raised border fh-theme-border rounded-lg px-2 py-1.5" id="debt-history-to" onchange="renderDebtReporting()" type="date"/></label></div>
-<div class="overflow-x-auto"><table class="fh-data-table w-full min-w-[760px] text-left text-xs"><thead class="fh-theme-muted fh-theme-raised"><tr><th class="px-3 py-2"><div class="debt-filter-head">Date <button aria-label="Filter and sort Date" title="Filter and sort Date" class="debt-filter-trigger" data-debt-filter-key="date" onclick="toggleDebtHistoryFilter('date',this)" type="button"><i aria-hidden="true" class="fa-solid fa-filter debt-history-filter-icon"></i><i aria-hidden="true" class="fa-solid fa-chevron-down debt-history-chevron"></i></button></div></th><th class="px-3 py-2"><div class="debt-filter-head">Debt Account <button aria-label="Filter and sort Debt Account" title="Filter and sort Debt Account" class="debt-filter-trigger" data-debt-filter-key="debt" onclick="toggleDebtHistoryFilter('debt',this)" type="button"><i aria-hidden="true" class="fa-solid fa-filter debt-history-filter-icon"></i><i aria-hidden="true" class="fa-solid fa-chevron-down debt-history-chevron"></i></button></div></th><th class="px-3 py-2 text-right"><div class="debt-filter-head">Total Payment <button aria-label="Filter and sort Total Payment" title="Filter and sort Total Payment" class="debt-filter-trigger" data-debt-filter-key="amount" onclick="toggleDebtHistoryFilter('amount',this)" type="button"><i aria-hidden="true" class="fa-solid fa-filter debt-history-filter-icon"></i><i aria-hidden="true" class="fa-solid fa-chevron-down debt-history-chevron"></i></button></div></th><th class="px-3 py-2 text-right"><div class="debt-filter-head">Principal <button aria-label="Filter and sort Principal" title="Filter and sort Principal" class="debt-filter-trigger" data-debt-filter-key="principal" onclick="toggleDebtHistoryFilter('principal',this)" type="button"><i aria-hidden="true" class="fa-solid fa-filter debt-history-filter-icon"></i><i aria-hidden="true" class="fa-solid fa-chevron-down debt-history-chevron"></i></button></div></th><th class="px-3 py-2 text-right"><div class="debt-filter-head">Interest <button aria-label="Filter and sort Interest" title="Filter and sort Interest" class="debt-filter-trigger" data-debt-filter-key="interest" onclick="toggleDebtHistoryFilter('interest',this)" type="button"><i aria-hidden="true" class="fa-solid fa-filter debt-history-filter-icon"></i><i aria-hidden="true" class="fa-solid fa-chevron-down debt-history-chevron"></i></button></div></th><th class="px-3 py-2"><div class="debt-filter-head">Funding Account <button aria-label="Filter and sort Funding Account" title="Filter and sort Funding Account" class="debt-filter-trigger" data-debt-filter-key="funding" onclick="toggleDebtHistoryFilter('funding',this)" type="button"><i aria-hidden="true" class="fa-solid fa-filter debt-history-filter-icon"></i><i aria-hidden="true" class="fa-solid fa-chevron-down debt-history-chevron"></i></button></div></th><th class="px-3 py-2 text-right"><div class="debt-filter-head">Resulting Balance <button aria-label="Filter and sort Resulting Balance" title="Filter and sort Resulting Balance" class="debt-filter-trigger" data-debt-filter-key="balance" onclick="toggleDebtHistoryFilter('balance',this)" type="button"><i aria-hidden="true" class="fa-solid fa-filter debt-history-filter-icon"></i><i aria-hidden="true" class="fa-solid fa-chevron-down debt-history-chevron"></i></button></div></th><th class="px-3 py-2">Original</th></tr></thead><tbody class="divide-y fh-theme-divider" id="debt-report-history-rows"></tbody></table></div>
+<div class="overflow-x-auto"><table class="fh-data-table w-full min-w-[760px] text-left text-xs"><thead class="fh-theme-muted fh-theme-raised"><tr><th class="px-3 py-2"><div class="debt-filter-head">Date <button aria-label="Filter and sort Date" class="debt-filter-trigger" data-debt-filter-key="date" onclick="toggleDebtHistoryFilter('date',this)" title="Filter and sort Date" type="button"><i aria-hidden="true" class="fa-solid fa-filter debt-history-filter-icon"></i><i aria-hidden="true" class="fa-solid fa-chevron-down debt-history-chevron"></i></button></div></th><th class="px-3 py-2"><div class="debt-filter-head">Debt Account <button aria-label="Filter and sort Debt Account" class="debt-filter-trigger" data-debt-filter-key="debt" onclick="toggleDebtHistoryFilter('debt',this)" title="Filter and sort Debt Account" type="button"><i aria-hidden="true" class="fa-solid fa-filter debt-history-filter-icon"></i><i aria-hidden="true" class="fa-solid fa-chevron-down debt-history-chevron"></i></button></div></th><th class="px-3 py-2 text-right"><div class="debt-filter-head">Total Payment <button aria-label="Filter and sort Total Payment" class="debt-filter-trigger" data-debt-filter-key="amount" onclick="toggleDebtHistoryFilter('amount',this)" title="Filter and sort Total Payment" type="button"><i aria-hidden="true" class="fa-solid fa-filter debt-history-filter-icon"></i><i aria-hidden="true" class="fa-solid fa-chevron-down debt-history-chevron"></i></button></div></th><th class="px-3 py-2 text-right"><div class="debt-filter-head">Principal <button aria-label="Filter and sort Principal" class="debt-filter-trigger" data-debt-filter-key="principal" onclick="toggleDebtHistoryFilter('principal',this)" title="Filter and sort Principal" type="button"><i aria-hidden="true" class="fa-solid fa-filter debt-history-filter-icon"></i><i aria-hidden="true" class="fa-solid fa-chevron-down debt-history-chevron"></i></button></div></th><th class="px-3 py-2 text-right"><div class="debt-filter-head">Interest <button aria-label="Filter and sort Interest" class="debt-filter-trigger" data-debt-filter-key="interest" onclick="toggleDebtHistoryFilter('interest',this)" title="Filter and sort Interest" type="button"><i aria-hidden="true" class="fa-solid fa-filter debt-history-filter-icon"></i><i aria-hidden="true" class="fa-solid fa-chevron-down debt-history-chevron"></i></button></div></th><th class="px-3 py-2"><div class="debt-filter-head">Funding Account <button aria-label="Filter and sort Funding Account" class="debt-filter-trigger" data-debt-filter-key="funding" onclick="toggleDebtHistoryFilter('funding',this)" title="Filter and sort Funding Account" type="button"><i aria-hidden="true" class="fa-solid fa-filter debt-history-filter-icon"></i><i aria-hidden="true" class="fa-solid fa-chevron-down debt-history-chevron"></i></button></div></th><th class="px-3 py-2 text-right"><div class="debt-filter-head">Resulting Balance <button aria-label="Filter and sort Resulting Balance" class="debt-filter-trigger" data-debt-filter-key="balance" onclick="toggleDebtHistoryFilter('balance',this)" title="Filter and sort Resulting Balance" type="button"><i aria-hidden="true" class="fa-solid fa-filter debt-history-filter-icon"></i><i aria-hidden="true" class="fa-solid fa-chevron-down debt-history-chevron"></i></button></div></th><th class="px-3 py-2">Original</th></tr></thead><tbody class="divide-y fh-theme-divider" id="debt-report-history-rows"></tbody></table></div>
 <p class="hidden text-xs fh-theme-muted py-4" id="debt-report-history-empty">No recorded debt payments match these filters.</p>
 </div>
 </details>
@@ -3668,10 +4000,10 @@ body[data-finhub-theme] {
 </div>
 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs"><div class="rounded-xl fh-theme-raised p-3">Estimated result <strong class="block mt-1" id="debt-sim-payoff-date">—</strong></div><div class="rounded-xl fh-theme-raised p-3">Estimated interest saved <strong class="block mt-1" id="debt-interest-saved">$0.00</strong></div><div class="rounded-xl fh-theme-raised p-3">Estimated time saved <strong class="block mt-1" id="debt-time-saved">0 Months</strong></div></div>
 <div><h4 class="font-semibold text-sm mb-2">Compare payoff strategies</h4><div class="overflow-x-auto"><table class="w-full text-left text-xs"><thead class="fh-theme-raised fh-theme-muted"><tr><th class="px-3 py-2">Strategy</th><th class="px-3 py-2 text-right">Estimated months</th><th class="px-3 py-2 text-right">Estimated interest</th><th class="px-3 py-2 text-right">Debt-free date</th></tr></thead><tbody id="debt-strategy-comparison-rows"></tbody></table></div></div>
-<details class="fh-disclosure"><summary class="fh-disclosure-trigger">Projected amortization schedule</summary><div class="fh-disclosure-panel overflow-x-auto"><table class="w-full text-left text-xs"><thead class="fh-theme-raised"><tr><th class="px-2 py-2">Period</th><th class="px-2 py-2 text-right">Ending debt</th><th class="px-2 py-2 text-right">Interest</th><th class="px-2 py-2 text-right">Minimums</th><th class="px-2 py-2 text-right">Extra principal</th></tr></thead><tbody id="debt-projection-schedule-rows"></tbody></table></div><p class="text-xs fh-theme-muted mt-2" id="debt-projection-schedule-note"></p><label class="text-xs fh-theme-muted flex gap-2 items-center mt-3">Account <select class="fh-theme-raised border fh-theme-border rounded-lg px-2 py-1" id="debt-projection-account-filter" onchange="renderDebtProjectionAccountRows()"><option value="all">All debt accounts</option></select></label><div class="overflow-x-auto"><table class="w-full text-left text-xs"><tbody id="debt-projection-account-rows"></tbody></table></div><p class="text-xs fh-theme-muted mt-2" id="debt-projection-account-note">Projected figures only.</p></details>
+
 <div class="hidden"><span id="extra-payoff-val"></span><span id="debt-total-bal"></span><span id="debt-monthly-minimums"></span><span id="debt-minimum-note"></span><span id="debt-extra-summary"></span><span id="debt-extra-summary-monthly"></span><table><tbody id="debt-overview-rows"></tbody><tfoot id="debt-overview-foot"></tfoot></table><div id="debt-priority-list"></div><select id="debt-account-picker"></select><table><tbody id="debt-payment-rows"></tbody></table><div id="debt-activity-empty"></div></div>
 </div>
-</details>
+</details><details class="fh-disclosure"><summary class="fh-disclosure-trigger"><span>Projected Amortization Schedule</span><span class="global-collapsible-description">Month-by-month payoff projection across all selected debt accounts.</span></summary><div class="fh-disclosure-panel p-4 space-y-3"><div class="fh-disclosure-panel overflow-x-auto"><table class="w-full text-left text-xs"><thead class="fh-theme-raised"><tr><th class="px-2 py-2">Period</th><th class="px-2 py-2 text-right">Ending debt</th><th class="px-2 py-2 text-right">Interest</th><th class="px-2 py-2 text-right">Minimums</th><th class="px-2 py-2 text-right">Extra principal</th></tr></thead><tbody id="debt-projection-schedule-rows"></tbody></table></div><p class="text-xs fh-theme-muted mt-2" id="debt-projection-schedule-note"></p></div></details><details class="fh-disclosure"><summary class="fh-disclosure-trigger"><span>Projected Amortization by Account</span><span class="global-collapsible-description">Separate projected balances and payment details for each debt account.</span></summary><div class="fh-disclosure-panel p-4 space-y-3"><label class="text-xs fh-theme-muted flex gap-2 items-center mt-3">Account <select class="fh-theme-raised border fh-theme-border rounded-lg px-2 py-1" id="debt-projection-account-filter" onchange="renderDebtProjectionAccountRows()"><option value="all">All debt accounts</option></select></label><div class="overflow-x-auto"><table class="w-full text-left text-xs"><tbody id="debt-projection-account-rows"></tbody></table></div><p class="text-xs fh-theme-muted mt-2" id="debt-projection-account-note">Projected figures only.</p></div></details>
 </section>
 <!-- TAB 6: EXPENSE LEDGER -->
 <section class="tab-content hidden space-y-6" id="tab-ledger">
@@ -3692,7 +4024,7 @@ body[data-finhub-theme] {
 <div aria-label="Transaction filter" class="hidden" id="ledger-filter-popover" role="dialog">
 <div class="p-3 border-b fh-theme-border flex items-center justify-between gap-2"><strong class="text-xs" id="ledger-filter-title">Filter</strong><button aria-label="Close filter" class="fh-theme-muted dark:" onclick="closeLedgerFilter()"><i class="fa-solid fa-xmark"></i></button></div>
 <div class="hidden px-3 pt-3" id="ledger-sort-options"></div>
-<div class="hidden px-3 pt-3" id="ledger-date-filter-controls"><div class="text-[10px] font-bold uppercase tracking-wide fh-theme-muted mb-2">Date range</div><label class="sr-only" for="ledger-period-preset">Period</label><select class="w-full border rounded-lg px-2.5 py-2 text-xs fh-theme-surface fh-theme-border" id="ledger-period-preset" onchange="setLedgerPeriodPreset(this.value)"><option value="all" selected>All Dates</option><option value="current">This month</option><option value="last">Last month</option><option value="3months">Last 3 months</option><option value="year">This year</option><option value="custom">Custom range</option></select><div class="hidden flex flex-wrap items-center gap-1.5 mt-2" id="ledger-custom-date-range"><label class="text-[10px] fh-theme-muted" for="ledger-date-from">From</label><input class="border rounded-lg px-2 py-1.5 text-xs fh-theme-surface" id="ledger-date-from" onchange="renderLedger()" type="date"><label class="text-[10px] fh-theme-muted" for="ledger-date-to">To</label><input class="border rounded-lg px-2 py-1.5 text-xs fh-theme-surface" id="ledger-date-to" onchange="renderLedger()" type="date"></div></div>
+<div class="hidden px-3 pt-3" id="ledger-date-filter-controls"><div class="text-[10px] font-bold uppercase tracking-wide fh-theme-muted mb-2">Date range</div><label class="sr-only" for="ledger-period-preset">Period</label><select class="w-full border rounded-lg px-2.5 py-2 text-xs fh-theme-surface fh-theme-border" id="ledger-period-preset" onchange="setLedgerPeriodPreset(this.value)"><option selected="" value="all">All Dates</option><option value="current">This month</option><option value="last">Last month</option><option value="3months">Last 3 months</option><option value="year">This year</option><option value="custom">Custom range</option></select><div class="hidden flex flex-wrap items-center gap-1.5 mt-2" id="ledger-custom-date-range"><label class="text-[10px] fh-theme-muted" for="ledger-date-from">From</label><input class="border rounded-lg px-2 py-1.5 text-xs fh-theme-surface" id="ledger-date-from" onchange="renderLedger()" type="date"/><label class="text-[10px] fh-theme-muted" for="ledger-date-to">To</label><input class="border rounded-lg px-2 py-1.5 text-xs fh-theme-surface" id="ledger-date-to" onchange="renderLedger()" type="date"/></div></div>
 <div class="p-3"><input class="w-full fh-theme-raised border fh-theme-border rounded-lg px-3 py-2 text-xs" id="ledger-filter-search" oninput="updateLedgerFilterSearch(this.value)" placeholder="Search transactions or narrow options..." type="search"/></div>
 <div class="px-3 pb-2" id="ledger-filter-options"></div>
 <div class="p-3 border-t fh-theme-border flex justify-between items-center"><button class="text-[10px] fh-theme-muted hover:underline" onclick="clearActiveLedgerFilter()">Clear this filter</button><button class="px-3 py-1.5 rounded-lg text-white text-xs font-semibold theme-bg" onclick="closeLedgerFilter()">Done</button></div>
@@ -3726,20 +4058,19 @@ body[data-finhub-theme] {
 <div class="w-full mb-3 rounded-xl border fh-theme-border fh-theme-surface shadow-sm overflow-visible" id="ledger-table-toolbar">
 <div class="flex flex-wrap items-center justify-between gap-3 px-3 py-2 fh-theme-raised">
 <div class="flex flex-wrap items-center gap-3">
-<label class="inline-flex items-center gap-2 text-xs font-semibold cursor-pointer"><input aria-label="Select all currently filtered transactions" class="accent-indigo-600 w-4 h-4" id="ledger-select-all-filtered" onchange="toggleSelectAllFiltered(this.checked)" type="checkbox"><span>Select all filtered</span></input></label>
+<label class="inline-flex items-center gap-2 text-xs font-semibold cursor-pointer"><input aria-label="Select all currently filtered transactions" class="accent-indigo-600 w-4 h-4" id="ledger-select-all-filtered" onchange="toggleSelectAllFiltered(this.checked)" type="checkbox"/><span>Select all filtered</span></label>
 <span class="text-xs font-semibold fh-theme-muted" id="ledger-selected-count">0 selected</span>
 <button class="px-2.5 py-1.5 rounded-lg border text-xs" onclick="clearLedgerSelection()" type="button">Clear selection</button>
 <button class="px-3 py-1.5 rounded-lg text-white text-xs font-semibold disabled:opacity-40 theme-bg" disabled="" id="ledger-bulk-edit-btn" onclick="openBulkEditModal()" type="button">Edit selected</button>
 <button class="px-3 py-1.5 rounded-lg text-white text-xs font-semibold disabled:opacity-40" disabled="" id="ledger-bulk-delete-btn" onclick="bulkDeleteSelectedTransactions()" type="button">Delete selected</button>
 </div>
 <div class="flex flex-wrap items-center gap-2">
-<label class="sr-only" for="ledger-global-search">Search all transactions</label><input aria-label="Search all transactions" class="w-full sm:w-64 border rounded-lg px-3 py-1.5 text-xs fh-theme-surface" id="ledger-global-search" oninput="renderLedger()" placeholder="Search vendor, description, category, account or amount…" type="search">
+<label class="sr-only" for="ledger-global-search">Search all transactions</label><input aria-label="Search all transactions" class="w-full sm:w-64 border rounded-lg px-3 py-1.5 text-xs fh-theme-surface" id="ledger-global-search" oninput="renderLedger()" placeholder="Search vendor, description, category, account or amount…" type="search"/>
 <button class="px-2.5 py-1.5 text-xs font-semibold text-indigo-600 dark:text-cyan-300" onclick="clearLedgerFilters()">Clear all</button>
-</input></div>
 </div>
 </div>
-<div id="ledger-active-filter-chips" class="flex flex-wrap items-center gap-2 px-1 mb-2" aria-live="polite"></div>
-
+</div>
+<div aria-live="polite" class="flex flex-wrap items-center gap-2 px-1 mb-2" id="ledger-active-filter-chips"></div>
 <div aria-label="List View filters" class="hidden flex flex-wrap items-center gap-2 mb-3" id="ledger-filter-strip"></div>
 <div class="hidden space-y-1.5" id="ledger-mobile-cards"></div>
 <div class="fh-theme-surface rounded-2xl border fh-theme-border overflow-x-auto overflow-y-visible shadow-sm custom-scrollbar" id="ledger-table-container">
@@ -3788,7 +4119,7 @@ body[data-finhub-theme] {
 <p class="text-xs fh-theme-muted mt-1">Move your FinHub data between your laptop, phone, or tablet using a backup file. Save the exported file somewhere both devices can access, such as Google Drive or iCloud.</p>
 </div>
 <div class="fh-backup-actions-grid"><button class="fh-action-button fh-action-button-primary px-4 py-3 rounded-xl text-sm font-semibold shadow-md" onclick="saveLatestBackup()"><i class="fa-solid fa-floppy-disk mr-2"></i>Save / Update Latest Backup</button><button class="fh-action-button fh-action-button-primary px-4 py-3 rounded-xl text-sm font-semibold" onclick="saveBackupAs()"><i class="fa-solid fa-file-arrow-down mr-2"></i>Save As…</button><button class="fh-action-button fh-action-button-primary px-4 py-3 rounded-xl text-sm font-semibold" onclick="exportDatedArchive()"><i class="fa-solid fa-box-archive mr-2"></i>Save Dated Archive</button><button class="fh-action-button fh-action-button-primary px-4 py-3 rounded-xl text-sm font-semibold" onclick="document.getElementById('backup-import-file').click()"><i class="fa-solid fa-upload mr-2"></i>Import Backup</button></div>
-<input accept=".json,.xlsx,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" class="hidden" id="backup-import-file" onchange="importData(event)" type="file">
+<input accept=".json,.xlsx,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" class="hidden" id="backup-import-file" onchange="importData(event)" type="file"/>
 <p class="fh-backup-shortcut-hint text-[10px] fh-theme-muted">Quick separate backup: Ctrl+S / Cmd+S</p>
 <div class="rounded-xl fh-theme-raised border fh-theme-border p-3 space-y-2">
 <div class="flex items-center justify-between gap-2"><strong class="text-xs">Latest backup destination</strong><span class="text-[10px] fh-theme-muted" id="backup-destination-status">Not selected yet</span></div>
@@ -3849,11 +4180,11 @@ body[data-finhub-theme] {
 </div>
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 <label class="text-xs font-semibold">Page background colour
-      <input class="block mt-2 h-10 w-full rounded-lg" id="fh-page-bg" onchange="setAppearanceValue('appPageBackground',this.value)" type="color"/>
-</label>
+      <input class="block mt-2 h-10 w-full rounded-lg" id="fh-page-bg" onchange="setAppearanceValue('appPageBackground',this.value)" type="color">
+</input></label>
 <label class="text-xs font-semibold">Accent / outline colour
-      <input class="block mt-2 h-10 w-full rounded-lg" id="fh-outline-color" onchange="setAppearanceValue('appOutlineColor',this.value)" type="color"/>
-</label>
+      <input class="block mt-2 h-10 w-full rounded-lg" id="fh-outline-color" onchange="setAppearanceValue('appOutlineColor',this.value)" type="color">
+</input></label>
 <label class="text-xs font-semibold">Special button colour
       <input class="block mt-2 h-10 w-full rounded-lg" id="fh-button-color" onchange="setAppearanceValue('appButtonColor',this.value)" type="color"/>
 </label>
@@ -3916,7 +4247,7 @@ body[data-finhub-theme] {
 <div class="space-y-2" id="statement-import-rules-list"></div>
 </div>
 <div class="fh-theme-surface fh-settings-transaction-types-panel">
-<button class="fh-settings-nested-toggle w-full flex justify-between items-center text-left" aria-expanded="false" onclick="toggleCollapse('sec-advanced-types')">
+<button aria-expanded="false" class="fh-settings-nested-toggle w-full flex justify-between items-center text-left" onclick="toggleCollapse('sec-advanced-types')">
 <div>
 <h3 class="text-md font-bold">Advanced: Custom Transaction Types</h3>
 <p class="text-xs fh-theme-muted mt-1">Use the four standard types for everyday entries: Expense, Income, Transfer and Debt.</p>
@@ -3971,7 +4302,7 @@ body[data-finhub-theme] {
 <!-- MODAL: BULK EDIT TRANSACTIONS -->
 <div class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50" id="bulk-edit-modal">
 <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto p-5 space-y-4 shadow-2xl">
-<div class="flex justify-between items-center"><div><h3 class="text-lg font-bold">Bulk Edit Transactions</h3><p class="text-xs text-gray-400" id="bulk-edit-count">Selected transactions</p></div><button aria-label="Close bulk edit dialog" title="Close bulk edit dialog" class="text-gray-400" onclick="closeBulkEditModal()"><i aria-hidden="true" class="fa-solid fa-xmark"></i></button></div>
+<div class="flex justify-between items-center"><div><h3 class="text-lg font-bold">Bulk Edit Transactions</h3><p class="text-xs text-gray-400" id="bulk-edit-count">Selected transactions</p></div><button aria-label="Close bulk edit dialog" class="text-gray-400" onclick="closeBulkEditModal()" title="Close bulk edit dialog"><i aria-hidden="true" class="fa-solid fa-xmark"></i></button></div>
 <p class="text-xs text-gray-500">Only fields you change will be applied. Leave a field set to “No change” to preserve each transaction's current value.</p>
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
 <label class="text-xs font-semibold text-gray-500">Vendor<input class="mt-1 w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm" id="bulk-vendor" placeholder="No change" type="text"/></label>
@@ -4022,7 +4353,7 @@ body[data-finhub-theme] {
 <!-- MODAL: BANK STATEMENT MATCH & RECONCILIATION -->
 <div class="fixed inset-0 bg-black/70 flex items-center justify-center p-3 hidden z-50" id="recon-modal">
 <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-4xl max-h-[92vh] overflow-y-auto p-5 space-y-4 shadow-2xl">
-<div class="flex items-start justify-between gap-3"><div><h3 class="text-lg font-bold">Statement Helper · Match &amp; Reconcile</h3><p class="text-xs text-gray-400 mt-1">Choose an account, upload or paste a statement, then review the suggested matches before importing.</p></div><button aria-label="Close statement reconciliation dialog" title="Close statement reconciliation dialog" class="text-gray-400" onclick="closeReconciliationModal()"><i aria-hidden="true" class="fa-solid fa-xmark"></i></button></div>
+<div class="flex items-start justify-between gap-3"><div><h3 class="text-lg font-bold">Statement Helper · Match &amp; Reconcile</h3><p class="text-xs text-gray-400 mt-1">Choose an account, upload or paste a statement, then review the suggested matches before importing.</p></div><button aria-label="Close statement reconciliation dialog" class="text-gray-400" onclick="closeReconciliationModal()" title="Close statement reconciliation dialog"><i aria-hidden="true" class="fa-solid fa-xmark"></i></button></div>
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">1. Statement account</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="recon-account" onchange="renderStatementBalanceCheck()"></select></div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">2. Upload statement</label><div class="flex flex-wrap items-center gap-2"><input accept=".csv,.txt,.pdf,text/csv,text/plain,application/pdf" class="min-w-0 flex-1 text-xs" id="recon-file" onchange="loadStatementFile(event)" type="file"/><button class="px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-xs font-semibold" onclick="downloadStatementTemplate()" type="button"><i class="fa-solid fa-download mr-1"></i>CSV template</button></div><p class="text-[10px] text-gray-400 mt-1">Upload a bank CSV or PDF statement, or paste statement data. PDF imports are reviewed before they enter your ledger.</p></div>
@@ -4053,7 +4384,7 @@ body[data-finhub-theme] {
 <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-6xl h-[94vh] max-h-[94vh] overflow-hidden flex flex-col p-4 space-y-2 shadow-2xl">
 <div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-800 pb-3">
 <h3 class="text-lg font-bold" id="acc-detail-title">Account Transactions &amp; Settings</h3>
-<button aria-label="Close account details dialog" title="Close account details dialog" class="text-gray-400" onclick="closeAccountDetailModal()"><i aria-hidden="true" class="fa-solid fa-xmark text-lg"></i></button>
+<button aria-label="Close account details dialog" class="text-gray-400" onclick="closeAccountDetailModal()" title="Close account details dialog"><i aria-hidden="true" class="fa-solid fa-xmark text-lg"></i></button>
 </div>
 <details class="rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950" id="account-settings-summary">
 <summary class="cursor-pointer px-3 py-2 text-xs font-semibold text-gray-500">Account settings &amp; balance summary</summary>
@@ -4110,7 +4441,7 @@ body[data-finhub-theme] {
 <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-3xl p-6 space-y-4 shadow-2xl">
 <h3 class="text-lg font-bold">Edit Debt Details &amp; Minimum Payment</h3>
 <form class="space-y-3" id="debt-detail-form" onsubmit="saveDebtDetails(event)">
-<input id="edit-debt-id" type="hidden">
+<input id="edit-debt-id" type="hidden"/>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Debt Name</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="ed-name" required="" type="text"/></div>
 <div class="grid grid-cols-2 gap-3">
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Starting Balance ($)</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="ed-startbal" step="0.01" type="number"/></div>
@@ -4142,7 +4473,7 @@ body[data-finhub-theme] {
 <button class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel" onclick="closeDebtDetailModal()" type="button">Cancel</button>
 <button class="flex-1 py-2 text-white rounded-xl text-sm font-semibold theme-bg" type="submit">Save Debt</button>
 </div>
-</input></form>
+</form>
 </div>
 </div>
 <!-- MODAL: ADD / EDIT JOINT HOUSEHOLD BILL -->
@@ -4174,65 +4505,63 @@ body[data-finhub-theme] {
 </form>
 </div>
 </div>
-
 <!-- MODAL: RECORD JOINT HOUSEHOLD E-TRANSFER AS A SPLIT EXPENSE -->
 <div class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50" id="joint-etransfer-modal">
-  <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto p-5 md:p-6 space-y-4 shadow-2xl">
-    <div class="flex items-start justify-between gap-3">
-      <div>
-        <h3 class="text-lg font-bold">Record Joint Household E-Transfer</h3>
-        <p class="text-xs text-gray-500 dark:text-gray-400">Create one ledger expense with itemized category allocations from this month's settlement.</p>
-      </div>
-      <button type="button" class="text-gray-400 hover:text-gray-700 px-2" onclick="closeJointETransferModal()" aria-label="Close">✕</button>
-    </div>
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-      <div>
-        <label class="block text-xs font-semibold text-gray-500 mb-1" for="joint-et-month">Settlement month</label>
-        <input id="joint-et-month" type="month" readonly class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"/>
-      </div>
-      <div>
-        <label class="block text-xs font-semibold text-gray-500 mb-1" for="joint-et-date">E-Transfer date</label>
-        <input id="joint-et-date" type="date" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"/>
-      </div>
-      <div>
-        <label class="block text-xs font-semibold text-gray-500 mb-1" for="joint-et-account">Funding account</label>
-        <select id="joint-et-account" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></select>
-      </div>
-    </div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-      <div>
-        <label class="block text-xs font-semibold text-gray-500 mb-1" for="joint-et-amount">E-Transfer amount ($)</label>
-        <input id="joint-et-amount" type="number" min="0.01" step="0.01" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm font-bold accounting-num"/>
-      </div>
-      <div class="rounded-xl border border-gray-200 dark:border-gray-800 p-3 text-xs">
-        <div class="text-gray-500">Settlement amount</div>
-        <div id="joint-et-settlement-total" class="font-bold text-base accounting-num">$0.00</div>
-        <div id="joint-et-amount-note" class="text-gray-500 mt-1">Defaults to the full amount due. For a partial transfer, adjust the allocations below to match.</div>
-      </div>
-    </div>
-    <div class="border-t border-gray-200 dark:border-gray-800 pt-3 space-y-2">
-      <div class="flex items-center justify-between gap-2">
-        <h4 class="font-bold text-sm">Expense allocations</h4>
-        <span class="text-xs text-gray-500">Map each household item to a spending category</span>
-      </div>
-      <div class="grid grid-cols-1 sm:grid-cols-[minmax(7rem,1fr)_minmax(8rem,1fr)_minmax(7rem,.7fr)] gap-2 text-[10px] uppercase tracking-wide text-gray-500 px-1">
-        <span>Household item</span><span>Category / subcategory</span><span>My share ($)</span>
-      </div>
-      <div id="joint-et-allocation-rows" class="space-y-2"></div>
-      <div class="flex flex-wrap justify-between gap-2 rounded-xl bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 p-3 text-xs">
-        <span>Allocated: <strong id="joint-et-allocated">$0.00</strong></span>
-        <span>Transfer amount: <strong id="joint-et-transfer-total">$0.00</strong></span>
-        <span id="joint-et-remainder" class="font-bold">Difference: $0.00</span>
-      </div>
-      <p class="text-[11px] text-gray-500">The allocation rows are reporting splits attached to one parent ledger transaction. They do not create additional bank movements.</p>
-    </div>
-    <div class="flex flex-col-reverse sm:flex-row gap-2 pt-2">
-      <button type="button" class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel" onclick="closeJointETransferModal()">Cancel</button>
-      <button type="button" class="flex-1 py-2 text-white rounded-xl text-sm font-semibold theme-bg" onclick="saveJointETransfer()">Save E-Transfer &amp; Allocations</button>
-    </div>
-  </div>
+<div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto p-5 md:p-6 space-y-4 shadow-2xl">
+<div class="flex items-start justify-between gap-3">
+<div>
+<h3 class="text-lg font-bold">Record Joint Household E-Transfer</h3>
+<p class="text-xs text-gray-500 dark:text-gray-400">Create one ledger expense with itemized category allocations from this month's settlement.</p>
 </div>
-
+<button aria-label="Close" class="text-gray-400 hover:text-gray-700 px-2" onclick="closeJointETransferModal()" type="button">✕</button>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+<div>
+<label class="block text-xs font-semibold text-gray-500 mb-1" for="joint-et-month">Settlement month</label>
+<input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="joint-et-month" readonly="" type="month"/>
+</div>
+<div>
+<label class="block text-xs font-semibold text-gray-500 mb-1" for="joint-et-date">E-Transfer date</label>
+<input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="joint-et-date" required="" type="date"/>
+</div>
+<div>
+<label class="block text-xs font-semibold text-gray-500 mb-1" for="joint-et-account">Funding account</label>
+<select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="joint-et-account" required=""></select>
+</div>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+<div>
+<label class="block text-xs font-semibold text-gray-500 mb-1" for="joint-et-amount">E-Transfer amount ($)</label>
+<input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm font-bold accounting-num" id="joint-et-amount" min="0.01" required="" step="0.01" type="number"/>
+</div>
+<div class="rounded-xl border border-gray-200 dark:border-gray-800 p-3 text-xs">
+<div class="text-gray-500">Settlement amount</div>
+<div class="font-bold text-base accounting-num" id="joint-et-settlement-total">$0.00</div>
+<div class="text-gray-500 mt-1" id="joint-et-amount-note">Defaults to the full amount due. For a partial transfer, adjust the allocations below to match.</div>
+</div>
+</div>
+<div class="border-t border-gray-200 dark:border-gray-800 pt-3 space-y-2">
+<div class="flex items-center justify-between gap-2">
+<h4 class="font-bold text-sm">Expense allocations</h4>
+<span class="text-xs text-gray-500">Map each household item to a spending category</span>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-[minmax(7rem,1fr)_minmax(8rem,1fr)_minmax(7rem,.7fr)] gap-2 text-[10px] uppercase tracking-wide text-gray-500 px-1">
+<span>Household item</span><span>Category / subcategory</span><span>My share ($)</span>
+</div>
+<div class="space-y-2" id="joint-et-allocation-rows"></div>
+<div class="flex flex-wrap justify-between gap-2 rounded-xl bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 p-3 text-xs">
+<span>Allocated: <strong id="joint-et-allocated">$0.00</strong></span>
+<span>Transfer amount: <strong id="joint-et-transfer-total">$0.00</strong></span>
+<span class="font-bold" id="joint-et-remainder">Difference: $0.00</span>
+</div>
+<p class="text-[11px] text-gray-500">The allocation rows are reporting splits attached to one parent ledger transaction. They do not create additional bank movements.</p>
+</div>
+<div class="flex flex-col-reverse sm:flex-row gap-2 pt-2">
+<button class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel" onclick="closeJointETransferModal()" type="button">Cancel</button>
+<button class="flex-1 py-2 text-white rounded-xl text-sm font-semibold theme-bg" onclick="saveJointETransfer()" type="button">Save E-Transfer &amp; Allocations</button>
+</div>
+</div>
+</div>
 <!-- MODAL: ADD/EDIT SPENDING BUCKET -->
 <div class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50" id="category-modal" style="z-index:90;">
 <div class="fh-modal-surface">
@@ -4322,15 +4651,15 @@ Bonus" rows="4"></textarea></div>
 <div class="space-y-2" id="zbb-item-split-details">
 <label class="block text-xs font-semibold text-gray-500" id="zbb-split-label">Paycheque Splits (%)</label>
 <div class="grid grid-cols-3 gap-2">
-<div><span class="text-[10px] text-gray-400">P1</span><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded px-2 py-1 text-xs" id="zbb-split-1" step="0.01" type="number" value="50"/ min="0"></div>
-<div><span class="text-[10px] text-gray-400">P2</span><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded px-2 py-1 text-xs" id="zbb-split-2" step="0.01" type="number" value="50"/ min="0"></div>
-<div><span class="text-[10px] text-gray-400">P3</span><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded px-2 py-1 text-xs" id="zbb-split-3" step="0.01" type="number" value="0"/ min="0"></div>
+<div><span class="text-[10px] text-gray-400">P1</span><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded px-2 py-1 text-xs" id="zbb-split-1" min="0" step="0.01" type="number" value="50"/></div>
+<div><span class="text-[10px] text-gray-400">P2</span><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded px-2 py-1 text-xs" id="zbb-split-2" min="0" step="0.01" type="number" value="50"/></div>
+<div><span class="text-[10px] text-gray-400">P3</span><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded px-2 py-1 text-xs" id="zbb-split-3" min="0" step="0.01" type="number" value="0"/></div>
 </div>
 </div>
 <div class="space-y-3 pt-2 border-t border-gray-200 dark:border-gray-800 hidden" id="zbb-sinking-fund-opts">
 <div class="grid grid-cols-2 gap-3">
-<div><label class="block text-xs font-semibold text-gray-500 mb-1">Starting Balance ($)</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="zbb-start-bal" step="0.01" type="number"/ min="0"></div>
-<div><label class="block text-xs font-semibold text-gray-500 mb-1">Target Balance ($)</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="zbb-target-bal" step="0.01" type="number"/ min="0"></div>
+<div><label class="block text-xs font-semibold text-gray-500 mb-1">Starting Balance ($)</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="zbb-start-bal" min="0" step="0.01" type="number"/></div>
+<div><label class="block text-xs font-semibold text-gray-500 mb-1">Target Balance ($)</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="zbb-target-bal" min="0" step="0.01" type="number"/></div>
 </div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Target Date</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="zbb-target-date" type="date"/></div>
 </div>
@@ -4346,10 +4675,10 @@ Bonus" rows="4"></textarea></div>
 <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
 <div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-800 pb-3">
 <h3 class="text-lg font-bold" id="cal-modal-title">Schedule Recurring Item</h3>
-<button aria-label="Close calendar item dialog" title="Close calendar item dialog" class="text-gray-400" onclick="closeCalendarModal()" type="button"><i aria-hidden="true" class="fa-solid fa-xmark text-lg"></i></button>
+<button aria-label="Close calendar item dialog" class="text-gray-400" onclick="closeCalendarModal()" title="Close calendar item dialog" type="button"><i aria-hidden="true" class="fa-solid fa-xmark text-lg"></i></button>
 </div>
 <form class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3" id="calendar-form" onsubmit="saveCalendarItem(event)">
-<input id="cal-edit-id" type="hidden" value=""/>
+<input id="cal-edit-id" type="hidden" value="">
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Due Date</label><input class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-date" required="" type="date"/></div>
 <div class="fh-calendar-recurrence-row">
 <label class="block text-xs font-semibold text-gray-500 mb-1">Recurrence Schedule</label>
@@ -4363,18 +4692,17 @@ Bonus" rows="4"></textarea></div>
 </div>
 <div class="fh-calendar-type-row">
 <label class="block text-xs font-semibold text-gray-500 mb-1">Transaction Type</label>
-<select class="hidden" id="cal-type" onchange="toggleCalendarDebtAccount()" aria-hidden="true" tabindex="-1">
+<select aria-hidden="true" class="hidden" id="cal-type" onchange="toggleCalendarDebtAccount()" tabindex="-1">
 <option value="expense">Expense</option>
 <option value="income">Income</option>
 <option value="debt">Debt</option>
 </select>
-<div class="fh-calendar-type-selector" role="group" aria-label="Schedule type">
-<button type="button" class="tx-kind-card fh-calendar-type-option" data-tx-kind="Expense" data-calendar-type="expense" aria-pressed="true" onclick="setCalendarType('expense')"><i class="fa-solid fa-cart-shopping" aria-hidden="true"></i><span>Expense</span></button>
-<button type="button" class="tx-kind-card fh-calendar-type-option" data-tx-kind="Income" data-calendar-type="income" aria-pressed="false" onclick="setCalendarType('income')"><i class="fa-solid fa-arrow-down-to-line" aria-hidden="true"></i><span>Income</span></button>
-<button type="button" class="tx-kind-card fh-calendar-type-option" data-tx-kind="Debt" data-calendar-type="debt" aria-pressed="false" onclick="setCalendarType('debt')"><i class="fa-solid fa-credit-card" aria-hidden="true"></i><span>Debt</span></button>
+<div aria-label="Schedule type" class="fh-calendar-type-selector" role="group">
+<button aria-pressed="true" class="tx-kind-card fh-calendar-type-option" data-calendar-type="expense" data-tx-kind="Expense" onclick="setCalendarType('expense')" type="button"><i aria-hidden="true" class="fa-solid fa-cart-shopping"></i><span>Expense</span></button>
+<button aria-pressed="false" class="tx-kind-card fh-calendar-type-option" data-calendar-type="income" data-tx-kind="Income" onclick="setCalendarType('income')" type="button"><i aria-hidden="true" class="fa-solid fa-arrow-down-to-line"></i><span>Income</span></button>
+<button aria-pressed="false" class="tx-kind-card fh-calendar-type-option" data-calendar-type="debt" data-tx-kind="Debt" onclick="setCalendarType('debt')" type="button"><i aria-hidden="true" class="fa-solid fa-credit-card"></i><span>Debt</span></button>
 </div>
 </div>
-
 <div class="cal-paired-row cal-vendor-description-row" id="cal-vendor-description-row">
 <div id="cal-vendor-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Vendor <span class="text-rose-500">*</span></label><input class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-vendor" placeholder="e.g. Employer, utility or service provider" required="" type="text"/></div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Description (optional)</label><input class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-desc" placeholder="Additional context (optional)" type="text"/></div>
@@ -4386,7 +4714,6 @@ Bonus" rows="4"></textarea></div>
 <label class="block text-xs font-semibold text-gray-500 mb-1">Funding Account</label>
 <select class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-account"></select>
 </div></div>
-
 <div class="hidden sm:col-span-2" id="cal-debt-account-wrap">
 <label class="block text-xs font-semibold text-gray-500 mb-1">Credit / Debt Account Being Paid</label>
 <select class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-debt-account"></select>
@@ -4394,18 +4721,16 @@ Bonus" rows="4"></textarea></div>
 <label class="block text-xs font-semibold text-gray-500 mt-2 mb-1">Principal portion ($)</label>
 <input class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-principal-amount" min="0" placeholder="Defaults to full payment" step="0.01" type="number"/>
 </div>
-
-
-<div id="cal-payment-panel" class="hidden sm:col-span-2 rounded-xl border border-gray-200 dark:border-gray-800 p-3 space-y-3">
-<div class="flex items-center justify-between gap-2"><strong class="text-xs">Payment history</strong><span id="cal-payment-status" class="text-[10px] font-semibold"></span></div>
-<div id="cal-payment-summary" class="text-xs text-gray-500"></div>
-<div id="cal-payment-history" class="space-y-1"></div>
-<div id="cal-payment-entry" class="border-t border-gray-200 dark:border-gray-800 pt-3 space-y-2">
-<div class="grid grid-cols-2 gap-2"><div><label class="block text-[10px] font-semibold text-gray-500 mb-1">Payment amount ($)</label><input id="cal-payment-amount" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-2 text-xs" type="number" min="0.01" step="0.01"/></div><div><label class="block text-[10px] font-semibold text-gray-500 mb-1">Payment date</label><input id="cal-payment-date" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-2 text-xs" type="date"/></div></div>
-<div><label class="block text-[10px] font-semibold text-gray-500 mb-1">Funding account</label><select id="cal-payment-account" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-2 text-xs"></select></div>
-<div id="cal-payment-principal-wrap" class="hidden"><label class="block text-[10px] font-semibold text-gray-500 mb-1">Principal portion ($)</label><input id="cal-payment-principal" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-2 text-xs" type="number" min="0" step="0.01"/></div>
-<div><label class="block text-[10px] font-semibold text-gray-500 mb-1">Or link an existing ledger transaction</label><select id="cal-payment-existing" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-2 text-xs"><option value="">Create a new payment transaction</option></select></div>
-<button type="button" onclick="recordCalendarBillPayment()" class="w-full rounded-lg px-3 py-2 text-xs font-semibold text-white theme-bg">Record / Link Payment</button>
+<div class="hidden sm:col-span-2 rounded-xl border border-gray-200 dark:border-gray-800 p-3 space-y-3" id="cal-payment-panel">
+<div class="flex items-center justify-between gap-2"><strong class="text-xs">Payment history</strong><span class="text-[10px] font-semibold" id="cal-payment-status"></span></div>
+<div class="text-xs text-gray-500" id="cal-payment-summary"></div>
+<div class="space-y-1" id="cal-payment-history"></div>
+<div class="border-t border-gray-200 dark:border-gray-800 pt-3 space-y-2" id="cal-payment-entry">
+<div class="grid grid-cols-2 gap-2"><div><label class="block text-[10px] font-semibold text-gray-500 mb-1">Payment amount ($)</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-2 text-xs" id="cal-payment-amount" min="0.01" step="0.01" type="number"/></div><div><label class="block text-[10px] font-semibold text-gray-500 mb-1">Payment date</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-2 text-xs" id="cal-payment-date" type="date"/></div></div>
+<div><label class="block text-[10px] font-semibold text-gray-500 mb-1">Funding account</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-2 text-xs" id="cal-payment-account"></select></div>
+<div class="hidden" id="cal-payment-principal-wrap"><label class="block text-[10px] font-semibold text-gray-500 mb-1">Principal portion ($)</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-2 text-xs" id="cal-payment-principal" min="0" step="0.01" type="number"/></div>
+<div><label class="block text-[10px] font-semibold text-gray-500 mb-1">Or link an existing ledger transaction</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-2 text-xs" id="cal-payment-existing"><option value="">Create a new payment transaction</option></select></div>
+<button class="w-full rounded-lg px-3 py-2 text-xs font-semibold text-white theme-bg" onclick="recordCalendarBillPayment()" type="button">Record / Link Payment</button>
 <p class="text-[10px] text-gray-400">Each payment is recorded once in the ledger. FinHub links it to this scheduled item without duplicating its account-balance effect.</p>
 </div>
 </div>
@@ -4415,7 +4740,7 @@ Bonus" rows="4"></textarea></div>
 <button class="finhub-action-btn finhub-action-cancel fh-btn-cancel fh-calendar-modal-action fh-calendar-modal-cancel" onclick="closeCalendarModal()" type="button">Cancel</button>
 <button class="finhub-action-btn finhub-action-save fh-calendar-modal-action fh-calendar-modal-save" type="submit">Save</button>
 </div>
-</form>
+</input></form>
 </div>
 </div>
 <!-- MODAL: RECURRING CALENDAR DELETE CHOICE -->
@@ -5655,9 +5980,9 @@ Bonus" rows="4"></textarea></div>
       const mobilePrivacyIcon = document.getElementById('privacy-icon-mobile');
       const dashboardIcon = document.getElementById('dashboard-blur-icon');
       const dashboardButton = document.getElementById('dashboard-blur-toggle');
-      if (icon) icon.className = state.privacyBlur ? 'fa-solid fa-eye-slash text-indigo-400' : 'fa-solid fa-eye';
+      if (icon) icon.className = state.privacyBlur ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
       privacyButtons.forEach(button => { button.setAttribute('aria-pressed', String(!!state.privacyBlur)); button.setAttribute('aria-label', state.privacyBlur ? 'Turn privacy blur off' : 'Turn privacy blur on'); button.title = button.getAttribute('aria-label'); });
-      if (mobilePrivacyIcon) mobilePrivacyIcon.className = state.privacyBlur ? 'fa-solid fa-eye-slash text-indigo-400' : 'fa-solid fa-eye';
+      if (mobilePrivacyIcon) mobilePrivacyIcon.className = state.privacyBlur ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
       if (dashboardIcon) dashboardIcon.className = state.privacyBlur ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
       if (dashboardButton) {
         dashboardButton.title = state.privacyBlur ? 'Turn privacy blur off' : 'Turn privacy blur on';
@@ -6143,6 +6468,15 @@ Bonus" rows="4"></textarea></div>
     function isReorderableSection(el) {
       if (!(el instanceof HTMLElement)) return false;
       if (el.matches('script,style,template,form,[data-no-reorder],.modal,.modal-backdrop')) return false;
+
+      // Explicitly supported page-level groups. Only direct siblings are reordered,
+      // so nested grids, calendar views and financial subcomponents remain intact.
+      const page = el.closest('.tab-content');
+      if (!page || el.parentElement !== page) return false;
+      if (page.id === 'tab-debt') return el.matches('details.fh-disclosure');
+      if (page.id === 'tab-settings') return el.matches('details.fh-settings-section');
+      if (page.id === 'tab-reports') return el.matches('.fh-page-section');
+
       const cls = typeof el.className === 'string' ? el.className : '';
       const looksLikePanel = /rounded-(xl|2xl)|monthly-panel|monthly-kpi/.test(cls) &&
         (el.querySelector('h2,h3,h4,summary') || /border|shadow/.test(cls));
@@ -18610,6 +18944,17 @@ function openTransactionModal(requestedEditId = null) {
     }
     document.addEventListener('DOMContentLoaded', initializeRemainingSectionCollapses);
 
+    function toggleSidebarNetWorth() {
+      const content = document.getElementById('sidebar-networth-content');
+      const button = document.getElementById('sidebar-networth-toggle');
+      const chevron = document.getElementById('sidebar-networth-chevron');
+      if (!content || !button) return;
+      const willExpand = content.hidden;
+      content.hidden = !willExpand;
+      button.setAttribute('aria-expanded', String(willExpand));
+      if (chevron) chevron.style.transform = willExpand ? 'rotate(0deg)' : 'rotate(-90deg)';
+    }
+
     function refreshFinHubView() {
       const refreshers = [
         'renderDashboard','renderCalendar','renderLedger','renderDebtPlanner',
@@ -20187,7 +20532,6 @@ html.dark body[data-finhub-theme] button.fh-btn-cancel:hover:not(:disabled) {
 #debt-payment-modal[aria-hidden="true"] { display:none !important; }
 #debt-payment-modal[aria-hidden="false"] { display:flex !important; }
 </style>
-
 <style id="finhub-sidebar-icon-alignment-scrollbar-cleanup-v1">
 /* Desktop icon rail: keep every icon centered and the rail scrollable without a visible scrollbar. */
 @media (min-width: 1801px) {
@@ -22450,11 +22794,19 @@ body[data-finhub-theme] #tab-debt .fh-section-header {
   color:var(--fh-ink);
   border-color:var(--fh-border);
 }
-/* Nested projected-schedule disclosure uses the same component geometry at a quieter scale. */
-body[data-finhub-theme] #tab-debt .fh-disclosure .fh-disclosure .fh-disclosure-trigger {
+/* Shared nested disclosure variant: compact geometry, same theme-aware surfaces and interaction states. */
+body[data-finhub-theme] .fh-disclosure-nested {
+  margin:.5rem 0;
+  border-radius:.8rem;
+  box-shadow:none;
+}
+body[data-finhub-theme] .fh-disclosure-nested > .fh-disclosure-trigger {
   min-height:2.75rem;
   padding:.7rem .9rem;
   font-size:.82rem;
+}
+body[data-finhub-theme] .fh-disclosure-nested > .fh-disclosure-panel {
+  border-radius:0 0 .8rem .8rem;
 }
 @media(max-width:680px) {
   body[data-finhub-theme] #tab-debt .fh-disclosure > .fh-disclosure-trigger {min-height:3.25rem;padding:.8rem .9rem;gap:.5rem;}
@@ -23491,15 +23843,14 @@ body[data-finhub-theme] .fh-content-card-header {
   }
 }
 </style>
-<div id="finhub-text-entry-modal" class="hidden fixed inset-0 z-[120] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="finhub-text-entry-title">
-<div class="absolute inset-0 bg-black/60" data-text-entry-dismiss></div>
+<div aria-labelledby="finhub-text-entry-title" aria-modal="true" class="hidden fixed inset-0 z-[120] flex items-center justify-center p-4" id="finhub-text-entry-modal" role="dialog">
+<div class="absolute inset-0 bg-black/60" data-text-entry-dismiss=""></div>
 <div class="relative w-full max-w-md rounded-2xl border p-5 shadow-xl" style="background:var(--fh-surface-modal,var(--fh-card,#fff));color:var(--fh-surface-text,var(--fh-ink,#1f2937));border-color:var(--fh-surface-border,var(--fh-border,#cbd5e1));">
-<div class="flex items-start justify-between gap-3 mb-3"><h3 id="finhub-text-entry-title" class="text-lg font-bold"></h3><button type="button" class="text-xl leading-none" aria-label="Close" data-text-entry-dismiss>×</button></div>
-<p id="finhub-text-entry-message" class="text-sm mb-3"></p>
-<input id="finhub-text-entry-input" class="fh-standard-control w-full rounded-xl border px-3 py-2 text-sm" style="background:var(--fh-control-bg,var(--fh-card,#fff));color:inherit;border-color:var(--fh-control-border,var(--fh-border,#cbd5e1));" type="text" autocomplete="off"/>
-<div class="flex justify-end gap-2 mt-4"><button type="button" class="finhub-action-btn finhub-action-cancel" data-text-entry-dismiss>Cancel</button><button type="button" class="finhub-action-btn finhub-action-save" id="finhub-text-entry-confirm">Add</button></div>
+<div class="flex items-start justify-between gap-3 mb-3"><h3 class="text-lg font-bold" id="finhub-text-entry-title"></h3><button aria-label="Close" class="text-xl leading-none" data-text-entry-dismiss="" type="button">×</button></div>
+<p class="text-sm mb-3" id="finhub-text-entry-message"></p>
+<input autocomplete="off" class="fh-standard-control w-full rounded-xl border px-3 py-2 text-sm" id="finhub-text-entry-input" style="background:var(--fh-control-bg,var(--fh-card,#fff));color:inherit;border-color:var(--fh-control-border,var(--fh-border,#cbd5e1));" type="text"/>
+<div class="flex justify-end gap-2 mt-4"><button class="finhub-action-btn finhub-action-cancel" data-text-entry-dismiss="" type="button">Cancel</button><button class="finhub-action-btn finhub-action-save" id="finhub-text-entry-confirm" type="button">Add</button></div>
 </div></div>
-
 <script id="fh-info-popover-foundation-script">
 (function(){
   const INFO={
@@ -23518,7 +23869,6 @@ body[data-finhub-theme] .fh-content-card-header {
   window.addEventListener('resize',close);window.addEventListener('scroll',close,true);
 })();
 </script>
-
 <style id="finhub-v60-full-width-disclosure-headers">
 /*
   Foundational disclosure-header alignment:
@@ -23622,8 +23972,6 @@ body[data-finhub-theme] #tab-accounts #account-integrity-panel > summary:focus-v
   }
 }
 </style>
-
-
 <style id="finhub-v61-split-screen-dashboard">
 /* Split-screen dashboard: stable card geometry and balanced widget density. */
 #tab-dashboard .fh-monthly-performance-grid {
@@ -23797,8 +24145,6 @@ body[data-finhub-theme] #tab-accounts #account-integrity-panel > summary:focus-v
   #tab-dashboard #mo-budget-list > button { transition:none !important; }
 }
 </style>
-
-
 <style id="finhub-v62-compact-spending-legend">
 /* Compact category legend: reclaim vertical space and reduce unnecessary scrolling. */
 #tab-dashboard [data-dashboard-block="spending"] #spending-category-chart {
@@ -23889,8 +24235,6 @@ body[data-finhub-theme] #tab-accounts #account-integrity-panel > summary:focus-v
   }
 }
 </style>
-
-
 <style id="finhub-v63-spending-legend-polish">
 /* Refine legend density: slightly larger type, shorter rows, tighter row rhythm. */
 #tab-dashboard [data-dashboard-block="spending"] .spending-legend {
@@ -23962,8 +24306,6 @@ body[data-finhub-theme] #tab-accounts #account-integrity-panel > summary:focus-v
   }
 }
 </style>
-
-
 <style id="finhub-v64-compact-legend-uniform-modal-close">
 /* Legend: compact the actual grid tracks, not just the buttons inside them. */
 #tab-dashboard [data-dashboard-block="spending"] .spending-legend {
@@ -24036,8 +24378,6 @@ body[data-finhub-theme] #tab-accounts #account-integrity-panel > summary:focus-v
   }
 }
 </style>
-
-
 <style id="finhub-v65-monthly-overview-clarity">
 /* Monthly Overview subpanels use the same raised/hover tokens as Planner headers. */
 #tab-biweekly .fh-monthly-subpanel {
@@ -24136,8 +24476,6 @@ body[data-finhub-theme] #tab-accounts #account-integrity-panel > summary:focus-v
   #tab-biweekly .fh-monthly-subpanel-summary::after { transition:none !important; }
 }
 </style>
-
-
 <style id="finhub-v65b-finding-details">
 #tab-biweekly .fh-monthly-findings,
 #tab-biweekly #zbb-budget-integrity-panel ul,
@@ -24164,7 +24502,6 @@ body[data-finhub-theme] #tab-accounts #account-integrity-panel > summary:focus-v
 }
 
 </style>
-
 <style id="finhub-v66-planner-icon-controls">
 #tab-biweekly button:has(> i.fa-trash),
 #tab-biweekly button:has(> i.fa-trash-can) {
@@ -24218,7 +24555,6 @@ body[data-finhub-theme] #tab-accounts #account-integrity-panel > summary:focus-v
 }
 
 </style>
-
 <style id="finhub-v67-summary-hover-border">
 /* Summary headers keep the same border on hover; only their theme surface changes. */
 body[data-finhub-theme] summary:hover {
@@ -24229,15 +24565,12 @@ body[data-finhub-theme] summary:hover:not([aria-expanded="true"]) {
   border-bottom-color:var(--fh-border) !important;
 }
 </style>
-
 <style id="finhub-v71-calendar-payment-date-info">
 .fh-calendar-notification-row { display:flex; align-items:center; gap:.2rem; min-width:0; }
 .fh-calendar-paid-date-info { flex:0 0 auto; display:inline-flex; align-items:center; justify-content:center; width:1rem; height:1rem; padding:0; border:0; background:transparent; color:var(--fh-muted,var(--fh-ink)); font-size:.65rem; cursor:pointer; }
 .fh-calendar-paid-date-info:hover { color:var(--fh-primary); }
 .fh-calendar-paid-date-info:focus-visible { outline:2px solid var(--fh-focus,var(--fh-primary)); outline-offset:2px; border-radius:3px; }
 </style>
-
-
 <style id="finhub-v72-theme-aware-back-button">
 /* Back navigation uses the active palette rather than a fixed lavender disabled state. */
 #finhub-sidebar #finhub-back-button,
@@ -24267,8 +24600,6 @@ body[data-finhub-theme] summary:hover:not([aria-expanded="true"]) {
   outline-offset:3px !important;
 }
 </style>
-
-
 <style id="finhub-v73-calendar-payment-details-modal">
 #fh-calendar-payment-details-overlay .fh-theme-surface { background:var(--fh-card,var(--fh-surface,#fff)) !important; color:var(--fh-text,var(--fh-ink,#1f2937)) !important; }
 #fh-calendar-payment-details-overlay .fh-theme-border { border-color:var(--fh-border,#d1d5db) !important; }
@@ -24276,7 +24607,6 @@ body[data-finhub-theme] summary:hover:not([aria-expanded="true"]) {
 #fh-calendar-payment-details-overlay .fh-theme-muted { color:var(--fh-muted,#64748b) !important; }
 #fh-calendar-payment-details-overlay .fh-theme-subtle { background:color-mix(in srgb,var(--fh-primary,#64748b) 9%,var(--fh-card,#fff)) !important; color:var(--fh-text,var(--fh-ink,#1f2937)) !important; }
 </style>
-
 <style id="finhub-v73-mobile-navigation-refinement">
 @media (max-width:767px) {
   /* Approved 18% reduction from the previous 76vw drawer; labels and touch targets remain intact. */
@@ -24371,8 +24701,6 @@ body[data-finhub-theme] #finhub-sidebar .sidebar-back-button.is-back-disabled:ho
   background:color-mix(in srgb,var(--fh-primary,#64748b) 15%,var(--fh-card,#fff)) !important;
 }
 </style>
-
-
 <style id="finhub-v75-authoritative-disabled-back-theme">
 /* Override the original high-specificity compact-rail lavender rules.
    These selectors intentionally match the original #sidebar.sidebar-icon-rail
@@ -24402,8 +24730,6 @@ body[data-finhub-theme] #finhub-sidebar .sidebar-back-button.is-back-disabled:ho
   background:color-mix(in srgb,var(--fh-primary,#64748b) 15%,var(--fh-card,#fff)) !important;
 }
 </style>
-
-
 <style id="finhub-v77-unified-planner-delete-controls">
 /* One consistent delete affordance for income, fixed bills, debt and variable buckets. */
 #tab-biweekly .fh-zbb-delete-button {
@@ -24441,7 +24767,6 @@ body[data-finhub-theme] #finhub-sidebar .sidebar-back-button.is-back-disabled:ho
   outline-offset:2px !important;
 }
 </style>
-
 <style id="finhub-v78-amortization-categories-hover-foundation">
 body[data-finhub-theme] #tab-debt .fh-amortization-card { overflow:hidden; }
 #tab-debt .fh-amortization-card > .fh-disclosure-trigger { width:100%; box-sizing:border-box; }
@@ -24516,7 +24841,6 @@ body[data-finhub-theme] #tab-debt .fh-amortization-card { overflow:hidden; }
   }
 }
 </style>
-
 <style id="finhub-v80-category-modal-layout">
 /* Category editors: consistent spacing, readable fields and safe viewport sizing. */
 #category-modal,
@@ -24651,8 +24975,6 @@ body[data-finhub-theme] #tab-debt .fh-amortization-card { overflow:hidden; }
   #income-category-form button { width:100%; flex:1 1 auto; }
 }
 </style>
-
-
 <style id="finhub-v82-responsive-foundation-and-table-autofit">
 /* Responsive foundation: preserve the desktop composition; adapt content below 1024px. */
 @media (max-width:1023px) {
@@ -24688,7 +25010,6 @@ body[data-finhub-theme] #tab-debt .fh-amortization-card { overflow:hidden; }
 /* The ledger keeps its native card presentation on phones; Auto-Fit is a desktop/tablet table action. */
 @media (max-width:767px) { #ledger-auto-fit-all { display:none !important; } }
 </style>
-
 <style id="finhub-v83-mobile-navigation-and-table-usability">
 /* Phone navigation: retain the labelled drawer, trim unused right-side space,
    and keep navigation scrolling independent from its anchored action footer. */
@@ -24873,8 +25194,6 @@ body[data-finhub-theme] #tab-debt .fh-amortization-card { overflow:hidden; }
   }
 }
 </style>
-
-
 <style id="finhub-v84-mobile-drawer-containment-and-header-layout">
 /* V84 foundational correction: mobile drawer descendants must size to the
    drawer's content box, not retain desktop/tablet intrinsic widths. */
@@ -25033,7 +25352,6 @@ body[data-finhub-theme] #tab-debt .fh-amortization-card { overflow:hidden; }
   #finhub-menu-trigger { top:12px !important; left:10px !important; }
 }
 </style>
-
 <style id="finhub-v85-drawer-open-control-layering">
 /* The drawer owns its close action while open. Keep the fixed hamburger
    trigger out of the drawer header so it cannot cover the brand mark. */
@@ -25050,7 +25368,6 @@ body[data-finhub-theme] #tab-debt .fh-amortization-card { overflow:hidden; }
   }
 }
 </style>
-
 <style id="finhub-v86-transaction-log-phone-card-layout">
 @media (max-width:640px) {
   #tab-ledger #ledger-mobile-cards {
@@ -25626,7 +25943,6 @@ body[data-finhub-theme] #tab-debt .fh-amortization-card { overflow:hidden; }
 }
 
 </style>
-
 <style id="finhub-v96-expandable-desktop-navigation">
   :root { --finhub-sidebar-width:72px; }
   @media screen and (min-width:1024px) {
@@ -26048,7 +26364,6 @@ body[data-finhub-theme] #tab-debt .fh-amortization-card { overflow:hidden; }
     body#app-body > aside#finhub-sidebar.finhub-sidebar { transition:none !important; }
   }
 </style>
-
 <style id="finhub-v104-navigation-foundation">
 :root { --finhub-sidebar-width:72px; }
 
@@ -26509,7 +26824,6 @@ body[data-finhub-theme] #tab-debt .fh-amortization-card { overflow:hidden; }
   html body#app-body > main { width:100% !important; min-width:0 !important; max-width:100% !important; height:100dvh !important; padding:72px 12px 20px !important; }
 }
 </style>
-
 <style id="finhub-v109-desktop-sidebar-final-layout">
 /* Desktop side rail only. Tablet/top-rail rules are intentionally untouched. */
 @media screen and (min-width:1101px) {
@@ -26656,8 +26970,6 @@ body[data-finhub-theme] #tab-debt .fh-amortization-card { overflow:hidden; }
   }
 }
 </style>
-
-
 <style id="finhub-v110-sidebar-header-and-resize-refinement">
 @media screen and (min-width:1101px) {
   /* Expanded header: place brand and collapse control on one clean baseline,
@@ -26723,9 +27035,6 @@ body[data-finhub-theme] #tab-debt .fh-amortization-card { overflow:hidden; }
   }
 }
 </style>
-
-
-
 <style id="finhub-v111-sidebar-layout-consolidation">
 /* One authoritative desktop navigation row system.
    Keep the approved top-rail structure and appearance unchanged. */
@@ -26836,8 +27145,6 @@ body[data-finhub-theme] #tab-debt .fh-amortization-card { overflow:hidden; }
   }
 }
 </style>
-
-
 <style id="finhub-v112-immediate-sidebar-layout-switch">
 /* Desktop rail changes state instantly. The content must not animate in a
    second, competing transition when the rail changes its flex footprint. */
@@ -26865,8 +27172,6 @@ body[data-finhub-theme] #tab-debt .fh-amortization-card { overflow:hidden; }
   }
 }
 </style>
-
-
 <style id="finhub-v113-unified-navigation-breakpoints">
 /* Canonical responsive navigation boundaries:
    phone drawer <=639px; horizontal tablet rail 640-1100px;
@@ -26910,8 +27215,6 @@ body[data-finhub-theme] #tab-debt .fh-amortization-card { overflow:hidden; }
   }
 }
 </style>
-
-
 <style id="finhub-v114-sidebar-breakpoint-conflict-closure">
 /* Tablet owns 640-1100px; desktop sidebar owns 1101px+.
    Keep tablet brand, utility controls and page navigation in one stable row. */
@@ -26974,8 +27277,6 @@ body[data-finhub-theme] #tab-debt .fh-amortization-card { overflow:hidden; }
   }
 }
 </style>
-
-
 <style id="finhub-v115-tablet-rail-overflow-and-toggle-fix">
 /* Tablet/split-screen only (640–1100px).
    Keep the horizontal rail's three regions in normal flex flow:
@@ -27146,6 +27447,5 @@ body[data-finhub-theme] #tab-debt .fh-amortization-card { overflow:hidden; }
   }
 }
 </style>
-
 </body>
 </html>
