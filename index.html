@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html class="dark" lang="en">
 <head>
 <meta charset="utf-8"/>
@@ -13,7 +12,7 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
 <script>
     // Declare ledger column metadata before startup rendering can invoke applyLedgerColumns().
-    var ledgerCols=[['Date','date'],['Vendor','vendor'],['Description','description'],['Type','type'],['Bucket','bucket'],['Subcategory','subcategory'],['Account','account'],['Amount','amount'],['Running Balance','running'],['Import Source','source'],['Reconciliation Status','reconciliation']];
+    var ledgerCols=[['Date','date'],['Vendor','vendor'],['Description','description'],['Type','type'],['Category','bucket'],['Subcategory','subcategory'],['Account','account'],['Amount','amount'],['Running Balance','running'],['Import Source','source'],['Reconciliation Status','reconciliation']];
     tailwind.config = { darkMode: 'class', theme: { extend: {} } }
   </script>
 <style>
@@ -2399,6 +2398,7 @@ body[data-finhub-theme] #account-detail-modal .acc-filter-trigger.has-active-fil
 #tab-dashboard [data-dashboard-block="spending"] .spending-legend button{padding:.2rem .32rem!important;gap:.3rem!important;font-size:.68rem!important;line-height:1.15!important}
 #tab-dashboard [data-dashboard-block="spending"] .spending-legend button strong{font-size:.64rem!important}
 #tab-dashboard [data-dashboard-block="spending"] #spending-category-detail{margin-top:.75rem!important;padding-top:.65rem!important}
+#tab-dashboard .fh-spending-transaction-table .fh-open-details-icon{width:1.65rem;height:1.65rem;}
 
 /* Compact transaction and budget-vs-actual tables. */
 .fh-bva-row{padding:.55rem .7rem!important}
@@ -4078,7 +4078,36 @@ html body#app-body > aside#finhub-sidebar .sidebar-brand-copy h1 {
 #tab-biweekly .fh-bva-transaction-disclosure > summary:focus-visible { outline:2px solid var(--fh-primary); border-radius:4px; }
 #tab-biweekly .fh-bva-transaction-disclosure .fh-bva-transactions { border-top:1px solid var(--fh-border,var(--fh-line,rgba(120,130,150,.25))); padding-top:.45rem; }
 </style>
-</head>
+<style>
+/* v173: compact account balance summary, desktop-first with responsive fallback */
+#acc-detail-balance-summary{grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:.45rem!important;}
+#acc-detail-balance-summary .acc-balance-summary-card{min-width:0;padding:.65rem .72rem!important;border-radius:.75rem!important;}
+#acc-detail-balance-summary .acc-balance-summary-label{font-size:.65rem!important;line-height:1.2!important;letter-spacing:.01em;}
+#acc-detail-balance-summary .acc-balance-summary-card .text-base{font-size:1rem!important;line-height:1.25!important;}
+#acc-detail-balance-summary .acc-opening-balance-input{max-width:7rem!important;padding:.35rem .45rem!important;}
+#acc-detail-balance-summary .acc-opening-balance-save{padding:.4rem .55rem!important;}
+@media(max-width:900px){#acc-detail-balance-summary{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:520px){#acc-detail-balance-summary{grid-template-columns:1fr 1fr!important}}
+/* v173: calendar editor compact two-column desktop workspace */
+#calendar-modal>div{width:min(100%,64rem)!important;max-width:64rem!important;max-height:92vh!important;overflow-y:auto!important;padding:1.1rem!important;}
+#calendar-form{gap:.65rem 1rem!important;}
+#calendar-form>div{min-width:0;}
+#calendar-form .cal-paired-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.8rem 1rem;}
+#calendar-form .cal-paired-row>div{min-width:0;}
+#calendar-form label{margin-bottom:.25rem!important;}
+#calendar-form input,#calendar-form select{min-height:2.55rem!important;padding-top:.45rem!important;padding-bottom:.45rem!important;}
+#calendar-form #cal-payment-panel{padding:.75rem!important;gap:.55rem!important;}
+#calendar-form #cal-payment-history{max-height:5rem;overflow:auto;}
+#calendar-form #cal-debt-account-wrap,#calendar-form #cal-payment-panel{grid-column:1/-1;}
+#calendar-form .cal-vendor-amount-row,#calendar-form .cal-funding-description-row{grid-column:1/-1;}
+@media(max-width:640px){#calendar-modal>div{max-height:95vh!important;padding:.85rem!important;}#calendar-form .cal-paired-row{grid-template-columns:1fr!important;}}
+/* v173: household share-first presentation */
+#tab-joint .joint-household-subtotal-note{display:inline-block;margin-left:.6rem;font-size:.68rem;font-weight:500;color:var(--fh-muted);}
+#tab-joint #joint-fixed-list>div,#tab-joint #joint-variable-list>div{padding:.7rem .85rem!important;}
+#tab-joint #joint-fixed-list>div>div:first-child>div:first-child,#tab-joint #joint-variable-list>div>div:first-child>div:first-child{font-size:.84rem!important;}
+#tab-joint #joint-fixed-list>div>div:first-child>div:nth-child(2),#tab-joint #joint-variable-list>div>div:first-child>div:nth-child(2){font-size:.7rem!important;line-height:1.35!important;}
+#tab-joint #joint-fixed-list>div>div:first-child>div:nth-child(2) .joint-household-primary-share,#tab-joint #joint-variable-list>div>div:first-child>div:nth-child(2) .joint-household-primary-share{font-size:.83rem;font-weight:750;color:var(--fh-primary);}
+</style></head>
 <body class="bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 min-h-screen flex flex-col md:flex-row transition-colors duration-200 relative" id="app-body">
 <!-- UNDO TOAST NOTIFICATION -->
 <div class="fixed bottom-6 right-24 z-50 hidden transition-all" id="undo-toast"><button aria-label="Undo last action" class="w-9 h-9 inline-flex items-center justify-center rounded-full bg-gray-900 dark:bg-gray-700 text-white shadow-lg border border-gray-600 :var(--fh-primary)]" onclick="executeUndo()" title="Undo last action (Ctrl+Z / Cmd+Z · available for 5 seconds)" type="button"><i class="fa-solid fa-rotate-left text-sm"></i></button></div>
@@ -4114,18 +4143,18 @@ html body#app-body > aside#finhub-sidebar .sidebar-brand-copy h1 {
 <i class="fa-solid fa-wallet w-5"></i><span class="sidebar-nav-label">Accounts</span>
 </button></div><div class="nav-group"><button aria-label="Transactions" class="nav-btn w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-gray-600 dark:text-gray-400 dark: transition-colors" id="nav-ledger" onclick="switchTab('ledger')" title="Transactions">
 <i class="fa-solid fa-receipt w-5"></i><span class="sidebar-nav-label">Transactions</span>
-</button></div><div class="nav-group"><button aria-label="Budget" class="nav-btn w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-gray-600 dark:text-gray-400 dark: transition-colors" id="nav-biweekly" onclick="switchTab('biweekly')" title="Budget">
-<i class="fa-solid fa-scale-balanced w-5"></i><span class="sidebar-nav-label">Budget</span>
-</button></div><div class="nav-group nav-group-bills"><button aria-label="Bills" class="nav-btn w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-gray-600 dark:text-gray-400 dark: transition-colors" id="nav-calendar" onclick="switchTab('calendar')" title="Bills">
-<i class="fa-solid fa-calendar-days w-5"></i><span class="sidebar-nav-label">Bills</span>
-</button><button aria-label="Joint Household Bills" class="nav-btn nav-btn-secondary w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-gray-600 dark:text-gray-400 dark: transition-colors" id="nav-joint" onclick="switchTab('joint')" title="Joint Household Bills">
-<i class="fa-solid fa-people-arrows w-5"></i><span class="sidebar-nav-label">Joint Household Bills</span>
-</button></div><div class="nav-group"><button aria-label="Debt &amp; Savings" class="nav-btn w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-gray-600 dark:text-gray-400 dark: transition-colors" id="nav-debt" onclick="switchTab('debt')" title="Debt &amp; Savings">
-<i class="fa-solid fa-arrow-trend-down w-5"></i><span class="sidebar-nav-label">Debt &amp; Savings</span>
-</button></div><div class="nav-group"><button aria-label="Financial Check-In" class="nav-btn w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-gray-600 dark:text-gray-400 dark: transition-colors" id="nav-financial-checkin" onclick="switchTab('financial-checkin')" title="Financial Check-In">
-<i class="fa-solid fa-clipboard-check w-5"></i><span class="sidebar-nav-label">Financial Check-In</span>
-</button></div><div class="nav-group"><button aria-label="Reports" class="nav-btn w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-gray-600 dark:text-gray-400 dark: transition-colors" id="nav-reports" onclick="switchTab('reports')" title="Reports">
-<i class="fa-solid fa-file-lines w-5"></i><span class="sidebar-nav-label">Reports</span>
+</button></div><div class="nav-group"><button aria-label="Budget Planner" class="nav-btn w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-gray-600 dark:text-gray-400 dark: transition-colors" id="nav-biweekly" onclick="switchTab('biweekly')" title="Budget Planner">
+<i class="fa-solid fa-scale-balanced w-5"></i><span class="sidebar-nav-label">Budget Planner</span>
+</button></div><div class="nav-group nav-group-bills"><button aria-label="Calendar" class="nav-btn w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-gray-600 dark:text-gray-400 dark: transition-colors" id="nav-calendar" onclick="switchTab('calendar')" title="Calendar">
+<i class="fa-solid fa-calendar-days w-5"></i><span class="sidebar-nav-label">Calendar</span>
+</button><button aria-label="Household Budget" class="nav-btn nav-btn-secondary w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-gray-600 dark:text-gray-400 dark: transition-colors" id="nav-joint" onclick="switchTab('joint')" title="Household Budget">
+<i class="fa-solid fa-people-arrows w-5"></i><span class="sidebar-nav-label">Household Budget</span>
+</button></div><div class="nav-group"><button aria-label="Debt Management" class="nav-btn w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-gray-600 dark:text-gray-400 dark: transition-colors" id="nav-debt" onclick="switchTab('debt')" title="Debt Management">
+<i class="fa-solid fa-arrow-trend-down w-5"></i><span class="sidebar-nav-label">Debt Management</span>
+</button></div><div class="nav-group"><button aria-label="Financial Review" class="nav-btn w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-gray-600 dark:text-gray-400 dark: transition-colors" id="nav-financial-checkin" onclick="switchTab('financial-checkin')" title="Financial Review">
+<i class="fa-solid fa-clipboard-check w-5"></i><span class="sidebar-nav-label">Financial Review</span>
+</button></div><div class="nav-group"><button aria-label="Reports &amp; Exports" class="nav-btn w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-gray-600 dark:text-gray-400 dark: transition-colors" id="nav-reports" onclick="switchTab('reports')" title="Reports &amp; Exports">
+<i class="fa-solid fa-file-lines w-5"></i><span class="sidebar-nav-label">Reports &amp; Exports</span>
 </button></div><div class="nav-group nav-group-settings"><button aria-label="Settings" class="nav-btn w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-gray-600 dark:text-gray-400 dark: transition-colors" id="nav-settings" onclick="switchTab('settings')" title="Settings">
 <i class="fa-solid fa-gear w-5"></i><span class="sidebar-nav-label">Settings</span>
 </button></div></nav>
@@ -4244,7 +4273,7 @@ html body#app-body > aside#finhub-sidebar .sidebar-brand-copy h1 {
 <div class="dashboard-block bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden" data-dashboard-block="upcoming">
 <div class="dashboard-block-header fh-dashboard-disclosure-header">
 <button aria-controls="sec-dashboard-upcoming-content" aria-expanded="true" class="dashboard-block-header-trigger fh-dashboard-disclosure-trigger" onclick="toggleCollapse('sec-dashboard-upcoming')" type="button">
-<span class="fh-dashboard-disclosure-copy"><span class="fh-dashboard-disclosure-title"><i aria-hidden="true" class="fa-solid fa-calendar-days text-indigo-500"></i><span>Upcoming Bills &amp; Paydays</span></span><span class="fh-dashboard-disclosure-description">Live from the Bill &amp; Income Calendar. Select an item to open it in the calendar.</span></span>
+<span class="fh-dashboard-disclosure-copy"><span class="fh-dashboard-disclosure-title"><i aria-hidden="true" class="fa-solid fa-calendar-days text-indigo-500"></i><span>Upcoming Calendar Items</span></span><span class="fh-dashboard-disclosure-description">Live from Calendar. Select an item to open it there.</span></span>
 <i aria-hidden="true" class="fa-solid fa-chevron-down fh-dashboard-disclosure-chevron" id="sec-dashboard-upcoming-icon"></i>
 </button>
 </div>
@@ -4264,11 +4293,20 @@ html body#app-body > aside#finhub-sidebar .sidebar-brand-copy h1 {
 <div><h2 class="text-2xl font-bold fh-page-title">Accounts</h2><p class="text-sm text-gray-500 dark:text-gray-400 fh-page-blurb">View account balances, manage accounts and check statement variances.</p></div>
 <button class="fh-action-button fh-action-button-primary" onclick="openAccountModal()" type="button"><i aria-hidden="true" class="fa-solid fa-plus"></i> Add Account</button>
 </div>
-<div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+<details class="accounts-overview-disclosure" id="accounts-financial-overview" open="">
+<summary class="flex items-center justify-between gap-3 cursor-pointer list-none rounded-xl px-3 py-2 border" style="border-color:var(--fh-card-border);background:var(--fh-card-bg);color:var(--fh-card-text)">
+<span class="font-semibold text-sm">Financial Overview</span>
+<span class="flex items-center gap-2">
+<button aria-label="Hide financial amounts" class="fh-action-button fh-action-button-secondary" id="accounts-overview-privacy-toggle" onclick="event.preventDefault();event.stopPropagation();toggleAccountsOverviewPrivacy()" title="Hide financial amounts" type="button"><i aria-hidden="true" class="fa-solid fa-eye"></i></button>
+<i aria-hidden="true" class="fa-solid fa-chevron-down accounts-overview-chevron text-xs"></i>
+</span>
+</summary>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3" id="accounts-overview-values">
 <div class="monthly-kpi"><div>Assets &amp; cash</div><strong class="fh-status-income accounting-num" id="accounts-page-assets">$ –</strong></div>
 <div class="monthly-kpi"><div>Credit &amp; debt</div><strong class="text-rose-600 accounting-num" id="accounts-page-debt">$ –</strong></div>
 <div class="monthly-kpi"><div>Net worth</div><strong class="accounting-num" id="accounts-page-networth">$ –</strong></div>
 </div>
+</details>
 <details class="monthly-panel space-y-3" id="account-integrity-panel">
 <summary class="flex flex-wrap items-center justify-between gap-3 cursor-pointer list-none">
 <span class="font-bold">Account Balance Integrity <span class="block text-xs font-normal text-gray-500 mt-1">Read-only reconciliation of opening balances, ledger activity and current balances.</span></span>
@@ -4296,7 +4334,7 @@ html body#app-body > aside#finhub-sidebar .sidebar-brand-copy h1 {
 </section>
 <!-- FINANCIAL CHECK-IN -->
 <section class="tab-content hidden space-y-6" id="tab-financial-checkin">
-<div class="flex flex-wrap items-start justify-between gap-3"><div class="flex items-start gap-3"><i class="fa-solid fa-clipboard-check text-3xl theme-text mt-1"></i><div><h2 class="text-2xl font-bold fh-page-title">Financial Check-In</h2><p class="text-sm text-gray-500 dark:text-gray-400 fh-page-blurb">A clear picture of where things stand.</p></div></div><div class="flex items-center gap-2 text-sm"><label class="font-semibold" for="checkin-period-display">Period:</label><span class="font-semibold" id="checkin-period-display"></span></div></div>
+<div class="flex flex-wrap items-start justify-between gap-3"><div class="flex items-start gap-3"><i class="fa-solid fa-clipboard-check text-3xl theme-text mt-1"></i><div><h2 class="text-2xl font-bold fh-page-title">Financial Review</h2><p class="text-sm text-gray-500 dark:text-gray-400 fh-page-blurb">A clear picture of where things stand.</p></div></div><div class="flex items-center gap-2 text-sm"><label class="font-semibold" for="checkin-period-display">Period:</label><span class="font-semibold" id="checkin-period-display"></span></div></div>
 <div aria-label="Financial Check-In sections" class="flex flex-wrap gap-2 border-b border-gray-200 dark:border-gray-700 pb-2" role="tablist">
 <button class="checkin-theme-tab is-active" id="checkin-tab-monthly" onclick="switchCheckInPanel('monthly')" type="button"><i class="fa-regular fa-calendar-check mr-2"></i>Monthly Check-In</button>
 <button class="checkin-theme-tab" id="checkin-tab-yearly" onclick="switchCheckInPanel('yearly')" type="button"><i class="fa-regular fa-calendar mr-2"></i>Year-End Review</button>
@@ -4398,8 +4436,8 @@ html body#app-body > aside#finhub-sidebar .sidebar-brand-copy h1 {
 <section class="tab-content hidden space-y-6" id="tab-biweekly">
 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
 <div>
-<h2 class="text-2xl font-bold fh-page-title">Paycheque Planner</h2>
-<p class="text-sm text-gray-500 dark:text-gray-400 fh-page-blurb">Plan each paycheque from income through bills, debt, spending and savings.</p>
+<h2 class="text-2xl font-bold fh-page-title">Budget Planner</h2>
+<p class="text-sm text-gray-500 dark:text-gray-400 fh-page-blurb">Plan income, bills, debt payments, spending and savings across your paycheques.</p>
 </div>
 <div class="flex flex-wrap items-center justify-end gap-2">
 <input class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-1.5 text-xs font-semibold shadow-sm" id="zbb-period-picker" onchange="changeZbbPeriod(this.value)" type="month"/>
@@ -4430,7 +4468,7 @@ html body#app-body > aside#finhub-sidebar .sidebar-brand-copy h1 {
 </div>
 </div>
 <div class="flex items-center justify-between gap-3 pt-1">
-<div><h3 class="text-sm font-bold">Paycheque breakdown</h3><p class="text-[10px] text-gray-400">See where your paycheque goes.</p></div>
+<div><h3 class="text-sm font-bold">Paycheque allocation breakdown</h3><p class="text-[10px] text-gray-400">See where your paycheque goes.</p></div>
 </div>
 <!-- WATERFALL SUMMARY CARDS -->
 <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
@@ -4483,7 +4521,7 @@ html body#app-body > aside#finhub-sidebar .sidebar-brand-copy h1 {
 <div class="space-y-2" id="zbb-bills-list"></div>
 </div></details><details class="fh-planner-section" data-planner-section="debt" open=""><summary class="fh-planner-summary">
 <div>
-<h3 class="text-md font-bold text-amber-600 dark:text-amber-400"><i class="fa-solid fa-credit-card mr-2"></i>3. Less: Debt</h3>
+<h3 class="text-md font-bold text-amber-600 dark:text-amber-400"><i class="fa-solid fa-credit-card mr-2"></i>3. Debt Payments</h3>
 <p class="text-xs text-gray-400 mt-0.5">Subtotal: <strong class="accounting-num" id="zbb-sub-debt-disp">$ - </strong> | Remaining Bal: <strong class="accounting-num" id="zbb-rem-debt-disp">$ - </strong></p>
 </div>
 <div class="flex flex-wrap gap-2"><button class="fh-planner-refresh-button px-3 py-1 rounded-lg text-xs font-semibold" onclick="event.preventDefault(); event.stopPropagation(); syncDebtMinimumsToZbb()" title="Copies the current minimum payment amounts from Debt Account details into this paycheque budget. Existing paycheque splits are preserved."><i class="fa-solid fa-rotate mr-1"></i> Refresh Debt Minimums</button><button class="px-3 py-1 text-white rounded-lg text-xs font-semibold theme-bg" onclick="event.preventDefault(); event.stopPropagation(); openZbbItemModal('debt')"><i class="fa-solid fa-plus mr-1"></i> Add Debt</button></div>
@@ -4499,14 +4537,14 @@ html body#app-body > aside#finhub-sidebar .sidebar-brand-copy h1 {
 <div class="space-y-2" id="zbb-variable-list"></div>
 </div></details><details class="fh-planner-section" data-planner-section="savings" open=""><summary class="fh-planner-summary">
 <div>
-<h3 class="text-md font-bold text-indigo-600 dark:text-indigo-400 theme-text"><i class="fa-solid fa-piggy-bank mr-2"></i>5. Less: Savings (Zero-Based Goal)</h3>
+<h3 class="text-md font-bold text-indigo-600 dark:text-indigo-400 theme-text"><i class="fa-solid fa-piggy-bank mr-2"></i>5. Savings Allocations</h3>
 <p class="text-xs text-gray-400 mt-0.5">Subtotal: <strong class="accounting-num" id="zbb-sub-savings-disp">$ - </strong> | Final Balance: <strong class="accounting-num" id="zbb-rem-savings-disp">$ - </strong></p>
 </div>
 <button class="px-3 py-1 text-white rounded-lg text-xs font-semibold theme-bg" onclick="event.preventDefault(); event.stopPropagation(); openZbbItemModal('savings')"><i class="fa-solid fa-plus mr-1"></i> Add Savings</button>
 </summary><div class="fh-planner-section-content">
 <div class="space-y-2" id="zbb-savings-list"></div>
 </div></details>
-<details class="fh-planner-section" id="zbb-whatif-section" data-planner-section="what-if">
+<details class="fh-planner-section" data-planner-section="what-if" id="zbb-whatif-section">
 <summary class="fh-planner-summary"><div><h3 class="text-md font-bold theme-text"><i class="fa-solid fa-sliders mr-2"></i>What-If Scenario Planner</h3><p class="text-xs text-gray-400 mt-0.5">Test changes to individual budget lines without changing your saved plan.</p></div></summary>
 <div class="px-4 pb-4 space-y-3" id="zbb-whatif-host"><p class="text-xs text-gray-500">Choose a paycheque to model a separate scenario.</p></div>
 </details></div>
@@ -4533,8 +4571,6 @@ html body#app-body > aside#finhub-sidebar .sidebar-brand-copy h1 {
 </div>
 </details>
 </div><div class="fh-planner-paired-sections fh-planner-pair-reporting">
-
-
 <details class="fh-planner-section" data-planner-section="budget-vs-actual" open="">
 <summary class="fh-planner-summary"><div><h3 class="text-md font-bold"><i class="fa-solid fa-scale-balanced mr-2 theme-text"></i>Budget vs. Actual</h3><p class="text-xs text-gray-400 mt-0.5">Compare planned variable spending with posted transactions for this paycheque.</p></div><span class="text-xs text-gray-400">Paycheque <span id="zbb-bva-cycle-label">1</span></span></summary>
 <div class="px-5 pb-5 space-y-4" id="zbb-budget-vs-actual"></div>
@@ -4554,7 +4590,7 @@ html body#app-body > aside#finhub-sidebar .sidebar-brand-copy h1 {
 <section class="tab-content hidden space-y-6" id="tab-calendar">
 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
 <div>
-<h2 class="text-2xl font-bold fh-page-title">Recurring Income &amp; Expense Calendar</h2>
+<h2 class="text-2xl font-bold fh-page-title">Calendar</h2>
 <p class="text-sm text-gray-500 dark:text-gray-400 fh-page-blurb">View scheduled income, bills and debt payments by month or year.</p>
 </div>
 <div class="flex items-center space-x-2">
@@ -4566,7 +4602,7 @@ html body#app-body > aside#finhub-sidebar .sidebar-brand-copy h1 {
 </div>
 <div class="flex items-center gap-2 justify-end"><span class="text-xs text-gray-500">Scheduled items:</span><button aria-pressed="true" class="fh-calendar-view-toggle is-active" id="calendar-scheduled-calendar-btn" onclick="setCalendarScheduledView('calendar')" type="button">Calendar view</button><button aria-pressed="false" class="fh-calendar-view-toggle" id="calendar-scheduled-list-btn" onclick="setCalendarScheduledView('list')" type="button">List view</button></div>
 <div class="hidden bg-white dark:bg-gray-900 p-5 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-3" id="calendar-scheduled-list-container">
-<div class="flex flex-wrap items-center justify-between gap-2"><h3 class="font-bold text-sm">Upcoming Scheduled Bills &amp; Income</h3><label class="text-xs text-gray-500">Month <input class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-1 text-xs" id="upcoming-bills-filter" onchange="renderUpcomingCalendarList()" type="month"/></label></div>
+<div class="flex flex-wrap items-center justify-between gap-2"><h3 class="font-bold text-sm">Upcoming Calendar Items</h3><label class="text-xs text-gray-500">Month <input class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-1 text-xs" id="upcoming-bills-filter" onchange="renderUpcomingCalendarList()" type="month"/></label></div>
 <div class="space-y-2" id="prepopulated-bills-list"></div></div>
 <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-4 shadow-sm" id="calendar-monthly-container">
 <div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-800 pb-4">
@@ -4590,7 +4626,7 @@ html body#app-body > aside#finhub-sidebar .sidebar-brand-copy h1 {
 <section class="tab-content hidden space-y-6" id="tab-joint">
 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
 <div>
-<h2 class="text-2xl font-bold fh-page-title">Joint Household Bills &amp; Settlement</h2>
+<h2 class="text-2xl font-bold fh-page-title">Household Budget</h2>
 <p class="text-sm text-gray-500 dark:text-gray-400 fh-page-blurb">Automatic monthly rollover with clean E-Transfer summaries</p>
 </div>
 <div class="flex flex-wrap items-center gap-2">
@@ -4610,8 +4646,8 @@ html body#app-body > aside#finhub-sidebar .sidebar-brand-copy h1 {
 <h3 class="text-md font-bold" id="joint-breakdown-title">E-Transfer Breakdown - November 2026</h3>
 </div>
 <div class="space-y-3 text-sm">
-<div class="flex justify-between"><span class="text-gray-500">Fixed bills:</span><span class="font-bold accounting-num" id="joint-fixed-share">$ - </span></div>
-<div class="flex justify-between"><span class="text-gray-500">Variable bills:</span><span class="font-bold accounting-num" id="joint-variable-share">$ - </span></div>
+<div class="flex justify-between"><span class="text-gray-500">Fixed bills:</span><span class="font-bold accounting-num" id="joint-fixed-share-header">$ - </span></div>
+<div class="flex justify-between"><span class="text-gray-500">Variable bills:</span><span class="font-bold accounting-num" id="joint-variable-share-header">$ - </span></div>
 <div class="border-t border-gray-200 dark:border-gray-800 pt-3 flex justify-between font-bold text-md"><span>Original Share Total:</span><span class="text-pink-600 dark:text-pink-400 accounting-num" id="joint-total-sent-disp">$ - </span></div><div class="flex justify-between items-center text-sm"><span class="text-gray-500">Adjusted Amount Owed:</span><strong class="accounting-num" id="joint-adjusted-owed-disp">$ - </strong></div>
 <div class="pt-3 border-t border-gray-200 dark:border-gray-800 space-y-2">
 <div class="flex justify-between items-center text-xs text-gray-500"><span>Transfers Sent Logged:</span><input class="w-24 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded px-2 py-1 text-right font-bold text-xs accounting-num" id="joint-transfers-sent-input" onchange="saveTransfersSent(this.value)" step="0.01" type="number"/></div>
@@ -4629,11 +4665,11 @@ html body#app-body > aside#finhub-sidebar .sidebar-brand-copy h1 {
 </div>
 <div class="lg:col-span-2 space-y-6">
 <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-4 shadow-sm">
-<h3 class="text-md font-bold text-indigo-600 dark:text-indigo-400 theme-text">Fixed Commitments Subtotal (100%): <span class="accounting-num" id="joint-fixed-sum">$ - </span></h3>
+<h3 class="text-md font-bold text-indigo-600 dark:text-indigo-400 theme-text">Fixed Commitments · Your share: <span class="accounting-num" id="joint-fixed-share-header">$ -</span><span class="joint-household-subtotal-note">Household total: <span class="accounting-num" id="joint-fixed-sum">$ -</span></span></h3>
 <div class="space-y-3" id="joint-fixed-list"></div>
 </div>
 <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-4 shadow-sm">
-<h3 class="text-md font-bold text-indigo-600 dark:text-indigo-400 theme-text">Variable Utilities Subtotal (100%): <span class="accounting-num" id="joint-variable-sum">$ - </span></h3>
+<h3 class="text-md font-bold text-indigo-600 dark:text-indigo-400 theme-text">Variable Utilities · Your share: <span class="accounting-num" id="joint-variable-share-header">$ -</span><span class="joint-household-subtotal-note">Household total: <span class="accounting-num" id="joint-variable-sum">$ -</span></span></h3>
 <div class="space-y-3" id="joint-variable-list"></div>
 </div>
 <div class="bg-white dark:bg-gray-900 p-5 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-3 shadow-sm">
@@ -4647,7 +4683,7 @@ html body#app-body > aside#finhub-sidebar .sidebar-brand-copy h1 {
 <!-- TAB 5: DEBT PAYOFF -->
 <section class="tab-content hidden space-y-6" id="tab-debt">
 <div class="fh-page-header flex flex-col md:flex-row md:items-end justify-between gap-3">
-<div class="fh-page-header-copy"><h2 class="fh-page-header-title fh-page-title">Debt Overview &amp; Amortization</h2><p class="fh-page-header-description fh-page-blurb">Understand what you owe, what you have repaid and how your balances are changing.</p></div>
+<div class="fh-page-header-copy"><h2 class="fh-page-header-title fh-page-title">Debt Management</h2><p class="fh-page-header-description fh-page-blurb">Understand what you owe, what you have repaid and how your balances are changing.</p></div>
 <label class="fh-page-header-control">Debt account
       <select class="fh-page-header-select" id="debt-report-account" onchange="renderDebtReporting()"><option value="all">All Debts</option></select>
 </label>
@@ -4784,7 +4820,7 @@ html body#app-body > aside#finhub-sidebar .sidebar-brand-copy h1 {
 <table class="w-full text-left text-sm" style="min-width:1100px">
 <thead class="fh-theme-raised text-xs uppercase border-b fh-theme-border fh-theme-muted">
 <tr>
-<th class="px-3 py-1.5">Date <button aria-label="Filter date" class="ml-1 fh-theme-muted ledger-column-filter-trigger" onclick="openLedgerFilter('date',this)" type="button"><i aria-hidden="true" class="fa-solid fa-filter text-[9px] ledger-filter-indicator"></i><i aria-hidden="true" class="fa-solid fa-chevron-down text-[8px] ml-0.5"></i></button></th><th class="px-3 py-1.5">Vendor <button aria-label="Filter vendor" class="ml-1 fh-theme-muted ledger-column-filter-trigger" onclick="openLedgerFilter('vendor',this)" type="button"><i aria-hidden="true" class="fa-solid fa-filter text-[9px] ledger-filter-indicator"></i><i aria-hidden="true" class="fa-solid fa-chevron-down text-[8px] ml-0.5"></i></button></th><th class="px-3 py-1.5">Description <button aria-label="Filter description" class="ml-1 fh-theme-muted ledger-column-filter-trigger" onclick="openLedgerFilter('desc',this)" type="button"><i aria-hidden="true" class="fa-solid fa-filter text-[9px] ledger-filter-indicator"></i><i aria-hidden="true" class="fa-solid fa-chevron-down text-[8px] ml-0.5"></i></button></th><th class="px-3 py-1.5">Type <button aria-label="Filter type" class="ml-1 fh-theme-muted ledger-column-filter-trigger" onclick="openLedgerFilter('type',this)" type="button"><i aria-hidden="true" class="fa-solid fa-filter text-[9px] ledger-filter-indicator"></i><i aria-hidden="true" class="fa-solid fa-chevron-down text-[8px] ml-0.5"></i></button></th><th class="px-3 py-1.5">Bucket <button aria-label="Filter bucket" class="ml-1 fh-theme-muted ledger-column-filter-trigger" onclick="openLedgerFilter('category',this)" type="button"><i aria-hidden="true" class="fa-solid fa-filter text-[9px] ledger-filter-indicator"></i><i aria-hidden="true" class="fa-solid fa-chevron-down text-[8px] ml-0.5"></i></button></th><th class="px-3 py-1.5">Subcategory <button aria-label="Filter subcategory" class="ml-1 fh-theme-muted ledger-column-filter-trigger" onclick="openLedgerFilter('subcategory',this)" type="button"><i aria-hidden="true" class="fa-solid fa-filter text-[9px] ledger-filter-indicator"></i><i aria-hidden="true" class="fa-solid fa-chevron-down text-[8px] ml-0.5"></i></button></th><th class="px-3 py-1.5">Account <button aria-label="Filter account" class="ml-1 fh-theme-muted ledger-column-filter-trigger" onclick="openLedgerFilter('account',this)" type="button"><i aria-hidden="true" class="fa-solid fa-filter text-[9px] ledger-filter-indicator"></i><i aria-hidden="true" class="fa-solid fa-chevron-down text-[8px] ml-0.5"></i></button></th><th class="px-3 py-1.5 text-right">Amount <button aria-label="Filter amount" class="ml-1 fh-theme-muted ledger-column-filter-trigger" onclick="openLedgerFilter('amount',this)" type="button"><i aria-hidden="true" class="fa-solid fa-filter text-[9px] ledger-filter-indicator"></i><i aria-hidden="true" class="fa-solid fa-chevron-down text-[8px] ml-0.5"></i></button></th><th class="px-3 py-1.5 text-right">Running Balance</th><th class="px-3 py-1.5" data-col-key="source">Import Source <button aria-label="Filter import source" class="ml-1 fh-theme-muted ledger-column-filter-trigger" onclick="openLedgerFilter('source',this)" type="button"><i aria-hidden="true" class="fa-solid fa-filter text-[9px] ledger-filter-indicator"></i><i aria-hidden="true" class="fa-solid fa-chevron-down text-[8px] ml-0.5"></i></button></th><th class="px-3 py-1.5" data-col-key="reconciliation">Reconciliation Status <button aria-label="Filter reconciliation status" class="ml-1 fh-theme-muted ledger-column-filter-trigger" onclick="openLedgerFilter('reconciliation',this)" type="button"><i aria-hidden="true" class="fa-solid fa-filter text-[9px] ledger-filter-indicator"></i><i aria-hidden="true" class="fa-solid fa-chevron-down text-[8px] ml-0.5"></i></button></th>
+<th class="px-3 py-1.5">Date <button aria-label="Filter date" class="ml-1 fh-theme-muted ledger-column-filter-trigger" onclick="openLedgerFilter('date',this)" type="button"><i aria-hidden="true" class="fa-solid fa-filter text-[9px] ledger-filter-indicator"></i><i aria-hidden="true" class="fa-solid fa-chevron-down text-[8px] ml-0.5"></i></button></th><th class="px-3 py-1.5">Vendor <button aria-label="Filter vendor" class="ml-1 fh-theme-muted ledger-column-filter-trigger" onclick="openLedgerFilter('vendor',this)" type="button"><i aria-hidden="true" class="fa-solid fa-filter text-[9px] ledger-filter-indicator"></i><i aria-hidden="true" class="fa-solid fa-chevron-down text-[8px] ml-0.5"></i></button></th><th class="px-3 py-1.5">Description <button aria-label="Filter description" class="ml-1 fh-theme-muted ledger-column-filter-trigger" onclick="openLedgerFilter('desc',this)" type="button"><i aria-hidden="true" class="fa-solid fa-filter text-[9px] ledger-filter-indicator"></i><i aria-hidden="true" class="fa-solid fa-chevron-down text-[8px] ml-0.5"></i></button></th><th class="px-3 py-1.5">Type <button aria-label="Filter type" class="ml-1 fh-theme-muted ledger-column-filter-trigger" onclick="openLedgerFilter('type',this)" type="button"><i aria-hidden="true" class="fa-solid fa-filter text-[9px] ledger-filter-indicator"></i><i aria-hidden="true" class="fa-solid fa-chevron-down text-[8px] ml-0.5"></i></button></th><th class="px-3 py-1.5">Category <button aria-label="Filter category" class="ml-1 fh-theme-muted ledger-column-filter-trigger" onclick="openLedgerFilter('category',this)" type="button"><i aria-hidden="true" class="fa-solid fa-filter text-[9px] ledger-filter-indicator"></i><i aria-hidden="true" class="fa-solid fa-chevron-down text-[8px] ml-0.5"></i></button></th><th class="px-3 py-1.5">Subcategory <button aria-label="Filter subcategory" class="ml-1 fh-theme-muted ledger-column-filter-trigger" onclick="openLedgerFilter('subcategory',this)" type="button"><i aria-hidden="true" class="fa-solid fa-filter text-[9px] ledger-filter-indicator"></i><i aria-hidden="true" class="fa-solid fa-chevron-down text-[8px] ml-0.5"></i></button></th><th class="px-3 py-1.5">Account <button aria-label="Filter account" class="ml-1 fh-theme-muted ledger-column-filter-trigger" onclick="openLedgerFilter('account',this)" type="button"><i aria-hidden="true" class="fa-solid fa-filter text-[9px] ledger-filter-indicator"></i><i aria-hidden="true" class="fa-solid fa-chevron-down text-[8px] ml-0.5"></i></button></th><th class="px-3 py-1.5 text-right">Amount <button aria-label="Filter amount" class="ml-1 fh-theme-muted ledger-column-filter-trigger" onclick="openLedgerFilter('amount',this)" type="button"><i aria-hidden="true" class="fa-solid fa-filter text-[9px] ledger-filter-indicator"></i><i aria-hidden="true" class="fa-solid fa-chevron-down text-[8px] ml-0.5"></i></button></th><th class="px-3 py-1.5 text-right">Running Balance</th><th class="px-3 py-1.5" data-col-key="source">Import Source <button aria-label="Filter import source" class="ml-1 fh-theme-muted ledger-column-filter-trigger" onclick="openLedgerFilter('source',this)" type="button"><i aria-hidden="true" class="fa-solid fa-filter text-[9px] ledger-filter-indicator"></i><i aria-hidden="true" class="fa-solid fa-chevron-down text-[8px] ml-0.5"></i></button></th><th class="px-3 py-1.5" data-col-key="reconciliation">Reconciliation Status <button aria-label="Filter reconciliation status" class="ml-1 fh-theme-muted ledger-column-filter-trigger" onclick="openLedgerFilter('reconciliation',this)" type="button"><i aria-hidden="true" class="fa-solid fa-filter text-[9px] ledger-filter-indicator"></i><i aria-hidden="true" class="fa-solid fa-chevron-down text-[8px] ml-0.5"></i></button></th>
 </tr>
 <tr class="hidden" id="ledger-legacy-filter-row"><th colspan="11"></th></tr>
 </thead>
@@ -4803,7 +4839,7 @@ html body#app-body > aside#finhub-sidebar .sidebar-brand-copy h1 {
 </div>
 <!-- CALENDAR VIEW CONTAINER -->
 <div class="fh-theme-surface p-6 rounded-2xl border fh-theme-border space-y-4 shadow-sm hidden" id="ledger-calendar-container">
-<h3 class="text-md font-bold text-indigo-600 dark:text-indigo-400 theme-text">Posted Transaction History by Date</h3>
+<h3 class="text-md font-bold text-indigo-600 dark:text-indigo-400 theme-text">Transaction History by Date</h3>
 <div class="grid grid-cols-7 gap-2" id="ledger-calendar-grid"></div>
 </div>
 </div>
@@ -5102,9 +5138,9 @@ html body#app-body > aside#finhub-sidebar .sidebar-brand-copy h1 {
 <div class="text-[11px] text-gray-400">Manage this account or permanently delete it</div>
 </div>
 <div class="flex items-center gap-2">
-<button class="hidden acc-detail-action-btn theme-bg" id="acc-detail-edit-asset" onclick="openAssetEditModal(window.currentEditingAccountId)"><i class="fa-solid fa-pen mr-1"></i> Edit Account</button>
-<button class="hidden acc-detail-action-btn theme-bg" id="acc-detail-edit-debt" onclick="openDebtDetailModal(window.currentEditingAccountId)"><i class="fa-solid fa-pen mr-1"></i> Edit Liability</button>
-<button class="acc-detail-action-btn" id="acc-detail-archive-btn" onclick="confirmDeleteAccountFromModal()"><i class="fa-solid fa-box-archive mr-1"></i> Archive Account</button>
+<button class="hidden acc-detail-action-btn theme-bg" id="acc-detail-edit-asset" title="Edit account" aria-label="Edit account" onclick="openAssetEditModal(window.currentEditingAccountId)"><i class="fa-solid fa-pen mr-1"></i> Edit Account</button>
+<button class="hidden acc-detail-action-btn theme-bg" id="acc-detail-edit-debt" title="Edit liability" aria-label="Edit liability" onclick="openDebtDetailModal(window.currentEditingAccountId)"><i class="fa-solid fa-pen mr-1"></i> Edit Liability</button>
+<button class="acc-detail-action-btn" id="acc-detail-archive-btn" title="Archive account" aria-label="Archive account" onclick="confirmDeleteAccountFromModal()"><i class="fa-solid fa-box-archive mr-1"></i> Archive Account</button>
 </div>
 </div>
 <div class="grid grid-cols-1 sm:grid-cols-3 gap-2" id="acc-detail-balance-summary"></div>
@@ -5169,7 +5205,7 @@ html body#app-body > aside#finhub-sidebar .sidebar-brand-copy h1 {
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Typical Payment Method</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="ed-payment-method"><option value="principal-interest">Principal + interest (default full payment to principal unless split entered)</option><option value="interest-only">Interest-only (no principal reduction)</option><option value="principal-only">Principal-only</option><option value="custom">Custom split when recording payment</option></select></div>
 <div class="grid grid-cols-2 gap-3">
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Payment Due Day (monthly)</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="ed-due-day"><option value="">Not entered</option><option value="1">1st</option><option value="2">2nd</option><option value="3">3rd</option><option value="4">4th</option><option value="5">5th</option><option value="6">6th</option><option value="7">7th</option><option value="8">8th</option><option value="9">9th</option><option value="10">10th</option><option value="11">11th</option><option value="12">12th</option><option value="13">13th</option><option value="14">14th</option><option value="15">15th</option><option value="16">16th</option><option value="17">17th</option><option value="18">18th</option><option value="19">19th</option><option value="20">20th</option><option value="21">21st</option><option value="22">22nd</option><option value="23">23rd</option><option value="24">24th</option><option value="25">25th</option><option value="26">26th</option><option value="27">27th</option><option value="28">28th</option><option value="29">29th</option><option value="30">30th</option><option value="31">31st</option></select></div>
-<div><label class="block text-xs font-semibold text-gray-500 mb-1">Weekend adjustment</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="ed-weekend-rule"><option value="none">No adjustment</option><option value="previous-business-day">Previous Friday</option><option value="next-business-day">Next Monday</option></select></div>
+<details class="ed-scheduling-settings rounded-xl border p-3 space-y-3"><summary class="text-xs font-semibold cursor-pointer">Payment scheduling settings</summary><div class="ed-weekend-adjustment-setting"><label class="block text-xs font-semibold text-gray-500 mb-1">Weekend adjustment</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="ed-weekend-rule"><option value="none">No adjustment</option><option value="previous-business-day">Previous Friday</option><option value="next-business-day">Next Monday</option></select></div><p class="text-[11px] text-gray-500">Controls the expected recurring payment date when the due day falls on a weekend. It does not record the actual paid date.</p></details>
 </div>
 <div class="grid grid-cols-2 gap-3">
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Credit Limit ($)</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="ed-limit" min="0" step="0.01" type="number"/></div>
@@ -5186,7 +5222,7 @@ html body#app-body > aside#finhub-sidebar .sidebar-brand-copy h1 {
 <!-- MODAL: ADD / EDIT JOINT HOUSEHOLD BILL -->
 <div class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50" id="joint-bill-modal">
 <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
-<h3 class="text-lg font-bold" id="joint-modal-title">Add Joint Household Bill</h3>
+<h3 class="text-lg font-bold" id="joint-modal-title">Add Household Bill</h3>
 <form class="space-y-3" id="joint-bill-form" onsubmit="saveJointBill(event)">
 <input id="jb-edit-id" type="hidden" value=""/>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Bill Name / Description</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="jb-name" required="" type="text"/></div>
@@ -5410,23 +5446,17 @@ Bonus" rows="4"></textarea></div>
 <button aria-pressed="false" class="tx-kind-card fh-calendar-type-option" data-calendar-type="debt" data-tx-kind="Debt" onclick="setCalendarType('debt')" type="button"><i aria-hidden="true" class="fa-solid fa-credit-card"></i><span>Debt</span></button>
 </div>
 </div>
-<div class="cal-paired-row cal-vendor-description-row" id="cal-vendor-description-row">
-<div id="cal-vendor-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Vendor <span class="text-rose-500">*</span></label><input class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-vendor" placeholder="e.g. Employer, utility or service provider" required="" type="text"/></div>
-<div><label class="block text-xs font-semibold text-gray-500 mb-1">Description (optional)</label><input class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-desc" placeholder="Additional context (optional)" type="text"/></div>
-</div>
+<div class="cal-paired-row cal-vendor-amount-row" id="cal-vendor-description-row"><div id="cal-vendor-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Vendor <span class="text-rose-500">*</span></label><input class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-vendor" placeholder="e.g. Employer, utility or service provider" required="" type="text"/></div><div class="cal-amount-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Amount ($)</label><input class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-amount" required="" step="0.01" type="number"/></div><div class="hidden" id="cal-principal-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Principal portion ($)</label><input class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-principal-amount" min="0" placeholder="Defaults to full payment" step="0.01" type="number"/></div></div>
 <div class="cal-paired-row cal-category-row" id="cal-category-row"><div id="cal-category-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Category</label><select class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-category" onchange="handleCalendarCategoryChange()"><option value="">-- None --</option></select></div>
 <div id="cal-subcategory-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Subcategory</label><select class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-subcategory" onchange="handleCalendarSubcategoryChange()"><option value="">-- None --</option></select></div></div>
-<div class="cal-paired-row cal-funding-row" id="cal-funding-row"><div><label class="block text-xs font-semibold text-gray-500 mb-1">Amount ($)</label><input class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-amount" required="" step="0.01" type="number"/></div>
-<div>
+<div class="cal-paired-row cal-funding-description-row" id="cal-funding-row"><div><label class="block text-xs font-semibold text-gray-500 mb-1">Description (optional)</label><input class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-desc" placeholder="Additional context (optional)" type="text"/></div><div class="cal-account-wrap">
 <label class="block text-xs font-semibold text-gray-500 mb-1">Funding Account</label>
 <select class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-account"></select>
 </div></div>
 <div class="hidden sm:col-span-2" id="cal-debt-account-wrap">
 <label class="block text-xs font-semibold text-gray-500 mb-1">Credit / Debt Account Being Paid</label>
 <select class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-debt-account"></select>
-<p class="text-[10px] text-gray-400 mt-1">Select the liability being paid. Enter zero for an interest-only payment; only the principal portion reduces this balance.</p>
-<label class="block text-xs font-semibold text-gray-500 mt-2 mb-1">Principal portion ($)</label>
-<input class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-principal-amount" min="0" placeholder="Defaults to full payment" step="0.01" type="number"/>
+<p class="text-[10px] text-gray-400 mt-1">Enter zero for an interest-only payment; only the principal portion reduces this balance.</p>
 </div>
 <div class="hidden sm:col-span-2 rounded-xl border border-gray-200 dark:border-gray-800 p-3 space-y-3" id="cal-payment-panel">
 <div class="flex items-center justify-between gap-2"><strong class="text-xs">Payment history</strong><span class="text-[10px] font-semibold" id="cal-payment-status"></span></div>
@@ -5545,7 +5575,8 @@ Bonus" rows="4"></textarea></div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Target Date</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="sinking-bucket-target-date" type="date"/></div>
 </div>
 <p class="hidden text-[10px] text-amber-600 dark:text-amber-400" id="sinking-bucket-edit-note">A bucket with a balance or activity history cannot be moved to another real account. Release its balance and create a new bucket under the other account instead.</p>
-<div class="flex gap-2 pt-2"><button class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel" onclick="closeSinkingBucketModal()" type="button">Cancel</button><button class="flex-1 py-2 text-white rounded-xl text-sm font-semibold theme-bg" type="submit">Save Bucket</button></div>
+<div class="flex items-center justify-between gap-3 pt-2"><button class="hidden px-3 py-2 rounded-xl text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 disabled:opacity-45 disabled:cursor-not-allowed" id="sinking-bucket-delete-btn" onclick="deleteSinkingBucketFromEditor()" type="button">Delete Bucket</button><div class="flex gap-2 flex-1 justify-end"><button class="px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel" onclick="closeSinkingBucketModal()" type="button">Cancel</button><button class="px-4 py-2 text-white rounded-xl text-sm font-semibold theme-bg" type="submit">Save Bucket</button></div></div>
+<p class="hidden text-[10px] text-gray-400" id="sinking-bucket-delete-note">For data integrity, only buckets with no balance and no activity history can be deleted. Release any remaining balance first; buckets with recorded history must be retained.</p>
 </form>
 </div>
 </div>
@@ -5600,6 +5631,8 @@ Bonus" rows="4"></textarea></div>
 <div class="tx-field-header flex items-center justify-between gap-2 mb-1 min-w-0"><label class="block text-xs font-semibold text-gray-500 whitespace-nowrap shrink-0" id="tx-vendor-label">Vendor <span class="text-rose-500">*</span></label><div class="tx-vendor-actions flex items-center justify-end gap-2 min-w-0"><button aria-hidden="true" class="fh-inline-action text-[10px] font-semibold text-indigo-500 whitespace-nowrap shrink-0 leading-tight" disabled="" hidden="" onclick="applySavedVendorCleanupToForm()" type="button">Apply saved cleanup</button><button aria-hidden="true" class="fh-inline-action text-[10px] font-semibold text-indigo-500 whitespace-nowrap shrink-0 leading-tight" disabled="" hidden="" onclick="openVendorRuleModalFromTransaction()" type="button">Create cleanup rule</button></div></div>
 <input class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="tx-vendor" oninput="applySmartMerchantRules(this.value)" placeholder="e.g. Costco" required="" type="text"/>
 </div><div id="tx-amount-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Total Amount ($)</label><input 0.01"="" class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="tx-amount" min="0.01" oninput="updateInlineDebtSplit(false); if(document.getElementById('tx-is-split')?.value==='true') updateSplitRemainderPreview(); step=" step="0.01" type="number"/></div></div>
+<div aria-live="polite" class="hidden col-span-2 -mt-2 pl-1 text-[10px] leading-none whitespace-nowrap text-emerald-600 dark:text-emerald-400" id="tx-category-rule-match-indicator"><i aria-hidden="true" class="fa-solid fa-circle-check mr-1"></i><span id="tx-category-rule-match-text">Saved rule applied</span></div>
+</div>
 <div class="my-1" id="tx-refund-tools">
 <input aria-label="Treat this transaction as a refund or reimbursement" class="sr-only" id="tx-is-refund" onchange="toggleRefundEntryFields()" type="checkbox"/>
 <div class="hidden mt-2 rounded-lg border border-teal-300 dark:border-teal-800 bg-teal-50 dark:bg-teal-950/30 p-3 space-y-2" id="tx-refund-link-fields">
@@ -5674,8 +5707,7 @@ Bonus" rows="4"></textarea></div>
 <div class="space-y-1.5" id="split-rows-container"></div>
 </div>
 <div class="finhub-form-actions flex gap-2 pt-3 pb-1 mt-2"><button class="finhub-action-btn finhub-action-cancel fh-btn-cancel" onclick="closeTransactionModal()" type="button">Cancel</button><button class="finhub-action-btn finhub-action-delete hidden" id="tx-delete-edit-btn" onclick="deleteEditingTransaction()" type="button">Delete</button><button class="finhub-action-btn finhub-action-save" type="submit">Save</button></div>
-</div></form>
-</div>
+</form></div>
 </div>
 <!-- MODAL: ADD / EDIT INTEREST CHARGE -->
 <div class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-[75]" id="interest-charge-modal">
@@ -7174,15 +7206,15 @@ Bonus" rows="4"></textarea></div>
     }
     function isReorderableSection(el) {
       if (!(el instanceof HTMLElement)) return false;
+      // Reports & Exports is intentionally static; its sections are not draggable.
       if (el.matches('script,style,template,form,[data-no-reorder],.modal,.modal-backdrop')) return false;
 
       // Explicitly supported page-level groups. Only direct siblings are reordered,
       // so nested grids, calendar views and financial subcomponents remain intact.
       const page = el.closest('.tab-content');
-      if (!page || el.parentElement !== page) return false;
+      if (!page || el.parentElement !== page || page.id === 'tab-reports') return false;
       if (page.id === 'tab-debt') return el.matches('details.fh-disclosure');
       if (page.id === 'tab-settings') return el.matches('details.fh-settings-section');
-      if (page.id === 'tab-reports') return el.matches('.fh-page-section');
 
       const cls = typeof el.className === 'string' ? el.className : '';
       const looksLikePanel = /rounded-(xl|2xl)|monthly-panel|monthly-kpi/.test(cls) &&
@@ -7262,8 +7294,17 @@ Bonus" rows="4"></textarea></div>
         const dashboardHeader = section.matches('#tab-dashboard [data-dashboard-block]')
           ? section.querySelector('.fh-dashboard-disclosure-header')
           : null;
+        const disclosureHeader = section.matches('#account-integrity-panel, #tab-debt details.fh-disclosure')
+          ? section.querySelector(':scope > summary')
+          : null;
         if (dashboardHeader) dashboardHeader.insertBefore(handle, dashboardHeader.firstChild);
-        else section.appendChild(handle);
+        else if (disclosureHeader) {
+          handle.addEventListener('click', event => {
+            event.preventDefault();
+            event.stopPropagation();
+          });
+          disclosureHeader.insertBefore(handle, disclosureHeader.firstChild);
+        } else section.appendChild(handle);
       });
     }
     function initPageSectionReordering() {
@@ -7590,7 +7631,7 @@ Bonus" rows="4"></textarea></div>
           <div class="min-w-0"><div class="font-semibold truncate">${escapeHtml(b.desc || b.vendor || label)}</div><div class="text-gray-400">${formatDateMDY(b.date)} · ${label}</div>${b.vendor && b.type !== 'debt' ? `<div class="text-gray-500 text-[10px] mt-0.5">Vendor: ${escapeHtml(b.vendor)}</div>` : ''}</div>
           <div class="flex flex-wrap items-center justify-end gap-2"><div class="text-right"><div class="font-bold accounting-num ${income ? 'finhub-money-in' : 'finhub-money-out'}">${formatFinancial(outstandingAmount(b), !income)}</div>${getCalendarBillSettlement(b).paidCents>0?`<div class="text-[10px] text-amber-600">${formatFinancial(getCalendarBillSettlement(b).paidCents/100)} paid so far</div>`:''}</div>
           <button type="button" onclick="markDashboardCalendarItemPaid(decodeURIComponent('${encodeURIComponent(String(b.id))}'))" class="px-2.5 py-1.5 rounded-lg ${income?' ':' '} text-white text-[11px] font-semibold whitespace-nowrap">${income?'Record Income':'Record Payment'}</button>
-          <button type="button" onclick="openDashboardCalendarItem(decodeURIComponent('${encodeURIComponent(String(b.id))}'))" class="text-indigo-500  font-semibold whitespace-nowrap" title="Open this item in the Bill & Income Calendar"><i class="fa-solid fa-arrow-up-right-from-square"></i></button></div>
+          <button type="button" onclick="openDashboardCalendarItem(decodeURIComponent('${encodeURIComponent(String(b.id))}'))" class="text-indigo-500  font-semibold whitespace-nowrap" title="Open this item in the Calendar"><i class="fa-solid fa-arrow-up-right-from-square"></i></button></div>
         </div>`;
       }).join('');
     }
@@ -8150,13 +8191,14 @@ Bonus" rows="4"></textarea></div>
         const actual=a.actualBalance===undefined||a.actualBalance===null?'':Number(a.actualBalance).toFixed(2);
         const variance=actual===''?null:Number(actual)-(Number(a.balance)||0);
         const varianceClass=variance===null?'text-gray-400':Math.abs(variance)<0.005?'fh-status-income':'text-amber-600';
-        return `<article class="account-card accounts-card rounded-xl border border-gray-200 dark:border-gray-800 p-3 space-y-2 cursor-pointer  transition-colors" role="button" tabindex="0" aria-label="Open ${escapeHtml(a.name||'account')} transactions" onclick="openAccountCardFromAccounts('${String(a.id).replace(/'/g,"&#39;")}','${group}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openAccountCardFromAccounts('${String(a.id).replace(/'/g,"&#39;")}','${group}')}" draggable="true" data-account-card-id="${escapeHtml(String(a.id))}" data-account-card-group="${group}">
+        return `<article class="account-card accounts-card rounded-xl border border-gray-200 dark:border-gray-800 p-3 space-y-2 cursor-pointer  transition-colors" draggable="true" data-account-card-id="${escapeHtml(String(a.id))}" data-account-card-group="${group}">
           <div class="flex items-start gap-2">
             <span class="account-card-grip cursor-grab text-gray-400 px-1 pt-1" title="Drag to reorder"><i class="fa-solid fa-grip-vertical"></i></span>
             <label class="flex items-center gap-2 min-w-0 flex-1 text-xs cursor-pointer" title="Show or hide this account in the dashboard account display" onclick="event.stopPropagation()">
               <input type="checkbox" class="h-4 w-4 accent-indigo-600" ${a.hidden?'':'checked'} onchange="setAccountIncluded('${String(a.id).replace(/'/g,"&#39;")}',this.checked)">
               <span class="font-semibold truncate">${escapeHtml(a.name||'Account')}</span>
             </label>
+            <button type="button" class="fh-open-details-icon" aria-label="Open account details for ${escapeHtml(a.name||'account')}" title="Open account details" onclick="event.stopPropagation();openAccountDetail('${String(a.id).replace(/'/g,"&#39;")}')"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></button>
             
           </div>
           <div class="pl-7 flex items-center justify-between gap-2">
@@ -8186,7 +8228,7 @@ Bonus" rows="4"></textarea></div>
       };
       renderGroup(assetHost,'assets');renderGroup(debtHost,'debts');
       const rec=document.getElementById('accounts-page-reconciliation');
-      if(rec)rec.innerHTML=accounts.map(a=>`<div class="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 dark:border-gray-800 py-2"><div><strong class="text-sm">${escapeHtml(a.name||'Account')}</strong><div class="text-xs text-gray-500">${a.lastReconciledAt?`Last reconciled ${escapeHtml(a.lastReconciledAt)}`:'No reconciliation date recorded'}</div></div><button onclick="openAccountDetail('${String(a.id).replace(/'/g,"&#39;")}')" class="text-xs text-indigo-600 font-semibold">Open account <i class="fa-solid fa-arrow-right ml-1"></i></button></div>`).join('');
+      if(rec)rec.innerHTML=accounts.map(a=>`<div class="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 dark:border-gray-800 py-2"><div><strong class="text-sm">${escapeHtml(a.name||'Account')}</strong><div class="text-xs text-gray-500">${a.lastReconciledAt?`Last reconciled ${escapeHtml(a.lastReconciledAt)}`:'No reconciliation date recorded'}</div></div><button type="button" onclick="openAccountDetail('${String(a.id).replace(/'/g,"&#39;")}')" class="fh-open-details-icon" aria-label="Open account details for ${escapeHtml(a.name||'account')}" title="Open account details"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></button></div>`).join('');
     }
 
     function getAvailableToSpendAccounts() {
@@ -8602,8 +8644,9 @@ Bonus" rows="4"></textarea></div>
           action.className = 'text-right whitespace-nowrap';
           const open = document.createElement('button');
           open.type = 'button';
-          open.className = 'text-[10px] text-indigo-500 hover:underline whitespace-nowrap';
-          open.textContent = 'Open';
+          open.className = 'fh-open-details-icon';
+          open.innerHTML = '<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>';
+          open.title = 'Open transaction details';
           open.setAttribute('aria-label', `Open transaction for ${String(t.vendor || t.desc || 'vendor')} dated ${t.date || 'unknown date'}`);
           open.addEventListener('click', () => {
             if (t.type === 'Interest Charge') openInterestChargeModal(String(t.id));
@@ -9512,6 +9555,22 @@ ${acc.name}`);
       const bucket = bucketId ? getSinkingBucketById(bucketId) : null;
       if (bucketId && !bucket) { alert('That bucket could not be found. Refresh the planner and try again.'); return; }
       document.getElementById('sinking-bucket-edit-id').value = bucket?.id || '';
+      const deleteButton = document.getElementById('sinking-bucket-delete-btn');
+      const deleteNote = document.getElementById('sinking-bucket-delete-note');
+      if (deleteButton) {
+        deleteButton.classList.toggle('hidden', !bucket);
+        const canDelete = !!bucket && Math.abs(Number(bucket.balance) || 0) <= 0.005 && !(bucket.history || []).length;
+        deleteButton.disabled = !canDelete;
+        deleteButton.title = canDelete ? 'Delete this empty bucket' : 'Release the balance and retain buckets with activity history';
+      }
+      if (deleteNote) {
+        deleteNote.classList.toggle('hidden', !bucket);
+        if (bucket) deleteNote.textContent = Math.abs(Number(bucket.balance) || 0) > 0.005
+          ? 'This bucket still has money allocated. Release its balance before deleting it.'
+          : (bucket.history || []).length
+            ? 'This bucket has recorded activity and must be retained to preserve its history.'
+            : 'This bucket is empty and has no activity history, so it can be safely deleted.';
+      }
       document.getElementById('sinking-bucket-modal-title').textContent = bucket ? 'Edit Sinking-Fund Bucket' : 'Add Sinking-Fund Bucket';
       document.getElementById('sinking-bucket-name').value = bucket?.name || '';
       document.getElementById('sinking-bucket-account').value = bucket?.accountId || '';
@@ -9621,6 +9680,11 @@ ${acc.name}`);
       // the bucket balance through linkedBucketId instead of incrementing these fields.
       saveData(); closeSinkingBucketActivityModal(); renderZbbPlanner();
     }
+    function deleteSinkingBucketFromEditor() {
+      const bucketId = document.getElementById('sinking-bucket-edit-id')?.value;
+      if (!bucketId) return;
+      deleteSinkingBucket(bucketId);
+    }
     function deleteSinkingBucket(bucketId) {
       const bucket = getSinkingBucketById(bucketId);
       if (!bucket) return;
@@ -9633,7 +9697,7 @@ ${acc.name}`);
       const ledger = sinkingBucketLedger();
       ledger.buckets = ledger.buckets.filter(item => String(item.id) !== String(bucket.id));
       (state.zbbTemplates ? Object.values(state.zbbTemplates) : []).forEach(template => (template.savings || []).forEach(item => { if (String(item.linkedBucketId || '') === String(bucket.id)) delete item.linkedBucketId; }));
-      saveData(); renderZbbPlanner();
+      saveData(); closeSinkingBucketModal(); renderZbbPlanner();
     }
     function renderSinkingBucketManager() {
       const host = document.getElementById('sinking-bucket-manager');
@@ -9664,7 +9728,7 @@ ${acc.name}`);
           }).join('');
           return `<div class="fh-sinking-bucket-row grid grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-1 items-center border-b border-gray-200 dark:border-gray-800 py-2">
             <div class="min-w-0"><div class="font-semibold text-xs">${escapeHtml(bucket.name)}</div><div class="text-[10px] text-gray-400">${target > 0 ? `${pct.toFixed(0)}% of ${formatFinancial(target)} target` : 'No target set'}${bucket.targetDate ? ` · Due ${escapeHtml(bucket.targetDate)}` : ''}</div>${target > 0 ? `<div class="mt-1 h-1 rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden max-w-sm"><div class="h-full bg-indigo-600 theme-bg" style="width:${pct}%"></div></div>` : ''}</div>
-            <div class="text-right"><div class="font-bold text-sm accounting-num">${formatFinancial(balance)}</div><div class="flex items-center justify-end gap-2 mt-1"><button type="button" onclick="openSinkingBucketActivityModal('${escapeHtml(String(bucket.id))}','allocate')" class="fh-status-income dark:fh-status-income text-[10px] font-semibold">Allocate</button><button type="button" onclick="openSinkingBucketActivityModal('${escapeHtml(String(bucket.id))}','release')" class="text-amber-600 dark:text-amber-400 text-[10px] font-semibold">Release</button><button type="button" onclick="openSinkingBucketActivityModal('${escapeHtml(String(bucket.id))}','transfer')" class="text-indigo-600 dark:text-indigo-400 text-[10px] font-semibold">Move</button><button type="button" onclick="openSinkingBucketModal('${escapeHtml(String(bucket.id))}')" class="text-gray-500 text-[10px] font-semibold">Edit</button>${balance <= 0.005 && !(bucket.history || []).length ? `<button type="button" onclick="deleteSinkingBucket('${escapeHtml(String(bucket.id))}')" class="text-rose-600 text-[10px] font-semibold">Delete</button>` : ''}</div></div>
+            <div class="text-right"><div class="font-bold text-sm accounting-num">${formatFinancial(balance)}</div><div class="flex items-center justify-end gap-2 mt-1"><button type="button" onclick="openSinkingBucketActivityModal('${escapeHtml(String(bucket.id))}','allocate')" class="fh-status-income dark:fh-status-income text-[10px] font-semibold">Allocate</button><button type="button" onclick="openSinkingBucketActivityModal('${escapeHtml(String(bucket.id))}','release')" class="text-amber-600 dark:text-amber-400 text-[10px] font-semibold">Release</button><button type="button" onclick="openSinkingBucketActivityModal('${escapeHtml(String(bucket.id))}','transfer')" class="text-indigo-600 dark:text-indigo-400 text-[10px] font-semibold">Move</button><button type="button" onclick="openSinkingBucketModal('${escapeHtml(String(bucket.id))}')" class="text-gray-500 text-[10px] font-semibold">Edit</button></div></div>
             ${history ? `<details class="col-span-2 text-[10px]"><summary class="cursor-pointer text-gray-500">Recent activity</summary><div class="pt-1 space-y-1">${history}</div></details>` : ''}
           </div>`;
         }).join('');
@@ -10457,12 +10521,60 @@ ${acc.name}`);
       delete zbbWhatIfScenarios[getZbbWhatIfKey(period, cycle)];
       renderZbbWhatIfCalculator(calculateZbbCycleTotals(getActiveZbbTemplate(), cycle, period), period, cycle);
     }
+    function getZbbWhatIfCycleTotals(period, cycle) {
+      const zbb = getActiveZbbTemplate();
+      const baseline = calculateZbbCycleTotals(zbb, cycle, period);
+      const scenario = getZbbWhatIfScenario(period, cycle);
+      const totals = { incomes: 0, bills: 0, debts: 0, variable: 0, savings: 0 };
+      const getValue = (section, id, original) => {
+        const key = `${section}::${id}`;
+        return Object.prototype.hasOwnProperty.call(scenario.lines, key) ? Number(scenario.lines[key]) : original;
+      };
+      ['incomes', 'bills', 'debts', 'savings'].forEach(section => {
+        (Array.isArray(zbb[section]) ? zbb[section] : []).forEach(item => {
+          const original = zbbCentsMoney(getZbbItemCycleCents(item, cycle));
+          totals[section] += getValue(section, item.id, original);
+        });
+      });
+      const variableItems = Array.isArray(zbb.variable) ? zbb.variable : [];
+      const allocations = baseline.variableState?.allocations || {};
+      let categoryTotal = 0;
+      variableItems.forEach(item => {
+        const original = Number(allocations[item.id]) || 0;
+        categoryTotal += original;
+        totals.variable += getValue('variable', item.id, original);
+      });
+      const unassigned = Math.max(0, baseline.variable - categoryTotal);
+      if (unassigned > 0.005 || Object.prototype.hasOwnProperty.call(scenario.lines, 'variable::__unassigned-pool')) {
+        totals.variable += getValue('variable', '__unassigned-pool', unassigned);
+      }
+      const extraDebt = Number(getExtraDebtContributionForPaycheque(cycle)) || 0;
+      if (extraDebt > 0 || Object.prototype.hasOwnProperty.call(scenario.lines, 'debts::__extra-debt')) {
+        totals.debts += getValue('debts', '__extra-debt', extraDebt);
+      }
+      const income = totals.incomes;
+      const allocated = totals.bills + totals.debts + totals.variable + totals.savings;
+      return { ...totals, income, allocated, remaining: income - allocated, baselineRemaining: baseline.remaining };
+    }
+
     function renderZbbWhatIfCalculator(baseline, period, cycle) {
       const host = document.getElementById('zbb-whatif-host');
       if (!host) return;
       const zbb = getActiveZbbTemplate();
       const scenario = getZbbWhatIfScenario(period, cycle);
       const money = value => formatFinancial(value);
+      const paydayCount = getScheduledPaydaysForMonth(period).length;
+      const includedCycles = Array.from({ length: Math.min(3, paydayCount || 2) }, (_, index) => index + 1);
+      const monthlyScenario = includedCycles.map(paydayCycle => ({ cycle: paydayCycle, totals: getZbbWhatIfCycleTotals(period, paydayCycle) }));
+      const monthlyIncome = monthlyScenario.reduce((sum, item) => sum + item.totals.income, 0);
+      const monthlyAllocated = monthlyScenario.reduce((sum, item) => sum + item.totals.allocated, 0);
+      const monthlyRemaining = monthlyScenario.reduce((sum, item) => sum + item.totals.remaining, 0);
+      const monthlyBaselineRemaining = monthlyScenario.reduce((sum, item) => sum + item.totals.baselineRemaining, 0);
+      const monthlyMarkup = monthlyScenario.map(item => {
+        const t = item.totals;
+        const delta = t.remaining - t.baselineRemaining;
+        return `<div class="rounded-lg border border-gray-200 dark:border-gray-700 p-3"><div class="text-[11px] font-bold">Paycheque ${item.cycle}${item.cycle === 3 ? ' · Third cheque' : ''}</div><div class="mt-1 grid grid-cols-2 gap-2 text-xs"><div><span class="block text-gray-500">Scenario remaining</span><strong class="accounting-num ${t.remaining < -0.005 ? 'text-rose-600 dark:text-rose-400' : ''}">${money(t.remaining)}</strong></div><div><span class="block text-gray-500">Change vs current</span><strong class="accounting-num ${delta < -0.005 ? 'text-rose-600 dark:text-rose-400' : 'fh-status-income'}">${money(delta)}</strong></div></div></div>`;
+      }).join('');
       const sections = [
         { key: 'incomes', label: '1. Income', tone: 'fh-status-income' },
         { key: 'bills', label: '2. Fixed expenses', tone: 'text-rose-600 dark:text-rose-400' },
@@ -10520,13 +10632,20 @@ ${acc.name}`);
         const markup = rows.length ? rows.map(row => {
           const id = encodeURIComponent(String(row.item.id));
           const changed = Math.abs(row.value - row.original) > 0.005;
-          return `<label class="grid grid-cols-[minmax(0,1fr)_110px] sm:grid-cols-[minmax(0,1fr)_130px] items-center gap-2 py-2 border-t border-gray-100 dark:border-gray-800"><span class="min-w-0"><span class="block text-xs font-medium truncate">${escapeHtml(String(row.item.name || 'Unnamed line'))}</span><span class="block text-[10px] text-gray-400">Current: ${money(row.original)}${changed ? ` · Change: ${money(row.value-row.original)}` : ''}</span></span><span class="flex items-center gap-1 text-xs text-gray-500"><span>$</span><input aria-label="Scenario ${escapeHtml(String(row.item.name || 'budget line'))}" type="number" min="0" step="0.01" value="${Number(row.value).toFixed(2)}" onchange="updateZbbWhatIfLine('${section.key}','${id}',this.value)" class="w-full min-w-0 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-2 py-1.5 text-sm font-semibold"></span></label>`;
+          const lineName = String(row.item.name || 'Unnamed line');
+          return `<label class="grid grid-cols-[minmax(0,1fr)_112px] sm:grid-cols-[minmax(0,1fr)_130px] items-center gap-2 py-2 border-t border-gray-100 dark:border-gray-800"><span class="min-w-0"><span class="block text-xs font-medium whitespace-normal break-words leading-snug" title="${escapeHtml(lineName)}">${escapeHtml(lineName)}</span><span class="block text-[10px] text-gray-400">Current: ${money(row.original)}${changed ? ` · Change: ${money(row.value-row.original)}` : ''}</span></span><span class="flex items-center gap-1 text-xs text-gray-500"><span>$</span><input aria-label="Scenario ${escapeHtml(lineName)}" type="number" min="0" step="0.01" value="${Number(row.value).toFixed(2)}" onchange="updateZbbWhatIfLine('${section.key}','${id}',this.value)" class="w-full min-w-0 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-2 py-1.5 text-sm font-semibold"></span></label>`;
         }).join('') : '<p class="py-2 text-[11px] text-gray-400">No lines in this section.</p>';
         return `<section class="rounded-xl border border-gray-200 dark:border-gray-700 p-3"><div class="flex items-center justify-between gap-2"><h4 class="text-xs font-bold ${section.tone}">${section.label}</h4><span class="text-xs font-semibold accounting-num">${money(subtotal)}</span></div>${markup}</section>`;
       }).join('');
       host.innerHTML = `
-        <div class="flex flex-wrap items-center justify-between gap-2"><p class="text-xs text-gray-500">${period} · Paycheque ${cycle} · Edit any line to test a different allocation. Changes are temporary.</p><button type="button" class="text-xs font-semibold underline" onclick="resetZbbWhatIfScenario()">Reset to current budget</button></div>
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs"><div class="rounded-xl bg-gray-50 dark:bg-gray-950 p-3"><div class="text-gray-500">Scenario income</div><strong class="accounting-num">${money(income)}</strong></div><div class="rounded-xl bg-gray-50 dark:bg-gray-950 p-3"><div class="text-gray-500">Scenario allocations</div><strong class="accounting-num">${money(allocated)}</strong></div><div class="rounded-xl bg-gray-50 dark:bg-gray-950 p-3"><div class="text-gray-500">Remaining to assign</div><strong class="accounting-num ${remaining < -0.005 ? 'text-rose-600 dark:text-rose-400' : ''}">${money(remaining)}</strong></div><div class="rounded-xl bg-gray-50 dark:bg-gray-950 p-3"><div class="text-gray-500">Change vs current</div><strong class="accounting-num ${remaining-baselineRemaining < -0.005 ? 'text-rose-600 dark:text-rose-400' : 'fh-status-income'}">${money(remaining-baselineRemaining)}</strong></div></div>
+        <section class="rounded-xl border border-gray-200 dark:border-gray-700 p-3 space-y-3">
+          <div><h4 class="text-sm font-bold">Monthly scenario overview · ${period}</h4><p class="text-[10px] text-gray-500 mt-1">Combines the separate temporary scenarios for every scheduled paycheque${paydayCount >= 3 ? ', including the third cheque' : ''}. Switch paycheques above to edit each one.</p></div>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs"><div class="rounded-lg bg-gray-50 dark:bg-gray-950 p-2"><span class="block text-gray-500">Monthly income</span><strong class="accounting-num">${money(monthlyIncome)}</strong></div><div class="rounded-lg bg-gray-50 dark:bg-gray-950 p-2"><span class="block text-gray-500">Monthly allocations</span><strong class="accounting-num">${money(monthlyAllocated)}</strong></div><div class="rounded-lg bg-gray-50 dark:bg-gray-950 p-2"><span class="block text-gray-500">Monthly remaining</span><strong class="accounting-num ${monthlyRemaining < -0.005 ? 'text-rose-600 dark:text-rose-400' : ''}">${money(monthlyRemaining)}</strong></div><div class="rounded-lg bg-gray-50 dark:bg-gray-950 p-2"><span class="block text-gray-500">Change vs current month</span><strong class="accounting-num ${monthlyRemaining-monthlyBaselineRemaining < -0.005 ? 'text-rose-600 dark:text-rose-400' : 'fh-status-income'}">${money(monthlyRemaining-monthlyBaselineRemaining)}</strong></div></div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 ${paydayCount >= 3 ? 'xl:grid-cols-3' : ''} gap-2">${monthlyMarkup}</div>
+          ${monthlyRemaining < -0.005 ? `<p class="text-xs font-semibold text-rose-600 dark:text-rose-400">Monthly plan is overallocated by ${money(Math.abs(monthlyRemaining))}.</p>` : ''}
+        </section>
+        <div class="flex flex-wrap items-center justify-between gap-2"><p class="text-xs text-gray-500">${period} · Editing Paycheque ${cycle} · Changes are temporary.</p><button type="button" class="text-xs font-semibold underline" onclick="resetZbbWhatIfScenario()">Reset this paycheque</button></div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs"><div class="rounded-xl bg-gray-50 dark:bg-gray-950 p-3"><div class="text-gray-500">Scenario income</div><strong class="accounting-num">${money(income)}</strong></div><div class="rounded-xl bg-gray-50 dark:bg-gray-950 p-3"><div class="text-gray-500">Scenario allocations</div><strong class="accounting-num">${money(allocated)}</strong></div><div class="rounded-xl bg-gray-50 dark:bg-gray-950 p-3"><div class="text-gray-500">Remaining to assign</div><strong class="accounting-num ${remaining < -0.005 ? 'text-rose-600 dark:text-rose-400' : ''}">${money(remaining)}</strong></div><div class="rounded-xl bg-gray-50 dark:bg-gray-950 p-3"><div class="text-gray-500">Change in remaining cash</div><strong class="accounting-num ${remaining-baselineRemaining < -0.005 ? 'text-rose-600 dark:text-rose-400' : 'fh-status-income'}">${money(remaining-baselineRemaining)}</strong><span class="block text-[10px] text-gray-500 mt-1">Compared with current paycheque plan</span></div></div>
         <div class="rounded-xl border ${remaining < -0.005 ? 'border-rose-300 dark:border-rose-900' : 'border-emerald-200 dark:border-emerald-900'} p-3"><div class="text-xs font-semibold ${remaining < -0.005 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-700 dark:text-emerald-400'}">${remaining < -0.005 ? `Overallocated by ${money(Math.abs(remaining))}` : remaining > 0.005 ? `${money(remaining)} remains unassigned` : 'Scenario is balanced'}</div><p class="text-[10px] text-gray-500 mt-1">Totals recalculate from the line amounts below. No live budget values are changed.</p></div>
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">${rowMarkup}</div>
         <p class="text-[10px] text-gray-500">Variable categories are edited individually within their paycheque pool. Debt and savings changes here are planning estimates only; they do not update debt balances, savings goals or account records.</p>`;
@@ -11226,7 +11345,7 @@ ${acc.name}`);
           const notificationKind = isInc ? 'income' : (isDebt ? 'debt' : 'expense');
           const settlement = getCalendarBillSettlement(b);
           const paymentDateInfo = settlement.validTransactions.length
-            ? `<button type="button" class="fh-calendar-paid-date-info" onclick="event.stopPropagation();showCalendarPaymentDates('${String(b.id).replace(/'/g, "\\'")}')" aria-label="View actual payment dates for ${escapeHtml(b.desc || 'scheduled item')}" title="View actual payment dates"><i class="fa-solid fa-circle-info" aria-hidden="true"></i></button>`
+            ? `<button type="button" class="fh-calendar-paid-date-info fh-info-trigger" onclick="event.stopPropagation();showCalendarPaymentDates('${String(b.id).replace(/'/g, "\\'")}')" aria-label="View actual payment dates for ${escapeHtml(b.desc || 'scheduled item')}" title="View actual payment dates"><i class="fa-solid fa-circle-info" aria-hidden="true"></i></button>`
             : '';
           badges += `
             <div draggable="${!b.paid}" ondragstart="startCalendarBillDrag(event, '${b.id}')" onclick="editCalendarItem('${b.id}', event)" title="${escapeHtml(b.desc || 'Scheduled item')}${b.vendor && !isDebt ? ' · Vendor: ' + escapeHtml(b.vendor) : ''}" class="fh-calendar-notification-row" data-notification-kind="${notificationKind}" data-completed="${b.paid ? 'true' : 'false'}">
@@ -11548,6 +11667,8 @@ ${acc.name}`);
       const wrap = document.getElementById('cal-debt-account-wrap');
       const type = document.getElementById('cal-type')?.value;
       if (wrap) wrap.classList.toggle('hidden', type !== 'debt');
+      const principalWrap = document.getElementById('cal-principal-wrap');
+      if (principalWrap) principalWrap.classList.toggle('hidden', type !== 'debt');
       const vendorWrap = document.getElementById('cal-vendor-wrap');
       if (vendorWrap) vendorWrap.classList.toggle('hidden', type === 'debt');
       const categoryWrap = document.getElementById('cal-category-wrap');
@@ -12097,7 +12218,7 @@ ${acc.name}`);
           <div class="flex justify-between items-center bg-gray-50 dark:bg-gray-950 p-3 rounded-xl border border-gray-200 dark:border-gray-800 text-xs">
             <div>
               <div class="font-semibold">${b.name} <span class="text-[10px] text-gray-400 ml-2">(Due: ${b.dueDate || 'N/A'})</span></div>
-              <div class="text-[11px] text-gray-500">Total: ${formatFinancial(b.amount)} | Split: ${b.splitPct}% (Original Share: ${formatFinancial(myShare)} · Adjusted Due: <span class="font-bold text-indigo-600 accounting-num theme-text">${formatFinancial(jointAdjustedBillCents(b) / 100)}</span>)</div>
+              <div class="text-[11px] text-gray-500">Your share: <span class="joint-household-primary-share">${formatFinancial(jointAdjustedBillCents(b) / 100)}</span> · Household: ${formatFinancial(b.amount)} · Split: ${b.splitPct}%</div>
             </div>
             <div class="flex items-center space-x-3">
               <span class="font-bold accounting-num">${formatFinancial(b.amount)}</span>
@@ -12128,6 +12249,8 @@ ${acc.name}`);
 
       document.getElementById('joint-fixed-sum').innerText = formatFinancial(fixedTot);
       document.getElementById('joint-variable-sum').innerText = formatFinancial(varTot);
+      const fixedShareHeader = document.getElementById('joint-fixed-share-header'); if (fixedShareHeader) fixedShareHeader.innerText = formatFinancial(adjustedFixedShare);
+      const variableShareHeader = document.getElementById('joint-variable-share-header'); if (variableShareHeader) variableShareHeader.innerText = formatFinancial(adjustedVarShare);
       document.getElementById('joint-fixed-share').innerText = formatFinancial(fixedShare);
       document.getElementById('joint-variable-share').innerText = formatFinancial(varShare);
       document.getElementById('joint-total-sent-disp').innerText = formatFinancial(totalSent);
@@ -12143,7 +12266,7 @@ ${acc.name}`);
     function editJointBill(id) {
       const b = state.jointBills.find(item => item.id === id);
       if (!b) return;
-      document.getElementById('joint-modal-title').innerText = "Edit Joint Bill";
+      document.getElementById('joint-modal-title').innerText = "Edit Household Bill";
       document.getElementById('jb-edit-id').value = b.id;
       document.getElementById('jb-name').value = b.name;
       document.getElementById('jb-classification').value = b.classification;
@@ -12508,7 +12631,7 @@ ${acc.name}`);
     }
 
     function openJointBillModal() {
-      document.getElementById('joint-modal-title').innerText = "Add Joint Household Bill";
+      document.getElementById('joint-modal-title').innerText = "Add Household Bill";
       document.getElementById('jb-edit-id').value = '';
       document.getElementById('joint-bill-form').reset();
       document.getElementById('jb-date').value = (state.selectedJointYM || '2026-11') + '-01';
@@ -13098,7 +13221,7 @@ ${acc.name}`);
 
     const LEDGER_FILTERS = [
       ['date','Date'],['vendor','Vendor'],['desc','Description'],['type','Type'],
-      ['category','Bucket'],['subcategory','Subcategory'],['account','Account'],['transferRoute','Transfer Account'],['amount','Amount'],['source','Import Source'],['reconciliation','Reconciliation Status']
+      ['category','Category'],['subcategory','Subcategory'],['account','Account'],['transferRoute','Transfer Account'],['amount','Amount'],['source','Import Source'],['reconciliation','Reconciliation Status']
     ];
     let ledgerFilterSelections = {};
     let ledgerFilterSearchTerms = {};
@@ -13546,7 +13669,7 @@ ${acc.name}`);
     }
 
     const LEDGER_LIST_FIELDS = [
-      ['date','Date'],['description','Description'],['type','Type'],['category','Bucket'],
+      ['date','Date'],['description','Description'],['type','Type'],['category','Category'],
       ['subcategory','Subcategory'],['account','Account'],['transferAccount','Transfer account'],
       ['amount','Amount'],['running','Running balance'],['source','Source'],['reconciliation','Statement match']
     ];
@@ -13653,10 +13776,24 @@ ${acc.name}`);
       });
     }
 
+    document.addEventListener('keydown', function(event) {
+      if (event.key !== 'Escape') return;
+      const openAllocationDetails = [...document.querySelectorAll('#ledger-rows details.split-allocation-breakdown[open]')];
+      if (!openAllocationDetails.length) return;
+      event.preventDefault();
+      event.stopPropagation();
+      openAllocationDetails[openAllocationDetails.length - 1].open = false;
+    }, true);
+    document.addEventListener('click', function(event) {
+      document.querySelectorAll('#ledger-rows details.split-allocation-breakdown[open]').forEach(details => {
+        if (!details.contains(event.target)) details.open = false;
+      });
+    }, true);
+
     function renderLedger() {
       if (!['date-asc','date-desc','amount-asc','amount-desc'].includes(state.ledgerSortOrder)) state.ledgerSortOrder = 'date-desc';
       updateLedgerColumnFilterIndicators();
-      // Scheduled bills are managed in the Bill & Income Calendar.
+      // Scheduled bills are managed in the Calendar.
 
       renderLedgerFilterStrip();
       renderLedgerBalanceCheck();
@@ -13791,8 +13928,8 @@ ${acc.name}`);
               <td data-label="Vendor" class="px-3 py-1.5"><a href="#" class="text-indigo-600 dark:text-indigo-300 hover:underline" onclick="event.preventDefault();event.stopPropagation();openLedgerTransaction('${escapeHtml(String(t.id))}')">${escapeHtml(t.vendor || 'Vendor not recorded')}</a></td>
               <td data-label="Description" class="px-3 py-1.5">${t.desc || '-'}</td>
               <td data-label="Type" class="px-3 py-1.5"><span class="px-2 py-0.5 rounded text-[10px] bg-gray-100 dark:bg-gray-800">${t.type === 'Transfer' ? 'Internal Transfer' : (t.type === 'Expense' && Number(t.amount) < 0 && t.refundOfTransactionId ? 'Refund / reimbursement' : displayFinHubTransactionType(t.type))}</span></td>
-              <td data-label="Bucket" class="px-3 py-1.5">${t.type === 'Expense' && Array.isArray(t.splits) && t.splits.length ? `<details class="split-allocation-breakdown inline-block" onclick="event.stopPropagation()"><summary class="cursor-pointer inline-flex items-center rounded-md px-2 py-1 text-[10px] font-bold bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 /20">Split</summary><div class="absolute z-30 mt-1 min-w-56 max-w-72 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-xl p-3 space-y-2" onclick="event.stopPropagation()"><div class="text-[10px] font-bold text-gray-500 uppercase tracking-wide">Allocation breakdown</div>${t.splits.map(a => `<div class="flex justify-between gap-4 text-xs"><span class="min-w-0"><span class="font-semibold">${escapeHtml(a.category || 'Uncategorized')}</span><span class="block text-[10px] text-gray-500">${escapeHtml(a.subcategory || 'No subcategory')}</span></span><strong class="accounting-num whitespace-nowrap">${formatFinancial((Number(a.amountCents)||0)/100)}</strong></div>`).join('')}<div class="border-t border-gray-200 dark:border-gray-700 pt-2 flex justify-between text-xs font-bold"><span>Total</span><span>${formatFinancial(t.amount)}</span></div></div></details>` : (t.category || '-')}</td>
-              <td data-label="Subcategory" class="px-3 py-1.5">${t.type === 'Expense' && Array.isArray(t.splits) && t.splits.length ? 'Multiple' : (t.subcategory || '-')}</td>
+              <td data-label="Category" class="px-3 py-1.5">${t.type === 'Expense' && Array.isArray(t.splits) && t.splits.length ? `<details class="split-allocation-breakdown inline-block" onclick="event.stopPropagation()"><summary class="cursor-pointer inline-flex items-center rounded-md px-2 py-1 text-[10px] font-bold bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 /20">Split</summary><div class="absolute z-30 mt-1 min-w-56 max-w-72 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-xl p-3 space-y-2" onclick="event.stopPropagation()"><div class="text-[10px] font-bold text-gray-500 uppercase tracking-wide">Category allocation</div>${t.splits.map(a => `<div class="flex justify-between gap-4 text-xs"><span class="min-w-0 font-semibold">${escapeHtml(a.category || 'Uncategorized')}</span><strong class="accounting-num whitespace-nowrap">${formatFinancial((Number(a.amountCents)||0)/100)}</strong></div>`).join('')}<div class="border-t border-gray-200 dark:border-gray-700 pt-2 flex justify-between text-xs font-bold"><span>Total allocated</span><span>${formatFinancial(t.amount)}</span></div></div></details>` : (t.category || '-')}</td>
+              <td data-label="Subcategory" class="px-3 py-1.5">${t.type === 'Expense' && Array.isArray(t.splits) && t.splits.length ? `<details class="split-allocation-breakdown inline-block" onclick="event.stopPropagation()"><summary class="cursor-pointer inline-flex items-center rounded-md px-2 py-1 text-[10px] font-bold bg-indigo-500/10 text-indigo-600 dark:text-indigo-300">Split</summary><div class="absolute z-30 mt-1 min-w-56 max-w-72 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-xl p-3 space-y-2" onclick="event.stopPropagation()"><div class="text-[10px] font-bold text-gray-500 uppercase tracking-wide">Subcategory allocation</div>${t.splits.map(a => `<div class="flex justify-between gap-4 text-xs"><span class="min-w-0">${escapeHtml(a.subcategory || 'No subcategory')}</span><strong class="accounting-num whitespace-nowrap">${formatFinancial((Number(a.amountCents)||0)/100)}</strong></div>`).join('')}<div class="border-t border-gray-200 dark:border-gray-700 pt-2 flex justify-between text-xs font-bold"><span>Total allocated</span><span>${formatFinancial(t.amount)}</span></div></div></details>` : (t.subcategory || '-')}</td>
               <td data-label="Account" class="px-3 py-1.5">${acc ? (t.transferToAccountId ? `${acc.name} → ${(state.accounts.find(a=>a.id===t.transferToAccountId)||{}).name||'Account'}` : acc.name) : '-'}</td>
               <td data-label="Amount" class="px-4 py-3 text-right font-bold ${isOutflow ? 'finhub-money-out' : 'finhub-money-in'} accounting-num">${formatFinancial(t.amount, isOutflow)}</td>
               ${renderLedgerRunningBalanceCell(t, runningBalances)}
@@ -16273,13 +16410,53 @@ ${acc.name}`);
     function deleteMerchantRule(idx) { captureUndo('Delete categorization rule'); state.merchantRules.splice(idx, 1); saveData(); renderSettings(); }
 
     function applySmartMerchantRules(desc) {
-      if (document.getElementById('tx-type')?.value !== 'Expense') return;
-      const d=normalizeStatementText(desc);
-      const rule=(state.merchantRules||[]).filter(r=>normalizeStatementText(r.keyword)&&d.includes(normalizeStatementText(r.keyword))).sort((a,b)=>normalizeStatementText(b.keyword).length-normalizeStatementText(a.keyword).length)[0];
-      if(!rule)return;
-      const category=document.getElementById('tx-category');const subcategory=document.getElementById('tx-subcategory');
-      const changed=category.value!==rule.category||subcategory.value!==(rule.subcategory||'');
-      if(changed){category.value=rule.category;updateSubcategoryDropdown();subcategory.value=rule.subcategory||'';}
+      const indicator = document.getElementById('tx-category-rule-match-indicator');
+      const indicatorText = document.getElementById('tx-category-rule-match-text');
+      const vendorInput = document.getElementById('tx-vendor');
+      const category = document.getElementById('tx-category');
+      const subcategory = document.getElementById('tx-subcategory');
+      if (!category || !subcategory || document.getElementById('tx-type')?.value !== 'Expense') {
+        indicator?.classList.add('hidden');
+        return;
+      }
+      const d = normalizeStatementText(desc);
+      const rule = (state.merchantRules || [])
+        .filter(r => normalizeStatementText(r.keyword) && d.includes(normalizeStatementText(r.keyword)))
+        .sort((a,b) => normalizeStatementText(b.keyword).length - normalizeStatementText(a.keyword).length)[0];
+
+      // If the previous vendor supplied these values automatically, remove only
+      // those unchanged auto-filled values when the next vendor has no matching rule.
+      // Never erase a category/subcategory the user has manually changed.
+      if (!rule) {
+        const priorCategory = vendorInput?.dataset.autoRuleCategory;
+        const priorSubcategory = vendorInput?.dataset.autoRuleSubcategory;
+        if (priorCategory && category.value === priorCategory && subcategory.value === (priorSubcategory || '')) {
+          category.value = '';
+          updateSubcategoryDropdown();
+          subcategory.value = '';
+        }
+        if (vendorInput) {
+          delete vendorInput.dataset.autoRuleCategory;
+          delete vendorInput.dataset.autoRuleSubcategory;
+        }
+        indicator?.classList.add('hidden');
+        return;
+      }
+
+      const nextSubcategory = rule.subcategory || '';
+      if (category.value !== rule.category || subcategory.value !== nextSubcategory) {
+        category.value = rule.category;
+        updateSubcategoryDropdown();
+        subcategory.value = nextSubcategory;
+      }
+      if (vendorInput) {
+        vendorInput.dataset.autoRuleCategory = rule.category;
+        vendorInput.dataset.autoRuleSubcategory = nextSubcategory;
+      }
+      if (indicatorText) {
+        indicatorText.textContent = 'Saved rule applied';
+      }
+      indicator?.classList.remove('hidden');
     }
 
     function openCategoryModal(editIdx = -1) {
@@ -16537,7 +16714,7 @@ ${acc.name}`);
         <div class="flex flex-wrap items-center justify-between gap-2 p-3 rounded-xl bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 text-xs">
           <div class="min-w-0"><div class="font-semibold truncate">${escapeHtml(d.desc || 'Debt minimum payment')}</div><div class="text-gray-400">${formatDateMDY(d.date)} · Debt minimum</div></div>
           <div class="flex items-center gap-3"><div class="font-bold accounting-num text-rose-500">${formatFinancial(d.amount, true)}</div>
-          <button type="button" onclick="openDashboardCalendarItem('${escapeHtml(d.id)}')" class="text-indigo-500  font-semibold whitespace-nowrap" title="Open this debt minimum in the Bill & Income Calendar">Open in calendar <i class="fa-solid fa-arrow-up-right-from-square ml-1"></i></button></div>
+          <button type="button" onclick="openDashboardCalendarItem('${escapeHtml(d.id)}')" class="text-indigo-500  font-semibold whitespace-nowrap" title="Open this debt minimum in the Calendar">Open in calendar <i class="fa-solid fa-arrow-up-right-from-square ml-1"></i></button></div>
         </div>`).join('');
     }
 
@@ -16801,9 +16978,15 @@ ${acc.name}`);
       if (!accountRows) return;
       const selectedId = filter?.value || 'all';
       const schedule = window._finhubDebtProjectionSchedule || [];
+      const paidOffByAccount = new Set();
       const rows = schedule.flatMap(period => (period.debts || [])
         .filter(debt => selectedId === 'all' || String(debt.id) === String(selectedId))
-        .map(debt => `<tr class="border-t border-gray-100 dark:border-gray-800"><td class="px-3 py-2 whitespace-nowrap">${period.period}</td><td class="px-3 py-2">${escapeHtml(debt.name)}</td><td class="px-3 py-2 text-right accounting-num font-semibold">${formatFinancial(debt.endingBalance)}</td><td class="px-3 py-2 text-right accounting-num">${formatFinancial(debt.interest)}</td><td class="px-3 py-2 text-right accounting-num">${formatFinancial(debt.minimumPayment)}</td><td class="px-3 py-2 text-right accounting-num">${formatFinancial(debt.extraPrincipal)}</td></tr>`));
+        .filter(debt => !paidOffByAccount.has(String(debt.id)))
+        .map(debt => {
+          const row = `<tr class="border-t border-gray-100 dark:border-gray-800"><td class="px-3 py-2 whitespace-nowrap">${period.period}</td><td class="px-3 py-2">${escapeHtml(debt.name)}</td><td class="px-3 py-2 text-right accounting-num font-semibold">${formatFinancial(debt.endingBalance)}</td><td class="px-3 py-2 text-right accounting-num">${formatFinancial(debt.interest)}</td><td class="px-3 py-2 text-right accounting-num">${formatFinancial(debt.minimumPayment)}</td><td class="px-3 py-2 text-right accounting-num">${formatFinancial(debt.extraPrincipal)}</td></tr>`;
+          if (Number(debt.endingBalance) <= 0.005) paidOffByAccount.add(String(debt.id));
+          return row;
+        }));
       accountRows.innerHTML = rows.length ? rows.join('') : '<tr><td colspan="6" class="px-3 py-4 text-center text-gray-400">No projected rows for this debt account.</td></tr>';
     }
 
@@ -17037,7 +17220,7 @@ ${acc.name}`);
     document.addEventListener('keydown',e=>{if(e.key==='Escape'&&activeDebtHistoryMenu)closeDebtHistoryFilter();});
 
     function openAccountCardFromAccounts(accountId, group) {
-      if (group === 'debts') return openDebtReportForAccount(accountId);
+      // Asset and debt cards share one account-management detail view.
       return openAccountDetail(accountId);
     }
 
@@ -17320,7 +17503,7 @@ ${acc.name}`);
         return;
       }
       if (existingTx?.calendarBillId) {
-        alert('This transaction is linked to the Bill & Income Calendar. Edit the scheduled payment from the calendar instead.');
+        alert('This transaction is linked to the Calendar. Edit the scheduled payment from the calendar instead.');
         return;
       }
       if (existingTx && existingTx.type !== 'Expense') {
@@ -18215,6 +18398,10 @@ function openTransactionModal(requestedEditId = null) {
       const editIdResolved = requestedTransaction ? requestedTransaction.id : null;
       const editId = editIdResolved;
       document.getElementById('tx-edit-id').value = editId ? String(editId) : '';
+      const ruleIndicator = document.getElementById('tx-category-rule-match-indicator');
+      ruleIndicator?.classList.add('hidden');
+      const vendorRuleInput = document.getElementById('tx-vendor');
+      if (vendorRuleInput) { delete vendorRuleInput.dataset.autoRuleCategory; delete vendorRuleInput.dataset.autoRuleSubcategory; }
       updateVendorCleanupActionVisibility();
       const tSelect = document.getElementById('tx-type');
       tSelect.innerHTML = ''; state.transactionTypes.forEach(t => tSelect.innerHTML += `<option value="${t}">${t === 'Transfer' ? 'Internal Transfer' : t}</option>`);
@@ -24901,6 +25088,7 @@ body[data-finhub-theme] .fh-content-card-header {
 <script id="fh-info-popover-foundation-script">
 (function(){
   const INFO={
+    'bucket-migration':{title:'Sinking Funds opening-balance note',body:'Existing savings-goal balances were carried into the Sinking Funds buckets during setup. Any remaining cash in the linked savings account stays unallocated. Check the real account balance against the combined bucket balances before making further allocations.'},
     'bucket-balances':{title:'How bucket balances work',body:'Your real account balance is controlled by Accounts and the Transaction Log. Record deposits, transfers and spending there first. Then use Allocate or Release to update the virtual breakdown. Bucket actions do not create bank transactions or change account balances. Allocated bucket balances are excluded from Available to Spend when their linked accounts are selected.'},
     'budget-structure':{title:'Budget integrity review',body:'This review validates budget structure and arithmetic. It does not confirm that planned income will be received or that budget allocations have been funded in a bank account.'},
     'funding-integrity':{title:'Budget actuals & funding integrity',body:'This review compares saved ledger links, scheduled bills, subcategory actuals, virtual sinking-fund allocations and selected cash balances. Unmatched subcategories are not guessed. Virtual bucket allocations and dedicated savings-account balances are not extra cash; they are deducted from Available to Spend. The separate manual reserve is for bills only and is not a verified bill payment. Review flagged items in the Calendar, Transaction Log, Accounts and Sinking Funds sections.'},
@@ -28515,5 +28703,807 @@ body[data-finhub-theme] #tab-debt .fh-amortization-card { overflow:hidden; }
   }
 }
 </style>
+<style id="finhub-accounts-overview-privacy-v1">
+#accounts-financial-overview > summary { list-style:none; }
+#accounts-financial-overview > summary::-webkit-details-marker { display:none; }
+#accounts-financial-overview:not([open]) .accounts-overview-chevron { transform:rotate(-90deg); }
+#accounts-financial-overview .accounts-overview-chevron { transition:transform .15s ease; }
+#accounts-financial-overview.accounts-values-hidden #accounts-overview-values .accounting-num {
+  font-size:0 !important; letter-spacing:0 !important;
+}
+#accounts-financial-overview.accounts-values-hidden #accounts-overview-values .accounting-num::after {
+  content:"••••••"; font-size:1.35rem; letter-spacing:.08em; color:var(--fh-card-text);
+}
+</style>
+<script id="finhub-accounts-overview-privacy-v1">
+(function(){
+  const key='finhub.accountsOverview.hideAmounts.v1';
+  function apply(){
+    const panel=document.getElementById('accounts-financial-overview');
+    const button=document.getElementById('accounts-overview-privacy-toggle');
+    if(!panel||!button)return;
+    const hidden=localStorage.getItem(key)==='1';
+    panel.classList.toggle('accounts-values-hidden',hidden);
+    button.innerHTML=hidden?'<i class="fa-solid fa-eye-slash" aria-hidden="true"></i>':'<i class="fa-solid fa-eye" aria-hidden="true"></i>';
+    button.setAttribute('aria-label',hidden?'Show financial amounts':'Hide financial amounts');
+    button.title=hidden?'Show financial amounts':'Hide financial amounts';
+  }
+  window.toggleAccountsOverviewPrivacy=function(){
+    const hidden=localStorage.getItem(key)==='1';
+    localStorage.setItem(key,hidden?'0':'1');
+    apply();
+  };
+  document.addEventListener('DOMContentLoaded',apply);
+  apply();
+})();
+</script>
+<style id="finhub-account-integrity-drag-handle-standardization">
+/* Align Account Balance Integrity with the shared left-hand section drag handle. */
+#tab-accounts #account-integrity-panel.fh-reorderable-section {
+  padding-top:0 !important;
+}
+#tab-accounts #account-integrity-panel > .fh-section-drag-handle {
+  left:.55rem !important;
+  right:auto !important;
+  top:.48rem !important;
+  z-index:12 !important;
+}
+#tab-accounts #account-integrity-panel > summary {
+  justify-content:flex-start !important;
+  padding-left:3rem !important;
+}
+#tab-accounts #account-integrity-panel > summary > span:last-child {
+  margin-left:auto;
+}
+</style>
+<style id="finhub-standard-drag-handles-accounts-debt">
+/* Keep the grip in normal header flow so it reserves space instead of covering titles. */
+#tab-accounts #account-integrity-panel.fh-reorderable-section,
+#tab-debt details.fh-disclosure.fh-reorderable-section {
+  padding-top:0 !important;
+}
+#tab-accounts #account-integrity-panel > summary,
+#tab-debt details.fh-disclosure.fh-reorderable-section > summary {
+  display:flex !important;
+  align-items:center !important;
+  justify-content:flex-start !important;
+  gap:.65rem !important;
+  min-height:3.25rem;
+  padding-left:1rem !important;
+}
+#tab-accounts #account-integrity-panel > summary > .fh-section-drag-handle,
+#tab-debt details.fh-disclosure.fh-reorderable-section > summary > .fh-section-drag-handle {
+  position:relative !important;
+  inset:auto !important;
+  transform:none !important;
+  display:inline-flex !important;
+  flex:0 0 1.8rem !important;
+  width:1.8rem !important;
+  height:1.8rem !important;
+  margin:0 .15rem 0 0 !important;
+  opacity:.62;
+  z-index:2 !important;
+}
+#tab-accounts #account-integrity-panel > summary > span:first-of-type,
+#tab-debt details.fh-disclosure.fh-reorderable-section > summary > span:first-of-type {
+  flex:1 1 auto;
+  min-width:0;
+}
+#tab-accounts #account-integrity-panel > summary > span:last-child,
+#tab-debt details.fh-disclosure.fh-reorderable-section > summary > span:last-child {
+  flex:0 1 auto;
+  margin-left:auto;
+  min-width:0;
+  text-align:right;
+}
+#tab-debt details.fh-disclosure.fh-reorderable-section > summary > span:last-child.global-collapsible-description {
+  max-width:58%;
+}
+@media(max-width:680px) {
+  #tab-debt details.fh-disclosure.fh-reorderable-section > summary {
+    align-items:flex-start !important;
+  }
+  #tab-debt details.fh-disclosure.fh-reorderable-section > summary > span:last-child.global-collapsible-description {
+    max-width:48%;
+  }
+}
+</style>
+<style id="finhub-open-details-icon-standard-v1">
+/* Restrained, consistent affordance for opening related records and detail views. */
+.fh-open-details-icon{display:inline-flex;align-items:center;justify-content:center;flex:0 0 1.8rem;width:1.8rem;height:1.8rem;border:1px solid transparent;border-radius:.5rem;color:var(--fh-theme-muted,var(--fh-muted,#8991a2));background:transparent;font-size:.78rem;line-height:1;opacity:.78;cursor:pointer;transition:color .15s ease,background-color .15s ease,border-color .15s ease,opacity .15s ease}
+.fh-open-details-icon:hover,.fh-open-details-icon:focus-visible{color:var(--fh-primary,var(--fh-accent,#818cf8));background:var(--fh-hover-bg,rgba(129,140,248,.09));border-color:var(--fh-card-border,rgba(129,140,248,.22));opacity:1}
+.fh-open-details-icon:focus-visible{outline:2px solid var(--fh-focus,var(--fh-primary,#818cf8));outline-offset:2px}
+</style>
+
+<style id="finhub-account-summary-compact-overflow-crop-v175">
+/* Account detail summary: make the metrics a genuinely compact horizontal strip.
+   Keep the existing data, labels, actions and edit controls intact. */
+#account-detail-modal #account-settings-summary{
+  overflow:hidden!important;
+  border-radius:.8rem!important;
+  box-shadow:none!important;
+  contain:paint;
+}
+#account-detail-modal #account-settings-summary>summary{
+  padding:.38rem .7rem!important;
+  min-height:2rem!important;
+  line-height:1.2!important;
+}
+#account-detail-modal #account-settings-summary>div{
+  padding:.45rem .55rem .55rem!important;
+  gap:.4rem!important;
+  overflow:hidden!important;
+}
+#account-detail-modal #account-settings-summary>div>.flex{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:.6rem!important;
+  padding:0 0 .4rem!important;
+  margin:0!important;
+  background:transparent!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+}
+#account-detail-modal #account-settings-summary>div>.flex>div:first-child{
+  display:flex!important;
+  align-items:baseline!important;
+  flex-wrap:wrap!important;
+  gap:.25rem .5rem!important;
+  min-width:0!important;
+}
+#account-detail-modal #account-settings-summary>div>.flex>div:first-child .text-xs{
+  font-size:.68rem!important;
+  line-height:1.15!important;
+}
+#account-detail-modal #account-settings-summary>div>.flex>div:first-child .text-\\[11px\\]{
+  font-size:.62rem!important;
+  line-height:1.15!important;
+}
+#account-detail-modal #account-settings-summary>div>.flex>div:last-child{
+  display:flex!important;
+  flex-wrap:wrap!important;
+  justify-content:flex-end!important;
+  gap:.35rem!important;
+}
+#account-detail-modal #account-settings-summary .acc-detail-action-btn{
+  min-height:1.85rem!important;
+  padding:.35rem .6rem!important;
+  font-size:.68rem!important;
+  line-height:1.1!important;
+  border-radius:.55rem!important;
+  box-shadow:none!important;
+}
+#account-detail-modal #account-settings-summary #acc-detail-balance-summary{
+  display:grid!important;
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+  gap:.35rem!important;
+  min-width:0!important;
+}
+#account-detail-modal #account-settings-summary #acc-detail-balance-summary>.acc-balance-summary-card{
+  min-width:0!important;
+  min-height:0!important;
+  padding:.42rem .5rem!important;
+  border-radius:.55rem!important;
+  box-shadow:none!important;
+  overflow:hidden!important;
+}
+#account-detail-modal #account-settings-summary #acc-detail-balance-summary .acc-balance-summary-label{
+  font-size:.58rem!important;
+  line-height:1.15!important;
+  letter-spacing:0!important;
+  overflow-wrap:anywhere!important;
+}
+#account-detail-modal #account-settings-summary #acc-detail-balance-summary .text-base,
+#account-detail-modal #account-settings-summary #acc-detail-balance-summary .text-sm{
+  font-size:.88rem!important;
+  line-height:1.2!important;
+  margin-top:.2rem!important;
+}
+#account-detail-modal #account-settings-summary #acc-detail-balance-summary .mt-1,
+#account-detail-modal #account-settings-summary #acc-detail-balance-summary .mt-2{
+  margin-top:.18rem!important;
+}
+#account-detail-modal #account-settings-summary #acc-detail-balance-summary input{
+  min-width:0!important;
+  width:100%!important;
+  max-width:6.2rem!important;
+  min-height:1.75rem!important;
+  padding:.25rem .4rem!important;
+  font-size:.72rem!important;
+}
+#account-detail-modal #account-settings-summary #acc-detail-balance-summary button{
+  min-height:1.7rem!important;
+  margin-top:0!important;
+  padding:.25rem .45rem!important;
+  font-size:.64rem!important;
+  box-shadow:none!important;
+}
+#account-detail-modal #account-settings-summary #acc-detail-balance-summary .acc-opening-balance-card .flex.items-center{
+  flex-wrap:nowrap!important;
+  gap:.25rem!important;
+}
+#account-detail-modal #account-settings-summary #acc-detail-balance-summary .acc-opening-balance-card .acc-balance-summary-currency{
+  font-size:.72rem!important;
+}
+#account-detail-modal #account-settings-summary #acc-detail-balance-summary .text-\\[9px\\]{
+  font-size:.53rem!important;
+  line-height:1.15!important;
+}
+@media(max-width:900px){
+  #account-detail-modal #account-settings-summary #acc-detail-balance-summary{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  }
+}
+@media(max-width:560px){
+  #account-detail-modal #account-settings-summary>div>.flex{
+    align-items:flex-start!important;
+    flex-direction:column!important;
+  }
+  #account-detail-modal #account-settings-summary>div>.flex>div:last-child{
+    justify-content:flex-start!important;
+  }
+  #account-detail-modal #account-settings-summary #acc-detail-balance-summary{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+}
+/* Clip decorative shadows at the account-detail modal boundary so they cannot
+   bleed beyond the visible panel. Preserve scrolling within the transaction table. */
+#account-detail-modal>.bg-white.dark\\:bg-gray-900{
+  overflow:hidden!important;
+  clip-path:inset(0 round 1rem);
+}
+#account-detail-modal #account-settings-summary .acc-balance-summary-card,
+#account-detail-modal #account-settings-summary>div>.flex{
+  filter:none!important;
+}
+</style>
+
+
+<style id="finhub-account-summary-structural-redesign-v176">
+/* Genuine structural redesign: one shared summary surface, not five nested cards. */
+#account-detail-modal #account-settings-summary{
+  border:1px solid var(--border-primary,var(--fh-border,#D7C5EF))!important;
+  border-radius:.85rem!important;
+  overflow:hidden!important;
+  box-shadow:none!important;
+  clip-path:inset(0 round .85rem);
+}
+#account-detail-modal #account-settings-summary>summary{
+  display:flex!important;
+  align-items:center!important;
+  min-height:2.15rem!important;
+  padding:.42rem .75rem!important;
+  font-size:.78rem!important;
+  line-height:1.2!important;
+  font-weight:700!important;
+}
+#account-detail-modal #account-settings-summary>div{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:.55rem!important;
+  padding:.35rem .75rem .65rem!important;
+  overflow:hidden!important;
+}
+/* Put actions in the heading row as compact icon controls. */
+#account-detail-modal #account-settings-summary>div>.flex{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  min-height:2rem!important;
+  padding:0!important;
+  margin:0!important;
+  background:transparent!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+}
+#account-detail-modal #account-settings-summary>div>.flex>div:first-child{display:none!important;}
+#account-detail-modal #account-settings-summary>div>.flex>div:last-child{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:.35rem!important;
+}
+#account-detail-modal #account-settings-summary .acc-detail-action-btn{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:2rem!important;
+  min-width:2rem!important;
+  height:2rem!important;
+  min-height:2rem!important;
+  padding:0!important;
+  margin:0!important;
+  overflow:hidden!important;
+  border:1px solid transparent!important;
+  border-radius:.5rem!important;
+  background:transparent!important;
+  color:var(--text-secondary,var(--fh-muted,#6B7280))!important;
+  box-shadow:none!important;
+  font-size:0!important;
+  line-height:1!important;
+  transition:background-color .15s ease,border-color .15s ease,color .15s ease!important;
+}
+#account-detail-modal #account-settings-summary .acc-detail-action-btn i{
+  display:inline-block!important;
+  margin:0!important;
+  font-size:.95rem!important;
+  line-height:1!important;
+}
+#account-detail-modal #account-settings-summary #acc-detail-edit-asset:hover,
+#account-detail-modal #account-settings-summary #acc-detail-edit-debt:hover{
+  background:var(--surface-hover,rgba(128,90,180,.12))!important;
+  border-color:var(--border-primary,var(--fh-border,#D7C5EF))!important;
+  color:var(--accent-primary,var(--fh-primary,#7C3AED))!important;
+}
+#account-detail-modal #account-settings-summary #acc-detail-archive-btn:hover{
+  background:rgba(220,38,38,.09)!important;
+  border-color:rgba(220,38,38,.25)!important;
+  color:#DC2626!important;
+}
+/* Metrics share one continuous row. Dividers, not individual card outlines,
+   distinguish the values. */
+#account-detail-modal #account-settings-summary #acc-detail-balance-summary{
+  display:grid!important;
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+  gap:0!important;
+  align-items:stretch!important;
+  width:100%!important;
+  min-width:0!important;
+  border:0!important;
+  background:transparent!important;
+}
+#account-detail-modal #account-settings-summary #acc-detail-balance-summary>.acc-balance-summary-card{
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:flex-start!important;
+  min-width:0!important;
+  min-height:0!important;
+  padding:.2rem .7rem!important;
+  margin:0!important;
+  border:0!important;
+  border-right:1px solid var(--border-primary,var(--fh-border,rgba(130,100,160,.22)))!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  overflow:hidden!important;
+}
+#account-detail-modal #account-settings-summary #acc-detail-balance-summary>.acc-balance-summary-card:first-child{padding-left:0!important;}
+#account-detail-modal #account-settings-summary #acc-detail-balance-summary>.acc-balance-summary-card:last-child{
+  border-right:0!important;
+  padding-right:0!important;
+}
+#account-detail-modal #account-settings-summary #acc-detail-balance-summary .acc-balance-summary-label{
+  font-size:.64rem!important;
+  line-height:1.2!important;
+  font-weight:600!important;
+  letter-spacing:0!important;
+  overflow-wrap:anywhere!important;
+}
+#account-detail-modal #account-settings-summary #acc-detail-balance-summary .text-base,
+#account-detail-modal #account-settings-summary #acc-detail-balance-summary .text-sm{
+  margin-top:.2rem!important;
+  font-size:1rem!important;
+  line-height:1.2!important;
+}
+#account-detail-modal #account-settings-summary #acc-detail-balance-summary .mt-1,
+#account-detail-modal #account-settings-summary #acc-detail-balance-summary .mt-2{margin-top:.2rem!important;}
+#account-detail-modal #account-settings-summary #acc-detail-balance-summary .acc-opening-balance-card .flex.items-center{
+  display:flex!important;
+  flex-wrap:nowrap!important;
+  align-items:center!important;
+  gap:.3rem!important;
+  margin-top:.25rem!important;
+}
+#account-detail-modal #account-settings-summary #acc-detail-balance-summary .acc-opening-balance-input{
+  width:6.5rem!important;
+  max-width:6.5rem!important;
+  min-width:0!important;
+  min-height:1.8rem!important;
+  padding:.25rem .4rem!important;
+  font-size:.78rem!important;
+}
+#account-detail-modal #account-settings-summary #acc-detail-balance-summary .acc-opening-balance-save{
+  min-height:1.8rem!important;
+  padding:.25rem .45rem!important;
+  font-size:.68rem!important;
+  box-shadow:none!important;
+}
+#account-detail-modal #account-settings-summary #acc-detail-balance-summary .text-\\[9px\\]{
+  font-size:.58rem!important;
+  line-height:1.2!important;
+}
+@media(max-width:900px){
+  #account-detail-modal #account-settings-summary #acc-detail-balance-summary{grid-template-columns:repeat(3,minmax(0,1fr))!important;}
+  #account-detail-modal #account-settings-summary #acc-detail-balance-summary>.acc-balance-summary-card:nth-child(3){border-right:0!important;}
+  #account-detail-modal #account-settings-summary #acc-detail-balance-summary>.acc-balance-summary-card:nth-child(n+4){border-top:1px solid var(--border-primary,var(--fh-border,rgba(130,100,160,.22)))!important;padding-top:.45rem!important;}
+}
+@media(max-width:560px){
+  #account-detail-modal #account-settings-summary #acc-detail-balance-summary{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+  #account-detail-modal #account-settings-summary #acc-detail-balance-summary>.acc-balance-summary-card{padding:.35rem .5rem!important;}
+  #account-detail-modal #account-settings-summary #acc-detail-balance-summary>.acc-balance-summary-card:nth-child(odd){border-right:1px solid var(--border-primary,var(--fh-border,rgba(130,100,160,.22)))!important;}
+  #account-detail-modal #account-settings-summary #acc-detail-balance-summary>.acc-balance-summary-card:nth-child(even){border-right:0!important;}
+  #account-detail-modal #account-settings-summary #acc-detail-balance-summary>.acc-balance-summary-card:nth-child(n+3){border-top:1px solid var(--border-primary,var(--fh-border,rgba(130,100,160,.22)))!important;padding-top:.45rem!important;}
+}
+</style>
+
+
+<style id="finhub-account-summary-header-tooltip-centering-v177">
+/* Header: title and compact account actions share one line. */
+#account-detail-modal #account-settings-summary{
+  position:relative!important;
+  overflow:visible!important;
+  clip-path:none!important;
+  isolation:visible!important;
+}
+#account-detail-modal #account-settings-summary>summary{
+  position:relative!important;
+  display:flex!important;
+  align-items:center!important;
+  min-height:2.35rem!important;
+  padding:.45rem 6rem .45rem .75rem!important;
+  line-height:1.2!important;
+}
+#account-detail-modal #account-settings-summary>div{
+  overflow:visible!important;
+  padding:.25rem .75rem .65rem!important;
+  gap:.35rem!important;
+}
+/* Lift action icons into the heading row. Preserve the JS-controlled .hidden
+   state so only the correct asset/debt edit action is displayed. */
+#account-detail-modal #account-settings-summary>div>.flex{
+  position:absolute!important;
+  top:.18rem!important;
+  right:.45rem!important;
+  z-index:5!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  min-height:2rem!important;
+  padding:0!important;
+  margin:0!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+#account-detail-modal #account-settings-summary>div>.flex>div:first-child{display:none!important;}
+#account-detail-modal #account-settings-summary>div>.flex>div:last-child{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:.25rem!important;
+}
+#account-detail-modal #account-settings-summary .acc-detail-action-btn.hidden{display:none!important;}
+#account-detail-modal #account-settings-summary .acc-detail-action-btn:not(.hidden){
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:1.9rem!important;
+  min-width:1.9rem!important;
+  height:1.9rem!important;
+  min-height:1.9rem!important;
+  padding:0!important;
+  margin:0!important;
+  border:1px solid transparent!important;
+  border-radius:.45rem!important;
+  background:transparent!important;
+  color:var(--text-secondary,var(--fh-muted,#6B7280))!important;
+  box-shadow:none!important;
+  font-size:0!important;
+  line-height:1!important;
+}
+#account-detail-modal #account-settings-summary .acc-detail-action-btn:not(.hidden) i{
+  display:inline-block!important;
+  margin:0!important;
+  font-size:.92rem!important;
+  line-height:1!important;
+}
+#account-detail-modal #account-settings-summary #acc-detail-edit-asset:not(.hidden):hover,
+#account-detail-modal #account-settings-summary #acc-detail-edit-debt:not(.hidden):hover{
+  background:var(--surface-hover,rgba(128,90,180,.12))!important;
+  color:var(--accent-primary,var(--fh-primary,#7C3AED))!important;
+}
+#account-detail-modal #account-settings-summary #acc-detail-archive-btn:hover{
+  background:rgba(220,38,38,.09)!important;
+  color:#DC2626!important;
+}
+/* Centre the contents of each metric while keeping the shared row/dividers. */
+#account-detail-modal #account-settings-summary #acc-detail-balance-summary>.acc-balance-summary-card{
+  align-items:center!important;
+  text-align:center!important;
+}
+#account-detail-modal #account-settings-summary #acc-detail-balance-summary .acc-balance-summary-label{
+  justify-content:center!important;
+  text-align:center!important;
+}
+#account-detail-modal #account-settings-summary #acc-detail-balance-summary .acc-opening-balance-card .flex.items-center{
+  justify-content:center!important;
+}
+#account-detail-modal #account-settings-summary #acc-detail-balance-summary .acc-opening-balance-card .acc-opening-balance-info{
+  flex:0 0 auto!important;
+}
+#account-detail-modal #account-settings-summary #acc-detail-balance-summary .acc-opening-balance-card .acc-opening-balance-tooltip{
+  z-index:100001!important;
+  white-space:normal!important;
+}
+/* Tooltip must be allowed to escape the summary surface; avoid clipping it
+   behind the summary's rounded border. */
+#account-detail-modal #account-settings-summary #acc-detail-balance-summary,
+#account-detail-modal #account-settings-summary #acc-detail-balance-summary>.acc-balance-summary-card{
+  overflow:visible!important;
+}
+@media(max-width:560px){
+  #account-detail-modal #account-settings-summary>summary{padding-right:5.2rem!important;}
+  #account-detail-modal #account-settings-summary>div>.flex{top:.12rem!important;right:.3rem!important;}
+}
+</style>
+
+
+<style id="finhub-opening-balance-tooltip-placement-focus-v178">
+/* Keep the opening-balance explanation inside the visible account panel:
+   position it below the info trigger rather than above the summary edge. */
+#account-detail-modal #account-settings-summary .acc-opening-info-wrap{
+  position:relative!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  overflow:visible!important;
+}
+#account-detail-modal #account-settings-summary .acc-opening-balance-tooltip{
+  top:calc(100% + .55rem)!important;
+  bottom:auto!important;
+  left:50%!important;
+  transform:translateX(-50%)!important;
+  z-index:100500!important;
+  max-width:min(22rem,calc(100vw - 2rem))!important;
+  max-height:min(14rem,calc(100vh - 2rem))!important;
+  overflow:auto!important;
+}
+/* Remove the purple circular ring on click. Keep keyboard focus visible with
+   a restrained rectangular outline rather than a circle around the icon. */
+#account-detail-modal #account-settings-summary .acc-opening-balance-info,
+#account-detail-modal #account-settings-summary .acc-opening-balance-info:focus,
+#account-detail-modal #account-settings-summary .acc-opening-balance-info:active{
+  outline:none!important;
+  box-shadow:none!important;
+  border-radius:0!important;
+}
+#account-detail-modal #account-settings-summary .acc-opening-balance-info:focus-visible{
+  outline:1px solid var(--fh-primary)!important;
+  outline-offset:2px!important;
+  border-radius:3px!important;
+  box-shadow:none!important;
+}
+</style>
+
+
+<style id="finhub-opening-balance-tooltip-portal-v179">
+/* The tooltip is portalled to document.body by the companion script so modal,
+   summary and card overflow can never crop it. */
+#account-detail-modal #account-settings-summary .acc-opening-balance-tooltip{
+  display:none!important;
+}
+#fh-opening-balance-tooltip-portal{
+  position:fixed!important;
+  z-index:2147483000!important;
+  display:block!important;
+  box-sizing:border-box!important;
+  width:min(22rem,calc(100vw - 24px))!important;
+  max-width:calc(100vw - 24px)!important;
+  max-height:min(14rem,calc(100vh - 24px))!important;
+  overflow:auto!important;
+  padding:.75rem .9rem!important;
+  border:1px solid var(--fh-surface-border,#D8C3F3)!important;
+  border-radius:.85rem!important;
+  background:var(--fh-surface-modal,#fff)!important;
+  color:var(--fh-surface-text,#241532)!important;
+  box-shadow:0 12px 32px rgba(0,0,0,.22)!important;
+  font-size:.88rem!important;
+  font-weight:400!important;
+  line-height:1.45!important;
+  text-transform:none!important;
+  white-space:normal!important;
+  opacity:1!important;
+  visibility:visible!important;
+  pointer-events:none!important;
+}
+</style>
+
+
+<script id="finhub-opening-balance-tooltip-portal-script">
+(function(){
+  if (window.__fhOpeningBalanceTooltipPortal) return;
+  window.__fhOpeningBalanceTooltipPortal = true;
+  let activeTrigger = null;
+  let portal = null;
+  function hide(){
+    if(portal){ portal.remove(); portal=null; }
+    activeTrigger=null;
+  }
+  function show(trigger){
+    const source = trigger && trigger.parentElement && trigger.parentElement.querySelector('.acc-opening-balance-tooltip');
+    if(!source) return;
+    hide();
+    activeTrigger=trigger;
+    portal=document.createElement('div');
+    portal.id='fh-opening-balance-tooltip-portal';
+    portal.setAttribute('role','tooltip');
+    portal.textContent=source.textContent.trim();
+    document.body.appendChild(portal);
+    const rect=trigger.getBoundingClientRect();
+    const tip=portal.getBoundingClientRect();
+    const margin=12;
+    let left=rect.left + rect.width/2 - tip.width/2;
+    left=Math.max(margin,Math.min(left,window.innerWidth-tip.width-margin));
+    let top=rect.bottom+10;
+    if(top+tip.height>window.innerHeight-margin) top=rect.top-tip.height-10;
+    top=Math.max(margin,Math.min(top,window.innerHeight-tip.height-margin));
+    portal.style.left=left+'px';
+    portal.style.top=top+'px';
+  }
+  document.addEventListener('pointerover',function(e){
+    const trigger=e.target.closest && e.target.closest('#account-detail-modal .acc-opening-balance-info');
+    if(trigger && trigger!==activeTrigger) show(trigger);
+  });
+  document.addEventListener('pointerout',function(e){
+    if(!activeTrigger) return;
+    if(e.target===activeTrigger && e.relatedTarget!==activeTrigger) hide();
+  });
+  document.addEventListener('focusin',function(e){
+    const trigger=e.target.closest && e.target.closest('#account-detail-modal .acc-opening-balance-info');
+    if(trigger) show(trigger);
+  });
+  document.addEventListener('focusout',function(e){
+    if(activeTrigger && e.target===activeTrigger) hide();
+  });
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape') hide(); },true);
+  window.addEventListener('resize',hide,{passive:true});
+  window.addEventListener('scroll',hide,true);
+})();
+</script>
+
+
+<style id="finhub-global-info-trigger-standard-v182">
+/* One consistent info trigger treatment throughout FinHub. */
+button.fh-info-trigger,
+[data-fh-info]{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:.45rem!important;
+  min-width:1.45rem!important;
+  min-height:1.45rem!important;
+  width:auto!important;
+  height:auto!important;
+  flex:0 0 auto!important;
+  padding:.12rem .2rem!important;
+  border:0!important;
+  border-radius:.35rem!important;
+  background:transparent!important;
+  color:var(--fh-primary,var(--text-muted,#7c3aed))!important;
+  font-size:inherit!important;
+  line-height:1.25!important;
+  opacity:1!important;
+  box-shadow:none!important;
+  outline:none!important;
+  vertical-align:middle!important;
+  cursor:pointer!important;
+  transition:background-color .14s ease,color .14s ease!important;
+}
+button.fh-info-trigger i,
+[data-fh-info] i{
+  display:inline-block!important;
+  font-size:.95em!important;
+  line-height:1!important;
+}
+button.fh-info-trigger:hover,
+button.fh-info-trigger:active,
+[data-fh-info]:hover,
+[data-fh-info]:active{
+  background:var(--fh-surface-hover,rgba(124,58,237,.09))!important;
+  color:var(--fh-primary,var(--text-muted,#7c3aed))!important;
+  outline:none!important;
+  box-shadow:none!important;
+}
+button.fh-info-trigger:focus,
+[data-fh-info]:focus{
+  outline:none!important;
+  box-shadow:none!important;
+}
+button.fh-info-trigger:focus-visible,
+[data-fh-info]:focus-visible{
+  outline:1px solid var(--fh-primary,var(--text-muted,#7c3aed))!important;
+  outline-offset:2px!important;
+  border-radius:4px!important;
+  box-shadow:none!important;
+}
+/* The Sinking Funds note uses the same text-plus-icon style as all other
+   explanatory info triggers, with no oversized circular focus decoration. */
+.fh-sinking-migration-note-row{
+  display:flex!important;
+  justify-content:flex-end!important;
+  align-items:center!important;
+  padding:.15rem 0!important;
+}
+#fh-global-info-popover{
+  position:fixed!important;
+  z-index:2147483000!important;
+  width:min(340px,calc(100vw - 28px))!important;
+  max-height:min(65vh,420px)!important;
+  overflow:auto!important;
+  padding:12px 14px!important;
+  border:1px solid var(--border-primary,rgba(148,163,184,.45))!important;
+  border-radius:12px!important;
+  background:var(--surface-elevated,var(--surface-primary,#fff))!important;
+  color:var(--text-primary,inherit)!important;
+  box-shadow:0 16px 44px rgba(0,0,0,.25)!important;
+  font-size:12px!important;
+  line-height:1.55!important;
+  white-space:normal!important;
+}
+#fh-global-info-popover .fh-info-title{
+  font-weight:700!important;
+  margin-bottom:5px!important;
+}
+</style>
+
+
+<style id="finhub-info-controls-unified-v183">
+/* Extend the shared info-trigger standard to the legacy account tooltip control. */
+.acc-opening-balance-info,
+button[aria-describedby="acc-opening-balance-tooltip"],
+.acc-info-trigger{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:1.45rem!important;
+  height:1.45rem!important;
+  min-width:1.45rem!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:.35rem!important;
+  background:transparent!important;
+  color:var(--fh-primary,var(--text-muted,#7c3aed))!important;
+  box-shadow:none!important;
+  outline:none!important;
+}
+.acc-opening-balance-info:hover,
+button[aria-describedby="acc-opening-balance-tooltip"]:hover,
+.acc-info-trigger:hover,
+.acc-opening-balance-info:active,
+button[aria-describedby="acc-opening-balance-tooltip"]:active,
+.acc-info-trigger:active{
+  background:var(--fh-surface-hover,rgba(124,58,237,.09))!important;
+  box-shadow:none!important;
+  outline:none!important;
+}
+.acc-opening-balance-info:focus,
+button[aria-describedby="acc-opening-balance-tooltip"]:focus,
+.acc-info-trigger:focus{
+  outline:none!important;
+  box-shadow:none!important;
+}
+.acc-opening-balance-info:focus-visible,
+button[aria-describedby="acc-opening-balance-tooltip"]:focus-visible,
+.acc-info-trigger:focus-visible{
+  outline:1px solid var(--fh-primary,var(--text-muted,#7c3aed))!important;
+  outline-offset:2px!important;
+  box-shadow:none!important;
+}
+</style>
+
 </body>
 </html>
+
+<style id="finhub-v187-calendar-info-trigger-sizing">
+/* Calendar payment-date information uses the shared info treatment while
+   preserving the deliberately compact one-rem event-chip footprint. */
+.fh-calendar-paid-date-info.fh-info-trigger {
+  min-width:1rem !important;
+  min-height:1rem !important;
+  width:1rem !important;
+  height:1rem !important;
+  padding:0 !important;
+  border-radius:3px !important;
+}
+</style>
