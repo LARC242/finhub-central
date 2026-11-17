@@ -881,13 +881,20 @@
     #ledger-date-filter-controls select{max-width:100%;}
 
 
-    /* Paycheque Planner foundational layout: paired planning cards, full-width reporting. */
-    /* Planner layout system: independent planning columns and paired reporting cards. */
-    #tab-biweekly .fh-planner-masonry {
+    /* Paycheque Planner: allocation workflow on the left, supporting financial context on the right. */
+    #tab-biweekly .fh-planner-workspace {
       display:grid;
-      grid-template-columns:repeat(2,minmax(0,1fr));
+      grid-template-columns:minmax(0,1.15fr) minmax(320px,.85fr);
       gap:1rem;
       align-items:start;
+      min-width:0;
+    }
+    #tab-biweekly .fh-planner-masonry {
+      display:grid;
+      grid-template-columns:minmax(0,1fr);
+      gap:1rem;
+      align-items:start;
+      min-width:0;
     }
     #tab-biweekly .fh-planner-column {
       display:flex;
@@ -896,36 +903,51 @@
       min-width:0;
     }
     #tab-biweekly .fh-planner-column > details { min-width:0; margin:0; }
-    #tab-biweekly .fh-planner-fullwidth-section { grid-column:1 / -1; margin-top:1rem; min-width:0; }
+    #tab-biweekly .fh-planner-support-column {
+      display:flex;
+      flex-direction:column;
+      gap:1rem;
+      min-width:0;
+    }
     #tab-biweekly .fh-planner-paired-sections {
       display:grid;
-      grid-template-columns:repeat(2,minmax(0,1fr));
+      grid-template-columns:minmax(0,1fr);
       gap:1rem;
       align-items:start;
-      margin-top:1rem;
-    }
-    #tab-biweekly .fh-planner-paired-sections > details {
-      min-width:0;
       margin:0;
-      align-self:start;
+      min-width:0;
     }
-    /* Paired planner panels remain two columns while expanded for a compact dashboard view. */
-    #tab-biweekly .fh-planner-paired-sections > details[open] {
-      grid-column:auto;
-    }
-    #tab-biweekly .fh-planner-paired-sections > details { min-width:0; }
+    #tab-biweekly .fh-planner-paired-sections > details { min-width:0; margin:0; align-self:start; }
     #tab-biweekly .fh-planner-paired-sections .fh-planner-summary { min-height:3.25rem; }
     #tab-biweekly .fh-planner-paired-sections > details > div:not(.fh-planner-summary) { min-width:0; }
     #tab-biweekly .fh-planner-pair-goals > details > div,
     #tab-biweekly .fh-planner-pair-reporting > details > div { padding-left:.75rem; padding-right:.75rem; }
-    #tab-biweekly details > summary::-webkit-details-marker { display:none; }
-    #tab-accounts #account-integrity-panel > summary { list-style:none; }
-    #tab-accounts #account-integrity-panel > summary::-webkit-details-marker { display:none; }
-    #tab-accounts #account-integrity-panel[open] > summary > span:last-child > i { transform:rotate(180deg); }
-    @media(max-width:900px) {
-      #tab-biweekly .fh-planner-masonry,
+    @media(max-width:1000px) {
+      #tab-biweekly .fh-planner-workspace { grid-template-columns:minmax(0,1fr); }
+      #tab-biweekly .fh-planner-support-column { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); align-items:start; }
+      #tab-biweekly .fh-planner-paired-sections { grid-template-columns:minmax(0,1fr); }
+    }
+    @media(max-width:650px) {
+      #tab-biweekly .fh-planner-support-column { grid-template-columns:minmax(0,1fr); }
+    }
+    @media(min-width:1100px) {
+      #tab-biweekly > .grid.grid-cols-1.sm\\:grid-cols-3.gap-3 {
+        position:sticky;
+        top:.5rem;
+        z-index:15;
+        padding:.45rem;
+        border:1px solid var(--fh-border,rgba(120,130,150,.2));
+        border-radius:1rem;
+        background:var(--fh-card,rgba(255,255,255,.94));
+        box-shadow:0 4px 16px rgba(15,23,42,.06);
+        backdrop-filter:blur(10px);
+      }
+      #tab-biweekly > .grid.grid-cols-1.sm\\:grid-cols-3.gap-3 > div { padding:.65rem .8rem; }
+    }
+    @media(max-width:639px) {
+      #tab-biweekly > .grid.grid-cols-1.sm\\:grid-cols-3.gap-3 { gap:.4rem; }
+      #tab-biweekly > .grid.grid-cols-1.sm\\:grid-cols-3.gap-3 > div { padding:.65rem; }
       #tab-biweekly .fh-planner-paired-sections { grid-template-columns:1fr; }
-      #tab-biweekly .fh-planner-paired-sections > details[open] { grid-column:auto; }
     }
 </style>
 <style id="finhub-v3-mobile-ledger">
@@ -3363,7 +3385,692 @@ body[data-finhub-theme] #tab-debt > details.fh-reorderable-section > summary.fh-
   .fh-calendar-notification-amount { font-size:.7rem !important; }
 }
 </style>
-</head>
+<style id="finhub-minimal-payment-details-status">
+#fh-calendar-payment-details-overlay .fh-payment-status {
+  display:inline-flex; align-items:center; justify-content:center;
+  padding:.25rem .55rem; border-radius:999px; font-size:.7rem;
+  line-height:1.2; font-weight:700; white-space:nowrap;
+}
+#fh-calendar-payment-details-overlay .fh-payment-status-paid {
+  color:var(--fh-success,var(--fh-primary)); background:color-mix(in srgb,var(--fh-success,var(--fh-primary)) 12%,var(--fh-card));
+}
+#fh-calendar-payment-details-overlay .fh-payment-status-partial,
+#fh-calendar-payment-details-overlay .fh-payment-status-review {
+  color:var(--fh-warning,#a16207); background:color-mix(in srgb,var(--fh-warning,#d97706) 13%,var(--fh-card));
+}
+#fh-calendar-payment-details-overlay .fh-payment-status-unpaid {
+  color:var(--fh-muted,var(--fh-ink)); background:var(--fh-raised,var(--fh-surface));
+}
+</style>
+<style id="finhub-v133-mobile-page-header-alignment">
+@media (max-width: 767px) {
+  .tab-content .fh-page-title,
+  .tab-content .fh-page-blurb {
+    text-align:center !important;
+  }
+}
+</style>
+<style id="finhub-v134-accounts-card-foundation">
+/* Accounts page: preserve the familiar two-group structure while tightening
+   card hierarchy and making the existing reorder affordance easier to spot. */
+#tab-accounts .accounts-group-panel {
+  min-width:0;
+}
+#tab-accounts .accounts-group-panel > summary h3 {
+  font-size:.95rem;
+  line-height:1.35rem;
+  font-weight:700;
+  letter-spacing:-.01em;
+}
+#tab-accounts #accounts-page-assets-list,
+#tab-accounts #accounts-page-debt-list {
+  grid-template-columns:minmax(0,1fr);
+  align-items:stretch;
+  gap:.65rem;
+}
+@media (min-width:640px) {
+  #tab-accounts #accounts-page-assets-list,
+  #tab-accounts #accounts-page-debt-list {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+#tab-accounts .account-card {
+  min-width:0;
+  border-radius:.85rem !important;
+  padding:.8rem !important;
+  transition:border-color .16s ease, background-color .16s ease, box-shadow .16s ease;
+}
+#tab-accounts .account-card:hover {
+  box-shadow:0 2px 10px rgba(15,23,42,.055);
+}
+html.dark #tab-accounts .account-card:hover {
+  box-shadow:0 2px 12px rgba(0,0,0,.18);
+}
+#tab-accounts .account-card > .flex:first-child {
+  align-items:center;
+  min-width:0;
+  gap:.55rem;
+}
+#tab-accounts .account-card-grip {
+  display:inline-flex;
+  flex:0 0 1.65rem;
+  width:1.65rem;
+  height:1.65rem;
+  align-items:center;
+  justify-content:center;
+  padding:0 !important;
+  border:1px solid var(--fh-border,rgba(120,130,150,.22));
+  border-radius:.5rem;
+  background:var(--fh-raised,rgba(120,130,150,.07));
+  color:var(--fh-muted,var(--text-secondary,#8792a2)) !important;
+  opacity:.78;
+  cursor:grab;
+  transition:opacity .15s ease,background-color .15s ease,border-color .15s ease,color .15s ease;
+}
+#tab-accounts .account-card:hover .account-card-grip,
+#tab-accounts .account-card:focus-within .account-card-grip {
+  opacity:1;
+  color:var(--fh-ink,var(--text-primary,#475569)) !important;
+  border-color:var(--fh-primary,var(--accent-primary,#94a3b8));
+}
+#tab-accounts .account-card-grip:active { cursor:grabbing; }
+#tab-accounts .account-card label { min-width:0; }
+#tab-accounts .account-card .accounts-type-label {
+  line-height:1.25rem;
+}
+@media (max-width:680px) {
+  #tab-accounts > .flex:first-child {
+    align-items:center !important;
+    justify-content:center !important;
+    text-align:center;
+  }
+  #tab-accounts > .flex:first-child > div {
+    width:100%;
+    text-align:center;
+  }
+  #tab-accounts > .flex:first-child > button {
+    margin-inline:auto;
+  }
+  #tab-accounts .accounts-group-panel > summary {
+    align-items:center !important;
+  }
+}
+@media (prefers-reduced-motion:reduce) {
+  #tab-accounts .account-card,
+  #tab-accounts .account-card-grip { transition:none !important; }
+}
+</style>
+<style id="finhub-v136-budget-planner-foundation">
+/* Paycheque Planner visual foundation: presentation only; calculations and state
+   remain owned by the existing planner code. */
+#tab-biweekly .fh-page-title { letter-spacing:-.025em; }
+#tab-biweekly .fh-page-blurb { max-width:42rem; line-height:1.5; }
+#tab-biweekly #zbb-cycle-selector-wrap { flex-wrap:nowrap; }
+#tab-biweekly #zbb-cycle-selector-wrap button { white-space:nowrap; }
+#tab-biweekly .fh-planner-two-column-grid {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  align-items:start;
+  gap:1rem;
+}
+#tab-biweekly .fh-planner-column {
+  display:flex;
+  min-width:0;
+  flex-direction:column;
+  gap:1rem;
+}
+#tab-biweekly .fh-planner-section {
+  min-width:0;
+  overflow:hidden;
+  border:1px solid var(--fh-border,rgba(120,130,150,.22));
+  border-radius:1rem;
+  background:var(--fh-surface,var(--bg-card,#fff));
+}
+#tab-biweekly .fh-planner-section > summary {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:.75rem;
+  min-height:3.6rem;
+  padding:.85rem 1rem;
+  background:var(--fh-raised,rgba(120,130,150,.07));
+  cursor:pointer;
+  list-style:none;
+}
+#tab-biweekly .fh-planner-section > summary::-webkit-details-marker { display:none; }
+#tab-biweekly .fh-planner-section > summary > div { min-width:0; }
+#tab-biweekly .fh-planner-section > summary h3 {
+  font-size:.9rem;
+  line-height:1.35rem;
+  font-weight:700;
+}
+#tab-biweekly .fh-planner-section-content { padding:1rem; }
+#tab-biweekly #zbb-budget-vs-actual {
+  min-width:0;
+  padding:1rem;
+}
+#tab-biweekly #zbb-budget-vs-actual > * { min-width:0; }
+#tab-biweekly .accounting-num { font-variant-numeric:tabular-nums; }
+@media (max-width:767px) {
+  #tab-biweekly > .flex:first-child {
+    align-items:center !important;
+    text-align:center;
+  }
+  #tab-biweekly > .flex:first-child > div:first-child {
+    width:100%;
+    text-align:center;
+  }
+  #tab-biweekly > .flex:first-child > div:last-child {
+    justify-content:center;
+  }
+  #tab-biweekly .fh-planner-two-column-grid {
+    grid-template-columns:minmax(0,1fr);
+  }
+  #tab-biweekly .grid.grid-cols-2.sm\\:grid-cols-3.lg\\:grid-cols-5 {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  #tab-biweekly #zbb-cycle-selector-wrap {
+    max-width:100%;
+    overflow-x:auto;
+  }
+  #tab-biweekly #zbb-cycle-selector-wrap button {
+    flex:0 0 auto;
+    padding-inline:.65rem;
+  }
+  #tab-biweekly #zbb-payday-display { text-align:center; }
+}
+@media (max-width:380px) {
+  #tab-biweekly .grid.grid-cols-2.sm\\:grid-cols-3.lg\\:grid-cols-5 {
+    grid-template-columns:minmax(0,1fr);
+  }
+}
+@media (prefers-reduced-motion:reduce) {
+  #tab-biweekly .fh-planner-section { transition:none !important; }
+}
+</style>
+<style id="finhub-v137-planner-empty-state-collapse">
+/* Empty savings-goal content should not leave a blank panel below its disclosure. */
+#tab-biweekly #sinking-funds-progress-grid:empty {
+  display:none !important;
+}
+#tab-biweekly details[data-planner-section="savings-goals"] > .p-4:has(#sinking-funds-progress-grid:empty) {
+  display:none !important;
+}
+#tab-biweekly details[data-planner-section="savings-goals"]:not([open]) > .p-4 {
+  display:none !important;
+}
+#tab-biweekly details[data-planner-section="savings-goals"] > summary {
+  min-height:3.6rem;
+}
+@media (max-width:767px) {
+  #tab-biweekly details[data-planner-section="savings-goals"] > summary {
+    align-items:center;
+    gap:.5rem;
+  }
+}
+</style>
+<style id="finhub-v139-savings-goal-planner">
+#tab-biweekly #sinking-funds-progress-grid {
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  gap:.85rem;
+  max-width:none;
+  margin-inline:0;
+}
+#tab-biweekly .fh-savings-goal-card { min-width:0; }
+#tab-biweekly .fh-savings-goal-card strong { font-variant-numeric:tabular-nums; }
+@media (min-width:900px) {
+  #tab-biweekly #sinking-funds-progress-grid {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+@media (max-width:520px) {
+  #tab-biweekly .fh-savings-goal-card { padding:.85rem; }
+  #tab-biweekly .fh-savings-goal-card .grid.grid-cols-2.sm\\:grid-cols-4 {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+</style>
+<style id="finhub-v140-savings-goal-layout">
+#tab-biweekly #sinking-funds-progress-grid { display:block; max-width:none; margin:0; }
+#tab-biweekly .fh-savings-overview {
+  display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:.7rem; margin-bottom:1rem;
+}
+#tab-biweekly .fh-savings-overview-card {
+  min-width:0; min-height:5.25rem; display:flex; flex-direction:column; justify-content:center;
+  gap:.35rem; padding:.85rem 1rem; border:1px solid var(--fh-border,rgba(120,130,150,.2));
+  border-radius:.85rem; background:var(--fh-raised,rgba(120,130,150,.07));
+}
+#tab-biweekly .fh-savings-overview-card > div {
+  color:var(--fh-muted,var(--text-secondary,#64748b)); font-size:.72rem; line-height:1.2; font-weight:600;
+}
+#tab-biweekly .fh-savings-overview-card > strong {
+  font-size:1.35rem; line-height:1.35; overflow-wrap:anywhere; font-variant-numeric:tabular-nums;
+}
+#tab-biweekly .fh-savings-goal-cards {
+  display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.85rem;
+}
+#tab-biweekly .fh-savings-goal-card {
+  min-width:0; padding:1.1rem !important; border-radius:1rem !important;
+  background:var(--fh-surface,var(--bg-card,#fff)) !important;
+}
+#tab-biweekly .fh-savings-metrics-grid {
+  display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.55rem;
+}
+#tab-biweekly .fh-savings-metric {
+  min-width:0; padding:.65rem .7rem; border:1px solid var(--fh-border,rgba(120,130,150,.16));
+  border-radius:.7rem; background:var(--fh-raised,rgba(120,130,150,.06));
+}
+#tab-biweekly .fh-savings-metric > div {
+  margin-bottom:.2rem; color:var(--fh-muted,var(--text-secondary,#64748b)); font-size:.68rem; line-height:1.25;
+}
+#tab-biweekly .fh-savings-metric > strong {
+  display:block; font-size:.9rem; line-height:1.35; overflow-wrap:anywhere; font-variant-numeric:tabular-nums;
+}
+#tab-biweekly .fh-savings-forecast-note {
+  margin-top:.85rem; color:var(--fh-muted,var(--text-secondary,#64748b)); font-size:.68rem; line-height:1.45;
+}
+@media (max-width:767px) {
+  #tab-biweekly .fh-savings-overview { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  #tab-biweekly .fh-savings-goal-cards { grid-template-columns:minmax(0,1fr); }
+}
+@media (max-width:380px) {
+  #tab-biweekly .fh-savings-metrics-grid { grid-template-columns:minmax(0,1fr); }
+}
+</style>
+<style id="finhub-v141-savings-goal-one-column">
+#tab-biweekly .fh-savings-overview {
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:.55rem;
+  margin-bottom:.9rem;
+}
+#tab-biweekly .fh-savings-overview-card {
+  min-height:3.8rem;
+  padding:.55rem .8rem;
+  gap:.2rem;
+  border-radius:.7rem;
+}
+#tab-biweekly .fh-savings-overview-card > div {
+  font-size:.66rem;
+  line-height:1.15;
+}
+#tab-biweekly .fh-savings-overview-card > strong {
+  font-size:1.12rem;
+  line-height:1.2;
+  white-space:nowrap;
+  overflow-wrap:normal;
+}
+#tab-biweekly .fh-savings-goal-cards {
+  grid-template-columns:minmax(0,1fr);
+  gap:.75rem;
+}
+#tab-biweekly .fh-savings-goal-card {
+  padding:1rem 1.15rem !important;
+}
+#tab-biweekly .fh-savings-goal-card .fh-savings-metrics-grid {
+  grid-template-columns:repeat(3,minmax(0,1fr));
+}
+#tab-biweekly .fh-savings-goal-card .fh-savings-metric {
+  padding:.55rem .7rem;
+}
+#tab-biweekly .fh-savings-goal-card .fh-savings-metric > div {
+  font-size:.66rem;
+}
+#tab-biweekly .fh-savings-goal-card .fh-savings-metric > strong {
+  font-size:.88rem;
+}
+@media (max-width:767px) {
+  #tab-biweekly .fh-savings-overview {
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:.35rem;
+  }
+  #tab-biweekly .fh-savings-overview-card {
+    min-height:3.4rem;
+    padding:.45rem .35rem;
+    align-items:center;
+    text-align:center;
+  }
+  #tab-biweekly .fh-savings-overview-card > div {
+    font-size:.58rem;
+    min-height:1.35em;
+  }
+  #tab-biweekly .fh-savings-overview-card > strong {
+    font-size:1rem;
+  }
+  #tab-biweekly .fh-savings-goal-card {
+    padding:.85rem !important;
+  }
+  #tab-biweekly .fh-savings-goal-card .fh-savings-metrics-grid {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+@media (max-width:380px) {
+  #tab-biweekly .fh-savings-overview-card > div { font-size:.53rem; }
+  #tab-biweekly .fh-savings-overview-card > strong { font-size:.9rem; }
+  #tab-biweekly .fh-savings-goal-card .fh-savings-metrics-grid {
+    grid-template-columns:minmax(0,1fr);
+  }
+}
+</style>
+<style id="finhub-v142-savings-goal-compact-expandable">
+#tab-biweekly .fh-savings-overview {
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:.5rem;
+  margin-bottom:.75rem;
+}
+#tab-biweekly .fh-savings-overview-card {
+  min-height:0;
+  padding:.5rem .7rem;
+  gap:.15rem;
+  border-radius:.65rem;
+}
+#tab-biweekly .fh-savings-overview-card > div { font-size:.64rem; }
+#tab-biweekly .fh-savings-overview-card > strong {
+  font-size:1rem;
+  line-height:1.2;
+  white-space:nowrap;
+  letter-spacing:-.025em;
+}
+#tab-biweekly .fh-savings-goal-cards {
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  gap:.55rem;
+}
+#tab-biweekly .fh-savings-goal-card {
+  padding:0 !important;
+  overflow:hidden;
+  border-radius:.85rem !important;
+}
+#tab-biweekly .fh-savings-goal-card > summary {
+  display:flex;
+  align-items:center;
+  gap:.8rem;
+  padding:.8rem 1rem;
+  cursor:pointer;
+  list-style:none;
+}
+#tab-biweekly .fh-savings-goal-card > summary::-webkit-details-marker { display:none; }
+#tab-biweekly .fh-savings-goal-main { flex:1; min-width:0; }
+#tab-biweekly .fh-savings-goal-title-line,
+#tab-biweekly .fh-savings-goal-amount-line,
+#tab-biweekly .fh-savings-goal-bottomline {
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:.4rem .65rem;
+}
+#tab-biweekly .fh-savings-goal-title-line { justify-content:space-between; margin-bottom:.35rem; }
+#tab-biweekly .fh-savings-goal-name { font-size:.95rem; }
+#tab-biweekly .fh-savings-goal-amount-line { font-size:.9rem; }
+#tab-biweekly .fh-savings-goal-amount-line > strong { font-size:1rem; }
+#tab-biweekly .fh-savings-goal-separator,
+#tab-biweekly .fh-savings-goal-percent { color:var(--fh-muted,var(--text-secondary,#64748b)); font-size:.75rem; }
+#tab-biweekly .fh-savings-goal-percent { margin-left:auto; }
+#tab-biweekly .fh-savings-goal-progress {
+  height:6px;
+  overflow:hidden;
+  border-radius:999px;
+  margin:.4rem 0 .3rem;
+}
+#tab-biweekly .fh-savings-goal-progress > span {
+  display:block;
+  height:100%;
+  border-radius:inherit;
+}
+#tab-biweekly .fh-savings-goal-bottomline {
+  justify-content:space-between;
+  color:var(--fh-muted,var(--text-secondary,#64748b));
+  font-size:.68rem;
+}
+#tab-biweekly .fh-savings-expand {
+  flex:0 0 auto;
+  display:grid;
+  place-items:center;
+  width:1.8rem;
+  height:1.8rem;
+  border-radius:999px;
+  color:var(--fh-muted,var(--text-secondary,#64748b));
+  background:var(--fh-raised,rgba(120,130,150,.07));
+  transition:transform .15s ease;
+}
+#tab-biweekly .fh-savings-goal-card[open] .fh-savings-expand { transform:rotate(180deg); }
+#tab-biweekly .fh-savings-goal-details {
+  padding:.7rem 1rem .9rem;
+  border-top:1px solid var(--fh-border,rgba(120,130,150,.18));
+}
+#tab-biweekly .fh-savings-goal-date-row {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:.6rem;
+}
+#tab-biweekly .fh-savings-goal-date-row > div { display:flex; flex-direction:column; gap:.15rem; }
+#tab-biweekly .fh-savings-goal-date-row span,
+#tab-biweekly .fh-savings-goal-plan-note {
+  color:var(--fh-muted,var(--text-secondary,#64748b));
+  font-size:.68rem;
+}
+#tab-biweekly .fh-savings-goal-date-row strong { font-size:.82rem; }
+#tab-biweekly .fh-savings-goal-plan-note { margin-top:.45rem; }
+#tab-biweekly .fh-savings-metrics-grid {
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:.45rem;
+}
+#tab-biweekly .fh-savings-metric { padding:.5rem .6rem; min-width:0; }
+#tab-biweekly .fh-savings-metric > div { font-size:.62rem; }
+#tab-biweekly .fh-savings-metric > strong { font-size:.82rem; overflow-wrap:anywhere; }
+@media (max-width:767px) {
+  #tab-biweekly .fh-savings-overview { gap:.3rem; }
+  #tab-biweekly .fh-savings-overview-card { padding:.45rem .3rem; text-align:center; align-items:center; }
+  #tab-biweekly .fh-savings-overview-card > div { font-size:.56rem; }
+  #tab-biweekly .fh-savings-overview-card > strong { font-size:.88rem; }
+  #tab-biweekly .fh-savings-goal-card > summary { padding:.7rem .75rem; }
+  #tab-biweekly .fh-savings-goal-details { padding:.65rem .75rem .8rem; }
+  #tab-biweekly .fh-savings-metrics-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@media (max-width:380px) {
+  #tab-biweekly .fh-savings-overview-card > div { font-size:.5rem; }
+  #tab-biweekly .fh-savings-overview-card > strong { font-size:.78rem; }
+  #tab-biweekly .fh-savings-metrics-grid { grid-template-columns:minmax(0,1fr); }
+}
+</style>
+<style id="finhub-v143-savings-goal-denser-rows">
+/* Denser goal rows: retain the same information, reduce vertical rhythm. */
+#tab-biweekly .fh-savings-overview {
+  gap:.4rem;
+  margin-bottom:.6rem;
+}
+#tab-biweekly .fh-savings-overview-card {
+  min-height:0;
+  padding:.4rem .65rem;
+  gap:.08rem;
+  border-radius:.6rem;
+}
+#tab-biweekly .fh-savings-overview-card > div {
+  font-size:.6rem;
+  line-height:1.1;
+}
+#tab-biweekly .fh-savings-overview-card > strong {
+  font-size:.95rem;
+  line-height:1.15;
+}
+#tab-biweekly .fh-savings-goal-cards { gap:.4rem; }
+#tab-biweekly .fh-savings-goal-card { border-radius:.7rem !important; }
+#tab-biweekly .fh-savings-goal-card > summary {
+  padding:.58rem .8rem;
+  gap:.55rem;
+}
+#tab-biweekly .fh-savings-goal-title-line {
+  margin-bottom:.15rem;
+  gap:.35rem;
+}
+#tab-biweekly .fh-savings-goal-name { font-size:.86rem; }
+#tab-biweekly .fh-savings-goal-title-line .inline-flex {
+  padding:.18rem .55rem;
+  font-size:.58rem;
+}
+#tab-biweekly .fh-savings-goal-amount-line {
+  gap:.4rem;
+  font-size:.78rem;
+  line-height:1.2;
+}
+#tab-biweekly .fh-savings-goal-amount-line > strong { font-size:.88rem; }
+#tab-biweekly .fh-savings-goal-separator,
+#tab-biweekly .fh-savings-goal-percent { font-size:.68rem; }
+#tab-biweekly .fh-savings-goal-progress {
+  height:5px;
+  margin:.28rem 0 .22rem;
+}
+#tab-biweekly .fh-savings-goal-bottomline {
+  font-size:.62rem;
+  line-height:1.2;
+}
+#tab-biweekly .fh-savings-expand {
+  width:1.55rem;
+  height:1.55rem;
+  font-size:.75rem;
+}
+#tab-biweekly .fh-savings-goal-details {
+  padding:.55rem .8rem .7rem;
+}
+#tab-biweekly .fh-savings-goal-date-row { gap:.45rem; }
+#tab-biweekly .fh-savings-goal-date-row span,
+#tab-biweekly .fh-savings-goal-plan-note { font-size:.62rem; }
+#tab-biweekly .fh-savings-goal-date-row strong { font-size:.75rem; }
+#tab-biweekly .fh-savings-goal-plan-note { margin-top:.3rem; }
+#tab-biweekly .fh-savings-metrics-grid { gap:.35rem; }
+#tab-biweekly .fh-savings-metric { padding:.4rem .5rem; border-radius:.55rem; }
+#tab-biweekly .fh-savings-metric > div { font-size:.58rem; }
+#tab-biweekly .fh-savings-metric > strong { font-size:.75rem; }
+#tab-biweekly .fh-savings-forecast-note { margin-top:.55rem; }
+@media (max-width:767px) {
+  #tab-biweekly .fh-savings-overview { gap:.25rem; }
+  #tab-biweekly .fh-savings-overview-card { padding:.35rem .22rem; }
+  #tab-biweekly .fh-savings-overview-card > div { font-size:.52rem; }
+  #tab-biweekly .fh-savings-overview-card > strong { font-size:.82rem; }
+  #tab-biweekly .fh-savings-goal-card > summary { padding:.52rem .65rem; }
+  #tab-biweekly .fh-savings-goal-details { padding:.5rem .65rem .65rem; }
+}
+@media (max-width:380px) {
+  #tab-biweekly .fh-savings-overview-card > div { font-size:.48rem; }
+  #tab-biweekly .fh-savings-overview-card > strong { font-size:.75rem; }
+}
+</style>
+<style id="finhub-v147-savings-goals-final-compact-layout">
+/* Match the approved compact savings-goal reference: one clean metric row. */
+#tab-biweekly .fh-savings-goal-card .fh-savings-metrics-grid {
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:.35rem;
+  align-items:center;
+}
+#tab-biweekly .fh-savings-goal-card .fh-savings-metric {
+  min-width:0;
+  padding:.1rem .25rem;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  text-align:left;
+}
+#tab-biweekly .fh-savings-goal-card .fh-savings-metric > div {
+  margin:0 0 .12rem;
+  font-size:.66rem;
+  line-height:1.2;
+}
+#tab-biweekly .fh-savings-goal-card .fh-savings-metric > strong {
+  display:block;
+  font-size:.84rem;
+  line-height:1.25;
+  white-space:nowrap;
+  overflow-wrap:normal;
+}
+#tab-biweekly .fh-savings-overview-card {
+  align-items:center;
+  text-align:center;
+}
+#tab-biweekly .fh-savings-overview-card > div,
+#tab-biweekly .fh-savings-overview-card > strong {
+  width:100%;
+  text-align:center;
+}
+@media (max-width:767px) {
+  #tab-biweekly .fh-savings-goal-card .fh-savings-metrics-grid {
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:.18rem;
+  }
+  #tab-biweekly .fh-savings-goal-card .fh-savings-metric {
+    padding:.08rem .1rem;
+  }
+  #tab-biweekly .fh-savings-goal-card .fh-savings-metric > div {
+    font-size:.56rem;
+  }
+  #tab-biweekly .fh-savings-goal-card .fh-savings-metric > strong {
+    font-size:.72rem;
+  }
+}
+@media (max-width:420px) {
+  #tab-biweekly .fh-savings-goal-card .fh-savings-metrics-grid {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    row-gap:.45rem;
+  }
+}
+</style>
+<style id="finhub-v148-transaction-filter-chip-theme">
+#tab-ledger .ledger-active-filter-chip {
+  border-color:var(--fh-border,var(--border-color,rgba(120,130,150,.24)));
+  background:var(--fh-raised,var(--bg-card,rgba(120,130,150,.08)));
+  color:var(--fh-muted,var(--text-secondary,#64748b));
+  transition:background-color .15s ease,border-color .15s ease,color .15s ease;
+}
+#tab-ledger .ledger-active-filter-chip:hover {
+  border-color:var(--fh-primary,var(--accent-primary,#0d9488));
+  background:var(--fh-surface-selected,var(--fh-raised,rgba(120,130,150,.1)));
+  color:var(--fh-primary,var(--accent-primary,#0d9488));
+}
+#tab-ledger #ledger-active-filter-chips > span {
+  font-size:.62rem;
+}
+@media (max-width:767px) {
+  #tab-ledger #ledger-active-filter-chips {
+    justify-content:center;
+    gap:.3rem;
+  }
+  #tab-ledger .ledger-active-filter-chip {
+    padding:.22rem .48rem;
+    font-size:.58rem;
+  }
+}
+</style>
+<style>
+/* Paycheque Planner: remove the unused legacy second allocation track.
+   The workspace itself owns the two-column desktop layout. */
+#tab-biweekly .fh-planner-workspace > .fh-planner-two-column-grid {
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) !important;
+  width:100%;
+  min-width:0;
+}
+#tab-biweekly .fh-planner-workspace > .fh-planner-two-column-grid > .fh-planner-column {
+  grid-column:1;
+  width:100%;
+  min-width:0;
+}
+</style><style>
+/* Paycheque Planner: balanced desktop workspace columns. */
+@media (min-width:1001px) {
+  #tab-biweekly .fh-planner-workspace {
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;
+    gap:1rem;
+    align-items:start;
+  }
+}
+</style><style>
+/* Sidebar wordmark contrast: use the active theme's readable foreground. */
+html body#app-body > aside#finhub-sidebar .sidebar-brand-copy h1 {
+  color:var(--fh-ink,var(--text-primary,#243044)) !important;
+}
+</style></head>
 <body class="bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 min-h-screen flex flex-col md:flex-row transition-colors duration-200 relative" id="app-body">
 <!-- UNDO TOAST NOTIFICATION -->
 <div class="fixed bottom-6 right-24 z-50 hidden transition-all" id="undo-toast"><button aria-label="Undo last action" class="w-9 h-9 inline-flex items-center justify-center rounded-full bg-gray-900 dark:bg-gray-700 text-white shadow-lg border border-gray-600 :var(--fh-primary)]" onclick="executeUndo()" title="Undo last action (Ctrl+Z / Cmd+Z · available for 5 seconds)" type="button"><i class="fa-solid fa-rotate-left text-sm"></i></button></div>
@@ -3441,8 +4148,8 @@ body[data-finhub-theme] #tab-debt > details.fh-reorderable-section > summary.fh-
 <section class="tab-content space-y-6" id="tab-dashboard">
 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
 <div class="dashboard-heading">
-<h2 class="text-2xl font-bold">Financial Dashboard</h2>
-<p class="text-sm text-gray-500 dark:text-gray-400">Your spending, available cash, upcoming payments and monthly progress</p>
+<h2 class="text-2xl font-bold fh-page-title">Dashboard</h2>
+<p class="text-sm text-gray-500 dark:text-gray-400 fh-page-blurb">Your spending, available cash, upcoming payments and monthly progress</p>
 <button class="dashboard-reset-link" onclick="resetDashboardOrder()" title="Reset dashboard layout" type="button"><i class="fa-solid fa-rotate-left"></i><span>Reset layout</span></button>
 </div>
 <div class="flex flex-wrap items-center gap-2 dashboard-action-toolbar">
@@ -3546,7 +4253,7 @@ body[data-finhub-theme] #tab-debt > details.fh-reorderable-section > summary.fh-
 <!-- ACCOUNTS -->
 <section class="tab-content hidden space-y-6" id="tab-accounts">
 <div class="flex flex-wrap items-end justify-between gap-3">
-<div><h2 class="text-2xl font-bold">Accounts</h2><p class="text-sm text-gray-500 dark:text-gray-400">Review balances, reconciliation status and account activity.</p></div>
+<div><h2 class="text-2xl font-bold fh-page-title">Accounts</h2><p class="text-sm text-gray-500 dark:text-gray-400 fh-page-blurb">View account balances, manage accounts and check statement variances.</p></div>
 <button class="fh-action-button fh-action-button-primary" onclick="openAccountModal()" type="button"><i aria-hidden="true" class="fa-solid fa-plus"></i> Add Account</button>
 </div>
 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -3581,7 +4288,7 @@ body[data-finhub-theme] #tab-debt > details.fh-reorderable-section > summary.fh-
 </section>
 <!-- FINANCIAL CHECK-IN -->
 <section class="tab-content hidden space-y-6" id="tab-financial-checkin">
-<div class="flex flex-wrap items-start justify-between gap-3"><div class="flex items-start gap-3"><i class="fa-solid fa-clipboard-check text-3xl theme-text mt-1"></i><div><h2 class="text-2xl font-bold">Financial Check-In</h2><p class="text-sm text-gray-500 dark:text-gray-400">A clear picture of where things stand.</p></div></div><div class="flex items-center gap-2 text-sm"><label class="font-semibold" for="checkin-period-display">Period:</label><span class="font-semibold" id="checkin-period-display"></span></div></div>
+<div class="flex flex-wrap items-start justify-between gap-3"><div class="flex items-start gap-3"><i class="fa-solid fa-clipboard-check text-3xl theme-text mt-1"></i><div><h2 class="text-2xl font-bold fh-page-title">Financial Check-In</h2><p class="text-sm text-gray-500 dark:text-gray-400 fh-page-blurb">A clear picture of where things stand.</p></div></div><div class="flex items-center gap-2 text-sm"><label class="font-semibold" for="checkin-period-display">Period:</label><span class="font-semibold" id="checkin-period-display"></span></div></div>
 <div aria-label="Financial Check-In sections" class="flex flex-wrap gap-2 border-b border-gray-200 dark:border-gray-700 pb-2" role="tablist">
 <button class="checkin-theme-tab is-active" id="checkin-tab-monthly" onclick="switchCheckInPanel('monthly')" type="button"><i class="fa-regular fa-calendar-check mr-2"></i>Monthly Check-In</button>
 <button class="checkin-theme-tab" id="checkin-tab-yearly" onclick="switchCheckInPanel('yearly')" type="button"><i class="fa-regular fa-calendar mr-2"></i>Year-End Review</button>
@@ -3601,8 +4308,8 @@ body[data-finhub-theme] #tab-debt > details.fh-reorderable-section > summary.fh-
 <section class="tab-content hidden space-y-6 fh-page-shell" id="tab-reports">
 <header class="fh-page-header">
 <div class="fh-page-header-copy">
-<h2>Reports &amp; Exports</h2>
-<p>Generate reports or export your FinHub data.</p>
+<h2 class="fh-page-title">Reports &amp; Exports</h2>
+<p class="fh-page-blurb">Generate reports or export your FinHub data.</p>
 </div>
 </header>
 <section aria-labelledby="reports-section-title" class="fh-page-section">
@@ -3683,8 +4390,8 @@ body[data-finhub-theme] #tab-debt > details.fh-reorderable-section > summary.fh-
 <section class="tab-content hidden space-y-6" id="tab-biweekly">
 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
 <div>
-<h2 class="text-2xl font-bold">Paycheque Planner</h2>
-<p class="text-sm text-gray-500 dark:text-gray-400">Plan every paycheque. Fund your bills. Stay in control of your money.</p>
+<h2 class="text-2xl font-bold fh-page-title">Paycheque Planner</h2>
+<p class="text-sm text-gray-500 dark:text-gray-400 fh-page-blurb">Plan each paycheque from income through bills, debt, spending and savings.</p>
 </div>
 <div class="flex flex-wrap items-center justify-end gap-2">
 <input class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-1.5 text-xs font-semibold shadow-sm" id="zbb-period-picker" onchange="changeZbbPeriod(this.value)" type="month"/>
@@ -3715,17 +4422,17 @@ body[data-finhub-theme] #tab-debt > details.fh-reorderable-section > summary.fh-
 </div>
 </div>
 <div class="flex items-center justify-between gap-3 pt-1">
-<div><h3 class="text-sm font-bold">Allocation breakdown</h3><p class="text-[10px] text-gray-400">See how each planned amount changes your remaining balance.</p></div>
+<div><h3 class="text-sm font-bold">Paycheque breakdown</h3><p class="text-[10px] text-gray-400">See where your paycheque goes.</p></div>
 </div>
 <!-- WATERFALL SUMMARY CARDS -->
 <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
 <div class="bg-white dark:bg-gray-900 p-3 rounded-xl border border-gray-200 dark:border-gray-800">
-<div class="text-[11px] text-gray-500 uppercase font-bold">Income Subtotal</div>
+<div class="text-[11px] text-gray-500 uppercase font-bold">Income</div>
 <div class="text-lg font-bold fh-status-income dark:fh-status-income mt-1 accounting-num" id="zbb-sum-income">$ - </div>
 <div class="text-[10px] text-gray-400 mt-1">100.0% of Income</div>
 </div>
 <div class="bg-white dark:bg-gray-900 p-3 rounded-xl border border-gray-200 dark:border-gray-800">
-<div class="text-[11px] text-gray-500 uppercase font-bold">After Fixed Bills</div>
+<div class="text-[11px] text-gray-500 uppercase font-bold">After Bills</div>
 <div class="text-lg font-bold text-indigo-600 dark:text-indigo-400 mt-1 accounting-num theme-text" id="zbb-rem-bills">$ - </div>
 <div class="text-[10px] text-gray-400 mt-1" id="zbb-pct-bills">Fixed Bills: 0%</div>
 </div>
@@ -3735,19 +4442,21 @@ body[data-finhub-theme] #tab-debt > details.fh-reorderable-section > summary.fh-
 <div class="text-[10px] text-gray-400 mt-1" id="zbb-pct-debt">Debt: 0%</div>
 </div>
 <div class="bg-white dark:bg-gray-900 p-3 rounded-xl border border-gray-200 dark:border-gray-800">
-<div class="text-[11px] text-gray-500 uppercase font-bold">After Variable Expenses</div>
+<div class="text-[11px] text-gray-500 uppercase font-bold">After Spending</div>
 <div class="text-lg font-bold text-indigo-600 dark:text-indigo-400 mt-1 accounting-num theme-text" id="zbb-rem-variable">$ - </div>
 <div class="text-[10px] text-gray-400 mt-1" id="zbb-pct-variable">Variable: 0%</div>
 </div>
 <div class="bg-white dark:bg-gray-900 p-3 rounded-xl border border-gray-200 dark:border-gray-800">
-<div class="text-[11px] text-gray-500 uppercase font-bold">Zero-Based Bottom Line</div>
+<div class="text-[11px] text-gray-500 uppercase font-bold">Remaining</div>
 <div class="text-lg font-bold fh-status-income dark:fh-status-income mt-1 accounting-num" id="zbb-cycle-bottomline">$0.00</div>
 <div class="text-[10px] text-gray-400 mt-1" id="zbb-pct-savings">Savings: 0%</div>
 </div>
 </div>
-<div class="fh-planner-two-column-grid fh-planner-masonry">
+<div class="fh-planner-workspace"><div class="fh-planner-two-column-grid fh-planner-masonry">
 <div class="fh-planner-column">
 <!-- STEP 1: INCOME -->
+<!-- STEP 3: DEBT PAYMENTS -->
+<!-- STEP 5: SAVINGS -->
 <details class="fh-planner-section" data-planner-section="income" open=""><summary class="fh-planner-summary">
 <div>
 <h3 class="text-md font-bold fh-status-income dark:fh-status-income"><i class="fa-solid fa-wallet mr-2"></i>1. Income Sources (Cycle <span class="cycle-num-label">1</span>)</h3>
@@ -3756,22 +4465,7 @@ body[data-finhub-theme] #tab-debt > details.fh-reorderable-section > summary.fh-
 <button class="px-3 py-1 text-white rounded-lg text-xs font-semibold theme-bg" onclick="event.preventDefault(); event.stopPropagation(); openZbbItemModal('income')"><i class="fa-solid fa-plus mr-1"></i> Add Income</button>
 </summary><div class="fh-planner-section-content">
 <div class="space-y-2" id="zbb-income-list"></div>
-</div></details>
-<!-- STEP 3: DEBT PAYMENTS -->
-<details class="fh-planner-section" data-planner-section="debt" open=""><summary class="fh-planner-summary">
-<div>
-<h3 class="text-md font-bold text-amber-600 dark:text-amber-400"><i class="fa-solid fa-credit-card mr-2"></i>3. Less: Debt</h3>
-<p class="text-xs text-gray-400 mt-0.5">Subtotal: <strong class="accounting-num" id="zbb-sub-debt-disp">$ - </strong> | Remaining Bal: <strong class="accounting-num" id="zbb-rem-debt-disp">$ - </strong></p>
-</div>
-<div class="flex flex-wrap gap-2"><button class="fh-planner-refresh-button px-3 py-1 rounded-lg text-xs font-semibold" onclick="event.preventDefault(); event.stopPropagation(); syncDebtMinimumsToZbb()" title="Copies the current minimum payment amounts from Debt Account details into this paycheque budget. Existing paycheque splits are preserved."><i class="fa-solid fa-rotate mr-1"></i> Refresh Debt Minimums</button><button class="px-3 py-1 text-white rounded-lg text-xs font-semibold theme-bg" onclick="event.preventDefault(); event.stopPropagation(); openZbbItemModal('debt')"><i class="fa-solid fa-plus mr-1"></i> Add Debt</button></div>
-</summary><div class="fh-planner-section-content">
-<div class="space-y-2" id="zbb-debt-list"></div>
-</div></details>
-<!-- STEP 5: SAVINGS -->
-</div>
-<div class="fh-planner-column">
-<!-- STEP 2: FIXED EXPENSES -->
-<details class="fh-planner-section" data-planner-section="fixed" open=""><summary class="fh-planner-summary">
+</div></details><details class="fh-planner-section" data-planner-section="fixed" open=""><summary class="fh-planner-summary">
 <div>
 <h3 class="text-md font-bold text-rose-600 dark:text-rose-400"><i class="fa-solid fa-file-invoice-dollar mr-2"></i>2. Less: Fixed Expenses</h3>
 <p class="text-xs text-gray-400 mt-0.5">This paycheque allocation: <strong class="accounting-num" id="zbb-sub-bills-disp">$ - </strong> | Remaining Bal: <strong class="accounting-num" id="zbb-rem-bills-disp">$ - </strong></p>
@@ -3779,9 +4473,15 @@ body[data-finhub-theme] #tab-debt > details.fh-reorderable-section > summary.fh-
 <button class="px-3 py-1 text-white rounded-lg text-xs font-semibold theme-bg" onclick="event.preventDefault(); event.stopPropagation(); openZbbItemModal('bill')"><i class="fa-solid fa-plus mr-1"></i> Add Bill</button>
 </summary><div class="fh-planner-section-content">
 <div class="space-y-2" id="zbb-bills-list"></div>
-</div></details>
-<!-- STEP 4: VARIABLE EXPENSES -->
-<details class="fh-planner-section" data-planner-section="variable" open=""><summary class="fh-planner-summary">
+</div></details><details class="fh-planner-section" data-planner-section="debt" open=""><summary class="fh-planner-summary">
+<div>
+<h3 class="text-md font-bold text-amber-600 dark:text-amber-400"><i class="fa-solid fa-credit-card mr-2"></i>3. Less: Debt</h3>
+<p class="text-xs text-gray-400 mt-0.5">Subtotal: <strong class="accounting-num" id="zbb-sub-debt-disp">$ - </strong> | Remaining Bal: <strong class="accounting-num" id="zbb-rem-debt-disp">$ - </strong></p>
+</div>
+<div class="flex flex-wrap gap-2"><button class="fh-planner-refresh-button px-3 py-1 rounded-lg text-xs font-semibold" onclick="event.preventDefault(); event.stopPropagation(); syncDebtMinimumsToZbb()" title="Copies the current minimum payment amounts from Debt Account details into this paycheque budget. Existing paycheque splits are preserved."><i class="fa-solid fa-rotate mr-1"></i> Refresh Debt Minimums</button><button class="px-3 py-1 text-white rounded-lg text-xs font-semibold theme-bg" onclick="event.preventDefault(); event.stopPropagation(); openZbbItemModal('debt')"><i class="fa-solid fa-plus mr-1"></i> Add Debt</button></div>
+</summary><div class="fh-planner-section-content">
+<div class="space-y-2" id="zbb-debt-list"></div>
+</div></details><details class="fh-planner-section" data-planner-section="variable" open=""><summary class="fh-planner-summary">
 <div>
 <h3 class="text-md font-bold text-amber-600 dark:text-amber-400"><i class="fa-solid fa-cart-shopping mr-2"></i>4. Less: Variable Expenses</h3>
 <p class="text-xs text-gray-400 mt-0.5">Total variable pool: <strong class="accounting-num" id="zbb-sub-variable-disp">$ - </strong> | Remaining after pool: <strong class="accounting-num" id="zbb-rem-variable-disp">$ - </strong></p>
@@ -3789,10 +4489,7 @@ body[data-finhub-theme] #tab-debt > details.fh-reorderable-section > summary.fh-
 <button class="px-3 py-1 text-white rounded-lg text-xs font-semibold theme-bg" onclick="event.preventDefault(); event.stopPropagation(); openZbbItemModal('variable')"><i class="fa-solid fa-plus mr-1"></i> Add Variable Exp</button>
 </summary><div class="fh-planner-section-content">
 <div class="space-y-2" id="zbb-variable-list"></div>
-</div></details>
-</div>
-</div>
-<details class="fh-planner-section fh-planner-fullwidth-section" data-planner-section="savings" open=""><summary class="fh-planner-summary">
+</div></details><details class="fh-planner-section" data-planner-section="savings" open=""><summary class="fh-planner-summary">
 <div>
 <h3 class="text-md font-bold text-indigo-600 dark:text-indigo-400 theme-text"><i class="fa-solid fa-piggy-bank mr-2"></i>5. Less: Savings (Zero-Based Goal)</h3>
 <p class="text-xs text-gray-400 mt-0.5">Subtotal: <strong class="accounting-num" id="zbb-sub-savings-disp">$ - </strong> | Final Balance: <strong class="accounting-num" id="zbb-rem-savings-disp">$ - </strong></p>
@@ -3800,33 +4497,37 @@ body[data-finhub-theme] #tab-debt > details.fh-reorderable-section > summary.fh-
 <button class="px-3 py-1 text-white rounded-lg text-xs font-semibold theme-bg" onclick="event.preventDefault(); event.stopPropagation(); openZbbItemModal('savings')"><i class="fa-solid fa-plus mr-1"></i> Add Savings</button>
 </summary><div class="fh-planner-section-content">
 <div class="space-y-2" id="zbb-savings-list"></div>
-</div></details>
-<div class="fh-planner-paired-sections fh-planner-pair-goals">
+</div></details></div>
+</div><div class="fh-planner-support-column"><div class="fh-planner-paired-sections fh-planner-pair-goals">
 <details class="fh-planner-section" data-planner-section="savings-goals" open="">
-<summary class="fh-planner-summary">Savings Goals &amp; Target Date Tracker <span class="text-xs font-normal text-gray-400 ml-2">Progress, targets and estimated completion</span></summary>
+<summary class="fh-planner-summary">Savings Goals <span class="text-xs font-normal text-gray-400 ml-2">Progress &amp; target dates</span></summary>
 <div class="p-4">
 <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-4 shadow-sm">
-<div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-800 pb-3"><h3 class="text-md font-bold text-indigo-600 dark:text-indigo-400 theme-text"><i class="fa-solid fa-bullseye mr-2"></i>Savings Goal Progress &amp; Target Date Tracker</h3></div>
+<div class="flex justify-between items-center pb-3"><h3 class="text-md font-bold text-indigo-600 dark:text-indigo-400 theme-text"><i class="fa-solid fa-bullseye mr-2"></i>Savings Goal Planner</h3></div>
 <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-2" id="sinking-funds-progress-grid"></div>
 </div>
 </div>
 </details>
 <details class="fh-planner-section" data-planner-section="sinking-funds-manager" open="">
-<summary class="fh-planner-summary">Sinking Funds Bucket Manager <span class="text-xs font-normal text-gray-400 ml-2">Virtual allocations against real savings-account balances</span></summary>
+<summary class="fh-planner-summary">Sinking Funds <span class="text-xs font-normal text-gray-400 ml-2">Track savings set aside for specific goals.</span></summary>
 <div class="p-4">
 <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-4 shadow-sm">
 <div class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 dark:border-gray-800 pb-3">
-<div><h3 class="text-md font-bold text-indigo-600 dark:text-indigo-400 theme-text"><i class="fa-solid fa-layer-group mr-2"></i>Sinking Funds Bucket Manager</h3><p class="text-xs text-gray-400 mt-1">Keep one real bank balance, with separate virtual balances for your savings buckets.</p></div>
+<div><h3 class="text-md font-bold text-indigo-600 dark:text-indigo-400 theme-text"><i class="fa-solid fa-layer-group mr-2"></i>Sinking Funds</h3><p class="text-xs text-gray-400 mt-1">Keep one real bank balance, with separate virtual balances for your savings buckets.</p></div>
 <div class="flex items-center gap-2"><button aria-label="How bucket balances work" class="inline-flex items-center justify-center w-6 h-6 rounded-full border border-gray-300 dark:border-gray-700 text-[11px] text-gray-500 hover:text-current" data-fh-info="bucket-balances" title="How bucket balances work" type="button">i</button><button class="px-3 py-2 text-white rounded-lg text-xs font-semibold theme-bg" onclick="openSinkingBucketModal()" type="button"><i class="fa-solid fa-plus mr-1"></i> Add Bucket</button></div>
 </div>
 <div class="space-y-4" id="sinking-bucket-manager"></div>
 </div>
 </div>
 </details>
-</div>
-<div class="fh-planner-paired-sections fh-planner-pair-reporting">
-<details class="fh-planner-section" data-planner-section="monthly-overview" open="">
-<summary class="fh-planner-summary">Monthly Budget Overview <span class="text-xs font-normal text-gray-400 ml-2">Paycheques 1 and 2, with the third cheque shown separately</span></summary>
+</div><div class="fh-planner-paired-sections fh-planner-pair-reporting">
+
+
+<details class="fh-planner-section" data-planner-section="budget-vs-actual" open="">
+<summary class="fh-planner-summary"><div><h3 class="text-md font-bold"><i class="fa-solid fa-scale-balanced mr-2 theme-text"></i>Budget vs. Actual</h3><p class="text-xs text-gray-400 mt-0.5">Compare planned variable spending with posted transactions for this paycheque.</p></div><span class="text-xs text-gray-400">Paycheque <span id="zbb-bva-cycle-label">1</span></span></summary>
+<div class="px-5 pb-5 space-y-4" id="zbb-budget-vs-actual"></div>
+</details><details class="fh-planner-section" data-planner-section="monthly-overview" open="">
+<summary class="fh-planner-summary">Monthly Budget <span class="text-xs font-normal text-gray-400 ml-2">Compare both regular paycheques and any third cheque.</span></summary>
 <div class="px-5 pb-5 space-y-3">
 <div id="zbb-monthly-rollup"></div>
 <div class="rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden divide-y divide-gray-200 dark:divide-gray-800" id="zbb-integrity-review-group">
@@ -3835,19 +4536,14 @@ body[data-finhub-theme] #tab-debt > details.fh-reorderable-section > summary.fh-
 </div>
 <div id="zbb-budget-ledger-reconciliation-panel"></div>
 </div>
-</details>
-<details class="fh-planner-section" data-planner-section="budget-vs-actual" open="">
-<summary class="fh-planner-summary"><div><h3 class="text-md font-bold"><i class="fa-solid fa-scale-balanced mr-2 theme-text"></i>Budget vs. Actual</h3><p class="text-xs text-gray-400 mt-0.5">Compare your planned variable spending with recorded transactions for the selected paycheque.</p></div><span class="text-xs text-gray-400">Paycheque <span id="zbb-bva-cycle-label">1</span></span></summary>
-<div class="px-5 pb-5 space-y-4" id="zbb-budget-vs-actual"></div>
-</details>
-</div>
+</details></div></div></div>
 </section>
 <!-- TAB 3: RECURRING BILL & INCOME CALENDAR -->
 <section class="tab-content hidden space-y-6" id="tab-calendar">
 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
 <div>
-<h2 class="text-2xl font-bold">Recurring Income &amp; Expense Calendar</h2>
-<p class="text-sm text-gray-500 dark:text-gray-400">View scheduled income, bills and debt payments by month or year.</p>
+<h2 class="text-2xl font-bold fh-page-title">Recurring Income &amp; Expense Calendar</h2>
+<p class="text-sm text-gray-500 dark:text-gray-400 fh-page-blurb">View scheduled income, bills and debt payments by month or year.</p>
 </div>
 <div class="flex items-center space-x-2">
 <button class="px-3 py-1.5 text-white rounded-xl text-xs font-semibold shadow-sm theme-bg" id="btn-view-monthly" onclick="toggleCalendarView('monthly')">Monthly View</button>
@@ -3882,8 +4578,8 @@ body[data-finhub-theme] #tab-debt > details.fh-reorderable-section > summary.fh-
 <section class="tab-content hidden space-y-6" id="tab-joint">
 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
 <div>
-<h2 class="text-2xl font-bold">Joint Household Bills &amp; Settlement</h2>
-<p class="text-sm text-gray-500 dark:text-gray-400">Automatic monthly rollover with clean E-Transfer summaries</p>
+<h2 class="text-2xl font-bold fh-page-title">Joint Household Bills &amp; Settlement</h2>
+<p class="text-sm text-gray-500 dark:text-gray-400 fh-page-blurb">Automatic monthly rollover with clean E-Transfer summaries</p>
 </div>
 <div class="flex flex-wrap items-center gap-2">
 <input class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-1.5 text-xs font-semibold shadow-sm" id="joint-month-picker" onchange="changeJointMonthPicker(this.value)" type="month"/>
@@ -3939,7 +4635,7 @@ body[data-finhub-theme] #tab-debt > details.fh-reorderable-section > summary.fh-
 <!-- TAB 5: DEBT PAYOFF -->
 <section class="tab-content hidden space-y-6" id="tab-debt">
 <div class="fh-page-header flex flex-col md:flex-row md:items-end justify-between gap-3">
-<div class="fh-page-header-copy"><h2 class="fh-page-header-title">Debt Overview &amp; Amortization</h2><p class="fh-page-header-description">Understand what you owe, what you have repaid and how your balances are changing.</p></div>
+<div class="fh-page-header-copy"><h2 class="fh-page-header-title fh-page-title">Debt Overview &amp; Amortization</h2><p class="fh-page-header-description fh-page-blurb">Understand what you owe, what you have repaid and how your balances are changing.</p></div>
 <label class="fh-page-header-control">Debt account
       <select class="fh-page-header-select" id="debt-report-account" onchange="renderDebtReporting()"><option value="all">All Debts</option></select>
 </label>
@@ -4000,7 +4696,6 @@ body[data-finhub-theme] #tab-debt > details.fh-reorderable-section > summary.fh-
 </div>
 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs"><div class="rounded-xl fh-theme-raised p-3">Estimated result <strong class="block mt-1" id="debt-sim-payoff-date">—</strong></div><div class="rounded-xl fh-theme-raised p-3">Estimated interest saved <strong class="block mt-1" id="debt-interest-saved">$0.00</strong></div><div class="rounded-xl fh-theme-raised p-3">Estimated time saved <strong class="block mt-1" id="debt-time-saved">0 Months</strong></div></div>
 <div><h4 class="font-semibold text-sm mb-2">Compare payoff strategies</h4><div class="overflow-x-auto"><table class="w-full text-left text-xs"><thead class="fh-theme-raised fh-theme-muted"><tr><th class="px-3 py-2">Strategy</th><th class="px-3 py-2 text-right">Estimated months</th><th class="px-3 py-2 text-right">Estimated interest</th><th class="px-3 py-2 text-right">Debt-free date</th></tr></thead><tbody id="debt-strategy-comparison-rows"></tbody></table></div></div>
-
 <div class="hidden"><span id="extra-payoff-val"></span><span id="debt-total-bal"></span><span id="debt-monthly-minimums"></span><span id="debt-minimum-note"></span><span id="debt-extra-summary"></span><span id="debt-extra-summary-monthly"></span><table><tbody id="debt-overview-rows"></tbody><tfoot id="debt-overview-foot"></tfoot></table><div id="debt-priority-list"></div><select id="debt-account-picker"></select><table><tbody id="debt-payment-rows"></tbody></table><div id="debt-activity-empty"></div></div>
 </div>
 </details><details class="fh-disclosure"><summary class="fh-disclosure-trigger"><span>Projected Amortization Schedule</span><span class="global-collapsible-description">Month-by-month payoff projection across all selected debt accounts.</span></summary><div class="fh-disclosure-panel p-4 space-y-3"><div class="fh-disclosure-panel overflow-x-auto"><table class="w-full text-left text-xs"><thead class="fh-theme-raised"><tr><th class="px-2 py-2">Period</th><th class="px-2 py-2 text-right">Ending debt</th><th class="px-2 py-2 text-right">Interest</th><th class="px-2 py-2 text-right">Minimums</th><th class="px-2 py-2 text-right">Extra principal</th></tr></thead><tbody id="debt-projection-schedule-rows"></tbody></table></div><p class="text-xs fh-theme-muted mt-2" id="debt-projection-schedule-note"></p></div></details><details class="fh-disclosure"><summary class="fh-disclosure-trigger"><span>Projected Amortization by Account</span><span class="global-collapsible-description">Separate projected balances and payment details for each debt account.</span></summary><div class="fh-disclosure-panel p-4 space-y-3"><label class="text-xs fh-theme-muted flex gap-2 items-center mt-3">Account <select class="fh-theme-raised border fh-theme-border rounded-lg px-2 py-1" id="debt-projection-account-filter" onchange="renderDebtProjectionAccountRows()"><option value="all">All debt accounts</option></select></label><div class="overflow-x-auto"><table class="w-full text-left text-xs"><tbody id="debt-projection-account-rows"></tbody></table></div><p class="text-xs fh-theme-muted mt-2" id="debt-projection-account-note">Projected figures only.</p></div></details>
@@ -4009,8 +4704,8 @@ body[data-finhub-theme] #tab-debt > details.fh-reorderable-section > summary.fh-
 <section class="tab-content hidden space-y-6" id="tab-ledger">
 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
 <div>
-<h2 class="text-2xl font-bold">Transaction Log</h2>
-<p class="text-sm fh-theme-muted">Smart merchant auto-tagging, recurring bill scanner, and filtering</p>
+<h2 class="text-2xl font-bold fh-page-title">Transactions</h2>
+<p class="text-sm fh-theme-muted fh-page-blurb">Search, filter, review and manage your transactions.</p>
 </div>
 <div class="flex items-center space-x-2">
 <div class="flex fh-theme-surface p-1 rounded-xl border fh-theme-border">
@@ -4105,8 +4800,8 @@ body[data-finhub-theme] #tab-debt > details.fh-reorderable-section > summary.fh-
 <section class="tab-content hidden space-y-6" id="tab-settings">
 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
 <div>
-<h2 class="text-2xl font-bold">Settings &amp; Customization</h2>
-<p class="text-sm fh-theme-muted">Configure categories, automation, accounts, backups, and appearance</p>
+<h2 class="text-2xl font-bold fh-page-title">Settings &amp; Customization</h2>
+<p class="text-sm fh-theme-muted fh-page-blurb">Configure categories, automation, accounts, backups, and appearance</p>
 </div>
 </div>
 <details class="fh-settings-section" id="settings-group-backup" open="">
@@ -4180,11 +4875,11 @@ body[data-finhub-theme] #tab-debt > details.fh-reorderable-section > summary.fh-
 </div>
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 <label class="text-xs font-semibold">Page background colour
-      <input class="block mt-2 h-10 w-full rounded-lg" id="fh-page-bg" onchange="setAppearanceValue('appPageBackground',this.value)" type="color">
-</input></label>
+      <input class="block mt-2 h-10 w-full rounded-lg" id="fh-page-bg" onchange="setAppearanceValue('appPageBackground',this.value)" type="color"/>
+</label>
 <label class="text-xs font-semibold">Accent / outline colour
-      <input class="block mt-2 h-10 w-full rounded-lg" id="fh-outline-color" onchange="setAppearanceValue('appOutlineColor',this.value)" type="color">
-</input></label>
+      <input class="block mt-2 h-10 w-full rounded-lg" id="fh-outline-color" onchange="setAppearanceValue('appOutlineColor',this.value)" type="color"/>
+</label>
 <label class="text-xs font-semibold">Special button colour
       <input class="block mt-2 h-10 w-full rounded-lg" id="fh-button-color" onchange="setAppearanceValue('appButtonColor',this.value)" type="color"/>
 </label>
@@ -4678,7 +5373,7 @@ Bonus" rows="4"></textarea></div>
 <button aria-label="Close calendar item dialog" class="text-gray-400" onclick="closeCalendarModal()" title="Close calendar item dialog" type="button"><i aria-hidden="true" class="fa-solid fa-xmark text-lg"></i></button>
 </div>
 <form class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3" id="calendar-form" onsubmit="saveCalendarItem(event)">
-<input id="cal-edit-id" type="hidden" value="">
+<input id="cal-edit-id" type="hidden" value=""/>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Due Date</label><input class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-date" required="" type="date"/></div>
 <div class="fh-calendar-recurrence-row">
 <label class="block text-xs font-semibold text-gray-500 mb-1">Recurrence Schedule</label>
@@ -4740,7 +5435,7 @@ Bonus" rows="4"></textarea></div>
 <button class="finhub-action-btn finhub-action-cancel fh-btn-cancel fh-calendar-modal-action fh-calendar-modal-cancel" onclick="closeCalendarModal()" type="button">Cancel</button>
 <button class="finhub-action-btn finhub-action-save fh-calendar-modal-action fh-calendar-modal-save" type="submit">Save</button>
 </div>
-</input></form>
+</form>
 </div>
 </div>
 <!-- MODAL: RECURRING CALENDAR DELETE CHOICE -->
@@ -8993,9 +9688,19 @@ ${acc.name}`);
     function getZbbItemCycleCents(item, cycle) {
       const split = Array.isArray(item?.split) ? item.split : [50, 50, 0];
       const raw = Number(split[cycle - 1]) || 0;
-      return item?.splitMode === 'dollar'
-        ? zbbMoneyCents(raw)
-        : Math.round(zbbMoneyCents(item?.monthly) * raw / 100);
+      if (item?.splitMode === 'dollar') return zbbMoneyCents(raw);
+
+      const monthlyCents = zbbMoneyCents(item?.monthly);
+      const regularSplitTotal = (Number(split[0]) || 0) + (Number(split[1]) || 0);
+
+      // Reconcile rounding only across the two regular monthly paycheques.
+      // The third-cheque allocation is independent and must never be used
+      // to absorb a monthly rounding remainder.
+      if (Math.abs(regularSplitTotal - 100) <= 0.0001 && Number(cycle) === 2) {
+        const firstChequeCents = Math.round(monthlyCents * (Number(split[0]) || 0) / 100);
+        return monthlyCents - firstChequeCents;
+      }
+      return Math.round(monthlyCents * raw / 100);
     }
     function calculateZbbCycleTotals(zbb, cycle, period) {
       const incomeCents = (zbb.incomes || []).reduce((sum, item) => sum + getZbbItemCycleCents(item, cycle), 0);
@@ -9544,6 +10249,169 @@ ${acc.name}`);
 `;
     }
 
+
+    // Savings Goal Planner: forecast-only calculations. The Paycheque Planner
+    // remains the source of truth; this function never changes allocations.
+    function renderSavingsGoalPlanner(zbb, period) {
+      const host = document.getElementById('sinking-funds-progress-grid');
+      if (!host) return;
+      const goals = Array.isArray(zbb.savings) ? zbb.savings : [];
+      if (!goals.length) {
+        host.innerHTML = '<div class="rounded-xl border border-dashed p-5 text-sm text-gray-500" style="border-color:var(--fh-border,rgba(120,130,150,.3))">No savings goals yet. Add a Savings line in your Paycheque Planner to start tracking a goal.</div>';
+        return;
+      }
+
+      const today = new Date();
+      today.setHours(0,0,0,0);
+      const paydayAnchor = new Date(FINHUB_PAYDAY_ANCHOR.getFullYear(), FINHUB_PAYDAY_ANCHOR.getMonth(), FINHUB_PAYDAY_ANCHOR.getDate());
+      const latestTemplateKey = Object.keys(state.zbbTemplates || {}).sort().slice(-1)[0] || period;
+      const resolveTemplate = key => (state.zbbTemplates || {})[key] || state.zbbTemplates?.[latestTemplateKey] || zbb;
+      const getGoalContribution = (goal, payday) => {
+        const key = `${payday.getFullYear()}-${String(payday.getMonth()+1).padStart(2,'0')}`;
+        const template = resolveTemplate(key);
+        const match = (template.savings || []).find(item => String(item.id) === String(goal.id)) ||
+                      (template.savings || []).find(item => item.name === goal.name);
+        if (!match) return 0;
+        const dates = getScheduledPaydaysForMonth(key);
+        const cycleIndex = dates.findIndex(d => d.getTime() === payday.getTime());
+        if (cycleIndex < 0) return 0;
+        return Math.max(0, zbbCentsMoney(getZbbItemCycleCents(match, cycleIndex + 1)));
+      };
+      const nextPaydayAfter = date => {
+        const diff = Math.floor((date - paydayAnchor) / 86400000);
+        const steps = Math.floor(diff / 14) + 1;
+        const next = new Date(paydayAnchor);
+        next.setDate(next.getDate() + steps * 14);
+        while (next <= date) next.setDate(next.getDate() + 14);
+        return next;
+      };
+      const fmtDate = date => date ? date.toLocaleDateString('en-CA', {year:'numeric',month:'short',day:'numeric'}) : 'Not projected';
+      const cards = [];
+      let totalSaved = 0, totalTargets = 0, onTrack = 0, attention = 0, reached = 0;
+
+      goals.forEach(goal => {
+        const linkedBucket = goal.linkedBucketId ? getSinkingBucketById(goal.linkedBucketId) : sinkingBucketLedger().buckets.find(bucket => String(bucket.linkedZbbItemId || '') === String(goal.id));
+        const linkedAccount = goal.linkedAccountId ? (state.accounts || []).find(account => String(account.id) === String(goal.linkedAccountId) && account.type === 'asset') : null;
+        const startingBalance = Number(goal.startBal) || 0;
+        const savedContribution = Number(goal.savedBal) || 0;
+        const saved = Math.max(0, linkedBucket ? Number(linkedBucket.balance)||0 : linkedAccount ? Number(linkedAccount.balance)||0 : startingBalance + savedContribution);
+        const target = Math.max(0, Number(goal.targetBal) || (linkedBucket ? Number(linkedBucket.targetBal)||0 : 0));
+        const remaining = Math.max(0, target - saved);
+        const pct = target > 0 ? Math.min(100, saved / target * 100) : (saved > 0 ? 100 : 0);
+        const targetDate = goal.targetDate || linkedBucket?.targetDate || '';
+        const deadline = targetDate ? new Date(`${targetDate}T23:59:59`) : null;
+        const hasDeadline = deadline && !Number.isNaN(deadline.getTime());
+        const futurePaydays = [];
+        let payday = nextPaydayAfter(today);
+        const horizon = hasDeadline ? deadline : new Date(today.getFullYear()+10, today.getMonth(), today.getDate());
+        while (payday <= horizon && futurePaydays.length < 300) {
+          futurePaydays.push(new Date(payday));
+          payday.setDate(payday.getDate()+14);
+        }
+        const requiredPerPayday = hasDeadline && remaining > 0 && futurePaydays.length
+          ? remaining / futurePaydays.length : 0;
+        const nextPayday = nextPaydayAfter(today);
+        const currentAllocation = getGoalContribution(goal, nextPayday);
+        const totalPlannedByDeadline = futurePaydays.reduce((sum, date) => sum + getGoalContribution(goal, date), 0);
+        const projectedBalanceAtDeadline = saved + totalPlannedByDeadline;
+        const forecastPaydays = [];
+        let forecastBalance = saved, projectedDate = null, forecastPaydayCount = 0;
+        payday = nextPaydayAfter(today);
+        for (let i=0; i<300 && forecastBalance < target - 0.005; i++) {
+          const contribution = getGoalContribution(goal, payday);
+          forecastPaydayCount++;
+          forecastBalance += contribution;
+          if (forecastBalance >= target - 0.005) { projectedDate = new Date(payday); break; }
+          payday.setDate(payday.getDate()+14);
+        }
+        const projectedNever = target > saved && !projectedDate;
+        const achieved = target > 0 && remaining <= 0.005;
+        const deadlinePassed = hasDeadline && deadline < today && !achieved;
+        const meetsDeadline = hasDeadline && !deadlinePassed && projectedBalanceAtDeadline >= target - 0.005;
+        const flexible = !hasDeadline;
+        let status, statusClass, statusText;
+        if (achieved) { status='Goal reached'; statusClass='success'; statusText='Target achieved'; reached++; }
+        else if (deadlinePassed) { status='Behind schedule'; statusClass='danger'; statusText='Target date has passed'; attention++; }
+        else if (flexible) { status='Flexible'; statusClass='neutral'; statusText=projectedDate ? `Projected ${fmtDate(projectedDate)}` : 'No contribution plan'; }
+        else if (meetsDeadline) { status='On track'; statusClass='success'; statusText=`Projected ${fmtDate(projectedDate || deadline)}`; onTrack++; }
+        else if (currentAllocation > 0 && projectedDate) { status='At risk'; statusClass='warning'; statusText=`Projected ${fmtDate(projectedDate)}`; attention++; }
+        else { status='Behind schedule'; statusClass='danger'; statusText='Current plan will not reach target'; attention++; }
+
+        totalSaved += saved;
+        totalTargets += target;
+        const shortfall = Math.max(0, requiredPerPayday - currentAllocation);
+        const extraForDeadline = Math.max(0, target - projectedBalanceAtDeadline);
+        const statusStyles = {
+          success:'border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300',
+          warning:'border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-300',
+          danger:'border-rose-300 bg-rose-50 text-rose-700 dark:border-rose-800 dark:bg-rose-950/30 dark:text-rose-300',
+          neutral:'border-gray-300 bg-gray-100 text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300'
+        };
+        const goalName = escapeHtml(goal.name || 'Savings goal');
+        const dateText = hasDeadline ? fmtDate(deadline) : 'No target date';
+        const forecastText = achieved ? 'Goal already reached' : projectedDate ? fmtDate(projectedDate) : 'No completion forecast';
+        const planText = target > 0
+          ? (hasDeadline
+              ? `${futurePaydays.length} scheduled paydays until target`
+              : 'Flexible timeline · based on current allocations')
+          : 'Set a target amount to calculate a forecast';
+        const contributionRows = target > 0 ? `
+          <div class="fh-savings-metrics-grid mt-3">
+            <div class="fh-savings-metric"><div>Current / payday</div><strong class="accounting-num">${formatFinancial(currentAllocation)}</strong></div>
+            ${hasDeadline ? `
+              <div class="fh-savings-metric"><div>Required / payday</div><strong class="accounting-num">${remaining > 0 ? formatFinancial(requiredPerPayday) : '—'}</strong></div>
+              <div class="fh-savings-metric"><div>Shortfall / payday</div><strong class="accounting-num ${shortfall > .005 ? 'text-rose-600 dark:text-rose-400' : 'fh-status-income'}">${remaining > 0 ? formatFinancial(shortfall) : '—'}</strong></div>
+              <div class="fh-savings-metric"><div>Projected by target</div><strong class="accounting-num">${formatFinancial(projectedBalanceAtDeadline)}</strong></div>
+            ` : `
+              <div class="fh-savings-metric"><div>Paydays to goal</div><strong>${projectedDate ? forecastPaydayCount : 'No active contributions'}</strong></div>
+            `}
+          </div>
+          ${hasDeadline && extraForDeadline > .005 ? `<p class="mt-2 text-xs text-rose-600 dark:text-rose-400">You are projected to be ${formatFinancial(extraForDeadline)} short by the target date. Consider increasing the savings allocation by ${formatFinancial(shortfall)} per payday.</p>` : ''}
+        ` : '';
+        cards.push(`
+          <details class="fh-savings-goal-card rounded-xl border" style="background:var(--fh-surface,var(--bg-card,#fff));border-color:var(--fh-border,rgba(120,130,150,.25))">
+            <summary class="fh-savings-goal-summary">
+              <div class="fh-savings-goal-main">
+                <div class="fh-savings-goal-title-line">
+                  <strong class="fh-savings-goal-name">${goalName}</strong>
+                  <span class="inline-flex items-center rounded-full border px-2.5 py-1 text-[10px] font-bold ${statusStyles[statusClass]}">${status}</span>
+                </div>
+                <div class="fh-savings-goal-amount-line">
+                  <strong class="accounting-num">${formatFinancial(saved)}</strong>
+                  <span class="fh-savings-goal-separator">of</span>
+                  <strong class="accounting-num">${target > 0 ? formatFinancial(target) : 'Target not set'}</strong>
+                  <span class="fh-savings-goal-percent">${target > 0 ? `${pct.toFixed(1)}%` : '—'}</span>
+                </div>
+                <div class="fh-savings-goal-progress" style="background:var(--fh-raised,rgba(120,130,150,.12))"><span style="width:${pct}%;background:var(--fh-primary,var(--accent-primary,#0d9488))"></span></div>
+                <div class="fh-savings-goal-bottomline">
+                  <span>${target > 0 ? `${formatFinancial(remaining)} remaining` : 'Set a target to track progress'}</span>
+                  <span>${hasDeadline ? `Due ${fmtDate(deadline)}` : (projectedDate ? `Est. ${fmtDate(projectedDate)}` : 'No completion forecast')}</span>
+                </div>
+              </div>
+              <span class="fh-savings-expand" aria-hidden="true"><i class="fas fa-chevron-down"></i></span>
+            </summary>
+            <div class="fh-savings-goal-details">
+              <div class="fh-savings-metrics-grid">
+                <div class="fh-savings-metric"><div>Saved</div><strong class="accounting-num">${formatFinancial(saved)}</strong></div>
+                <div class="fh-savings-metric"><div>Goal</div><strong class="accounting-num">${formatFinancial(target)}</strong></div>
+                <div class="fh-savings-metric"><div>Current / payday</div><strong class="accounting-num">${formatFinancial(currentAllocation)}</strong></div>
+                <div class="fh-savings-metric"><div>Paydays to goal</div><strong>${projectedDate ? forecastPaydayCount : '—'}</strong></div>
+              </div>
+            </div>
+          </details>`);
+      });
+
+      host.innerHTML = `
+        <div class="fh-savings-overview">
+          <div class="fh-savings-overview-card"><div>Goals</div><strong>${goals.length}</strong></div>
+          <div class="fh-savings-overview-card"><div>Total saved</div><strong class="accounting-num">${formatFinancial(totalSaved)}</strong></div>
+          <div class="fh-savings-overview-card"><div>On track</div><strong class="fh-status-income">${onTrack}</strong></div>
+          <div class="fh-savings-overview-card"><div>Need attention</div><strong class="${attention ? 'text-amber-600 dark:text-amber-400' : 'fh-status-income'}">${attention}</strong></div>
+        </div>
+        <div class="fh-savings-goal-cards">${cards.join('')}</div>
+        <p class="fh-savings-forecast-note">Forecasts use your current Savings allocations and scheduled biweekly paydays. They are estimates only; no money is moved and no budget allocations are changed.</p>`;
+    }
+
     function renderZbbPlanner() {
       const period = state.selectedZbbPeriod || '2026-11';
       const picker = document.getElementById('zbb-period-picker');
@@ -9741,40 +10609,7 @@ ${acc.name}`);
       bottomLineEl.setAttribute('aria-label', bottomLine < -0.005 ? 'Overallocated: negative remaining balance' : 'Zero-based remaining balance');
       document.getElementById('zbb-pct-savings').innerText = `Savings: ${incomeSum > 0 ? ((savingsSum / incomeSum)*100).toFixed(1) : 0}%`;
 
-      const sfGrid = document.getElementById('sinking-funds-progress-grid');
-      sfGrid.innerHTML = '';
-      (zbb.savings || []).forEach(sf => {
-        const linkedBucket = sf.linkedBucketId ? getSinkingBucketById(sf.linkedBucketId) : sinkingBucketLedger().buckets.find(bucket => String(bucket.linkedZbbItemId || '') === String(sf.id));
-        const linkedAccount = sf.linkedAccountId ? (state.accounts || []).find(account => String(account.id) === String(sf.linkedAccountId) && account.type === 'asset') : null;
-        const start = sf.startBal || 0;
-        const contrib = sf.savedBal || 0;
-        const totalSaved = linkedBucket ? (Number(linkedBucket.balance) || 0) : linkedAccount ? (Number(linkedAccount.balance) || 0) : start + contrib;
-        const target = sf.targetBal || (linkedBucket ? linkedBucket.targetBal : 0) || 0;
-        const pct = target > 0 ? Math.min(100, Math.round((totalSaved / target) * 100)) : 0;
-        const remainingAmt = Math.max(0, target - totalSaved);
-        const perPaycheque = (sf.monthly || 0) / 2;
-        const paychequesNeeded = perPaycheque > 0 ? Math.ceil(remainingAmt / perPaycheque) : '-';
-
-        sfGrid.innerHTML += `
-          <div class="fh-savings-goal-card bg-gray-50 dark:bg-gray-950 p-3 rounded-lg border border-gray-200 dark:border-gray-800 space-y-1.5">
-            <div class="flex justify-between items-center text-xs">
-              <span class="font-bold">${sf.name}</span>
-              <span class="text-indigo-500 font-semibold theme-text">${pct}% Complete</span>
-            </div>
-            <div class="w-full bg-gray-200 dark:bg-gray-800 h-2 rounded-full overflow-hidden">
-              <div class="h-full bg-indigo-600 rounded-full theme-bg" style="width: ${pct}%"></div>
-            </div>
-            <div class="flex justify-between text-[11px] text-gray-400 pt-1">
-              <span>Saved So Far: <strong class="text-gray-700 dark:text-gray-300 accounting-num">${formatFinancial(totalSaved)}</strong></span>
-              <span>Target: <strong class="text-gray-700 dark:text-gray-300 accounting-num">${formatFinancial(target)}</strong></span>
-            </div>
-            <div class="flex justify-between text-[10px] text-indigo-400 italic">
-              <span>Target Date: ${sf.targetDate || 'Flexible'}</span>
-              <span>~${paychequesNeeded} paycheques remaining</span>
-            </div>
-          </div>
-        `;
-      });
+      renderSavingsGoalPlanner(zbb, period);
       renderZbbBudgetVsActual(period, zbb, cycle);
       renderZbbFundingTracker();
       renderBudgetLedgerReconciliation(period,zbb);
@@ -10335,40 +11170,42 @@ ${acc.name}`);
       if(!bill)return;
       const settlement=getCalendarBillSettlement(bill);
       const isIncome=bill.type==='income';
-      const actionLabel=isIncome?'Received':'Paid';
       const scheduled=ledgerDateKey(bill.date)||'';
       const transactions=settlement.validTransactions.slice().sort((a,b)=>(ledgerDateKey(a.date)||'').localeCompare(ledgerDateKey(b.date)||''));
-      const actualCents=transactions.reduce((sum,tx)=>sum+transactionAmountToCents(Math.abs(Number(tx.amount)||0))-getTransactionReversedAmountCents(tx.id),0);
+      const actualCents=transactions.reduce((sum,tx)=>sum+Math.max(0,transactionAmountToCents(Math.abs(Number(tx.amount)||0))-getTransactionReversedAmountCents(tx.id)),0);
       const scheduledCents=transactionAmountToCents(Math.abs(Number(bill.amount)||0));
-      const dateRows=transactions.map(tx=>{
-        const date=ledgerDateKey(tx.date);
-        const netCents=Math.max(0,transactionAmountToCents(Math.abs(Number(tx.amount)||0))-getTransactionReversedAmountCents(tx.id));
-        return `<div class="flex items-center justify-between gap-3 py-2 border-b fh-theme-border text-sm"><span>${escapeHtml(date?formatDateMDY(date):'Date not recorded')}</span><strong class="accounting-num">${formatFinancial(netCents/100)}</strong></div>`;
-      }).join('');
+      const varianceCents=actualCents-scheduledCents;
+      const actualDates=[...new Set(transactions.map(tx=>ledgerDateKey(tx.date)).filter(Boolean))];
+      const paidDateLabel=actualDates.length===1
+        ? (actualDates[0]!==scheduled ? `Paid date · ${formatDateMDY(actualDates[0])}` : '')
+        : actualDates.length>1 ? 'Multiple payment dates' : '';
       const status=settlement.missingIds.length||transactions.length!==settlement.transactions.length
-        ? 'Payment records need review'
-        : actualCents<=0 ? 'Not paid yet'
+        ? 'Review needed'
+        : actualCents<=0 ? 'Not paid'
         : actualCents<scheduledCents ? 'Partially paid'
         : actualCents>scheduledCents ? 'Overpaid'
-        : 'Paid in full';
+        : 'Paid';
+      const statusClass=status==='Paid'?'fh-payment-status-paid':status==='Review needed'?'fh-payment-status-review':status==='Not paid'?'fh-payment-status-unpaid':'fh-payment-status-partial';
+      const varianceText=varianceCents===0
+        ? formatFinancial(0)
+        : `${varianceCents>0?'+':''}${formatFinancial(varianceCents/100)}`;
       const overlay=document.createElement('div');
       overlay.id='fh-calendar-payment-details-overlay';
       overlay.className='fixed inset-0 z-[10050] flex items-center justify-center p-4';
       overlay.setAttribute('role','presentation');
       overlay.innerHTML=`
         <div class="absolute inset-0 bg-black/50" data-fh-payment-close="true"></div>
-        <section role="dialog" aria-modal="true" aria-labelledby="fh-calendar-payment-title" class="relative w-full max-w-md rounded-2xl border shadow-2xl p-5 space-y-4 fh-theme-surface fh-theme-border">
-          <header class="flex items-start justify-between gap-3">
-            <div class="min-w-0"><h2 id="fh-calendar-payment-title" class="text-base font-bold fh-theme-text">${escapeHtml(bill.desc||'Scheduled item')}</h2><p class="text-xs fh-theme-muted mt-1">${escapeHtml(isIncome?'Income':'Payment')} details</p></div>
+        <section role="dialog" aria-modal="true" aria-labelledby="fh-calendar-payment-title" class="relative w-full max-w-sm rounded-2xl border shadow-2xl p-5 space-y-4 fh-theme-surface fh-theme-border">
+          <header class="flex items-center justify-between gap-3">
+            <div class="min-w-0"><h2 id="fh-calendar-payment-title" class="text-base font-bold fh-theme-text">${escapeHtml(bill.desc||'Scheduled item')}</h2></div>
+            <span class="fh-payment-status ${statusClass}">${status}</span>
             <button type="button" data-fh-payment-close="true" class="w-7 h-7 shrink-0 rounded-md flex items-center justify-center fh-theme-muted hover:fh-theme-text" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
           </header>
           <div class="space-y-3">
-            <div class="flex items-center justify-between gap-3 text-sm"><span class="fh-theme-muted">Scheduled date</span><strong>${escapeHtml(scheduled?formatDateMDY(scheduled):'Not recorded')}</strong></div>
-            <div class="flex items-center justify-between gap-3 text-sm"><span class="fh-theme-muted">${actionLabel} date${transactions.length===1?'':'s'}</span><strong>${transactions.length===1?escapeHtml(ledgerDateKey(transactions[0].date)?formatDateMDY(ledgerDateKey(transactions[0].date)):'Not recorded'):transactions.length?`${transactions.length} transactions`: 'Not paid yet'}</strong></div>
+            ${paidDateLabel?`<div class="flex items-center justify-between gap-3 text-sm"><span class="fh-theme-muted">${paidDateLabel.startsWith('Multiple')?'Paid':'Paid date'}</span><strong>${paidDateLabel.startsWith('Multiple')?'Multiple dates':escapeHtml(formatDateMDY(actualDates[0]))}</strong></div>`:''}
             <div class="flex items-center justify-between gap-3 text-sm"><span class="fh-theme-muted">Scheduled amount</span><strong class="accounting-num">${formatFinancial(scheduledCents/100)}</strong></div>
-            <div class="flex items-center justify-between gap-3 text-sm"><span class="fh-theme-muted">Total ${isIncome?'received':'paid'}</span><strong class="accounting-num">${formatFinancial(actualCents/100)}</strong></div>
-            ${transactions.length>1?`<div class="pt-1"><div class="text-xs font-semibold mb-1">Transaction breakdown</div>${dateRows}</div>`:''}
-            <div class="rounded-lg px-3 py-2 text-xs fh-theme-subtle"><span class="font-semibold">Status:</span> ${status}</div>
+            <div class="flex items-center justify-between gap-3 text-sm"><span class="fh-theme-muted">${isIncome?'Actually received':'Actually paid'}</span><strong class="accounting-num">${formatFinancial(actualCents/100)}</strong></div>
+            <div class="flex items-center justify-between gap-3 text-sm font-semibold"><span class="fh-theme-muted">Variance</span><strong class="accounting-num">${varianceText}</strong></div>
           </div>
           <footer class="flex justify-end"><button type="button" data-fh-payment-close="true" class="px-4 py-2 rounded-lg text-sm font-semibold theme-bg text-white">Close</button></footer>
         </section>`;
@@ -10380,6 +11217,71 @@ ${acc.name}`);
       overlay.querySelector('button[aria-label="Close"]')?.focus();
     }
 
+    function openCalendarUnpayConfirmation(item, payment, checkbox) {
+      // Avoid stacking duplicate confirmation dialogs from repeated taps.
+      if (document.getElementById('fh-calendar-unpay-confirmation')) return;
+      const overlay = document.createElement('div');
+      overlay.id = 'fh-calendar-unpay-confirmation';
+      overlay.className = 'fixed inset-0 z-[10050] flex items-center justify-center p-4';
+      overlay.style.cssText = 'background:rgba(8,12,20,.58);backdrop-filter:blur(3px);';
+      const isIncome = item.type === 'income';
+      const isDebt = item.type === 'debt';
+      const action = isIncome ? 'reverse the received-income record' : isDebt ? 'reverse the debt-payment record' : 'reverse the bill-payment record';
+      const amount = formatFinancial(Math.abs(Number(payment.amount)||0));
+      const date = payment.date ? formatDateMDY(payment.date) : 'Date unavailable';
+      overlay.innerHTML = `
+        <section role="dialog" aria-modal="true" aria-labelledby="fh-unpay-title"
+          class="w-full max-w-md rounded-2xl border p-5 shadow-2xl"
+          style="background:var(--fh-surface, var(--bg-card, #fff));color:var(--fh-ink, var(--text-primary, #1f2937));border-color:var(--fh-border, rgba(120,130,150,.28));">
+          <div class="flex items-start gap-3">
+            <div class="shrink-0 rounded-xl p-2" style="background:var(--fh-warning-soft,rgba(217,119,6,.12));color:var(--fh-warning,#d97706)">
+              <i class="fas fa-triangle-exclamation" aria-hidden="true"></i>
+            </div>
+            <div class="min-w-0">
+              <h3 id="fh-unpay-title" class="text-base font-bold">Mark this item unpaid?</h3>
+              <p class="mt-2 text-sm leading-relaxed" style="color:var(--fh-muted,var(--text-secondary,#6b7280))">
+                Unchecking <strong style="color:var(--fh-ink,var(--text-primary,#1f2937))">${escapeHtml(item.desc || (isIncome ? 'scheduled income' : 'scheduled payment'))}</strong> will ${action}. The linked ledger transaction and its associated balance effect will be reversed.
+              </p>
+              <div class="mt-3 rounded-xl p-3 text-sm" style="background:var(--fh-raised,rgba(120,130,150,.08))">
+                <div class="flex justify-between gap-3"><span style="color:var(--fh-muted,var(--text-secondary,#6b7280))">Recorded amount</span><strong class="accounting-num">${amount}</strong></div>
+                <div class="flex justify-between gap-3 mt-1"><span style="color:var(--fh-muted,var(--text-secondary,#6b7280))">Transaction date</span><strong>${escapeHtml(date)}</strong></div>
+              </div>
+              <p class="mt-3 text-xs leading-relaxed" style="color:var(--fh-muted,var(--text-secondary,#6b7280))">
+                This removes the linked payment record from the ledger. It does not delete a separately imported or reconciled bank transaction.
+              </p>
+            </div>
+          </div>
+          <div class="mt-5 flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
+            <button type="button" data-fh-unpay-cancel class="px-4 py-2 rounded-lg border text-sm font-semibold"
+              style="border-color:var(--fh-border,rgba(120,130,150,.3));background:var(--fh-raised,transparent)">Keep as ${isIncome ? 'received' : 'paid'}</button>
+            <button type="button" data-fh-unpay-confirm class="px-4 py-2 rounded-lg text-sm font-semibold text-white"
+              style="background:var(--fh-danger,#b45309)">Mark ${isIncome ? 'not received' : 'unpaid'}</button>
+          </div>
+        </section>`;
+      const close = () => {
+        overlay.remove();
+        document.removeEventListener('keydown', onKey);
+      };
+      const cancel = () => {
+        if (checkbox) checkbox.checked = true;
+        close();
+      };
+      const confirmAction = () => {
+        close();
+        setCalendarBillPaid(item, false);
+      };
+      const onKey = event => {
+        if (event.key === 'Escape') cancel();
+      };
+      overlay.addEventListener('click', event => {
+        if (event.target === overlay || event.target.closest('[data-fh-unpay-cancel]')) cancel();
+        if (event.target.closest('[data-fh-unpay-confirm]')) confirmAction();
+      });
+      document.addEventListener('keydown', onKey);
+      document.body.appendChild(overlay);
+      overlay.querySelector('[data-fh-unpay-cancel]')?.focus();
+    }
+
     function toggleCalendarItemPaid(id, e) {
       if (e) e.stopPropagation();
       const item = state.calendarBills.find(b => String(b.id) === String(id));
@@ -10388,10 +11290,11 @@ ${acc.name}`);
       if (!item.paid) { openDashboardCalendarItem(item.id); return; }
       const payments = getCalendarBillPaymentTransactions(item);
       if (payments.length !== 1 || payments[0].source !== 'calendar-bill') {
+        if (e?.target && e.target.type === 'checkbox') e.target.checked = true;
         alert('This scheduled item has ledger payment history. To reopen its balance, reverse or delete the specific payment transaction(s); FinHub will recalculate the outstanding amount without deleting payment history.');
         return;
       }
-      setCalendarBillPaid(item, false);
+      openCalendarUnpayConfirmation(item, payments[0], e?.target?.type === 'checkbox' ? e.target : null);
     }
 
     function populateCalendarDebtAccount(selectedId = '') {
@@ -12159,7 +13062,7 @@ ${acc.name}`);
       }
       const globalSearch=(document.getElementById('ledger-global-search')?.value||'').trim();
       if(globalSearch)chips.push({key:'global-search',label:`Search: ${globalSearch}`});
-      host.innerHTML=chips.length?`<span class="text-[10px] font-semibold text-gray-500 mr-1">Active filters</span>${chips.map(c=>`<button type="button" onclick="clearLedgerFilterChip('${escapeHtml(c.key)}')" class="inline-flex items-center gap-1 rounded-full border border-indigo-200 dark:border-indigo-900 bg-indigo-50 dark:bg-indigo-950/40 px-2.5 py-1 text-[10px] font-semibold text-indigo-700 dark:text-indigo-300" title="Remove ${escapeHtml(c.label)}">${escapeHtml(c.label)} <i class="fa-solid fa-xmark" aria-hidden="true"></i></button>`).join('')}<button type="button" onclick="clearLedgerFilters()" class="text-[10px] underline text-gray-500">Clear all</button>`:'';
+      host.innerHTML=chips.length?`<span class="text-[10px] font-semibold text-gray-500 mr-1">Active filters</span>${chips.map(c=>`<button type="button" onclick="clearLedgerFilterChip('${escapeHtml(c.key)}')" class="ledger-active-filter-chip inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[10px] font-semibold" title="Remove ${escapeHtml(c.label)}">${escapeHtml(c.label)} <i class="fa-solid fa-xmark" aria-hidden="true"></i></button>`).join('')}<button type="button" onclick="clearLedgerFilters()" class="text-[10px] underline text-gray-500">Clear all</button>`:'';
     }
     function renderLedgerFilterStrip() {
       const strip = document.getElementById('ledger-filter-strip');
@@ -24783,9 +25686,30 @@ body[data-finhub-theme] #tab-debt .fh-amortization-card { overflow:hidden; }
 <style id="finhub-v79-equal-category-columns-unified-debt-headers">
 /* Equal visual weight for the two category groups. */
 #tab-settings .fh-settings-category-layout {
-  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  grid-template-columns:repeat(2,minmax(0,1fr));
   align-items:start;
   gap:1rem;
+}
+@media (max-width: 700px) {
+  /* On phones, show each bucket group at full width instead of compressing
+     the desktop columns. Expense and Income stay together; Debt follows. */
+  #tab-settings .fh-settings-category-layout {
+    display:grid;
+    grid-template-columns:minmax(0,1fr);
+    gap:.85rem;
+  }
+  #tab-settings .fh-settings-category-layout > .fh-settings-category-column {
+    display:contents;
+  }
+  #tab-settings .fh-settings-category-layout > .fh-settings-category-column:first-child > .fh-settings-category-panel:first-child {
+    order:1;
+  }
+  #tab-settings .fh-settings-category-layout > .fh-settings-category-column:last-child > .fh-settings-category-panel {
+    order:2;
+  }
+  #tab-settings .fh-settings-category-layout > .fh-settings-category-column:first-child > .fh-settings-category-panel:nth-child(2) {
+    order:3;
+  }
 }
 #tab-settings .fh-settings-category-column { min-width:0; }
 /* One consistent disclosure header system across the Debt page. */
