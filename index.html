@@ -1,10 +1,11 @@
 <!DOCTYPE html>
+
 <html class="dark" lang="en">
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>FinHub Central - Financial Command Center</title>
-<meta content="stage3b-buttons-actions-number-typography-reporting-engine-v1" name="finhub-build-stage"/><meta content="v95-desktop-rail-tablet-topbar-phone-drawer" name="finhub-revision"/>
+<meta content="stage3b-buttons-actions-number-typography-reporting-engine-v1" name="finhub-build-stage"/><meta content="v203-mobile-control-focus-styling" name="finhub-revision"/>
 <meta content="2" name="finhub-schema-version"/>
 <link href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23132A44'/%3E%3Cpath d='M18 45V19h28v7H26v5h17v7H26v7z' fill='%2300FBEA'/%3E%3Ccircle cx='47' cy='16' r='7' fill='%23FF2687'/%3E%3Ccircle cx='15' cy='49' r='5' fill='%23D8FF76'/%3E%3C/svg%3E" rel="icon" type="image/svg+xml"/>
 <script src="https://cdn.tailwindcss.com"></script>
@@ -1418,7 +1419,9 @@ body#app-body > main {
 #finhub-sidebar .nav-btn:focus-visible,
 #finhub-menu-trigger:focus-visible,
 #finhub-drawer-close:focus-visible {
-  outline:2px solid #8b5cf6; outline-offset:2px;
+  outline:2px solid var(--fh-focus, var(--fh-primary, #64748b));
+  outline-offset:2px;
+  box-shadow:none;
 }
 @media (min-width:1024px) {
   body#app-body > #finhub-sidebar { position:relative; transform:none; box-shadow:none; }
@@ -1485,7 +1488,7 @@ body#app-body > main {
   #finhub-menu-trigger {
     display:inline-flex; position:fixed; top:12px; left:12px; z-index:10030;
     width:42px; height:42px; align-items:center; justify-content:center;
-    border-radius:11px; border:1px solid rgba(139,92,246,.45);
+    border-radius:11px; border:1px solid var(--fh-border, rgba(148,163,184,.42));
     background:#17243a; color:#fff; box-shadow:0 4px 14px rgba(0,0,0,.2);
   }
   #finhub-drawer-backdrop {
@@ -4107,7 +4110,214 @@ html body#app-body > aside#finhub-sidebar .sidebar-brand-copy h1 {
 #tab-joint #joint-fixed-list>div>div:first-child>div:first-child,#tab-joint #joint-variable-list>div>div:first-child>div:first-child{font-size:.84rem!important;}
 #tab-joint #joint-fixed-list>div>div:first-child>div:nth-child(2),#tab-joint #joint-variable-list>div>div:first-child>div:nth-child(2){font-size:.7rem!important;line-height:1.35!important;}
 #tab-joint #joint-fixed-list>div>div:first-child>div:nth-child(2) .joint-household-primary-share,#tab-joint #joint-variable-list>div>div:first-child>div:nth-child(2) .joint-household-primary-share{font-size:.83rem;font-weight:750;color:var(--fh-primary);}
-</style></head>
+</style>
+<style id="finhub-v192-recurring-modal-hidden-state-fix">
+/* Schedule Recurring Item: centre only while open; never override the hidden state. */
+#calendar-modal:not(.hidden) {
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+}
+#calendar-modal.hidden {
+  display:none !important;
+}
+</style>
+
+
+
+<style id="finhub-v199-preserved-nonmodal-refinements">
+/* Account activity/detail window retains its roomy ledger layout. */
+#account-detail-modal {
+  padding:clamp(.5rem,1.2vw,1rem) !important;
+  align-items:center !important;
+  justify-content:center !important;
+}
+#account-detail-modal > .fh-modal-surface {
+  width:98vw !important;
+  max-width:98vw !important;
+  height:96dvh !important;
+  max-height:96dvh !important;
+  margin:auto !important;
+}
+/* Statement Importer remains a wide workspace. */
+#recon-modal {
+  padding:clamp(.5rem,1.2vw,1rem) !important;
+  align-items:center !important;
+  justify-content:center !important;
+}
+#recon-modal > .fh-modal-surface {
+  width:min(96vw,88rem) !important;
+  max-width:min(96vw,88rem) !important;
+  max-height:calc(100dvh - 2rem) !important;
+  margin:0 auto !important;
+}
+#tab-biweekly [data-fh-info="bucket-balances"].fh-info-trigger {
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  width:1.25rem !important;
+  height:1.25rem !important;
+  min-width:1.25rem !important;
+  min-height:1.25rem !important;
+  flex:0 0 1.25rem !important;
+  padding:0 !important;
+  border:0 !important;
+  border-radius:50% !important;
+  background:transparent !important;
+  color:var(--fh-primary,var(--fh-muted)) !important;
+  font-size:.95rem !important;
+  line-height:1 !important;
+  box-shadow:none !important;
+}
+#tab-biweekly [data-fh-info="bucket-balances"].fh-info-trigger:hover,
+#tab-biweekly [data-fh-info="bucket-balances"].fh-info-trigger:focus-visible {
+  background:var(--fh-surface-hover,rgba(148,163,184,.14)) !important;
+  outline:2px solid transparent !important;
+}
+.fh-sinking-migration-note-row > button.fh-info-trigger {
+  display:inline-flex !important;
+  align-items:center !important;
+  gap:.3rem !important;
+  width:auto !important;
+  height:auto !important;
+  min-width:0 !important;
+  min-height:0 !important;
+  flex:0 0 auto !important;
+  padding:.15rem .25rem !important;
+  border:0 !important;
+  border-radius:4px !important;
+  background:transparent !important;
+  color:var(--fh-muted,var(--fh-primary)) !important;
+  font-size:.68rem !important;
+  line-height:1.2 !important;
+  opacity:.9 !important;
+}
+.fh-sinking-migration-note-row > button.fh-info-trigger i { font-size:.78rem !important; }
+.fh-sinking-migration-note-row > button.fh-info-trigger span {
+  font-size:.68rem !important;
+  font-weight:500 !important;
+}
+.fh-calendar-paid-date-info.fh-info-trigger {
+  min-width:1rem !important;
+  min-height:1rem !important;
+  width:1rem !important;
+  height:1rem !important;
+  padding:0 !important;
+  border-radius:3px !important;
+}
+@media(max-width:640px) {
+  #account-detail-modal > .fh-modal-surface {
+    width:calc(100vw - 1rem) !important;
+    max-width:calc(100vw - 1rem) !important;
+    height:calc(100dvh - 1rem) !important;
+    max-height:calc(100dvh - 1rem) !important;
+  }
+  #recon-modal > .fh-modal-surface {
+    width:calc(100vw - 1rem) !important;
+    max-width:calc(100vw - 1rem) !important;
+    max-height:calc(100dvh - 1rem) !important;
+  }
+}
+</style>
+
+
+<style id="finhub-v199-canonical-modal-system">
+/* Canonical modal system. Keep overlay geometry separate from panel geometry. */
+#transaction-modal,
+#calendar-modal {
+  position:fixed !important;
+  inset:0 !important;
+  box-sizing:border-box !important;
+  display:grid !important;
+  place-items:center !important;
+  padding:1rem !important;
+  margin:0 !important;
+  overflow-x:hidden !important;
+  overflow-y:auto !important;
+  overscroll-behavior:contain !important;
+}
+#transaction-modal.hidden,
+#calendar-modal.hidden { display:none !important; }
+
+/* Log Transaction: compact editor. */
+#transaction-modal > .fh-modal-surface {
+  position:relative !important;
+  box-sizing:border-box !important;
+  width:min(35rem, calc(100vw - 2rem)) !important;
+  min-width:0 !important;
+  max-width:min(35rem, calc(100vw - 2rem)) !important;
+  max-height:calc(100dvh - 2rem) !important;
+  height:auto !important;
+  margin:0 !important;
+  inset:auto !important;
+  transform:none !important;
+  padding:1.25rem !important;
+  overflow-x:hidden !important;
+  overflow-y:auto !important;
+  justify-self:center !important;
+  align-self:center !important;
+}
+
+/* Edit Transaction: additional allocation controls need a wider workspace.
+   The editor mode class is toggled by openTransactionModal() below. */
+#transaction-modal.is-editing > .fh-modal-surface {
+  width:min(50rem, calc(100vw - 2rem)) !important;
+  max-width:min(50rem, calc(100vw - 2rem)) !important;
+}
+
+/* Schedule Recurring Item: retain the compact calendar editor width. */
+#calendar-modal > .fh-modal-surface {
+  position:relative !important;
+  box-sizing:border-box !important;
+  width:min(42.5rem, calc(100vw - 2rem)) !important;
+  min-width:0 !important;
+  max-width:min(42.5rem, calc(100vw - 2rem)) !important;
+  max-height:calc(100dvh - 2rem) !important;
+  height:auto !important;
+  margin:0 !important;
+  inset:auto !important;
+  transform:none !important;
+  justify-self:center !important;
+  align-self:center !important;
+  overflow-x:hidden !important;
+  overflow-y:auto !important;
+}
+
+/* Preserve two-column form fields where the available width supports them. */
+#transaction-modal #transaction-form,
+#transaction-modal form,
+#calendar-modal #calendar-form {
+  width:100% !important;
+  min-width:0 !important;
+  margin-inline:0 !important;
+  box-sizing:border-box !important;
+}
+#transaction-modal form > *,
+#transaction-modal form .grid,
+#transaction-modal form .flex,
+#calendar-modal #calendar-form > * {
+  min-width:0;
+}
+#transaction-modal .tx-kind-selector,
+#transaction-modal .transaction-type-selector {
+  max-width:100%;
+  min-width:0;
+}
+@media(max-width:640px) {
+  #transaction-modal,
+  #calendar-modal { padding:.65rem !important; }
+  #transaction-modal > .fh-modal-surface,
+  #transaction-modal.is-editing > .fh-modal-surface,
+  #calendar-modal > .fh-modal-surface {
+    width:calc(100vw - 1.3rem) !important;
+    max-width:calc(100vw - 1.3rem) !important;
+    max-height:calc(100dvh - 1.3rem) !important;
+    padding:1rem !important;
+  }
+}
+</style>
+
+</head>
 <body class="bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 min-h-screen flex flex-col md:flex-row transition-colors duration-200 relative" id="app-body">
 <!-- UNDO TOAST NOTIFICATION -->
 <div class="fixed bottom-6 right-24 z-50 hidden transition-all" id="undo-toast"><button aria-label="Undo last action" class="w-9 h-9 inline-flex items-center justify-center rounded-full bg-gray-900 dark:bg-gray-700 text-white shadow-lg border border-gray-600 :var(--fh-primary)]" onclick="executeUndo()" title="Undo last action (Ctrl+Z / Cmd+Z · available for 5 seconds)" type="button"><i class="fa-solid fa-rotate-left text-sm"></i></button></div>
@@ -4564,7 +4774,7 @@ html body#app-body > aside#finhub-sidebar .sidebar-brand-copy h1 {
 <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-4 shadow-sm">
 <div class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 dark:border-gray-800 pb-3">
 <div><h3 class="text-md font-bold text-indigo-600 dark:text-indigo-400 theme-text"><i class="fa-solid fa-layer-group mr-2"></i>Sinking Funds</h3><p class="text-xs text-gray-400 mt-1">Keep one real bank balance, with separate virtual balances for your savings buckets.</p></div>
-<div class="flex items-center gap-2"><button aria-label="How bucket balances work" class="inline-flex items-center justify-center w-6 h-6 rounded-full border border-gray-300 dark:border-gray-700 text-[11px] text-gray-500 hover:text-current" data-fh-info="bucket-balances" title="How bucket balances work" type="button">i</button><button class="px-3 py-2 text-white rounded-lg text-xs font-semibold theme-bg" onclick="openSinkingBucketModal()" type="button"><i class="fa-solid fa-plus mr-1"></i> Add Bucket</button></div>
+<div class="flex items-center gap-2"><button aria-label="How bucket balances work" class="fh-info-trigger" data-fh-info="bucket-balances" title="How bucket balances work" type="button"><i aria-hidden="true" class="fa-solid fa-circle-info"></i></button><button class="px-3 py-2 text-white rounded-lg text-xs font-semibold theme-bg" onclick="openSinkingBucketModal()" type="button"><i class="fa-solid fa-plus mr-1"></i> Add Bucket</button></div>
 </div>
 <div class="space-y-4" id="sinking-bucket-manager"></div>
 </div>
@@ -5043,9 +5253,9 @@ html body#app-body > aside#finhub-sidebar .sidebar-brand-copy h1 {
 </button>
 </div>
 <!-- MODAL: BULK EDIT TRANSACTIONS -->
-<div class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50" id="bulk-edit-modal">
-<div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto p-5 space-y-4 shadow-2xl">
-<div class="flex justify-between items-center"><div><h3 class="text-lg font-bold">Bulk Edit Transactions</h3><p class="text-xs text-gray-400" id="bulk-edit-count">Selected transactions</p></div><button aria-label="Close bulk edit dialog" class="text-gray-400" onclick="closeBulkEditModal()" title="Close bulk edit dialog"><i aria-hidden="true" class="fa-solid fa-xmark"></i></button></div>
+<div aria-labelledby="bulk-edit-modal-accessible-title" aria-modal="true" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50" id="bulk-edit-modal" role="dialog">
+<div class="dark:border-gray-800 w-full max-w-xl max-h-[90vh] overflow-y-auto space-y-4 fh-modal-surface">
+<div class="flex justify-between items-center"><div><h3 class="text-lg font-bold" id="bulk-edit-modal-accessible-title">Bulk Edit Transactions</h3><p class="text-xs text-gray-400" id="bulk-edit-count">Selected transactions</p></div><button aria-label="Close bulk edit dialog" class="text-gray-400" onclick="closeBulkEditModal()" title="Close bulk edit dialog"><i aria-hidden="true" class="fa-solid fa-xmark"></i></button></div>
 <p class="text-xs text-gray-500">Only fields you change will be applied. Leave a field set to “No change” to preserve each transaction's current value.</p>
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
 <label class="text-xs font-semibold text-gray-500">Vendor<input class="mt-1 w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm" id="bulk-vendor" placeholder="No change" type="text"/></label>
@@ -5055,25 +5265,25 @@ html body#app-body > aside#finhub-sidebar .sidebar-brand-copy h1 {
 <label class="text-xs font-semibold text-gray-500">Bucket<select class="mt-1 w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm" id="bulk-category" onchange="updateBulkSubcategoryOptions()"><option value="">No change</option></select></label>
 <label class="text-xs font-semibold text-gray-500">Subcategory<select class="mt-1 w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm" id="bulk-subcategory"><option value="">No change</option></select></label>
 </div>
-<div class="flex flex-wrap justify-end gap-2"><button class="px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg text-xs font-semibold fh-btn-cancel" onclick="closeBulkEditModal()">Cancel</button><button class="px-4 py-2 text-white rounded-lg text-xs font-semibold theme-bg" onclick="applyBulkEdit()">Apply to selected</button></div>
+<div class="flex flex-wrap justify-end gap-2"><button class="px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg text-xs font-semibold fh-btn-cancel fh-modal-secondary-action" onclick="closeBulkEditModal()">Cancel</button><button class="px-4 py-2 text-white rounded-lg text-xs font-semibold theme-bg" onclick="applyBulkEdit()">Apply to selected</button></div>
 </div>
 </div>
 <!-- MODAL: ADD VENDOR CLEANUP RULE -->
-<div class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50" id="vendor-rule-modal" style="z-index: 70;">
+<div aria-labelledby="vendor-rule-modal-accessible-title" aria-modal="true" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50" id="vendor-rule-modal" role="dialog" style="z-index: 70;">
 <div class="fh-modal-surface">
-<h3 class="text-lg font-bold">Add Vendor Cleanup Rule</h3>
+<h3 class="text-lg font-bold" id="vendor-rule-modal-accessible-title">Add Vendor Cleanup Rule</h3>
 <form class="space-y-3" onsubmit="saveVendorCleanupRule(event)">
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Bank statement text contains</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="vendor-rule-match" placeholder="e.g. TIM HORTONS #" required=""/></div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Clean vendor name</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="vendor-rule-replacement" placeholder="e.g. Tim Hortons" required=""/></div>
 <input id="vendor-rule-row-id" type="hidden" value=""/><input id="vendor-rule-edit-index" type="hidden" value="-1"/>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Apply rule to</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="vendor-rule-scope"><option value="future">Future imports and new transactions only</option><option value="historical">Existing matching transactions and future imports</option></select></div>
 <p class="text-[10px] text-gray-400">Rules match case-insensitively and ignore punctuation/spacing differences. Historical changes are previewed before applying. The original bank description remains available in statement reconciliation history.</p>
-<div class="flex gap-2"><button class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel" onclick="closeVendorRuleModal()" type="button">Cancel</button><button class="flex-1 py-2 text-white rounded-xl text-sm font-semibold theme-bg" type="submit">Save Rule</button></div>
+<div class="flex gap-2"><button class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel fh-modal-secondary-action" onclick="closeVendorRuleModal()" type="button">Cancel</button><button class="flex-1 py-2 text-white rounded-xl text-sm font-semibold theme-bg" type="submit">Save Rule</button></div>
 </form>
 </div>
 </div>
 <!-- MODAL: STATEMENT IMPORT RULE -->
-<div class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-[75]" id="import-rule-modal">
+<div aria-labelledby="import-rule-modal-title" aria-modal="true" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-[75]" id="import-rule-modal" role="dialog">
 <div class="fh-modal-surface">
 <h3 class="text-lg font-bold" id="import-rule-modal-title">Add Statement Import Rule</h3>
 <form class="space-y-3" onsubmit="saveImportRule(event)">
@@ -5089,14 +5299,14 @@ html body#app-body > aside#finhub-sidebar .sidebar-brand-copy h1 {
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Transfer to account (optional)</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="import-rule-transfer-to"><option value="">No transfer destination</option></select></div>
 </div>
 <p class="text-[10px] text-gray-400">Rules apply only to imported rows whose original bank description contains the phrase. The rule does not change already-matched ledger transactions. Specific values in the CSV override rule defaults.</p>
-<div class="flex gap-2"><button class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel" onclick="closeImportRuleModal()" type="button">Cancel</button><button class="flex-1 py-2 text-white rounded-xl text-sm font-semibold theme-bg" type="submit">Save rule</button></div>
+<div class="flex gap-2"><button class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel fh-modal-secondary-action" onclick="closeImportRuleModal()" type="button">Cancel</button><button class="flex-1 py-2 text-white rounded-xl text-sm font-semibold theme-bg" type="submit">Save rule</button></div>
 </form>
 </div>
 </div>
 <!-- MODAL: BANK STATEMENT MATCH & RECONCILIATION -->
-<div class="fixed inset-0 bg-black/70 flex items-center justify-center p-3 hidden z-50" id="recon-modal">
-<div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-4xl max-h-[92vh] overflow-y-auto p-5 space-y-4 shadow-2xl">
-<div class="flex items-start justify-between gap-3"><div><h3 class="text-lg font-bold">Statement Helper · Match &amp; Reconcile</h3><p class="text-xs text-gray-400 mt-1">Choose an account, upload or paste a statement, then review the suggested matches before importing.</p></div><button aria-label="Close statement reconciliation dialog" class="text-gray-400" onclick="closeReconciliationModal()" title="Close statement reconciliation dialog"><i aria-hidden="true" class="fa-solid fa-xmark"></i></button></div>
+<div aria-labelledby="recon-modal-accessible-title" aria-modal="true" class="fixed inset-0 bg-black/70 flex items-center justify-center p-3 hidden z-50" id="recon-modal" role="dialog">
+<div class="dark:border-gray-800 w-full max-w-4xl max-h-[92vh] overflow-y-auto space-y-4 fh-modal-surface">
+<div class="flex items-start justify-between gap-3"><div><h3 class="text-lg font-bold" id="recon-modal-accessible-title">Statement Importer · Match &amp; Reconcile</h3><p class="text-xs text-gray-400 mt-1">Choose an account, upload or paste a statement, then review the suggested matches before importing.</p></div><button aria-label="Close statement reconciliation dialog" class="text-gray-400" onclick="closeReconciliationModal()" title="Close statement reconciliation dialog"><i aria-hidden="true" class="fa-solid fa-xmark"></i></button></div>
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">1. Statement account</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="recon-account" onchange="renderStatementBalanceCheck()"></select></div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">2. Upload statement</label><div class="flex flex-wrap items-center gap-2"><input accept=".csv,.txt,.pdf,text/csv,text/plain,application/pdf" class="min-w-0 flex-1 text-xs" id="recon-file" onchange="loadStatementFile(event)" type="file"/><button class="px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-xs font-semibold" onclick="downloadStatementTemplate()" type="button"><i class="fa-solid fa-download mr-1"></i>CSV template</button></div><p class="text-[10px] text-gray-400 mt-1">Upload a bank CSV or PDF statement, or paste statement data. PDF imports are reviewed before they enter your ledger.</p></div>
@@ -5123,8 +5333,8 @@ html body#app-body > aside#finhub-sidebar .sidebar-brand-copy h1 {
 </div>
 </div>
 <!-- MODAL: ACCOUNT TRANSACTIONS DRAWER & SAFE DELETE -->
-<div class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50" id="account-detail-modal">
-<div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-6xl h-[94vh] max-h-[94vh] overflow-hidden flex flex-col p-4 space-y-2 shadow-2xl">
+<div aria-labelledby="acc-detail-title" aria-modal="true" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50" id="account-detail-modal" role="dialog">
+<div class="dark:border-gray-800 w-full max-w-6xl h-[94vh] max-h-[94vh] overflow-hidden flex flex-col space-y-2 fh-modal-surface">
 <div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-800 pb-3">
 <h3 class="text-lg font-bold" id="acc-detail-title">Account Transactions &amp; Settings</h3>
 <button aria-label="Close account details dialog" class="text-gray-400" onclick="closeAccountDetailModal()" title="Close account details dialog"><i aria-hidden="true" class="fa-solid fa-xmark text-lg"></i></button>
@@ -5138,9 +5348,9 @@ html body#app-body > aside#finhub-sidebar .sidebar-brand-copy h1 {
 <div class="text-[11px] text-gray-400">Manage this account or permanently delete it</div>
 </div>
 <div class="flex items-center gap-2">
-<button class="hidden acc-detail-action-btn theme-bg" id="acc-detail-edit-asset" title="Edit account" aria-label="Edit account" onclick="openAssetEditModal(window.currentEditingAccountId)"><i class="fa-solid fa-pen mr-1"></i> Edit Account</button>
-<button class="hidden acc-detail-action-btn theme-bg" id="acc-detail-edit-debt" title="Edit liability" aria-label="Edit liability" onclick="openDebtDetailModal(window.currentEditingAccountId)"><i class="fa-solid fa-pen mr-1"></i> Edit Liability</button>
-<button class="acc-detail-action-btn" id="acc-detail-archive-btn" title="Archive account" aria-label="Archive account" onclick="confirmDeleteAccountFromModal()"><i class="fa-solid fa-box-archive mr-1"></i> Archive Account</button>
+<button aria-label="Edit account" class="hidden acc-detail-action-btn theme-bg" id="acc-detail-edit-asset" onclick="openAssetEditModal(window.currentEditingAccountId)" title="Edit account"><i class="fa-solid fa-pen mr-1"></i> Edit Account</button>
+<button aria-label="Edit liability" class="hidden acc-detail-action-btn theme-bg" id="acc-detail-edit-debt" onclick="openDebtDetailModal(window.currentEditingAccountId)" title="Edit liability"><i class="fa-solid fa-pen mr-1"></i> Edit Liability</button>
+<button aria-label="Archive account" class="acc-detail-action-btn" id="acc-detail-archive-btn" onclick="confirmDeleteAccountFromModal()" title="Archive account"><i class="fa-solid fa-box-archive mr-1"></i> Archive Account</button>
 </div>
 </div>
 <div class="grid grid-cols-1 sm:grid-cols-3 gap-2" id="acc-detail-balance-summary"></div>
@@ -5166,12 +5376,12 @@ html body#app-body > aside#finhub-sidebar .sidebar-brand-copy h1 {
 <table class="w-full text-left text-[11px] table-fixed" id="acc-activity-table">
 <thead class="bg-gray-50 dark:bg-gray-950 text-xs text-gray-500 uppercase sticky top-0 z-10">
 <tr>
-<th class="px-3 py-2"><div class="acc-filter-head"><span class="acc-column-heading">Date</span><button aria-expanded="false" aria-label="Open Date filter and sort options" class="acc-filter-trigger" data-account-filter-trigger="date" onclick="toggleAccountColumnFilter('date',this)" title="Filter and sort Date" type="button"><i aria-hidden="true" class="fa-solid fa-filter acc-filter-funnel"></i><i aria-hidden="true" class="fa-solid fa-chevron-down"></i></button><div class="acc-column-menu acc-date-menu" data-filter-menu="date" hidden=""><div class="acc-menu-title"><strong>Date filter</strong><button aria-label="Close" class="acc-menu-close" onclick="closeAccountColumnFilters()" type="button">×</button></div><div class="acc-menu-section"><div class="acc-menu-label">SORT</div><button class="acc-sort-choice" data-sort="date-asc" onclick="setAccountActivitySort('date','date-asc')" type="button">↟ Oldest to Newest</button><button class="acc-sort-choice" data-sort="date-desc" onclick="setAccountActivitySort('date','date-desc')" type="button">↡ Newest to Oldest <span class="acc-sort-check">✓</span></button></div><input class="acc-menu-search" oninput="renderAccountDateChoices(this.value)" placeholder="Search transactions or narrow options..." type="search"/><div class="acc-date-options" id="acc-date-options"></div><div class="acc-menu-footer"><button onclick="clearAccountDateFilter()" type="button">Clear dates</button><button onclick="closeAccountColumnFilters()" type="button">Done</button></div></div></div></th>
-<th class="px-3 py-2"><div class="acc-filter-head"><span class="acc-column-heading">Vendor</span><button aria-expanded="false" aria-label="Open Vendor filter and sort options" class="acc-filter-trigger" data-account-filter-trigger="vendor" onclick="toggleAccountColumnFilter('vendor',this)" title="Filter and sort Vendor" type="button"><i aria-hidden="true" class="fa-solid fa-filter acc-filter-funnel"></i><i aria-hidden="true" class="fa-solid fa-chevron-down"></i></button><div class="acc-column-menu" data-filter-menu="vendor" hidden=""><div class="acc-menu-title"><strong>Vendor filter</strong><button class="acc-menu-close" onclick="closeAccountColumnFilters()" type="button">×</button></div><div class="acc-menu-section"><button class="acc-sort-choice" onclick="setAccountActivitySort('vendor','vendor-asc')" type="button">Ascending (A–Z)</button><button class="acc-sort-choice" onclick="setAccountActivitySort('vendor','vendor-desc')" type="button">Descending (Z–A)</button></div><input class="acc-menu-search" id="acc-vendor-filter" oninput="renderAccountValueChoices('vendor',this.value)" placeholder="Search vendors..." type="search"/><div class="acc-date-options acc-value-options" id="acc-vendor-options"></div><div class="acc-menu-footer"><button onclick="clearAccountColumnFilter('vendor')" type="button">Clear</button><button onclick="closeAccountColumnFilters()" type="button">Done</button></div></div></div></th>
-<th class="px-3 py-2"><div class="acc-filter-head"><span class="acc-column-heading">Description</span><button aria-expanded="false" aria-label="Open Description filter and sort options" class="acc-filter-trigger" data-account-filter-trigger="description" onclick="toggleAccountColumnFilter('description',this)" title="Filter and sort Description" type="button"><i aria-hidden="true" class="fa-solid fa-filter acc-filter-funnel"></i><i aria-hidden="true" class="fa-solid fa-chevron-down"></i></button><div class="acc-column-menu" data-filter-menu="description" hidden=""><div class="acc-menu-title"><strong>Description filter</strong><button class="acc-menu-close" onclick="closeAccountColumnFilters()" type="button">×</button></div><div class="acc-menu-section"><button class="acc-sort-choice" onclick="setAccountActivitySort('description','description-asc')" type="button">A to Z</button><button class="acc-sort-choice" onclick="setAccountActivitySort('description','description-desc')" type="button">Z to A</button></div><input class="acc-menu-search" id="acc-description-filter" oninput="renderAccountValueChoices('description',this.value)" placeholder="Search descriptions..." type="search"/><div class="acc-date-options acc-value-options" id="acc-description-options"></div><div class="acc-menu-footer"><button onclick="clearAccountColumnFilter('description')" type="button">Clear</button><button onclick="closeAccountColumnFilters()" type="button">Done</button></div></div></div></th>
-<th class="px-3 py-2"><div class="acc-filter-head"><span class="acc-column-heading">Type</span><button aria-expanded="false" aria-label="Open Type filter and sort options" class="acc-filter-trigger" data-account-filter-trigger="type" onclick="toggleAccountColumnFilter('type',this)" title="Filter and sort Type" type="button"><i aria-hidden="true" class="fa-solid fa-filter acc-filter-funnel"></i><i aria-hidden="true" class="fa-solid fa-chevron-down"></i></button><div class="acc-column-menu" data-filter-menu="type" hidden=""><div class="acc-menu-title"><strong>Type filter</strong><button class="acc-menu-close" onclick="closeAccountColumnFilters()" type="button">×</button></div><div class="acc-menu-section"><button class="acc-sort-choice" onclick="setAccountActivitySort('type','type-asc')" type="button">A to Z</button><button class="acc-sort-choice" onclick="setAccountActivitySort('type','type-desc')" type="button">Z to A</button></div><input class="acc-menu-search" id="acc-type-search" oninput="renderAccountValueChoices('type',this.value)" placeholder="Search types..." type="search"/><div class="acc-date-options acc-value-options" id="acc-type-options"></div><select hidden="" id="acc-type-filter"><option value="">All types</option></select><div class="acc-menu-footer"><button onclick="clearAccountColumnFilter('type')" type="button">Clear</button><button onclick="closeAccountColumnFilters()" type="button">Done</button></div></div></div></th>
-<th class="px-3 py-2 text-right"><div class="acc-filter-head acc-filter-head-right"><span class="acc-column-heading">Change</span><button aria-expanded="false" aria-label="Open Change filter and sort options" class="acc-filter-trigger" data-account-filter-trigger="amount" onclick="toggleAccountColumnFilter('amount',this)" title="Filter and sort Change" type="button"><i aria-hidden="true" class="fa-solid fa-filter acc-filter-funnel"></i><i aria-hidden="true" class="fa-solid fa-chevron-down"></i></button><div class="acc-column-menu" data-filter-menu="amount" hidden=""><div class="acc-menu-title"><strong>Amount filter</strong><button class="acc-menu-close" onclick="closeAccountColumnFilters()" type="button">×</button></div><div class="acc-menu-section"><button class="acc-sort-choice" onclick="setAccountActivitySort('amount','amount-desc')" type="button">Descending (largest first)</button><button class="acc-sort-choice" onclick="setAccountActivitySort('amount','amount-asc')" type="button">Ascending (smallest first)</button></div><input class="acc-menu-search" id="acc-amount-search" oninput="renderAccountValueChoices('amount',this.value)" placeholder="Search amounts..." type="search"/><div class="acc-date-options acc-value-options" id="acc-amount-options"></div><div class="acc-menu-footer"><button onclick="clearAccountColumnFilter('amount')" type="button">Clear</button><button onclick="closeAccountColumnFilters()" type="button">Done</button></div></div></div></th>
-<th class="px-3 py-2 text-right"><div class="acc-filter-head acc-filter-head-right"><span class="acc-column-heading">Running Balance</span><button aria-expanded="false" aria-label="Open Running Balance filter and sort options" class="acc-filter-trigger" data-account-filter-trigger="running" onclick="toggleAccountColumnFilter('running',this)" title="Filter and sort Running Balance" type="button"><i aria-hidden="true" class="fa-solid fa-filter acc-filter-funnel"></i><i aria-hidden="true" class="fa-solid fa-chevron-down"></i></button><div class="acc-column-menu" data-filter-menu="running" hidden=""><div class="acc-menu-title"><strong>Running Balance filter</strong><button class="acc-menu-close" onclick="closeAccountColumnFilters()" type="button">×</button></div><div class="acc-menu-section"><button class="acc-sort-choice" onclick="setAccountActivitySort('running','running-asc')" type="button">Ascending (smallest first)</button><button class="acc-sort-choice" onclick="setAccountActivitySort('running','running-desc')" type="button">Descending (largest first)</button></div><input class="acc-menu-search" id="acc-running-search" oninput="renderAccountValueChoices('running',this.value)" placeholder="Search balances..." type="search"/><div class="acc-date-options acc-value-options" id="acc-running-options"></div><div class="acc-menu-footer"><button onclick="clearAccountColumnFilter('running')" type="button">Clear</button><button onclick="closeAccountColumnFilters()" type="button">Done</button></div></div></div></th></tr>
+<th class="px-3 py-2"><div class="acc-filter-head"><span class="acc-column-heading">Date</span><button aria-expanded="false" aria-label="Open Date filter and sort options" class="acc-filter-trigger" data-account-filter-trigger="date" onclick="toggleAccountColumnFilter('date',this)" title="Filter and sort Date" type="button"><i aria-hidden="true" class="fa-solid fa-filter acc-filter-funnel"></i><i aria-hidden="true" class="fa-solid fa-chevron-down"></i></button><div class="acc-column-menu acc-date-menu" data-filter-menu="date" hidden=""><div class="acc-menu-title"><strong>Date filter</strong><button aria-label="Close" class="acc-menu-close" onclick="closeAccountColumnFilters()" type="button">×</button></div><div class="acc-menu-section"><div class="acc-menu-label">SORT</div><button class="acc-sort-choice" data-sort="date-asc" onclick="setAccountActivitySort('date','date-asc')" type="button">↟ Oldest to Newest</button><button class="acc-sort-choice" data-sort="date-desc" onclick="setAccountActivitySort('date','date-desc')" type="button">↡ Newest to Oldest <span class="acc-sort-check">✓</span></button></div><input class="acc-menu-search" oninput="renderAccountDateChoices(this.value)" placeholder="Search transactions or narrow options..." type="search"/><div class="acc-date-options" id="acc-date-options"></div><div class="acc-menu-footer"><button class="" onclick="clearAccountDateFilter()" type="button">Clear dates</button><button class="" onclick="closeAccountColumnFilters()" type="button">Done</button></div></div></div></th>
+<th class="px-3 py-2"><div class="acc-filter-head"><span class="acc-column-heading">Vendor</span><button aria-expanded="false" aria-label="Open Vendor filter and sort options" class="acc-filter-trigger" data-account-filter-trigger="vendor" onclick="toggleAccountColumnFilter('vendor',this)" title="Filter and sort Vendor" type="button"><i aria-hidden="true" class="fa-solid fa-filter acc-filter-funnel"></i><i aria-hidden="true" class="fa-solid fa-chevron-down"></i></button><div class="acc-column-menu" data-filter-menu="vendor" hidden=""><div class="acc-menu-title"><strong>Vendor filter</strong><button class="acc-menu-close" onclick="closeAccountColumnFilters()" type="button">×</button></div><div class="acc-menu-section"><button class="acc-sort-choice" onclick="setAccountActivitySort('vendor','vendor-asc')" type="button">Ascending (A–Z)</button><button class="acc-sort-choice" onclick="setAccountActivitySort('vendor','vendor-desc')" type="button">Descending (Z–A)</button></div><input class="acc-menu-search" id="acc-vendor-filter" oninput="renderAccountValueChoices('vendor',this.value)" placeholder="Search vendors..." type="search"/><div class="acc-date-options acc-value-options" id="acc-vendor-options"></div><div class="acc-menu-footer"><button class="" onclick="clearAccountColumnFilter('vendor')" type="button">Clear</button><button class="" onclick="closeAccountColumnFilters()" type="button">Done</button></div></div></div></th>
+<th class="px-3 py-2"><div class="acc-filter-head"><span class="acc-column-heading">Description</span><button aria-expanded="false" aria-label="Open Description filter and sort options" class="acc-filter-trigger" data-account-filter-trigger="description" onclick="toggleAccountColumnFilter('description',this)" title="Filter and sort Description" type="button"><i aria-hidden="true" class="fa-solid fa-filter acc-filter-funnel"></i><i aria-hidden="true" class="fa-solid fa-chevron-down"></i></button><div class="acc-column-menu" data-filter-menu="description" hidden=""><div class="acc-menu-title"><strong>Description filter</strong><button class="acc-menu-close" onclick="closeAccountColumnFilters()" type="button">×</button></div><div class="acc-menu-section"><button class="acc-sort-choice" onclick="setAccountActivitySort('description','description-asc')" type="button">A to Z</button><button class="acc-sort-choice" onclick="setAccountActivitySort('description','description-desc')" type="button">Z to A</button></div><input class="acc-menu-search" id="acc-description-filter" oninput="renderAccountValueChoices('description',this.value)" placeholder="Search descriptions..." type="search"/><div class="acc-date-options acc-value-options" id="acc-description-options"></div><div class="acc-menu-footer"><button class="" onclick="clearAccountColumnFilter('description')" type="button">Clear</button><button class="" onclick="closeAccountColumnFilters()" type="button">Done</button></div></div></div></th>
+<th class="px-3 py-2"><div class="acc-filter-head"><span class="acc-column-heading">Type</span><button aria-expanded="false" aria-label="Open Type filter and sort options" class="acc-filter-trigger" data-account-filter-trigger="type" onclick="toggleAccountColumnFilter('type',this)" title="Filter and sort Type" type="button"><i aria-hidden="true" class="fa-solid fa-filter acc-filter-funnel"></i><i aria-hidden="true" class="fa-solid fa-chevron-down"></i></button><div class="acc-column-menu" data-filter-menu="type" hidden=""><div class="acc-menu-title"><strong>Type filter</strong><button class="acc-menu-close" onclick="closeAccountColumnFilters()" type="button">×</button></div><div class="acc-menu-section"><button class="acc-sort-choice" onclick="setAccountActivitySort('type','type-asc')" type="button">A to Z</button><button class="acc-sort-choice" onclick="setAccountActivitySort('type','type-desc')" type="button">Z to A</button></div><input class="acc-menu-search" id="acc-type-search" oninput="renderAccountValueChoices('type',this.value)" placeholder="Search types..." type="search"/><div class="acc-date-options acc-value-options" id="acc-type-options"></div><select hidden="" id="acc-type-filter"><option value="">All types</option></select><div class="acc-menu-footer"><button class="" onclick="clearAccountColumnFilter('type')" type="button">Clear</button><button class="" onclick="closeAccountColumnFilters()" type="button">Done</button></div></div></div></th>
+<th class="px-3 py-2 text-right"><div class="acc-filter-head acc-filter-head-right"><span class="acc-column-heading">Change</span><button aria-expanded="false" aria-label="Open Change filter and sort options" class="acc-filter-trigger" data-account-filter-trigger="amount" onclick="toggleAccountColumnFilter('amount',this)" title="Filter and sort Change" type="button"><i aria-hidden="true" class="fa-solid fa-filter acc-filter-funnel"></i><i aria-hidden="true" class="fa-solid fa-chevron-down"></i></button><div class="acc-column-menu" data-filter-menu="amount" hidden=""><div class="acc-menu-title"><strong>Amount filter</strong><button class="acc-menu-close" onclick="closeAccountColumnFilters()" type="button">×</button></div><div class="acc-menu-section"><button class="acc-sort-choice" onclick="setAccountActivitySort('amount','amount-desc')" type="button">Descending (largest first)</button><button class="acc-sort-choice" onclick="setAccountActivitySort('amount','amount-asc')" type="button">Ascending (smallest first)</button></div><input class="acc-menu-search" id="acc-amount-search" oninput="renderAccountValueChoices('amount',this.value)" placeholder="Search amounts..." type="search"/><div class="acc-date-options acc-value-options" id="acc-amount-options"></div><div class="acc-menu-footer"><button class="" onclick="clearAccountColumnFilter('amount')" type="button">Clear</button><button class="" onclick="closeAccountColumnFilters()" type="button">Done</button></div></div></div></th>
+<th class="px-3 py-2 text-right"><div class="acc-filter-head acc-filter-head-right"><span class="acc-column-heading">Running Balance</span><button aria-expanded="false" aria-label="Open Running Balance filter and sort options" class="acc-filter-trigger" data-account-filter-trigger="running" onclick="toggleAccountColumnFilter('running',this)" title="Filter and sort Running Balance" type="button"><i aria-hidden="true" class="fa-solid fa-filter acc-filter-funnel"></i><i aria-hidden="true" class="fa-solid fa-chevron-down"></i></button><div class="acc-column-menu" data-filter-menu="running" hidden=""><div class="acc-menu-title"><strong>Running Balance filter</strong><button class="acc-menu-close" onclick="closeAccountColumnFilters()" type="button">×</button></div><div class="acc-menu-section"><button class="acc-sort-choice" onclick="setAccountActivitySort('running','running-asc')" type="button">Ascending (smallest first)</button><button class="acc-sort-choice" onclick="setAccountActivitySort('running','running-desc')" type="button">Descending (largest first)</button></div><input class="acc-menu-search" id="acc-running-search" oninput="renderAccountValueChoices('running',this.value)" placeholder="Search balances..." type="search"/><div class="acc-date-options acc-value-options" id="acc-running-options"></div><div class="acc-menu-footer"><button class="" onclick="clearAccountColumnFilter('running')" type="button">Clear</button><button class="" onclick="closeAccountColumnFilters()" type="button">Done</button></div></div></div></th></tr>
 </thead>
 <tbody class="divide-y divide-gray-200 dark:divide-gray-800" id="acc-detail-rows"></tbody>
 <tfoot class="sticky bottom-0 bg-gray-50 dark:bg-gray-950 border-t-2 border-gray-300 dark:border-gray-700 font-bold text-xs" id="acc-detail-foot"></tfoot>
@@ -5180,9 +5390,9 @@ html body#app-body > aside#finhub-sidebar .sidebar-brand-copy h1 {
 </div>
 </div>
 <!-- MODAL: DEBT ACCOUNT DETAIL EDIT -->
-<div class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50" id="debt-detail-modal">
-<div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-3xl p-6 space-y-4 shadow-2xl">
-<h3 class="text-lg font-bold">Edit Debt Details &amp; Minimum Payment</h3>
+<div aria-labelledby="debt-detail-modal-accessible-title" aria-modal="true" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50" id="debt-detail-modal" role="dialog">
+<div class="dark:border-gray-800 w-full max-w-3xl space-y-4 fh-modal-surface">
+<h3 class="text-lg font-bold" id="debt-detail-modal-accessible-title">Edit Debt Details &amp; Minimum Payment</h3>
 <form class="space-y-3" id="debt-detail-form" onsubmit="saveDebtDetails(event)">
 <input id="edit-debt-id" type="hidden"/>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Debt Name</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="ed-name" required="" type="text"/></div>
@@ -5213,15 +5423,15 @@ html body#app-body > aside#finhub-sidebar .sidebar-brand-copy h1 {
 </div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Notes / Strategy</label><textarea class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-2 text-xs" id="ed-notes" placeholder="Add debt notes..." rows="2"></textarea></div>
 <div class="flex space-x-3 pt-3">
-<button class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel" onclick="closeDebtDetailModal()" type="button">Cancel</button>
+<button class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel fh-modal-secondary-action" onclick="closeDebtDetailModal()" type="button">Cancel</button>
 <button class="flex-1 py-2 text-white rounded-xl text-sm font-semibold theme-bg" type="submit">Save Debt</button>
 </div>
 </form>
 </div>
 </div>
 <!-- MODAL: ADD / EDIT JOINT HOUSEHOLD BILL -->
-<div class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50" id="joint-bill-modal">
-<div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
+<div aria-labelledby="joint-modal-title" aria-modal="true" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50" id="joint-bill-modal" role="dialog">
+<div class="dark:border-gray-800 w-full max-w-md space-y-4 fh-modal-surface">
 <h3 class="text-lg font-bold" id="joint-modal-title">Add Household Bill</h3>
 <form class="space-y-3" id="joint-bill-form" onsubmit="saveJointBill(event)">
 <input id="jb-edit-id" type="hidden" value=""/>
@@ -5242,18 +5452,18 @@ html body#app-body > aside#finhub-sidebar .sidebar-brand-copy h1 {
 </div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Notes / Comments</label><textarea class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-2 text-xs" id="jb-notes" placeholder="Add optional notes..." rows="2"></textarea></div>
 <div class="flex space-x-3 pt-3">
-<button class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel" onclick="closeJointBillModal()" type="button">Cancel</button>
+<button class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel fh-modal-secondary-action" onclick="closeJointBillModal()" type="button">Cancel</button>
 <button class="flex-1 py-2 text-white rounded-xl text-sm font-semibold theme-bg" type="submit">Save Bill</button>
 </div>
 </form>
 </div>
 </div>
 <!-- MODAL: RECORD JOINT HOUSEHOLD E-TRANSFER AS A SPLIT EXPENSE -->
-<div class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50" id="joint-etransfer-modal">
-<div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto p-5 md:p-6 space-y-4 shadow-2xl">
+<div aria-labelledby="joint-etransfer-modal-accessible-title" aria-modal="true" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50" id="joint-etransfer-modal" role="dialog">
+<div class="dark:border-gray-800 w-full max-w-3xl max-h-[90vh] overflow-y-auto md:p-6 space-y-4 fh-modal-surface">
 <div class="flex items-start justify-between gap-3">
 <div>
-<h3 class="text-lg font-bold">Record Joint Household E-Transfer</h3>
+<h3 class="text-lg font-bold" id="joint-etransfer-modal-accessible-title">Record Joint Household E-Transfer</h3>
 <p class="text-xs text-gray-500 dark:text-gray-400">Create one ledger expense with itemized category allocations from this month's settlement.</p>
 </div>
 <button aria-label="Close" class="text-gray-400 hover:text-gray-700 px-2" onclick="closeJointETransferModal()" type="button">✕</button>
@@ -5300,15 +5510,15 @@ html body#app-body > aside#finhub-sidebar .sidebar-brand-copy h1 {
 <p class="text-[11px] text-gray-500">The allocation rows are reporting splits attached to one parent ledger transaction. They do not create additional bank movements.</p>
 </div>
 <div class="flex flex-col-reverse sm:flex-row gap-2 pt-2">
-<button class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel" onclick="closeJointETransferModal()" type="button">Cancel</button>
+<button class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel fh-modal-secondary-action" onclick="closeJointETransferModal()" type="button">Cancel</button>
 <button class="flex-1 py-2 text-white rounded-xl text-sm font-semibold theme-bg" onclick="saveJointETransfer()" type="button">Save E-Transfer &amp; Allocations</button>
 </div>
 </div>
 </div>
 <!-- MODAL: ADD/EDIT SPENDING BUCKET -->
-<div class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50" id="category-modal" style="z-index:90;">
+<div aria-labelledby="category-modal-accessible-title" aria-modal="true" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50" id="category-modal" role="dialog" style="z-index:90;">
 <div class="fh-modal-surface">
-<h3 class="text-lg font-bold">Manage Spending Bucket &amp; Subcategory Limits</h3>
+<h3 class="text-lg font-bold" id="category-modal-accessible-title">Manage Spending Bucket &amp; Subcategory Limits</h3>
 <form class="space-y-3" id="category-form" onsubmit="saveCategory(event)">
 <input id="cat-edit-index" type="hidden" value="-1"/>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Spending Bucket Name</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cat-name" placeholder="e.g. Living Expenses" required="" type="text"/></div>
@@ -5318,43 +5528,43 @@ html body#app-body > aside#finhub-sidebar .sidebar-brand-copy h1 {
 Gas: 250" rows="4"></textarea>
 </div>
 <div class="flex space-x-3 pt-3">
-<button class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel" onclick="closeCategoryModal()" type="button">Cancel</button>
+<button class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel fh-modal-secondary-action" onclick="closeCategoryModal()" type="button">Cancel</button>
 <button class="flex-1 py-2 text-white rounded-xl text-sm font-semibold theme-bg" type="submit">Save Bucket</button>
 </div>
 </form>
 </div>
 </div>
 <!-- MODAL: ADD/EDIT INCOME BUCKET -->
-<div class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50" id="income-category-modal">
+<div aria-labelledby="income-category-modal-accessible-title" aria-modal="true" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50" id="income-category-modal" role="dialog">
 <div class="fh-modal-surface">
-<h3 class="text-lg font-bold">Manage Income Bucket &amp; Subcategories</h3>
+<h3 class="text-lg font-bold" id="income-category-modal-accessible-title">Manage Income Bucket &amp; Subcategories</h3>
 <form class="space-y-3" id="income-category-form" onsubmit="saveIncomeCategory(event)">
 <input id="income-cat-edit-index" type="hidden" value="-1"/>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Income Bucket Name</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="income-cat-name" placeholder="e.g. Employment Income" required="" type="text"/></div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Subcategories (optional, one per line)</label><textarea class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-2 text-xs font-mono" id="income-cat-subs" placeholder="Regular Pay
 Overtime
 Bonus" rows="4"></textarea></div>
-<div class="flex space-x-3 pt-3"><button class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel" onclick="closeIncomeCategoryModal()" type="button">Cancel</button><button class="flex-1 py-2 text-white rounded-xl text-sm font-semibold" type="submit">Save Income Bucket</button></div>
+<div class="flex space-x-3 pt-3"><button class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel fh-modal-secondary-action" onclick="closeIncomeCategoryModal()" type="button">Cancel</button><button class="flex-1 py-2 text-white rounded-xl text-sm font-semibold" type="submit">Save Income Bucket</button></div>
 </form>
 </div>
 </div>
 <!-- MODAL: ADD/EDIT TRANSACTION TYPE -->
-<div class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50" id="type-modal">
-<div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
-<h3 class="text-lg font-bold">Manage Transaction Type</h3>
+<div aria-labelledby="type-modal-accessible-title" aria-modal="true" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50" id="type-modal" role="dialog">
+<div class="dark:border-gray-800 w-full max-w-md space-y-4 fh-modal-surface">
+<h3 class="text-lg font-bold" id="type-modal-accessible-title">Manage Transaction Type</h3>
 <form class="space-y-3" id="type-form" onsubmit="saveTransactionType(event)">
 <input id="type-edit-index" type="hidden" value="-1"/>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Type Name</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="type-name" placeholder="e.g. Refund or Bonus" required="" type="text"/></div>
 <div class="flex space-x-3 pt-3">
-<button class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel" onclick="closeTypeModal()" type="button">Cancel</button>
+<button class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel fh-modal-secondary-action" onclick="closeTypeModal()" type="button">Cancel</button>
 <button class="flex-1 py-2 text-white rounded-xl text-sm font-semibold theme-bg" type="submit">Save Type</button>
 </div>
 </form>
 </div>
 </div>
 <!-- MODAL: MERCHANT RULE -->
-<div class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50" id="merchant-rule-modal">
-<div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
+<div aria-labelledby="merchant-rule-modal-title" aria-modal="true" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50" id="merchant-rule-modal" role="dialog">
+<div class="dark:border-gray-800 w-full max-w-md space-y-4 fh-modal-surface">
 <h3 class="text-lg font-bold" id="merchant-rule-modal-title">Add Smart Merchant Auto-Tag Rule</h3>
 <input id="mr-edit-index" type="hidden" value="-1"/>
 <form class="space-y-3" id="merchant-rule-form" onsubmit="saveMerchantRule(event)">
@@ -5362,15 +5572,15 @@ Bonus" rows="4"></textarea></div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Spending Bucket</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="mr-category"></select></div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Subcategory</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="mr-subcategory" placeholder="e.g. Groceries" type="text"/></div>
 <div class="flex space-x-3 pt-3">
-<button class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel" onclick="closeMerchantRuleModal()" type="button">Cancel</button>
+<button class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel fh-modal-secondary-action" onclick="closeMerchantRuleModal()" type="button">Cancel</button>
 <button class="flex-1 py-2 text-white rounded-xl text-sm font-semibold theme-bg" type="submit">Save Rule</button>
 </div>
 </form>
 </div>
 </div>
 <!-- MODAL: ADD / EDIT ZBB ITEM WITH DOLLAR OR PCT SPLIT -->
-<div class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50" id="zbb-item-modal">
-<div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
+<div aria-labelledby="zbb-modal-title" aria-modal="true" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50" id="zbb-item-modal" role="dialog">
+<div class="dark:border-gray-800 w-full max-w-md space-y-4 fh-modal-surface">
 <h3 class="text-lg font-bold" id="zbb-modal-title">Add Budget Line Item</h3>
 <form class="space-y-3" id="zbb-item-form" onsubmit="saveZbbItem(event)">
 <input id="zbb-item-type" type="hidden" value=""/>
@@ -5407,15 +5617,15 @@ Bonus" rows="4"></textarea></div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Target Date</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="zbb-target-date" type="date"/></div>
 </div>
 <div class="flex space-x-3 pt-3">
-<button class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel" onclick="closeZbbItemModal()" type="button">Cancel</button>
+<button class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel fh-modal-secondary-action" onclick="closeZbbItemModal()" type="button">Cancel</button>
 <button class="flex-1 py-2 text-white rounded-xl text-sm font-semibold theme-bg" type="submit">Save Item</button>
 </div>
 </form>
 </div>
 </div>
 <!-- MODAL: ADD / EDIT CALENDAR BILL -->
-<div class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50" id="calendar-modal">
-<div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
+<div aria-labelledby="cal-modal-title" aria-modal="true" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50" id="calendar-modal" role="dialog">
+<div class="dark:border-gray-800 w-full max-w-md space-y-4 fh-modal-surface">
 <div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-800 pb-3">
 <h3 class="text-lg font-bold" id="cal-modal-title">Schedule Recurring Item</h3>
 <button aria-label="Close calendar item dialog" class="text-gray-400" onclick="closeCalendarModal()" title="Close calendar item dialog" type="button"><i aria-hidden="true" class="fa-solid fa-xmark text-lg"></i></button>
@@ -5472,22 +5682,22 @@ Bonus" rows="4"></textarea></div>
 </div>
 </div>
 <div class="finhub-form-actions fh-calendar-modal-actions">
-<button class="finhub-action-btn finhub-action-delete fh-calendar-modal-action fh-calendar-modal-delete hidden" id="cal-modal-delete-btn" onclick="deleteCalendarItemFromModal()" type="button"><i class="fa-solid fa-trash mr-1"></i> Delete</button>
+<button class="finhub-action-btn finhub-action-delete fh-calendar-modal-action fh-calendar-modal-delete hidden fh-modal-destructive-action" id="cal-modal-delete-btn" onclick="deleteCalendarItemFromModal()" type="button"><i class="fa-solid fa-trash mr-1"></i> Delete</button>
 <button class="finhub-action-btn fh-calendar-modal-action fh-calendar-modal-paid" id="cal-modal-paid-btn" onclick="markCalendarItemPaidFromModal()" type="button"><i class="fa-solid fa-check mr-1"></i> Paid</button>
-<button class="finhub-action-btn finhub-action-cancel fh-btn-cancel fh-calendar-modal-action fh-calendar-modal-cancel" onclick="closeCalendarModal()" type="button">Cancel</button>
-<button class="finhub-action-btn finhub-action-save fh-calendar-modal-action fh-calendar-modal-save" type="submit">Save</button>
+<button class="finhub-action-btn finhub-action-cancel fh-btn-cancel fh-calendar-modal-action fh-calendar-modal-cancel fh-modal-secondary-action" onclick="closeCalendarModal()" type="button">Cancel</button>
+<button class="finhub-action-btn finhub-action-save fh-calendar-modal-action fh-calendar-modal-save fh-modal-primary-action" type="submit">Save</button>
 </div>
 </form>
 </div>
 </div>
 <!-- MODAL: RECURRING CALENDAR DELETE CHOICE -->
-<div class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-[70]" id="recurrence-delete-choice-modal">
-<div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl relative">
+<div aria-labelledby="recurrence-delete-choice-modal-accessible-title" aria-modal="true" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-[70]" id="recurrence-delete-choice-modal" role="dialog">
+<div class="dark:border-gray-800 w-full max-w-sm space-y-4 relative fh-modal-surface">
 <button aria-label="Cancel deletion" class="absolute top-3 right-3 h-8 w-8 rounded-full flex items-center justify-center text-gray-400 dark:" onclick="cancelRecurringDeleteChoice()" title="Cancel" type="button"><i class="fa-solid fa-xmark"></i></button>
-<div class="flex items-center gap-2 pr-8"><i class="fa-solid fa-repeat text-rose-500"></i><h3 class="font-bold">Delete recurring item?</h3></div>
+<div class="flex items-center gap-2 pr-8"><i class="fa-solid fa-repeat text-rose-500"></i><h3 class="font-bold" id="recurrence-delete-choice-modal-accessible-title">Delete recurring item?</h3></div>
 <p class="text-sm text-gray-500 dark:text-gray-400">Do you want to delete this occurrence and end the recurring series from this date onward?</p>
 <div class="flex justify-end gap-2 pt-1">
-<button class="px-4 py-2 rounded-lg bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700 text-sm font-semibold fh-btn-cancel" onclick="cancelRecurringDeleteChoice()" type="button">Cancel</button>
+<button class="px-4 py-2 rounded-lg bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700 text-sm font-semibold fh-btn-cancel fh-modal-secondary-action" onclick="cancelRecurringDeleteChoice()" type="button">Cancel</button>
 <button class="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-sm font-semibold" onclick="confirmRecurringDeleteChoice(false)" type="button">No</button>
 <button class="px-4 py-2 rounded-lg text-white text-sm font-semibold" onclick="confirmRecurringDeleteChoice(true)" type="button">Yes</button>
 </div>
@@ -5495,23 +5705,23 @@ Bonus" rows="4"></textarea></div>
 </div>
 </div>
 <!-- MODAL: QUICK ACCOUNT TRANSFER -->
-<div class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50" id="transfer-modal">
-<div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
-<h3 class="text-lg font-bold">Transfer Between Accounts</h3>
+<div aria-labelledby="transfer-modal-accessible-title" aria-modal="true" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50" id="transfer-modal" role="dialog">
+<div class="dark:border-gray-800 w-full max-w-md space-y-4 fh-modal-surface">
+<h3 class="text-lg font-bold" id="transfer-modal-accessible-title">Transfer Between Accounts</h3>
 <form class="space-y-3" onsubmit="submitAccountTransfer(event)">
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">From account</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="transfer-from" required=""></select></div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">To account</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="transfer-to" required=""></select></div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Amount ($)</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="transfer-amount" min="0.01" required="" step="0.01" type="number"/></div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Date</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="transfer-date" required="" type="date"/></div>
-<div class="flex gap-2 pt-2"><button class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel" onclick="closeTransferModal()" type="button">Cancel</button><button class="fh-action-button fh-action-button-primary flex-1" type="submit">Transfer</button></div>
+<div class="flex gap-2 pt-2"><button class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel fh-modal-secondary-action" onclick="closeTransferModal()" type="button">Cancel</button><button class="fh-action-button fh-action-button-primary flex-1 fh-modal-primary-action" type="submit">Transfer</button></div>
 </form>
 </div>
 </div>
 <!-- MODAL: AVAILABLE TO SPEND SETTINGS -->
-<div class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-[70]" id="available-to-spend-modal" onclick="if(event.target===this)closeAvailableToSpendSettings()">
-<div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-lg p-5 space-y-4 shadow-2xl">
+<div aria-labelledby="available-to-spend-modal-accessible-title" aria-modal="true" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-[70]" id="available-to-spend-modal" onclick="if(event.target===this)closeAvailableToSpendSettings()" role="dialog">
+<div class="dark:border-gray-800 w-full max-w-lg space-y-4 fh-modal-surface">
 <div class="flex items-start justify-between gap-3">
-<div><h3 class="text-lg font-bold">Available to Spend</h3><p class="text-xs text-gray-500 mt-1">Choose which asset accounts contribute to this balance.</p></div>
+<div><h3 class="text-lg font-bold" id="available-to-spend-modal-accessible-title">Available to Spend</h3><p class="text-xs text-gray-500 mt-1">Choose which asset accounts contribute to this balance.</p></div>
 <button aria-label="Close" class="text-gray-400 dark: p-1" onclick="closeAvailableToSpendSettings()" type="button"><i class="fa-solid fa-xmark text-lg"></i></button>
 </div>
 <div class="max-h-64 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-800 border-y border-gray-100 dark:border-gray-800" id="available-to-spend-account-list"></div>
@@ -5527,8 +5737,8 @@ Bonus" rows="4"></textarea></div>
 </div>
 </div>
 <!-- MODAL: ADD / EDIT ACCOUNT -->
-<div class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50" id="account-modal">
-<div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
+<div aria-labelledby="acc-modal-title" aria-modal="true" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50" id="account-modal" role="dialog">
+<div class="dark:border-gray-800 w-full max-w-md space-y-4 fh-modal-surface">
 <h3 class="text-lg font-bold" id="acc-modal-title">Add Account</h3>
 <form class="space-y-3" id="account-form" onsubmit="saveAccount(event)">
 <input id="acc-edit-id" type="hidden" value=""/>
@@ -5558,13 +5768,13 @@ Bonus" rows="4"></textarea></div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Current Balance ($)</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="acc-balance" required="" step="0.01" type="number"/></div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Interest Rate (% APY/APR)</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="acc-interest-rate" step="0.01" type="number" value="0.00"/></div>
 </div>
-<div class="flex space-x-3 pt-3"><button class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel" onclick="closeAccountModal()" type="button">Cancel</button><button class="flex-1 py-2 text-white rounded-xl text-sm font-semibold theme-bg" type="submit">Save</button></div>
+<div class="flex space-x-3 pt-3"><button class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel fh-modal-secondary-action" onclick="closeAccountModal()" type="button">Cancel</button><button class="flex-1 py-2 text-white rounded-xl text-sm font-semibold theme-bg" type="submit">Save</button></div>
 </form>
 </div>
 </div>
 <!-- MODAL: ADD / EDIT VIRTUAL SINKING-FUND BUCKET -->
-<div class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-[80]" id="sinking-bucket-modal">
-<div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
+<div aria-labelledby="sinking-bucket-modal-title" aria-modal="true" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-[80]" id="sinking-bucket-modal" role="dialog">
+<div class="dark:border-gray-800 w-full max-w-md space-y-4 fh-modal-surface">
 <h3 class="text-lg font-bold" id="sinking-bucket-modal-title">Add Sinking-Fund Bucket</h3>
 <form class="space-y-3" id="sinking-bucket-form" onsubmit="saveSinkingBucket(event)">
 <input id="sinking-bucket-edit-id" type="hidden" value=""/>
@@ -5575,14 +5785,14 @@ Bonus" rows="4"></textarea></div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Target Date</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="sinking-bucket-target-date" type="date"/></div>
 </div>
 <p class="hidden text-[10px] text-amber-600 dark:text-amber-400" id="sinking-bucket-edit-note">A bucket with a balance or activity history cannot be moved to another real account. Release its balance and create a new bucket under the other account instead.</p>
-<div class="flex items-center justify-between gap-3 pt-2"><button class="hidden px-3 py-2 rounded-xl text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 disabled:opacity-45 disabled:cursor-not-allowed" id="sinking-bucket-delete-btn" onclick="deleteSinkingBucketFromEditor()" type="button">Delete Bucket</button><div class="flex gap-2 flex-1 justify-end"><button class="px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel" onclick="closeSinkingBucketModal()" type="button">Cancel</button><button class="px-4 py-2 text-white rounded-xl text-sm font-semibold theme-bg" type="submit">Save Bucket</button></div></div>
+<div class="flex items-center justify-between gap-3 pt-2"><button class="hidden px-3 py-2 rounded-xl text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 disabled:opacity-45 disabled:cursor-not-allowed" id="sinking-bucket-delete-btn" onclick="deleteSinkingBucketFromEditor()" type="button">Delete Bucket</button><div class="flex gap-2 flex-1 justify-end"><button class="px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel fh-modal-secondary-action" onclick="closeSinkingBucketModal()" type="button">Cancel</button><button class="px-4 py-2 text-white rounded-xl text-sm font-semibold theme-bg" type="submit">Save Bucket</button></div></div>
 <p class="hidden text-[10px] text-gray-400" id="sinking-bucket-delete-note">For data integrity, only buckets with no balance and no activity history can be deleted. Release any remaining balance first; buckets with recorded history must be retained.</p>
 </form>
 </div>
 </div>
 <!-- MODAL: VIRTUAL BUCKET ACTIVITY -->
-<div class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-[80]" id="sinking-bucket-activity-modal">
-<div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
+<div aria-labelledby="sinking-bucket-activity-title" aria-modal="true" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-[80]" id="sinking-bucket-activity-modal" role="dialog">
+<div class="dark:border-gray-800 w-full max-w-md space-y-4 fh-modal-surface">
 <h3 class="text-lg font-bold" id="sinking-bucket-activity-title">Update Bucket</h3>
 <form class="space-y-3" id="sinking-bucket-activity-form" onsubmit="saveSinkingBucketActivity(event)">
 <input id="sinking-bucket-activity-id" type="hidden" value=""/>
@@ -5592,13 +5802,13 @@ Bonus" rows="4"></textarea></div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1" id="sinking-bucket-activity-amount-label">Amount ($)</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="sinking-bucket-activity-amount" min="0.01" required="" step="0.01" type="number"/></div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Date</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="sinking-bucket-activity-date" required="" type="date"/></div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Note (optional)</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="sinking-bucket-activity-note" maxlength="120" placeholder="e.g. Christmas contribution" type="text"/></div>
-<div class="flex gap-2 pt-2"><button class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel" onclick="closeSinkingBucketActivityModal()" type="button">Cancel</button><button class="flex-1 py-2 text-white rounded-xl text-sm font-semibold theme-bg" type="submit">Save Activity</button></div>
+<div class="flex gap-2 pt-2"><button class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel fh-modal-secondary-action" onclick="closeSinkingBucketActivityModal()" type="button">Cancel</button><button class="flex-1 py-2 text-white rounded-xl text-sm font-semibold theme-bg" type="submit">Save Activity</button></div>
 </form>
 </div>
 </div>
 <!-- MODAL: ADD / EDIT TRANSACTION WITH OPTIONAL DROPDOWNS -->
-<div class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50" id="transaction-modal">
-<div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-[520px] max-h-[94vh] p-4 sm:p-5 shadow-2xl flex flex-col overflow-hidden" style="width:min(520px, calc(100vw - 2rem)) !important; max-width:520px !important; max-height:94vh !important; box-sizing:border-box;">
+<div aria-labelledby="tx-modal-title" aria-modal="true" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50" id="transaction-modal" role="dialog">
+<div class="dark:border-gray-800 w-full max-w-[520px] max-h-[94vh] sm:p-5 flex flex-col overflow-hidden fh-modal-surface" style="max-height:calc(100dvh - 2rem) !important; box-sizing:border-box;">
 <div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-800 pb-2 mb-2 shrink-0">
 <h3 class="text-lg font-bold" id="tx-modal-title">Log Transaction</h3>
 <div class="flex items-center gap-2"><button class="hidden text-xs text-amber-500 px-3 py-1 rounded-lg font-semibold border border-amber-500/30" id="tx-reverse-btn" onclick="createTransactionReversalFromForm()" type="button">Reverse transaction</button><button class="text-xs text-indigo-400 px-3 py-1 rounded-lg font-semibold border border-indigo-500/30" id="split-tx-toggle-btn" onclick="toggleSplitTxMode()" type="button">Enable Split Transaction</button></div>
@@ -5706,12 +5916,12 @@ Bonus" rows="4"></textarea></div>
 </div>
 <div class="space-y-1.5" id="split-rows-container"></div>
 </div>
-<div class="finhub-form-actions flex gap-2 pt-3 pb-1 mt-2"><button class="finhub-action-btn finhub-action-cancel fh-btn-cancel" onclick="closeTransactionModal()" type="button">Cancel</button><button class="finhub-action-btn finhub-action-delete hidden" id="tx-delete-edit-btn" onclick="deleteEditingTransaction()" type="button">Delete</button><button class="finhub-action-btn finhub-action-save" type="submit">Save</button></div>
+<div class="finhub-form-actions flex gap-2 pt-3 pb-1 mt-2"><button class="finhub-action-btn finhub-action-cancel fh-btn-cancel fh-modal-secondary-action" onclick="closeTransactionModal()" type="button">Cancel</button><button class="finhub-action-btn finhub-action-delete hidden fh-modal-destructive-action" id="tx-delete-edit-btn" onclick="deleteEditingTransaction()" type="button">Delete</button><button class="finhub-action-btn finhub-action-save fh-modal-primary-action" type="submit">Save</button></div>
 </form></div>
 </div>
 <!-- MODAL: ADD / EDIT INTEREST CHARGE -->
-<div class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-[75]" id="interest-charge-modal">
-<div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
+<div aria-labelledby="interest-charge-modal-title" aria-modal="true" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-[75]" id="interest-charge-modal" role="dialog">
+<div class="dark:border-gray-800 w-full max-w-md space-y-4 fh-modal-surface">
 <div class="flex items-start justify-between gap-3">
 <div><h3 class="text-lg font-bold" id="interest-charge-modal-title">Record Interest Charge</h3><p class="text-xs text-gray-500 mt-1">Use this when interest is added directly to the debt balance, rather than withdrawn from chequing.</p></div>
 <button aria-label="Close" class="text-gray-400 dark:" onclick="closeInterestChargeModal()" type="button"><i class="fa-solid fa-xmark"></i></button>
@@ -5727,14 +5937,14 @@ Bonus" rows="4"></textarea></div>
 <div class="rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900 p-3 text-[11px] text-rose-800 dark:text-rose-200">
           This increases the selected liability and records an interest expense. It does not change any chequing or savings account.
         </div>
-<div class="flex gap-2"><button class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel" onclick="closeInterestChargeModal()" type="button">Cancel</button><button class="flex-1 py-2 text-white rounded-xl text-sm font-semibold" type="submit">Save</button></div>
+<div class="flex gap-2"><button class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel fh-modal-secondary-action" onclick="closeInterestChargeModal()" type="button">Cancel</button><button class="flex-1 py-2 text-white rounded-xl text-sm font-semibold" type="submit">Save</button></div>
 </form>
 </div>
 </div>
 <!-- MODAL: ADD / EDIT DEBT PAYMENT -->
-<div class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50" id="debt-payment-modal">
-<div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
-<h3 class="text-lg font-bold">Log Debt Payment</h3>
+<div aria-labelledby="debt-payment-modal-accessible-title" aria-modal="true" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50" id="debt-payment-modal" role="dialog">
+<div class="dark:border-gray-800 w-full max-w-md space-y-4 fh-modal-surface">
+<h3 class="text-lg font-bold" id="debt-payment-modal-accessible-title">Log Debt Payment</h3>
 <form class="space-y-3" id="debt-payment-form" onsubmit="saveDebtPayment(event)">
 <input id="dp-edit-id" type="hidden" value=""/>
 <input id="dp-existing-tx-id" type="hidden" value=""/>
@@ -5746,7 +5956,7 @@ Bonus" rows="4"></textarea></div>
 <div class="grid grid-cols-2 gap-3"><div><label class="block text-xs font-semibold text-gray-500 mb-1">Principal ($)</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="dp-principal" min="0" oninput="this.dataset.manual='1';updateDebtPaymentSplit()" required="" step="0.01" type="number"/></div><div><label class="block text-xs font-semibold text-gray-500 mb-1">Interest ($)</label><input class="w-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="dp-interest" readonly="" type="number"/></div></div>
 <p class="text-[10px] text-gray-400" id="dp-split-help">Principal + interest must equal the total payment. Only principal reduces the debt balance; the full payment leaves the funding account.</p>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Description (optional)</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="dp-desc" placeholder="Debt payment" type="text"/></div>
-<div class="flex space-x-3 pt-3"><button class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel" onclick="closeDebtPaymentModal()" type="button">Cancel</button><button class="flex-1 py-2 text-white rounded-xl text-sm font-semibold" type="submit">Record</button></div>
+<div class="flex space-x-3 pt-3"><button class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel fh-modal-secondary-action" onclick="closeDebtPaymentModal()" type="button">Cancel</button><button class="flex-1 py-2 text-white rounded-xl text-sm font-semibold" type="submit">Record</button></div>
 </form>
 </div>
 </div>
@@ -6070,7 +6280,7 @@ Bonus" rows="4"></textarea></div>
       }
       return Math.max(0, transactionAmountToCents(Math.abs(Number(transaction.amount) || 0)) - getTransactionReversedAmountCents(transaction.id));
     }
-    function createTransactionReversal(originalId, requestedAmount = null) {
+    function createTransactionReversal(originalId, requestedAmount = null, options = {}) {
       const original = (state.transactions || []).find(t => String(t.id) === String(originalId));
       if (!original) { alert('The original transaction could not be found.'); return false; }
       if (original.reversalOfTransactionId || original.isReversal) { alert('A reversal cannot itself be reversed. Delete or correct the reversal record instead.'); return false; }
@@ -6089,7 +6299,7 @@ Bonus" rows="4"></textarea></div>
       const amount = Math.round((Number(String(entered).replace(/[$,]/g,'')) || 0) * 100) / 100;
       if (!(amount > 0) || amount - remaining > 0.009) { alert(`Enter an amount greater than $0 and no more than $${remaining.toFixed(2)}.`); return false; }
       const ratio = originalAmountCents > 0 ? amount / (originalAmountCents / 100) : 0;
-      const date = prompt('Reversal date (YYYY-MM-DD):', new Date().toISOString().slice(0,10));
+      const date = options.date || prompt('Reversal date (YYYY-MM-DD):', new Date().toISOString().slice(0,10));
       if (date == null) return false;
       if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) { alert('Enter the date as YYYY-MM-DD.'); return false; }
       const duplicateReversal=(state.transactions||[]).find(t=>String(t.reversalOfTransactionId||'')===String(original.id)&&String(t.date||'')===date&&Math.abs(Math.abs(Number(t.amount)||0)-amount)<0.005);
@@ -6128,7 +6338,7 @@ Bonus" rows="4"></textarea></div>
         base.amount = (Number(original.amount) < 0 ? amount : -amount);
         if (original.type === 'Interest Charge') base.debtAccountId = original.debtAccountId || original.accountId;
       }
-      captureUndo('Record transaction reversal');
+      if (!options.skipUndo) captureUndo('Record transaction reversal');
       state.transactions.unshift(base);
       if (base.type === 'Debt Payment Reversal') {
         applyTransactionBalanceEffect(base, 1);
@@ -6147,7 +6357,10 @@ Bonus" rows="4"></textarea></div>
         applyTransactionBalanceEffect(base, 1);
       }
       syncCalendarBillForTransactionAndReversals(base);
-      saveData(); renderLedger(); renderDashboard(); renderZbbFundingTracker(); renderSinkingBucketManager();
+      if (!options.skipSave) saveData();
+      if (!options.skipRender) {
+        renderLedger(); renderDashboard(); renderZbbFundingTracker(); renderSinkingBucketManager();
+      }
       return true;
     }
     function createTransactionReversalFromForm() {
@@ -11458,45 +11671,222 @@ ${acc.name}`);
       overlay.querySelector('button[aria-label="Close"]')?.focus();
     }
 
-    function openCalendarUnpayConfirmation(item, payment, checkbox) {
-      // Avoid stacking duplicate confirmation dialogs from repeated taps.
+    function isCalendarPaymentProtectedFromCalendarReversal(transaction) {
+      if (!transaction) return true;
+      const source = String(transaction.source || '').trim().toLowerCase();
+      // Statement imports and any transaction carrying reconciliation metadata must
+      // be corrected in Statement Importer / reconciliation, never reversed here.
+      return source === 'statement-import' || transactionHasStatementReconciliation(transaction);
+    }
+
+    function canReverseCalendarLinkedPayment(transaction, reversalDate) {
+      if (!transaction || isCalendarPaymentProtectedFromCalendarReversal(transaction)) return false;
+      if (transaction.isReversal || transaction.reversalOfTransactionId || transaction.refundOfTransactionId) return false;
+      if (!['Expense', 'Income', 'Debt Payment'].includes(transaction.type)) return false;
+      if (!(getRemainingReversibleAmountCents(transaction) > 0)) return false;
+      const funding = (state.accounts || []).find(account => String(account.id) === String(transaction.accountId));
+      if (!funding || funding.type !== 'asset') return false;
+      if (transaction.type === 'Debt Payment') {
+        const debtId = transaction.debtAccountId ||
+          (state.debtPayments || []).find(payment => String(payment.transactionId) === String(transaction.id))?.accountId;
+        const debt = (state.accounts || []).find(account => String(account.id) === String(debtId) && account.type === 'debt');
+        if (!debt) return false;
+      }
+      const remaining = getRemainingReversibleAmountCents(transaction) / 100;
+      const duplicate = (state.transactions || []).some(row =>
+        String(row.reversalOfTransactionId || '') === String(transaction.id) &&
+        String(row.date || '') === String(reversalDate || '') &&
+        Math.abs(Math.abs(Number(row.amount) || 0) - remaining) < 0.005
+      );
+      return !duplicate;
+    }
+
+    function unlinkCalendarBillPaymentRecords(item, payments, action, reversalDate = '') {
+      if (!item || !Array.isArray(payments) || !payments.length) return false;
+      const current = getCalendarBillSettlement(item);
+      if (current.missingIds.length) {
+        alert('This scheduled item has missing payment references. Resolve those references in Payment History before changing its paid status. No changes were made.');
+        return false;
+      }
+      const paymentIds = new Set(payments.map(transaction => String(transaction.id)));
+      const currentIds = new Set(current.transactions.map(transaction => String(transaction.id)));
+      if ([...paymentIds].some(id => !currentIds.has(id))) {
+        alert('The payment history changed while this confirmation was open. Refresh the scheduled item and try again. No changes were made.');
+        return false;
+      }
+
+      const shouldReverse = action === 'reverse-and-unlink';
+      const localSnapshot = JSON.stringify(state);
+      const undoDepth = undoStack.length;
+      const reversalIds = [];
+      try {
+        if (shouldReverse) {
+          if (!reversalDate || !/^\d{4}-\d{2}-\d{2}$/.test(reversalDate)) {
+            alert('Choose a valid reversal date. No changes were made.');
+            return false;
+          }
+          if (!payments.every(transaction => canReverseCalendarLinkedPayment(transaction, reversalDate))) {
+            alert('At least one linked payment is imported, reconciled, or otherwise not eligible for reversal from the Calendar. No changes were made. You can unlink the scheduled association instead.');
+            return false;
+          }
+        }
+
+        captureUndo(
+          shouldReverse
+            ? `Reverse and unlink payment(s) for "${item.desc || item.id}"`
+            : `Unlink payment(s) from "${item.desc || item.id}"`
+        );
+
+        if (shouldReverse) {
+          payments.forEach(transaction => {
+            const amount = getRemainingReversibleAmountCents(transaction) / 100;
+            const beforeIds = new Set(state.transactions.map(row => String(row.id)));
+            const ok = createTransactionReversal(transaction.id, amount, {
+              date: reversalDate,
+              skipUndo: true,
+              skipSave: true,
+              skipRender: true
+            });
+            if (!ok) throw new Error(`FinHub could not reverse ${transaction.vendor || transaction.desc || transaction.id}. No payment links were removed.`);
+            const reversal = state.transactions.find(row =>
+              String(row.reversalOfTransactionId || '') === String(transaction.id) &&
+              !beforeIds.has(String(row.id))
+            );
+            if (!reversal) throw new Error(`FinHub could not verify the reversal record for ${transaction.vendor || transaction.desc || transaction.id}.`);
+            reversalIds.push(String(reversal.id));
+          });
+        }
+
+        const now = new Date().toISOString();
+        item.paymentUnlinkHistory = Array.isArray(item.paymentUnlinkHistory) ? item.paymentUnlinkHistory : [];
+        item.paymentUnlinkHistory.push({
+          action: shouldReverse ? 'reversed-and-unlinked' : 'unlinked-only',
+          transactionIds: payments.map(transaction => String(transaction.id)),
+          reversalTransactionIds: reversalIds,
+          reversalDate: shouldReverse ? reversalDate : '',
+          recordedAt: now
+        });
+
+        payments.forEach(transaction => {
+          if (String(transaction.calendarBillId || '') === String(item.id)) {
+            delete transaction.calendarBillId;
+            transaction.scheduledMatchStatus = 'unlinked';
+            transaction.calendarBillUnlinkedFromId = String(item.id);
+            transaction.calendarBillUnlinkedAt = now;
+          }
+        });
+
+        item.paymentTransactionIds = (Array.isArray(item.paymentTransactionIds) ? item.paymentTransactionIds : [])
+          .filter(id => !paymentIds.has(String(id)));
+        if (paymentIds.has(String(item.linkedTransactionId || ''))) {
+          delete item.linkedTransactionId;
+          const remainingId = item.paymentTransactionIds.find(id =>
+            (state.transactions || []).some(transaction => String(transaction.id) === String(id))
+          );
+          if (remainingId) item.linkedTransactionId = String(remainingId);
+        }
+        item.paymentHistoryManaged = true;
+        syncCalendarBillPaymentState(item);
+        saveData();
+      } catch (error) {
+        state = JSON.parse(localSnapshot);
+        undoStack.length = undoDepth;
+        try { saveData(); } catch (rollbackError) { console.error('Calendar payment rollback could not be persisted:', rollbackError); }
+        console.error('Calendar payment unlink/reversal was rolled back:', error);
+        alert(`${error?.message || 'FinHub could not complete this payment action.'}
+
+No payment links or balance changes were retained.`);
+        return false;
+      }
+      try {
+        renderLedger();
+        renderDashboard();
+        renderCalendar();
+        renderZbbFundingTracker();
+        renderDebtPlanner();
+        renderDebtPaymentHistory();
+      } catch (refreshError) {
+        console.error('Calendar payment action saved, but a display refresh failed:', refreshError);
+        alert(`The payment action was saved, but one or more screens could not refresh: ${refreshError?.message || 'Unknown display error'}. Reload FinHub to see the saved state.`);
+      }
+      return true;
+    }
+
+    function openCalendarUnpayConfirmation(item, payments, checkbox) {
       if (document.getElementById('fh-calendar-unpay-confirmation')) return;
+      const rows = Array.isArray(payments) ? payments : [payments].filter(Boolean);
+      if (!rows.length) return;
+
+      const protectedRows = rows.filter(isCalendarPaymentProtectedFromCalendarReversal);
+      const hasProtected = protectedRows.length > 0;
+      const todayDate = new Date();
+      const localToday = `${todayDate.getFullYear()}-${String(todayDate.getMonth()+1).padStart(2,'0')}-${String(todayDate.getDate()).padStart(2,'0')}`;
+      const canOfferReverse = !hasProtected && rows.every(transaction => canReverseCalendarLinkedPayment(transaction, localToday));
+      const accountName = transaction => (state.accounts || []).find(account => String(account.id) === String(transaction.accountId))?.name || 'Account';
+      const totalAmount = rows.reduce((sum, transaction) => sum + Math.abs(Number(transaction.amount) || 0), 0);
+      const totalText = formatFinancial(totalAmount);
+      const rowMarkup = rows.map(transaction => `
+        <div class="flex items-center justify-between gap-3 py-1.5 text-sm">
+          <div class="min-w-0">
+            <div class="font-semibold truncate">${escapeHtml(transaction.vendor || transaction.desc || 'Ledger transaction')}</div>
+            <div class="text-xs" style="color:var(--fh-muted,var(--text-secondary,#6b7280))">${escapeHtml(formatDateMDY(transaction.date))} · ${escapeHtml(accountName(transaction))}</div>
+          </div>
+          <strong class="accounting-num shrink-0">${formatFinancial(Math.abs(Number(transaction.amount) || 0))}</strong>
+        </div>`).join('');
+
       const overlay = document.createElement('div');
       overlay.id = 'fh-calendar-unpay-confirmation';
       overlay.className = 'fixed inset-0 z-[10050] flex items-center justify-center p-4';
       overlay.style.cssText = 'background:rgba(8,12,20,.58);backdrop-filter:blur(3px);';
-      const isIncome = item.type === 'income';
-      const isDebt = item.type === 'debt';
-      const action = isIncome ? 'reverse the received-income record' : isDebt ? 'reverse the debt-payment record' : 'reverse the bill-payment record';
-      const amount = formatFinancial(Math.abs(Number(payment.amount)||0));
-      const date = payment.date ? formatDateMDY(payment.date) : 'Date unavailable';
       overlay.innerHTML = `
         <section role="dialog" aria-modal="true" aria-labelledby="fh-unpay-title"
-          class="w-full max-w-md rounded-2xl border p-5 shadow-2xl"
+          class="w-full max-w-lg rounded-2xl border p-5 shadow-2xl space-y-4"
           style="background:var(--fh-surface, var(--bg-card, #fff));color:var(--fh-ink, var(--text-primary, #1f2937));border-color:var(--fh-border, rgba(120,130,150,.28));">
           <div class="flex items-start gap-3">
-            <div class="shrink-0 rounded-xl p-2" style="background:var(--fh-warning-soft,rgba(217,119,6,.12));color:var(--fh-warning,#d97706)">
+            <div class="shrink-0 rounded-xl p-2.5" style="background:var(--fh-warning-soft,rgba(217,119,6,.12));color:var(--fh-warning,#d97706)">
               <i class="fas fa-triangle-exclamation" aria-hidden="true"></i>
             </div>
-            <div class="min-w-0">
-              <h3 id="fh-unpay-title" class="text-base font-bold">Mark this item unpaid?</h3>
-              <p class="mt-2 text-sm leading-relaxed" style="color:var(--fh-muted,var(--text-secondary,#6b7280))">
-                Unchecking <strong style="color:var(--fh-ink,var(--text-primary,#1f2937))">${escapeHtml(item.desc || (isIncome ? 'scheduled income' : 'scheduled payment'))}</strong> will ${action}. The linked ledger transaction and its associated balance effect will be reversed.
-              </p>
-              <div class="mt-3 rounded-xl p-3 text-sm" style="background:var(--fh-raised,rgba(120,130,150,.08))">
-                <div class="flex justify-between gap-3"><span style="color:var(--fh-muted,var(--text-secondary,#6b7280))">Recorded amount</span><strong class="accounting-num">${amount}</strong></div>
-                <div class="flex justify-between gap-3 mt-1"><span style="color:var(--fh-muted,var(--text-secondary,#6b7280))">Transaction date</span><strong>${escapeHtml(date)}</strong></div>
-              </div>
-              <p class="mt-3 text-xs leading-relaxed" style="color:var(--fh-muted,var(--text-secondary,#6b7280))">
-                This removes the linked payment record from the ledger. It does not delete a separately imported or reconciled bank transaction.
+            <div class="min-w-0 flex-1">
+              <h3 id="fh-unpay-title" class="text-lg font-bold">Mark this item unpaid?</h3>
+              <p class="mt-1.5 text-sm leading-relaxed" style="color:var(--fh-muted,var(--text-secondary,#6b7280))">
+                Choose how to handle the linked ledger ${rows.length===1?'transaction':'transactions'}. Unlinking changes the scheduled-item association, not the original ledger entry.
               </p>
             </div>
           </div>
-          <div class="mt-5 flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
-            <button type="button" data-fh-unpay-cancel class="px-4 py-2 rounded-lg border text-sm font-semibold"
-              style="border-color:var(--fh-border,rgba(120,130,150,.3));background:var(--fh-raised,transparent)">Keep as ${isIncome ? 'received' : 'paid'}</button>
-            <button type="button" data-fh-unpay-confirm class="px-4 py-2 rounded-lg text-sm font-semibold text-white"
-              style="background:var(--fh-danger,#b45309)">Mark ${isIncome ? 'not received' : 'unpaid'}</button>
+          <div class="rounded-xl p-3" style="background:var(--fh-raised,rgba(120,130,150,.08))">
+            <div class="flex items-center justify-between gap-3 text-sm font-semibold">
+              <span>${escapeHtml(item.desc || (item.type==='income'?'Scheduled income':'Scheduled payment'))}</span>
+              <strong class="accounting-num">${totalText}</strong>
+            </div>
+            <div class="mt-2 divide-y" style="border-color:var(--fh-border,rgba(120,130,150,.2))">${rowMarkup}</div>
+          </div>
+          ${hasProtected ? `
+            <div class="rounded-xl border p-3 text-sm leading-relaxed" style="border-color:var(--fh-warning,#d97706);background:var(--fh-warning-soft,rgba(217,119,6,.08))">
+              At least one linked transaction was imported from a bank statement or has statement-reconciliation history. For this scheduled item, the Calendar will only remove the payment associations; none of the linked ledger transactions will be reversed. Their ledger records, reconciliation history, and account balance effects will remain unchanged. Correct an erroneous bank record through Statement Importer or reconciliation.
+            </div>` : `
+            <div class="space-y-2 text-sm">
+              <div class="rounded-xl border p-3" style="border-color:var(--fh-border,rgba(120,130,150,.25))">
+                <strong>Unlink only</strong>
+                <p class="mt-1" style="color:var(--fh-muted,var(--text-secondary,#6b7280))">Keep the original transaction and its account balance effect. Remove only its association with this scheduled item.</p>
+              </div>
+              ${canOfferReverse ? `
+                <div class="rounded-xl border p-3" style="border-color:var(--fh-warning,#d97706)">
+                  <strong>Reverse and unlink</strong>
+                  <p class="mt-1" style="color:var(--fh-muted,var(--text-secondary,#6b7280))">Create a separate reversal transaction to correct the account balance, preserve the original transaction, and remove its association with this scheduled item.</p>
+                  <label class="block mt-3 text-xs font-semibold" for="fh-unpay-reversal-date">Reversal date</label>
+                  <input id="fh-unpay-reversal-date" type="date" value="${localToday}" class="mt-1 w-full rounded-lg border px-3 py-2 text-sm"
+                    style="background:var(--fh-input,var(--fh-raised,transparent));color:var(--fh-ink,var(--text-primary,#1f2937));border-color:var(--fh-border,rgba(120,130,150,.3))">
+                </div>` : `
+                <div class="rounded-xl border p-3 text-xs leading-relaxed" style="border-color:var(--fh-border,rgba(120,130,150,.25));color:var(--fh-muted,var(--text-secondary,#6b7280))">
+                  Reverse and unlink is unavailable because at least one linked payment has already been reversed, has dependent records, or is not eligible for reversal through the Calendar. You can still unlink the scheduled association.
+                </div>`}
+            </div>`}
+          <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-1">
+            <button type="button" data-fh-unpay-cancel class="px-4 py-2.5 rounded-lg border text-sm font-semibold"
+              style="border-color:var(--fh-border,rgba(120,130,150,.3));background:var(--fh-raised,transparent)">Keep as ${item.type==='income'?'received': 'paid'}</button>
+            <button type="button" data-fh-unpay-link class="px-4 py-2.5 rounded-lg text-sm font-semibold"
+              style="border:1px solid var(--fh-border,rgba(120,130,150,.3));background:var(--fh-raised,transparent)">Unlink only</button>
+            ${canOfferReverse ? `<button type="button" data-fh-unpay-reverse class="px-4 py-2.5 rounded-lg text-sm font-semibold text-white" style="background:var(--fh-danger,#b45309)">Reverse &amp; unlink</button>` : ''}
           </div>
         </section>`;
       const close = () => {
@@ -11507,16 +11897,22 @@ ${acc.name}`);
         if (checkbox) checkbox.checked = true;
         close();
       };
-      const confirmAction = () => {
-        close();
-        setCalendarBillPaid(item, false);
+      const complete = action => {
+        const reversalDate = overlay.querySelector('#fh-unpay-reversal-date')?.value || '';
+        if (action === 'reverse-and-unlink' && !reversalDate) {
+          alert('Choose a reversal date. No changes were made.');
+          return;
+        }
+        if (unlinkCalendarBillPaymentRecords(item, rows, action, reversalDate)) {
+          if (checkbox) checkbox.checked = false;
+          close();
+        }
       };
-      const onKey = event => {
-        if (event.key === 'Escape') cancel();
-      };
+      const onKey = event => { if (event.key === 'Escape') cancel(); };
       overlay.addEventListener('click', event => {
         if (event.target === overlay || event.target.closest('[data-fh-unpay-cancel]')) cancel();
-        if (event.target.closest('[data-fh-unpay-confirm]')) confirmAction();
+        if (event.target.closest('[data-fh-unpay-link]')) complete('unlink-only');
+        if (event.target.closest('[data-fh-unpay-reverse]')) complete('reverse-and-unlink');
       });
       document.addEventListener('keydown', onKey);
       document.body.appendChild(overlay);
@@ -11529,13 +11925,19 @@ ${acc.name}`);
       if (!item) return;
       syncCalendarBillPaymentState(item);
       if (!item.paid) { openDashboardCalendarItem(item.id); return; }
-      const payments = getCalendarBillPaymentTransactions(item);
-      if (payments.length !== 1 || payments[0].source !== 'calendar-bill') {
+      const settlement = getCalendarBillSettlement(item);
+      if (settlement.missingIds.length) {
         if (e?.target && e.target.type === 'checkbox') e.target.checked = true;
-        alert('This scheduled item has ledger payment history. To reopen its balance, reverse or delete the specific payment transaction(s); FinHub will recalculate the outstanding amount without deleting payment history.');
+        alert('This scheduled item has missing payment references. Resolve them in Payment History before marking the item unpaid.');
         return;
       }
-      openCalendarUnpayConfirmation(item, payments[0], e?.target?.type === 'checkbox' ? e.target : null);
+      const payments = settlement.transactions;
+      if (!payments.length) {
+        if (e?.target && e.target.type === 'checkbox') e.target.checked = true;
+        alert('This scheduled item has a legacy paid status but no linked ledger transaction. Review its payment history before changing its status.');
+        return;
+      }
+      openCalendarUnpayConfirmation(item, payments, e?.target?.type === 'checkbox' ? e.target : null);
     }
 
     function populateCalendarDebtAccount(selectedId = '') {
@@ -11789,7 +12191,23 @@ ${acc.name}`);
       if (principalInput) principalInput.oninput = () => { principalInput.dataset.userEdited='1'; };
       if (existingSelect) existingSelect.onchange = () => {
         const tx=(state.transactions||[]).find(row=>String(row.id)===String(existingSelect.value));
-        if(tx && amountInput){amountInput.value=Math.abs(Number(tx.amount)||0).toFixed(2);amountInput.dataset.userEdited='1';const accountOption=[...accountSelect.options].find(option=>String(option.value)===String(tx.accountId));if(accountOption)accountSelect.value=String(tx.accountId);}
+        if(tx) {
+          if(amountInput){amountInput.value=Math.abs(Number(tx.amount)||0).toFixed(2);amountInput.dataset.userEdited='1';}
+          if(dateInput) dateInput.value=ledgerDateKey(tx.date)||String(tx.date||'').slice(0,10);
+          const accountOption=[...(accountSelect?.options||[])].find(option=>String(option.value)===String(tx.accountId));
+          if(accountOption && accountSelect) accountSelect.value=String(tx.accountId);
+          const vendorField=document.getElementById('cal-vendor');
+          const categoryField=document.getElementById('cal-category');
+          const subcategoryField=document.getElementById('cal-subcategory');
+          const descriptionField=document.getElementById('cal-desc');
+          if(vendorField && !vendorField.value.trim() && tx.vendor) vendorField.value=tx.vendor;
+          if(categoryField && !categoryField.value && tx.category) {
+            categoryField.value=tx.category;
+            categoryField.dispatchEvent(new Event('change',{bubbles:true}));
+          }
+          if(subcategoryField && !subcategoryField.value && tx.subcategory) subcategoryField.value=tx.subcategory;
+          if(descriptionField && !descriptionField.value.trim() && tx.desc) descriptionField.value=tx.desc;
+        }
       };
     }
 
@@ -11911,6 +12329,27 @@ ${acc.name}`);
       if (bill.type==='debt' && String(transaction.debtAccountId||'')!==String(resolveDebtAccountForBill(bill)?.id||'')) throw new Error('The transaction is linked to a different debt account.');
       transaction.calendarBillId = bill.id;
       transaction.scheduledMatchStatus = 'matched';
+      // Reuse the actual ledger details for any blank scheduled-item fields.
+      // Never overwrite information the user has already entered on the schedule.
+      if (bill.type !== 'debt') {
+        if (!String(bill.vendor || '').trim() && String(transaction.vendor || '').trim()) bill.vendor = String(transaction.vendor).trim();
+        if (!String(bill.category || '').trim() && String(transaction.category || '').trim()) bill.category = String(transaction.category).trim();
+        if (!String(bill.subcategory || '').trim() && String(transaction.subcategory || '').trim()) bill.subcategory = String(transaction.subcategory).trim();
+      }
+      if (!String(bill.desc || '').trim() && String(transaction.desc || '').trim()) bill.desc = String(transaction.desc).trim();
+      // Keep an open editor in sync so Save does not ask for details already on the ledger row.
+      if (String(document.getElementById('cal-edit-id')?.value || '') === String(bill.id)) {
+        const vendorField = document.getElementById('cal-vendor');
+        const categoryField = document.getElementById('cal-category');
+        const subcategoryField = document.getElementById('cal-subcategory');
+        const descriptionField = document.getElementById('cal-desc');
+        if (vendorField && !vendorField.value.trim()) vendorField.value = bill.vendor || '';
+        if (categoryField && !categoryField.value && bill.category) categoryField.value = bill.category;
+        if (subcategoryField && !subcategoryField.value && bill.subcategory) {
+          subcategoryField.value = bill.subcategory;
+        }
+        if (descriptionField && !descriptionField.value.trim()) descriptionField.value = bill.desc || '';
+      }
       bill.paymentHistoryManaged = true;
       bill.paymentTransactionIds = [...new Set([...(Array.isArray(bill.paymentTransactionIds)?bill.paymentTransactionIds:[]).map(String),String(transaction.id)])];
       if (!bill.linkedTransactionId) bill.linkedTransactionId = String(transaction.id);
@@ -11927,6 +12366,22 @@ ${acc.name}`);
       const amountInput = document.getElementById('cal-payment-amount');
       const date = document.getElementById('cal-payment-date')?.value || '';
       const accountId = document.getElementById('cal-payment-account')?.value || '';
+      const existing = existingId ? (state.transactions||[]).find(tx=>String(tx.id)===String(existingId)) : null;
+      if (existing) {
+        const existingAmountCents=transactionAmountToCents(Math.abs(Number(existing.amount)||0));
+        if(!Number.isSafeInteger(existingAmountCents)||existingAmountCents<=0){alert('The selected transaction does not have a valid positive amount.');return;}
+        if(existingAmountCents>settlement.remainingCents && !confirm(`This existing transaction exceeds the remaining scheduled amount by ${formatFinancial((existingAmountCents-settlement.remainingCents)/100)}. Link the actual payment and flag the scheduled item as overpaid?`)) return;
+        captureUndo(`Link payment to scheduled item "${bill.desc||bill.id}"`);
+        try { linkCalendarBillPayment(bill, existing); } catch(error) { alert(error.message); return; }
+        saveData();
+        const select=document.getElementById('cal-payment-existing');if(select)select.value='';
+        ['cal-payment-amount','cal-payment-principal'].forEach(id=>{const input=document.getElementById(id);if(input){delete input.dataset.userEdited;input.value='';}});
+        renderCalendarBillPaymentPanel(bill);
+        renderLedger(); renderDashboard(); renderCalendar(); renderZbbFundingTracker(); renderDebtPlanner(); renderDebtPaymentHistory();
+        // The payment has been linked and saved successfully; close the scheduled-item editor.
+        closeCalendarModal();
+        return;
+      }
       const amountCents = transactionAmountToCents(Number(amountInput?.value));
       if (!Number.isSafeInteger(amountCents) || amountCents <= 0) { alert('Enter a payment amount greater than zero.'); return; }
       if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) { alert('Enter a valid payment date.'); return; }
@@ -11934,13 +12389,8 @@ ${acc.name}`);
       if (!funding) { alert('Select an active asset funding account.'); return; }
       const amount = amountCents/100;
       if (amountCents > settlement.remainingCents && !confirm(`This payment exceeds the remaining scheduled amount by ${formatFinancial((amountCents-settlement.remainingCents)/100)}. Record the actual payment and flag the bill as overpaid?`)) return;
-      const existing = existingId ? (state.transactions||[]).find(tx=>String(tx.id)===String(existingId)) : null;
-      if (bill.paymentStatus==='legacy-unlinked' && !existing) { alert('This scheduled item is already marked paid but has no linked ledger transaction. Select the existing payment from the list to connect it; FinHub will not create another payment until the old status is reconciled.'); return; }
-      if (existing) {
-        if (transactionAmountToCents(Math.abs(Number(existing.amount)||0)) !== amountCents) { alert('The selected existing transaction amount differs from the payment amount entered.'); return; }
-        captureUndo(`Link payment to scheduled item "${bill.desc||bill.id}"`);
-        try { linkCalendarBillPayment(bill, existing); } catch(error) { alert(error.message); return; }
-      } else {
+      if (bill.paymentStatus==='legacy-unlinked') { alert('This scheduled item is already marked paid but has no linked ledger transaction. Select the existing payment from the list to connect it; FinHub will not create another payment until the old status is reconciled.'); return; }
+      {
         if (Number(funding.balance)<amount && !confirm(`The selected funding account currently has ${formatFinancial(funding.balance)}. Record this payment anyway?`)) return;
         const expectedType = bill.type==='income'?'Income':bill.type==='debt'?'Debt Payment':'Expense';
         let debt = null, principalCents = 0, paymentType = '';
@@ -11981,6 +12431,8 @@ ${acc.name}`);
       const existingSelect=document.getElementById('cal-payment-existing');if(existingSelect)existingSelect.value='';
       renderCalendarBillPaymentPanel(bill);
       renderLedger(); renderDashboard(); renderCalendar(); renderZbbFundingTracker(); renderDebtPlanner(); renderDebtPaymentHistory();
+      // The new payment has been recorded and linked successfully; close the scheduled-item editor.
+      closeCalendarModal();
     }
 
     function deleteCalendarItemFromModal() {
@@ -16098,27 +16550,11 @@ ${acc.name}`);
         return;
       }
       const payments = getCalendarBillPaymentTransactions(bill);
-      if (payments.length !== 1 || payments[0].source !== 'calendar-bill') {
-        alert('Payment history cannot be removed by toggling the paid flag. Reverse or delete the individual payment transaction(s) instead.');
+      if (!payments.length) {
+        alert('This scheduled item has no linked ledger payments to unlink. Review its payment history before changing its status.');
         return;
       }
-      const linked = payments[0];
-      const funding = state.accounts.find(a=>String(a.id)===String(linked.accountId));
-      const debt = bill.type==='debt'?resolveDebtAccountForBill(bill):null;
-      if (bill.type==='debt' && Math.abs(Number(debt?.balance)||0)<0.005 && linked.debtBalanceSignBefore==null) {
-        alert('This scheduled debt payment has no saved pre-payment balance sign. Reconcile the debt balance before unmarking it.'); return;
-      }
-      captureUndo(`Unpay scheduled item "${bill.desc||bill.id}"`);
-      applyTransactionBalanceEffect(linked,-1);
-      if (bill.type==='debt' && debt) applyDebtPrincipalBalanceEffect(debt, Number(linked.debtPrincipalAmount)||0, 'restore', linked.debtBalanceSignBefore);
-      state.transactions = state.transactions.filter(tx=>String(tx.id)!==String(linked.id));
-      if (linked.debtPaymentId) state.debtPayments = (state.debtPayments||[]).filter(payment=>String(payment.id)!==String(linked.debtPaymentId));
-      delete linked.calendarBillId;
-      delete bill.linkedTransactionId;
-      bill.paymentTransactionIds=[];
-      bill.paid=false;
-      syncCalendarBillPaymentState(bill);
-      saveData(); renderLedger(); renderDashboard(); renderCalendar(); renderZbbFundingTracker(); renderDebtPlanner(); renderDebtPaymentHistory();
+      openCalendarUnpayConfirmation(bill, payments, null);
     }
 
     function markBillPaid(billId) {
@@ -18397,6 +18833,9 @@ function openTransactionModal(requestedEditId = null) {
         : { transactionId: null, source: 'manual-entry' };
       const editIdResolved = requestedTransaction ? requestedTransaction.id : null;
       const editId = editIdResolved;
+      const transactionModal = document.getElementById('transaction-modal');
+      transactionModal?.classList.toggle('is-editing', !!editId);
+      transactionModal?.classList.toggle('is-creating', !editId);
       document.getElementById('tx-edit-id').value = editId ? String(editId) : '';
       const ruleIndicator = document.getElementById('tx-category-rule-match-indicator');
       ruleIndicator?.classList.add('hidden');
@@ -20232,7 +20671,7 @@ function openTransactionModal(requestedEditId = null) {
         </div>
 </div>
 <div class="p-4 border-t border-gray-200 dark:border-gray-800 flex flex-wrap justify-end gap-2">
-<button class="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-xs font-semibold fh-btn-cancel" onclick="cancelBackupImportPreview()">Cancel</button>
+<button class="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-xs font-semibold fh-btn-cancel fh-modal-secondary-action" onclick="cancelBackupImportPreview()">Cancel</button>
 <button class="px-4 py-2 rounded-lg text-white text-xs font-semibold" onclick="confirmBackupImport()">Replace FinHub data</button>
 </div>
 </div>
@@ -21430,7 +21869,11 @@ document.addEventListener('toggle', function(event) {
   html.dark .finhub-mobile-global-controls { background:rgba(30,27,45,.94); border-color:rgba(148,163,184,.28); }
   .finhub-mobile-global-controls button { display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:9px; color:#62547d; }
   html.dark .finhub-mobile-global-controls button { color:#ddd4f2; }
-  .finhub-mobile-global-controls button:focus-visible { outline:2px solid #8b5cf6; outline-offset:2px; }
+  .finhub-mobile-global-controls button:focus-visible {
+    outline:2px solid var(--fh-focus, var(--fh-primary, #64748b));
+    outline-offset:2px;
+    box-shadow:none;
+  }
 }
 </style>
 <style id="finhub-accounts-summary-dashboard-direction-colours-v1">
@@ -28814,7 +29257,6 @@ body[data-finhub-theme] #tab-debt .fh-amortization-card { overflow:hidden; }
 .fh-open-details-icon:hover,.fh-open-details-icon:focus-visible{color:var(--fh-primary,var(--fh-accent,#818cf8));background:var(--fh-hover-bg,rgba(129,140,248,.09));border-color:var(--fh-card-border,rgba(129,140,248,.22));opacity:1}
 .fh-open-details-icon:focus-visible{outline:2px solid var(--fh-focus,var(--fh-primary,#818cf8));outline-offset:2px}
 </style>
-
 <style id="finhub-account-summary-compact-overflow-crop-v175">
 /* Account detail summary: make the metrics a genuinely compact horizontal strip.
    Keep the existing data, labels, actions and edit controls intact. */
@@ -28958,8 +29400,6 @@ body[data-finhub-theme] #tab-debt .fh-amortization-card { overflow:hidden; }
   filter:none!important;
 }
 </style>
-
-
 <style id="finhub-account-summary-structural-redesign-v176">
 /* Genuine structural redesign: one shared summary surface, not five nested cards. */
 #account-detail-modal #account-settings-summary{
@@ -29127,8 +29567,6 @@ body[data-finhub-theme] #tab-debt .fh-amortization-card { overflow:hidden; }
   #account-detail-modal #account-settings-summary #acc-detail-balance-summary>.acc-balance-summary-card:nth-child(n+3){border-top:1px solid var(--border-primary,var(--fh-border,rgba(130,100,160,.22)))!important;padding-top:.45rem!important;}
 }
 </style>
-
-
 <style id="finhub-account-summary-header-tooltip-centering-v177">
 /* Header: title and compact account actions share one line. */
 #account-detail-modal #account-settings-summary{
@@ -29238,8 +29676,6 @@ body[data-finhub-theme] #tab-debt .fh-amortization-card { overflow:hidden; }
   #account-detail-modal #account-settings-summary>div>.flex{top:.12rem!important;right:.3rem!important;}
 }
 </style>
-
-
 <style id="finhub-opening-balance-tooltip-placement-focus-v178">
 /* Keep the opening-balance explanation inside the visible account panel:
    position it below the info trigger rather than above the summary edge. */
@@ -29275,8 +29711,6 @@ body[data-finhub-theme] #tab-debt .fh-amortization-card { overflow:hidden; }
   box-shadow:none!important;
 }
 </style>
-
-
 <style id="finhub-opening-balance-tooltip-portal-v179">
 /* The tooltip is portalled to document.body by the companion script so modal,
    summary and card overflow can never crop it. */
@@ -29308,8 +29742,6 @@ body[data-finhub-theme] #tab-debt .fh-amortization-card { overflow:hidden; }
   pointer-events:none!important;
 }
 </style>
-
-
 <script id="finhub-opening-balance-tooltip-portal-script">
 (function(){
   if (window.__fhOpeningBalanceTooltipPortal) return;
@@ -29361,8 +29793,6 @@ body[data-finhub-theme] #tab-debt .fh-amortization-card { overflow:hidden; }
   window.addEventListener('scroll',hide,true);
 })();
 </script>
-
-
 <style id="finhub-global-info-trigger-standard-v182">
 /* One consistent info trigger treatment throughout FinHub. */
 button.fh-info-trigger,
@@ -29446,8 +29876,6 @@ button.fh-info-trigger:focus-visible,
   margin-bottom:5px!important;
 }
 </style>
-
-
 <style id="finhub-info-controls-unified-v183">
 /* Extend the shared info-trigger standard to the legacy account tooltip control. */
 .acc-opening-balance-info,
@@ -29492,18 +29920,103 @@ button[aria-describedby="acc-opening-balance-tooltip"]:focus-visible,
 }
 </style>
 
-</body>
-</html>
 
-<style id="finhub-v187-calendar-info-trigger-sizing">
-/* Calendar payment-date information uses the shared info treatment while
-   preserving the deliberately compact one-rem event-chip footprint. */
-.fh-calendar-paid-date-info.fh-info-trigger {
-  min-width:1rem !important;
-  min-height:1rem !important;
-  width:1rem !important;
-  height:1rem !important;
-  padding:0 !important;
-  border-radius:3px !important;
+
+<style id="finhub-v202-statement-importer-layout">
+/* Statement Importer: wide workspace, balanced outer margins, and readable inner spacing. */
+#recon-modal {
+  position:fixed !important;
+  inset:0 !important;
+  box-sizing:border-box !important;
+  align-items:center !important;
+  justify-content:center !important;
+  padding:1.5rem !important;
+  overflow-x:hidden !important;
+  overflow-y:auto !important;
+  overscroll-behavior:contain !important;
+}
+#recon-modal.hidden { display:none !important; }
+#recon-modal > .fh-modal-surface {
+  position:relative !important;
+  box-sizing:border-box !important;
+  flex:0 1 auto !important;
+  width:min(92vw,82rem) !important;
+  min-width:0 !important;
+  max-width:min(92vw,82rem) !important;
+  height:auto !important;
+  max-height:calc(100dvh - 3rem) !important;
+  margin:0 auto !important;
+  padding:1.4rem !important;
+  inset:auto !important;
+  transform:none !important;
+  overflow-x:hidden !important;
+  overflow-y:auto !important;
+  overscroll-behavior:contain !important;
+  -webkit-overflow-scrolling:touch !important;
+}
+/* Make the title row feel like a deliberate dialog header, not content touching the edge. */
+#recon-modal > .fh-modal-surface > div:first-child {
+  position:sticky !important;
+  top:-1.4rem !important;
+  z-index:5 !important;
+  margin:-1.4rem -1.4rem .15rem !important;
+  padding:1.15rem 1.4rem .95rem !important;
+  background:var(--fh-card) !important;
+  border-bottom:1px solid var(--fh-border) !important;
+}
+/* Slightly improve reading rhythm without changing the importer controls or workflow. */
+#recon-modal h3 {
+  font-size:1.1rem !important;
+  line-height:1.35 !important;
+}
+#recon-modal p {
+  line-height:1.45 !important;
+}
+#recon-modal label,
+#recon-modal summary {
+  line-height:1.4 !important;
+}
+@media(max-width:760px) {
+  #recon-modal { padding:.65rem !important; }
+  #recon-modal > .fh-modal-surface {
+    width:calc(100vw - 1.3rem) !important;
+    max-width:calc(100vw - 1.3rem) !important;
+    max-height:calc(100dvh - 1.3rem) !important;
+    padding:1rem !important;
+  }
+  #recon-modal > .fh-modal-surface > div:first-child {
+    top:-1rem !important;
+    margin:-1rem -1rem .15rem !important;
+    padding:.85rem 1rem .8rem !important;
+  }
 }
 </style>
+
+
+
+<style id="finhub-v203-mobile-control-focus">
+@media (max-width:639px) {
+  body[data-finhub-theme] #finhub-menu-trigger {
+    border-color:var(--fh-border, rgba(148,163,184,.42)) !important;
+  }
+  /* Match keyboard focus to the active theme token, not the old fixed violet. */
+  body[data-finhub-theme] #finhub-menu-trigger:focus-visible,
+  body[data-finhub-theme] #finhub-mobile-global-controls button:focus-visible {
+    outline:2px solid var(--fh-focus, var(--fh-primary, #64748b)) !important;
+    outline-offset:2px !important;
+    box-shadow:none !important;
+  }
+  /* A tap/click should not leave a keyboard-style ring behind. */
+  body[data-finhub-theme] #finhub-menu-trigger:focus:not(:focus-visible),
+  body[data-finhub-theme] #finhub-mobile-global-controls button:focus:not(:focus-visible) {
+    outline:none !important;
+    box-shadow:none !important;
+  }
+  body[data-finhub-theme] #finhub-mobile-global-controls button {
+    color:var(--fh-muted, var(--fh-ink, #475569)) !important;
+  }
+}
+</style>
+
+</body>
+</html>
