@@ -4336,6 +4336,27 @@ body[data-finhub-theme] .fh-ledger-view-toggle:focus-visible {
   body[data-finhub-theme] .fh-calendar-match-card { padding:.6rem; }
 }
 </style>
+
+<style id="finhub-v210-transfer-modal-original-size">
+/* Restore Quick Transfer to its original compact max-w-md dialog footprint.
+   The shared responsive modal sizing was making this simple four-field form
+   grow much wider than its original design. Keep the phone layout unchanged. */
+@media (min-width:641px) {
+  #transfer-modal > .fh-modal-surface {
+    box-sizing:border-box !important;
+    width:min(100%, 28rem) !important;
+    max-width:28rem !important;
+    max-height:calc(100dvh - 2rem) !important;
+    overflow-y:auto !important;
+  }
+}
+</style>
+
+<style id="finhub-v211-account-activity-row-interaction">
+  #account-detail-modal tr.acc-activity-row { cursor:pointer; transition:background-color .12s ease; }
+  #account-detail-modal tr.acc-activity-row:hover { background:color-mix(in srgb,var(--fh-primary) 8%,transparent); }
+  #account-detail-modal tr.acc-activity-row:focus-visible { outline:2px solid var(--fh-focus,var(--fh-primary)); outline-offset:-2px; }
+</style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 min-h-screen flex flex-col md:flex-row transition-colors duration-200 relative" id="app-body">
 <!-- UNDO TOAST NOTIFICATION -->
@@ -5744,7 +5765,7 @@ Bonus" rows="4"></textarea></div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">To account</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="transfer-to" required=""></select></div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Amount ($)</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="transfer-amount" min="0.01" required="" step="0.01" type="number"/></div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Date</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="transfer-date" required="" lang="en-US" type="date"/></div>
-<div class="flex gap-2 pt-2"><button class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel fh-modal-secondary-action" onclick="closeTransferModal()" type="button">Cancel</button><button class="fh-action-button fh-action-button-primary flex-1 fh-modal-primary-action" type="submit">Transfer</button></div>
+<div class="flex gap-2 pt-2"><button class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel fh-modal-secondary-action" onclick="closeTransferModal()" type="button">Cancel</button><button class="fh-action-button fh-action-button-primary flex-1 fh-modal-primary-action" id="transfer-submit-btn" type="submit">Transfer</button></div>
 </form>
 </div>
 </div>
@@ -9071,11 +9092,11 @@ Bonus" rows="4"></textarea></div>
             let type = isExternalTransferIn ? 'Transfer In' : (t.type || 'Transaction');
             if (t.type === 'Transfer' && t.transferToAccountId) type = 'Transfer Out';
             if (t.type === 'Expense' && amount < 0) type = t.refundOfTransactionId ? 'Refund / reimbursement' : 'Refund / credit';
-            entries.push({ id: t.id, date: t.type==='Transfer' && t.transferToAccountId ? (statementTransactionDateForAccount(t,acc.id) || t.date || '') : (t.date || ''), vendor: t.vendor || '', description: t.desc || (t.vendor ? '' : 'Transaction'), type, change, reconciled: statementTransactionReconciledForAccount(t,acc.id) && !t.statementMatchNeedsReview, matchNeedsReview: !!t.statementMatchNeedsReview });
+            entries.push({ id: t.id, transactionId: String(t.id), date: t.type==='Transfer' && t.transferToAccountId ? (statementTransactionDateForAccount(t,acc.id) || t.date || '') : (t.date || ''), vendor: t.vendor || '', description: t.desc || (t.vendor ? '' : 'Transaction'), type, change, reconciled: statementTransactionReconciledForAccount(t,acc.id) && !t.statementMatchNeedsReview, matchNeedsReview: !!t.statementMatchNeedsReview });
           } else if (t.type === 'Transfer' && t.transferToAccountId === acc.id) {
             const amount = Number(t.amount) || 0;
             const source = state.accounts.find(a => a.id === t.accountId);
-            entries.push({ id: `${t.id}_incoming`, date: statementTransactionDateForAccount(t,acc.id) || t.date || '', vendor: t.vendor || 'Account transfer', description: t.desc || (source ? `Transfer from ${source.name}` : 'Transfer received'), type: 'Transfer In', change: amount, reconciled: statementTransactionReconciledForAccount(t,acc.id) && !t.statementMatchNeedsReview, matchNeedsReview: !!t.statementMatchNeedsReview });
+            entries.push({ id: `${t.id}_incoming`, transactionId: String(t.id), date: statementTransactionDateForAccount(t,acc.id) || t.date || '', vendor: t.vendor || 'Account transfer', description: t.desc || (source ? `Transfer from ${source.name}` : 'Transfer received'), type: 'Transfer In', change: amount, reconciled: statementTransactionReconciledForAccount(t,acc.id) && !t.statementMatchNeedsReview, matchNeedsReview: !!t.statementMatchNeedsReview });
           }
         });
       } else {
@@ -9110,14 +9131,18 @@ Bonus" rows="4"></textarea></div>
           else if (postedDirectlyToDebtAccount && t.type === 'Expense') type = 'Credit / debt purchase';
           else if (postedDirectlyToDebtAccount && t.type === 'Income') type = 'Refund / credit';
           else if (isInterest) type = 'Interest expense';
-          entries.push({ id: t.id, date: t.date || '', vendor: t.vendor || '', description: t.desc || (t.vendor ? '' : 'Transaction'), type, change, amount: Number(t.amount) || 0, principal, reconciled: statementTransactionReconciledForAccount(t,t.accountId) && !t.statementMatchNeedsReview, matchNeedsReview: !!t.statementMatchNeedsReview });
+          entries.push({ id: t.id, transactionId: String(t.id), date: t.date || '', vendor: t.vendor || '', description: t.desc || (t.vendor ? '' : 'Transaction'), type, change, amount: Number(t.amount) || 0, principal, reconciled: statementTransactionReconciledForAccount(t,t.accountId) && !t.statementMatchNeedsReview, matchNeedsReview: !!t.statementMatchNeedsReview });
         });
       }
       return entries.sort((a, b) => String(a.date).localeCompare(String(b.date)) || String(a.id).localeCompare(String(b.id)));
     }
 
     function openAccountActivityTransaction(entryId) {
-      const id = String(entryId || '').replace(/_incoming$/, '');
+      const rawEntryId = String(entryId || '');
+      const activityEntry = (window.currentAccountActivityEntries || []).find(entry => String(entry.id) === rawEntryId);
+      // Incoming transfer rows have a display-specific activity ID, but both
+      // sides edit the one underlying transfer transaction.
+      const id = String(activityEntry?.transactionId || rawEntryId.replace(/_incoming$/, ''));
       const transaction = (state.transactions || []).find(t => String(t.id) === id);
       if (!transaction) { alert('This activity record is not linked to an editable transaction.'); return; }
       openTransactionModal(transaction.id);
@@ -9193,10 +9218,10 @@ Bonus" rows="4"></textarea></div>
           const favorableDebtReduction = acc.type === 'debt' && negative;
           const changeText = entry.change === 0 ? '—' : formatFinancial(Math.abs(entry.change), negative);
           rows.innerHTML += `
-            <tr class=" ">
+            <tr class="acc-activity-row cursor-pointer" data-activity-entry-id="${escapeHtml(String(entry.id))}" tabindex="0" role="button" aria-label="Open transaction ${escapeHtml(entry.vendor || entry.description || entry.type || 'activity record')}" onclick="openAccountActivityTransaction('${String(entry.id).replace(/'/g, '&#39;')}')" onkeydown="if(event.target===this&&(event.key==='Enter'||event.key===' ')){event.preventDefault();openAccountActivityTransaction('${String(entry.id).replace(/'/g, '&#39;')}');}">
               <td class="px-3 py-1.5 whitespace-nowrap">${formatDateMDY(entry.date)}</td>
               <td class="px-3 py-1.5">${escapeHtml(entry.vendor || '—')}</td>
-              <td class="px-3 py-1.5">${escapeHtml(entry.description || '—')} <button type="button" onclick="openAccountActivityTransaction('${String(entry.id).replace(/'/g, '&#39;')}')" class="inline-flex align-middle text-[9px] text-indigo-600 dark:text-indigo-400 hover:underline" title="Open transaction" aria-label="Open transaction"><i class="fa-solid fa-arrow-up-right-from-square"></i></button></td>
+              <td class="px-3 py-1.5">${escapeHtml(entry.description || '—')} <button type="button" onclick="event.stopPropagation();openAccountActivityTransaction('${String(entry.id).replace(/'/g, '&#39;')}')" class="inline-flex align-middle text-[9px] text-indigo-600 dark:text-indigo-400 hover:underline" title="Open transaction" aria-label="Open transaction"><i class="fa-solid fa-arrow-up-right-from-square"></i></button></td>
               <td class="px-3 py-1.5"><span class="px-2 py-0.5 rounded text-[10px] bg-gray-100 dark:bg-gray-800">${entry.type}</span>${entry.matchNeedsReview ? '<span class="ml-1 px-1.5 py-0.5 rounded text-[9px] bg-amber-500/10 text-amber-600">Match needs review</span>' : entry.reconciled ? '<span class="ml-1 px-1.5 py-0.5 rounded text-[9px] fh-status-income-fill/10 fh-status-income">Statement matched</span>' : ''}</td>
               <td class="px-4 py-3 text-right font-semibold ${favorableDebtReduction || (!negative && entry.change > 0) ? 'fh-status-income' : negative ? 'text-rose-600' : 'text-gray-400'} accounting-num">${changeText}</td>
               <td class="px-3 py-1.5 text-right font-bold accounting-num">${formatFinancial(runningBalance)}</td>
@@ -9253,7 +9278,7 @@ Bonus" rows="4"></textarea></div>
       const runningById=new Map(); all.forEach(entry=>{ running += Number(entry.change)||0; runningById.set(String(entry.id),running); });
       tbody.innerHTML=`<tr class="acc-opening-balance-row"><td class="px-3 py-1.5">—</td><td class="px-3 py-1.5">—</td><td class="px-4 py-3 font-semibold" colspan="1">Opening balance</td><td class="px-3 py-1.5">Opening balance</td><td class="px-3 py-1.5 text-right">—</td><td class="px-3 py-1.5 text-right font-bold accounting-num">${formatFinancial(running)}</td></tr>`;
       if(!entries.length) tbody.innerHTML+='<tr><td colspan="6" class="px-4 py-4 text-center text-xs text-gray-400">No activity matches these filters.</td></tr>';
-      else entries.forEach(entry=>{ const negative=entry.change<0; const favorable=acc.type==='debt'&&negative; const changeText=entry.change===0?'—':formatFinancial(Math.abs(entry.change),negative); tbody.innerHTML += `<tr class=" "><td class="px-3 py-1.5 whitespace-nowrap">${formatDateMDY(entry.date)}</td><td class="px-3 py-1.5">${escapeHtml(entry.vendor||'—')}</td><td class="px-3 py-1.5"><button type="button" onclick="openAccountActivityTransaction('${String(entry.id).replace(/'/g,'&#39;')}')" class="text-left font-medium text-indigo-600 dark:text-indigo-400 hover:underline">${escapeHtml(entry.description||'—')}</button></td><td class="px-3 py-1.5">${escapeHtml(entry.type||'')}</td><td class="px-4 py-3 text-right font-semibold accounting-num ${favorable||(!negative&&entry.change>0)?'fh-status-income':negative?'text-rose-600':'text-gray-400'}">${changeText}</td><td class="px-3 py-1.5 text-right font-bold accounting-num">${formatFinancial(runningById.get(String(entry.id)) ?? 0)}</td></tr>`; });
+      else entries.forEach(entry=>{ const negative=entry.change<0; const favorable=acc.type==='debt'&&negative; const changeText=entry.change===0?'—':formatFinancial(Math.abs(entry.change),negative); tbody.innerHTML += `<tr class="acc-activity-row cursor-pointer" data-activity-entry-id="${escapeHtml(String(entry.id))}" tabindex="0" role="button" aria-label="Open transaction ${escapeHtml(entry.vendor || entry.description || entry.type || 'activity record')}" onclick="openAccountActivityTransaction('${String(entry.id).replace(/'/g, '&#39;')}')" onkeydown="if(event.target===this&&(event.key==='Enter'||event.key===' ')){event.preventDefault();openAccountActivityTransaction('${String(entry.id).replace(/'/g, '&#39;')}');}"><td class="px-3 py-1.5 whitespace-nowrap">${formatDateMDY(entry.date)}</td><td class="px-3 py-1.5">${escapeHtml(entry.vendor||'—')}</td><td class="px-3 py-1.5"><button type="button" onclick="event.stopPropagation();openAccountActivityTransaction('${String(entry.id).replace(/'/g,'&#39;')}')" class="text-left font-medium text-indigo-600 dark:text-indigo-400 hover:underline">${escapeHtml(entry.description||'—')}</button></td><td class="px-3 py-1.5">${escapeHtml(entry.type||'')}</td><td class="px-4 py-3 text-right font-semibold accounting-num ${favorable||(!negative&&entry.change>0)?'fh-status-income':negative?'text-rose-600':'text-gray-400'}">${changeText}</td><td class="px-3 py-1.5 text-right font-bold accounting-num">${formatFinancial(runningById.get(String(entry.id)) ?? 0)}</td></tr>`; });
       const foot=document.getElementById('acc-detail-foot'); if(foot) foot.innerHTML=`<tr><td colspan="4" class="px-3 py-1.5">Filtered activity total (${entries.length} records)</td><td class="px-4 py-3 text-right accounting-num">${formatFinancial(Math.abs(total),total<0)}</td><td class="px-4 py-3 text-right accounting-num">${formatFinancial(Number(acc.balance)||0)}</td></tr>`;
       updateAccountActivityFilterIndicators();
     }
@@ -14469,6 +14494,7 @@ No payment links or balance changes were retained.`);
       const transaction = (state.transactions || []).find(t => String(t.id) === String(id));
       if (!transaction) { alert('This transaction could not be found.'); return; }
       if (transaction.type === 'Interest Charge') openInterestChargeModal(String(transaction.id));
+      else if (transaction.type === 'Transfer' && transaction.transferToAccountId) openTransferModal(String(transaction.id));
       else openTransactionModal(String(transaction.id));
     }
     function ledgerListFieldHtml(t, key) {
@@ -18617,20 +18643,47 @@ No payment links or balance changes were retained.`);
       renderDebtPaymentHistory(); renderDashboard(); renderDebtPlanner(); renderLedger(); renderCalendar(); renderZbbFundingTracker();
     }
 
-    function openTransferModal() {
+    let transferEditingId = null;
+    function openTransferModal(editId = null) {
+      const existing = editId == null ? null : (state.transactions || []).find(t => String(t.id) === String(editId) && t.type === 'Transfer' && t.transferToAccountId);
+      if (editId != null && !existing) { alert('This internal transfer could not be found.'); return; }
+      transferEditingId = existing ? String(existing.id) : null;
       const from = document.getElementById('transfer-from');
       const to = document.getElementById('transfer-to');
       from.innerHTML = ''; to.innerHTML = '';
-      // Balance inclusion is a reporting preference only. Every active asset account
-      // remains available as a source or destination for an internal transfer.
-      state.accounts.filter(a => a.type === 'asset' && !a.archived).forEach(a => {
-        from.innerHTML += `<option value="${a.id}">${a.name}</option>`;
-        to.innerHTML += `<option value="${a.id}">${a.name}</option>`;
+      // Existing transfer accounts remain selectable while editing, including
+      // accounts archived after the transfer was originally recorded.
+      const currentIds = new Set(existing ? [String(existing.accountId), String(existing.transferToAccountId)] : []);
+      state.accounts.filter(a => a.type === 'asset' && (!a.archived || currentIds.has(String(a.id)))).forEach(a => {
+        const label = `${a.name}${a.archived ? ' (Archived)' : ''}`;
+        from.innerHTML += `<option value="${escapeHtml(a.id)}">${escapeHtml(label)}</option>`;
+        to.innerHTML += `<option value="${escapeHtml(a.id)}">${escapeHtml(label)}</option>`;
       });
-      document.getElementById('transfer-date').value = new Date().toISOString().split('T')[0];
+      const title = document.getElementById('transfer-modal-accessible-title');
+      const submit = document.getElementById('transfer-submit-btn');
+      if (existing) {
+        from.value = String(existing.accountId);
+        to.value = String(existing.transferToAccountId);
+        document.getElementById('transfer-amount').value = Math.abs(Number(existing.amount) || 0).toFixed(2);
+        document.getElementById('transfer-date').value = ledgerDateKey(existing.date) || String(existing.date || '');
+        if (title) title.textContent = 'Edit Transfer Between Accounts';
+        if (submit) submit.textContent = 'Save Changes';
+      } else {
+        document.getElementById('transfer-date').value = new Date().toISOString().split('T')[0];
+        document.getElementById('transfer-amount').value = '';
+        if (title) title.textContent = 'Transfer Between Accounts';
+        if (submit) submit.textContent = 'Transfer';
+      }
       document.getElementById('transfer-modal').classList.remove('hidden');
     }
-    function closeTransferModal() { document.getElementById('transfer-modal').classList.add('hidden'); }
+    function closeTransferModal() {
+      document.getElementById('transfer-modal').classList.add('hidden');
+      transferEditingId = null;
+      const title = document.getElementById('transfer-modal-accessible-title');
+      const submit = document.getElementById('transfer-submit-btn');
+      if (title) title.textContent = 'Transfer Between Accounts';
+      if (submit) submit.textContent = 'Transfer';
+    }
     function submitAccountTransfer(e) {
       e.preventDefault();
       const fromId = String(document.getElementById('transfer-from').value || '');
@@ -18639,10 +18692,52 @@ No payment links or balance changes were retained.`);
       const date = document.getElementById('transfer-date').value;
       const from = (state.accounts || []).find(a => String(a.id) === fromId);
       const to = (state.accounts || []).find(a => String(a.id) === toId);
+      const existing = transferEditingId ? (state.transactions || []).find(t => String(t.id) === transferEditingId && t.type === 'Transfer' && t.transferToAccountId) : null;
+      if (transferEditingId && !existing) { alert('This transfer is no longer available to edit.'); closeTransferModal(); return; }
       const candidate = { type:'Transfer', accountId:fromId, transferToAccountId:toId, amount, date };
-      const validation = validateTransactionLifecycle(candidate);
+      const validation = validateTransactionLifecycle(candidate, existing);
       if (!validation.valid) { alert(validation.errors.join('\n')); return; }
-      if (!from || !to || from.type !== 'asset' || to.type !== 'asset' || from.archived || to.archived) { alert('Internal transfers must be between two active, non-archived asset accounts. Use the debt payment workflow for payments to a liability.'); return; }
+      const existingPair = existing && String(existing.accountId) === fromId && String(existing.transferToAccountId) === toId;
+      if (!from || !to || from.type !== 'asset' || to.type !== 'asset' ||
+          (from.archived && !(existing && existingPair)) || (to.archived && !(existing && existingPair))) {
+        alert('Internal transfers must be between two active, non-archived asset accounts. Restore archived accounts before changing the transfer.'); return;
+      }
+      if (existing) {
+        const hasStatementLinks = (Array.isArray(existing.transferStatementMatches) && existing.transferStatementMatches.length) || existing.transferAddedSideRowId || (Array.isArray(existing.transferMergedEntries) && existing.transferMergedEntries.length);
+        if (hasStatementLinks && !existingPair) {
+          alert('Unmatch this transfer from its statement rows before changing its source or destination account. This keeps reconciliation links attached to the correct accounts.'); return;
+        }
+        captureUndo('Edit account transfer');
+        const oldSnapshot = { ...existing };
+        applyInternalTransferBalanceEffect(existing, -1);
+        const updated = {
+          ...existing,
+          date,
+          desc: `Transfer from ${from.name} to ${to.name}`,
+          vendor: existing.vendor || 'Account transfer',
+          type: 'Transfer',
+          category: 'Transfer',
+          subcategory: '',
+          amount,
+          accountId: fromId,
+          transferToAccountId: toId
+        };
+        if (transactionNeedsStatementReview(oldSnapshot, updated)) updated.statementMatchNeedsReview = true;
+        const index = state.transactions.findIndex(t => String(t.id) === String(existing.id));
+        if (index < 0) {
+          applyInternalTransferBalanceEffect(oldSnapshot, 1);
+          alert('This transfer could not be found. No changes were saved.'); return;
+        }
+        state.transactions[index] = updated;
+        const applied = applyInternalTransferBalanceEffect(updated, 1);
+        if (!applied.applied) {
+          state.transactions[index] = oldSnapshot;
+          applyInternalTransferBalanceEffect(oldSnapshot, 1);
+          alert('FinHub could not apply both sides of this transfer. The original transfer was restored.'); return;
+        }
+        saveData(); closeTransferModal(); renderDashboard(); renderLedger(); renderSinkingBucketManager(); renderCalendar();
+        return;
+      }
       const duplicate = (state.transactions || []).find(t => t.type === 'Transfer' && String(t.accountId) === fromId && String(t.transferToAccountId || '') === toId && String(t.date || '') === date && transactionAmountToCents(Math.abs(Number(t.amount) || 0)) === transactionAmountToCents(amount));
       if (duplicate && !confirm(`A transfer with the same accounts, date and amount already exists (${formatFinancial(amount)}). Create another transfer anyway?`)) return;
       const transferRecord = { id:generateUniqueTransactionId('tx'), date, desc:`Transfer from ${from.name} to ${to.name}`, vendor:'Account transfer', type:'Transfer', category:'Transfer', subcategory:'', amount, accountId:fromId, transferToAccountId:toId, source:'quick-transfer' };
@@ -30346,5 +30441,92 @@ button[aria-describedby="acc-opening-balance-tooltip"]:focus-visible,
 }
 </style>
 
+
+<style id="finhub-v213-transfer-editor-layout-refinement">
+/* Keep the four-field transfer editor compact, padded, and centered at every
+   responsive breakpoint. Earlier generic mobile rules stretched all modal
+   surfaces to the viewport edge, which made this small form feel oversized. */
+#transfer-modal {
+  box-sizing:border-box !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  padding:.625rem !important;
+}
+#transfer-modal > .fh-modal-surface {
+  box-sizing:border-box !important;
+  width:min(24rem, calc(100vw - 1.5rem)) !important;
+  max-width:24rem !important;
+  max-height:calc(100dvh - 1.25rem) !important;
+  margin:0 auto !important;
+  padding:.75rem !important;
+  overflow-x:hidden !important;
+  overflow-y:auto !important;
+  overscroll-behavior:contain;
+}
+#transfer-modal > .fh-modal-surface > h3 {
+  margin:0 0 .6rem !important;
+  font-size:1.1rem !important;
+  line-height:1.25 !important;
+}
+#transfer-modal > .fh-modal-surface > form.space-y-3 > :not([hidden]) ~ :not([hidden]) {
+  margin-top:.5rem !important;
+}
+#transfer-modal > .fh-modal-surface > form :is(input,select) {
+  box-sizing:border-box !important;
+  min-width:0 !important;
+  max-width:100% !important;
+  min-height:2.35rem !important;
+  padding-top:.45rem !important;
+  padding-bottom:.45rem !important;
+}
+#transfer-modal > .fh-modal-surface > form > div:last-child {
+  gap:.6rem !important;
+  padding-top:.15rem !important;
+}
+#transfer-modal > .fh-modal-surface > form > div:last-child button {
+  min-width:0 !important;
+  min-height:2.4rem !important;
+}
+@media (max-width:639px) {
+  #transfer-modal { padding:.625rem !important; }
+  #transfer-modal > .fh-modal-surface {
+    width:min(24rem, calc(100vw - 1.5rem)) !important;
+    max-width:24rem !important;
+    max-height:calc(100dvh - 1.25rem) !important;
+    padding:.7rem !important;
+  }
+}
+</style>
+
+
+<style id="finhub-v214-transfer-modal-hidden-state-and-equal-actions">
+/* The transfer modal must respect its initial .hidden state.  Do not force a
+   display mode on the root while it is closed; openTransferModal removes .hidden
+   and the existing flex utility then handles centering. */
+#transfer-modal.hidden {
+  display:none !important;
+}
+
+/* Use two equal tracks so Cancel and Transfer have identical footprints. */
+#transfer-modal > .fh-modal-surface > form > div:last-child {
+  display:grid !important;
+  grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
+  align-items:stretch !important;
+  gap:.6rem !important;
+}
+#transfer-modal > .fh-modal-surface > form > div:last-child > button {
+  box-sizing:border-box !important;
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  width:100% !important;
+  min-width:0 !important;
+  height:2.75rem !important;
+  min-height:2.75rem !important;
+  margin:0 !important;
+  flex:none !important;
+}
+</style>
 </body>
 </html>
