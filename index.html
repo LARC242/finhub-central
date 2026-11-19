@@ -1,11 +1,15 @@
+<!-- FinHub v238: Debt History Shared Open-Details Link + Vendor-First Calendar Labels -->
 <!DOCTYPE html>
 
 <html class="dark" lang="en-US">
 <head>
+<!-- FinHub v235: Calendar-Linked Debt Payment Conversion Fix -->
+<meta name="finhub-version" content="v228">
+<!-- v231: exception register render resilience; based on v230. -->
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>FinHub Central - Financial Command Center</title>
-<meta content="stage3b-buttons-actions-number-typography-reporting-engine-v1" name="finhub-build-stage"/><meta content="v209-date-format-standardization" name="finhub-revision"/>
+<meta content="stage3b-buttons-actions-number-typography-reporting-engine-v1" name="finhub-build-stage"/><meta content="v224-debt-principal-reconstruction-integrity-fix" name="finhub-revision"/>
 <meta content="2" name="finhub-schema-version"/>
 <link href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23132A44'/%3E%3Cpath d='M18 45V19h28v7H26v5h17v7H26v7z' fill='%2300FBEA'/%3E%3Ccircle cx='47' cy='16' r='7' fill='%23FF2687'/%3E%3Ccircle cx='15' cy='49' r='5' fill='%23D8FF76'/%3E%3C/svg%3E" rel="icon" type="image/svg+xml"/>
 <script src="https://cdn.tailwindcss.com"></script>
@@ -4106,10 +4110,10 @@ html body#app-body > aside#finhub-sidebar .sidebar-brand-copy h1 {
   justify-content:center !important;
 }
 #account-detail-modal > .fh-modal-surface {
-  width:98vw !important;
-  max-width:98vw !important;
-  height:96dvh !important;
-  max-height:96dvh !important;
+  width:min(92vw,72rem) !important;
+  max-width:72rem !important;
+  height:94dvh !important;
+  max-height:94dvh !important;
   margin:auto !important;
 }
 /* Statement Importer remains a wide workspace. */
@@ -4589,6 +4593,7 @@ body[data-finhub-theme] .fh-ledger-view-toggle:focus-visible {
 <button class="checkin-theme-tab is-active" id="checkin-tab-monthly" onclick="switchCheckInPanel('monthly')" type="button"><i class="fa-regular fa-calendar-check mr-2"></i>Monthly Check-In</button>
 <button class="checkin-theme-tab" id="checkin-tab-yearly" onclick="switchCheckInPanel('yearly')" type="button"><i class="fa-regular fa-calendar mr-2"></i>Year-End Review</button>
 <button class="checkin-theme-tab" id="checkin-tab-history" onclick="switchCheckInPanel('history')" type="button"><i class="fa-solid fa-layer-group mr-2"></i>Snapshot History</button>
+<button class="checkin-theme-tab" id="checkin-tab-exceptions" onclick="switchCheckInPanel('exceptions')" type="button"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Exception Register</button>
 </div>
 <div class="space-y-4" id="checkin-panel-monthly">
 <div class="space-y-4" id="financial-checkin-workspace">
@@ -4596,7 +4601,9 @@ body[data-finhub-theme] .fh-ledger-view-toggle:focus-visible {
 <div class="space-y-3"><details class="fh-disclosure" data-global-collapsible="true"><summary class="fh-disclosure-trigger"><span>Monthly Review</span><span class="global-collapsible-description">Review month-end activity and save a monthly snapshot.</span></summary><div class="fh-disclosure-panel p-4 space-y-3"><div class="flex flex-wrap justify-between gap-2"><div><p class="text-xs text-gray-500">Work through the checklist and save a snapshot. Closing does not lock transactions.</p></div><div class="flex gap-2"><input class="border rounded-lg px-2 py-1 text-xs" id="monthly-close-period" onchange="renderMonthlyClose()" type="month"/><button class="border rounded-lg px-3 py-1 text-xs" onclick="refreshMonthlyCloseReview()" type="button">Refresh review</button></div></div><div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs" id="monthly-close-summary"></div><div class="rounded-xl bg-gray-50 dark:bg-gray-950 p-3 space-y-2"><div class="flex items-center justify-between text-sm font-semibold"><span id="monthly-close-progress-label">0 of 10 complete</span><span id="monthly-close-progress-percent">0%</span></div><div aria-label="Monthly review completion" aria-valuemax="100" aria-valuemin="0" aria-valuenow="0" class="h-2.5 rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden" role="progressbar"><div class="h-full rounded-full fh-theme-progress" id="monthly-close-progress-bar" style="width:0%"></div></div></div><div class="space-y-2 text-xs" id="monthly-close-checklist"></div><div class="flex flex-wrap gap-2"><button class="px-3 py-2 rounded-lg text-xs fh-theme-primary-button" onclick="completeMonthlyClose()">Save monthly close snapshot</button><button class="hidden px-3 py-2 border rounded-lg text-xs" id="monthly-close-reopen" onclick="reopenMonthlyClose()">Reopen month</button></div><div class="text-xs text-gray-500" id="monthly-close-history"></div></div></details></div>
 </div></div>
 <div class="fh-reorderable-section rounded-xl" id="financial-close-data-health"><h4 class="font-semibold text-sm mb-2">Data Health &amp; Integrity</h4><details class="fh-disclosure" data-fh-drag-ready="false" id="data-health-details" open=""><summary class="fh-disclosure-trigger"><span><strong class="text-sm">Data Health &amp; Integrity</strong><span class="block text-xs text-gray-500 mt-1">Read-only checks for common data quality issues</span></span></summary><div class="fh-disclosure-panel p-4"><div class="flex items-center justify-between gap-2 mb-3"><p class="text-xs text-gray-500">These checks flag records for review; they do not change your data.</p><button class="border rounded-lg px-3 py-1.5 text-xs" onclick="renderDataHealth()" type="button">Run checks</button></div><div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs" id="data-health-results"></div></div></details></div>
+
 </div>
+<div class="hidden space-y-4" id="checkin-panel-exceptions"><div class="fh-reorderable-section rounded-xl" id="financial-review-exception-register"><details class="fh-disclosure" id="financial-review-exceptions-details" open=""><summary class="fh-disclosure-trigger"><span><strong class="text-sm">Exception Register</strong><span class="block text-xs text-gray-500 mt-1">Track issues identified across FinHub until a later check confirms they are resolved.</span></span><span class="text-xs font-semibold text-gray-500" id="financial-review-exception-count">0 open · 0 resolved</span></summary><div class="fh-disclosure-panel p-4 space-y-3"><div class="flex flex-wrap items-center justify-between gap-2"><p class="text-xs text-gray-500">Reviewing an exception records a reason; it does not clear the issue. Exceptions resolve only when a subsequent check no longer finds them.</p><div class="flex gap-2"><select id="financial-review-exception-filter" class="fh-standard-control rounded-lg border px-2 py-1 text-xs" onchange="renderFinancialReviewExceptionRegister()"><option value="all">All statuses</option><option value="open">Open</option><option value="reviewed">Under review</option><option value="resolved">Resolved</option></select><select id="financial-review-exception-severity" class="fh-standard-control rounded-lg border px-2 py-1 text-xs" onchange="renderFinancialReviewExceptionRegister()"><option value="all">All levels</option><option value="error">Errors</option><option value="warning">Warnings</option><option value="info">Info</option></select></div></div><div id="financial-review-exception-list" class="space-y-2"><p class="text-xs text-gray-500">Loading saved exceptions…</p></div><p class="text-[10px] text-gray-500">Exception history is retained locally and is append-only in this file, but is not tamper-proof.</p></div></details></div></div>
 <div class="hidden space-y-4" id="checkin-panel-yearly"><div class="space-y-3"><details class="fh-disclosure" data-global-collapsible="true"><summary class="fh-disclosure-trigger"><span>Year-End Review</span><span class="global-collapsible-description">Review the full year, confirm monthly close coverage and save a year-end snapshot.</span></summary><div class="fh-disclosure-panel p-4 space-y-3"><div class="flex flex-wrap items-center justify-between gap-2"><div><h3 class="text-sm font-bold">Year-End Close</h3><p class="text-xs text-gray-500">Review the year, work through the checklist and save a snapshot. Closing does not lock transactions.</p></div><div class="flex gap-2"><input class="border rounded-lg px-2 py-1 text-xs w-24" id="year-end-period" max="2200" min="2000" type="number"/><button class="border rounded-lg px-3 py-1 text-xs" onclick="refreshYearEndCloseReview()" type="button">Refresh review</button></div></div><div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs" id="year-end-summary"></div><div class="rounded-xl bg-gray-50 dark:bg-gray-950 p-3 space-y-2"><div class="flex items-center justify-between text-sm font-semibold"><span id="year-end-progress-label">0 of 8 complete</span><span id="year-end-progress-percent">0%</span></div><div class="h-2.5 rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden"><div class="h-full rounded-full fh-theme-progress" id="year-end-progress-bar" style="width:0%"></div></div></div><div class="space-y-2 text-xs" id="year-end-checklist"></div><div class="flex flex-wrap gap-2"><button class="px-3 py-2 rounded-lg text-xs fh-theme-primary-button" onclick="completeYearEndClose()">Save year-end snapshot</button><button class="hidden px-3 py-2 border rounded-lg text-xs" id="year-end-reopen" onclick="reopenYearEndClose()">Reopen year</button></div><div class="text-xs text-gray-500" id="year-end-history"></div></div></details></div></div>
 <div class="hidden space-y-4" id="checkin-panel-history"><div class="rounded-2xl border border-gray-200 dark:border-gray-800 p-4"><h3 class="text-lg font-bold mb-3">Snapshot History</h3><div class="overflow-x-auto" id="checkin-snapshot-history"></div></div></div>
 </section>
@@ -4828,9 +4835,9 @@ body[data-finhub-theme] .fh-ledger-view-toggle:focus-visible {
 <summary class="fh-planner-summary">Monthly Budget <span class="text-xs font-normal text-gray-400 ml-2">Compare both regular paycheques and any third cheque.</span></summary>
 <div class="px-5 pb-5 space-y-3">
 <div id="zbb-monthly-rollup"></div>
-<div class="rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden divide-y divide-gray-200 dark:divide-gray-800" id="zbb-integrity-review-group">
-<div class="p-3" id="zbb-budget-integrity-panel"></div>
-<div class="p-3" id="zbb-budget-funding-integrity-panel"></div>
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-3" id="zbb-integrity-review-group">
+<div class="rounded-xl border border-gray-200 dark:border-gray-800 bg-white/40 dark:bg-gray-900/30 p-3 min-w-0" id="zbb-budget-integrity-panel"></div>
+<div class="rounded-xl border border-gray-200 dark:border-gray-800 bg-white/40 dark:bg-gray-900/30 p-3 min-w-0" id="zbb-budget-funding-integrity-panel"></div>
 </div>
 <div id="zbb-budget-ledger-reconciliation-panel"></div>
 </div>
@@ -7661,7 +7668,7 @@ Bonus" rows="4"></textarea></div>
       if (tabId === 'dashboard') renderDashboard();
       if (tabId === 'accounts') renderAccountsPage();
       if (tabId === 'financial-checkin') {
-        renderDataHealth(); renderMonthlyClose(); renderYearEndClose(); renderCheckInSnapshotHistory();
+        renderDataHealth(); renderMonthlyClose(); renderYearEndClose(); renderCheckInSnapshotHistory(); renderFinancialReviewExceptionRegister();
         const period=document.getElementById('monthly-close-period');
         const display=document.getElementById('checkin-period-display');
         if(display)display.textContent=period?.value||new Date().toISOString().slice(0,7);
@@ -8257,11 +8264,44 @@ Bonus" rows="4"></textarea></div>
       return Math.round(scaled);
     }
 
+    // Resolve principal without silently treating an interest-inclusive payment as
+    // entirely principal. Reversals may inherit a proportional principal from the
+    // original payment, matching the reversal workflow's ratio-based calculation.
+    function resolveAccountIntegrityDebtPrincipalCents(transaction, linkedPayment = null, linkedBill = null) {
+      if (!transaction) return null;
+      const amountCents = accountIntegrityMoneyToCents(transaction.amount ?? 0);
+      if (amountCents === null) return null;
+      const explicit = transaction.debtPrincipalAmount ?? transaction.principalAmount ?? linkedPayment?.principalAmount ?? (transaction.type === 'Debt Payment' ? linkedBill?.principalAmount : null);
+      if (explicit !== undefined && explicit !== null && explicit !== '') {
+        const cents = accountIntegrityMoneyToCents(explicit);
+        return cents !== null && cents >= 0 ? cents : null;
+      }
+      if (transaction.type === 'Debt Payment Reversal') {
+        const original = (state.transactions || []).find(t => String(t.id) === String(transaction.reversalOfTransactionId || ''));
+        if (!original || original.type !== 'Debt Payment') return null;
+        const originalPayment = (state.debtPayments || []).find(p => String(p.id) === String(original.debtPaymentId || '') || String(p.transactionId) === String(original.id));
+        const originalBill = (state.calendarBills || []).find(b => String(b.id) === String(original.calendarBillId || ''));
+        const originalPrincipal = resolveAccountIntegrityDebtPrincipalCents(original, originalPayment, originalBill);
+        const originalAmount = accountIntegrityMoneyToCents(original.amount ?? 0);
+        if (originalPrincipal === null || originalAmount === null || originalAmount <= 0) return null;
+        const reversalCents = Math.abs(amountCents);
+        if (reversalCents > originalAmount) return null;
+        return Math.round(originalPrincipal * reversalCents / originalAmount);
+      }
+      // If interest is explicitly recorded, principal is the remaining payment
+      // amount. Only use the full amount when no interest split is available.
+      if (transaction.debtInterestAmount !== undefined && transaction.debtInterestAmount !== null && transaction.debtInterestAmount !== '') {
+        const interestCents = accountIntegrityMoneyToCents(transaction.debtInterestAmount);
+        if (interestCents === null || interestCents < 0 || interestCents > Math.abs(amountCents)) return null;
+        return Math.abs(amountCents) - interestCents;
+      }
+      return Math.abs(amountCents);
+    }
+
     function accountIntegrityDeltaCents(transaction, account) {
       if (!transaction || !account) return 0;
       const amountCents = accountIntegrityMoneyToCents(transaction.amount ?? 0);
       if (amountCents === null) return null;
-      const absAmount = Math.abs(amountCents);
       const accountId = String(account.id);
       const sourceId = String(transaction.accountId ?? '');
       const destinationId = String(transaction.transferToAccountId ?? '');
@@ -8270,9 +8310,11 @@ Bonus" rows="4"></textarea></div>
       const linkedBillDebt = linkedBill && linkedBill.type === 'debt' && typeof resolveDebtAccountForBill === 'function' ? resolveDebtAccountForBill(linkedBill) : null;
       const debtId = String(transaction.debtAccountId || linkedPayment?.accountId || linkedBillDebt?.id || '');
       const hasPrincipalPosting = transaction.type === 'Debt Payment' || transaction.type === 'Debt Payment Reversal';
-      const principalRaw = hasPrincipalPosting ? (transaction.debtPrincipalAmount ?? transaction.principalAmount ?? linkedPayment?.principalAmount ?? transaction.amount ?? 0) : 0;
-      const principalCents = accountIntegrityMoneyToCents(principalRaw);
-      if (principalCents === null || principalCents < 0) return null;
+      const principalCents = hasPrincipalPosting ? resolveAccountIntegrityDebtPrincipalCents(transaction, linkedPayment, linkedBill) : 0;
+      if (hasPrincipalPosting && (principalCents === null || principalCents < 0)) {
+        // Cash-side effects remain auditable; only the liability-side principal is unknown.
+        if (account.type === 'debt' && debtId === accountId) return null;
+      }
 
       if (transaction.type === 'Transfer') {
         if (sourceId === accountId) {
@@ -8367,8 +8409,8 @@ Bonus" rows="4"></textarea></div>
           const linkedBillDebt = linkedBill && linkedBill.type === 'debt' && typeof resolveDebtAccountForBill === 'function' ? resolveDebtAccountForBill(linkedBill) : null;
           const debtAccountId = t.debtAccountId || linkedPayment?.accountId || linkedBillDebt?.id;
           requireAccount(debtAccountId, 'debt', 'debt');
-          const principal = accountIntegrityMoneyToCents(t.debtPrincipalAmount ?? t.principalAmount ?? t.amount ?? 0);
-          if (principal === null || principal < 0 || principal > Math.abs(amountCents)) addIssue(debtAccountId, 'error', `Debt transaction ${t.id} has an invalid principal amount.`);
+          const principal = resolveAccountIntegrityDebtPrincipalCents(t, linkedPayment, linkedBill);
+          if (principal === null || principal < 0 || principal > Math.abs(amountCents)) addIssue(debtAccountId, 'error', `Debt transaction ${t.id} has an unresolved or invalid principal amount; the liability-side balance cannot be independently verified.`);
           if (t.debtInterestAmount !== undefined && t.debtInterestAmount !== null && t.debtInterestAmount !== '') {
             const interest = accountIntegrityMoneyToCents(t.debtInterestAmount);
             if (interest === null || interest < 0 || principal !== null && principal + interest !== Math.abs(amountCents)) addIssue(debtAccountId, 'error', `Debt transaction ${t.id} principal and interest do not equal its total payment.`);
@@ -9110,11 +9152,13 @@ Bonus" rows="4"></textarea></div>
           let principal = 0;
           let change = 0;
           if (t.type === 'Debt Payment') {
-            principal = Number(t.debtPrincipalAmount ?? payment?.principalAmount ?? bill?.principalAmount ?? t.amount) || 0;
+            const principalCents = resolveAccountIntegrityDebtPrincipalCents(t, payment, bill);
+            principal = principalCents === null ? 0 : principalCents / 100;
             change = -Math.abs(principal);
           } else if (t.type === 'Debt Payment Reversal') {
-            // A returned debt payment restores principal to the liability balance.
-            principal = Number(t.debtPrincipalAmount ?? 0) || 0;
+            // A returned debt payment restores only the original payment's principal.
+            const principalCents = resolveAccountIntegrityDebtPrincipalCents(t, payment, bill);
+            principal = principalCents === null ? 0 : principalCents / 100;
             change = Math.abs(principal);
           } else if (t.type === 'Interest Charge') {
             change = Number(t.amount) || 0;
@@ -9166,6 +9210,17 @@ Bonus" rows="4"></textarea></div>
 
       const rows = document.getElementById('acc-detail-rows');
       const summary = document.getElementById('acc-detail-balance-summary');
+      if (rows && !rows.dataset.accountActivityClickBound) {
+        rows.dataset.accountActivityClickBound = 'true';
+        rows.addEventListener('click', event => {
+          const link = event.target.closest('.account-activity-vendor-link[data-account-activity-transaction-id]');
+          if (!link) return;
+          event.preventDefault();
+          event.stopPropagation();
+          const transactionId = link.dataset.accountActivityTransactionId;
+          if (transactionId) openLedgerTransaction(transactionId);
+        });
+      }
       rows.innerHTML = '';
       const activity = getAccountActivityEntries(acc);
       window.currentAccountActivityEntries = activity;
@@ -9201,7 +9256,7 @@ Bonus" rows="4"></textarea></div>
       const interestRateLabel = acc.type === 'asset' ? 'Interest rate (APY/APR)' : 'Current APR';
       const openingBalanceHelp = "As of the start of this account's recorded activity. Saving adjusts the current balance by the same difference; it does not create a transaction.";
       summary.innerHTML = `
-        <div class="acc-balance-summary-card acc-opening-balance-card"><div class="acc-balance-summary-label flex items-center gap-1"><span>Opening balance${hasSavedOpeningBalance ? ' · saved' : ' · derived'}</span><span class="acc-opening-info-wrap"><button type="button" class="acc-opening-balance-info" aria-label="About opening balance" aria-describedby="acc-opening-balance-tooltip"><span class="acc-info-glyph" aria-hidden="true">i</span></button><span id="acc-opening-balance-tooltip" class="acc-opening-balance-tooltip" role="tooltip">${openingBalanceHelp}</span></span></div><div class="flex items-center gap-1.5 mt-1"><span class="acc-balance-summary-currency">$</span><input id="acc-opening-balance-input" type="number" step="0.01" value="${Number(openingBalance).toFixed(2)}" class="acc-opening-balance-input min-w-0 flex-1 w-full rounded-lg px-2 py-1 text-sm font-bold accounting-num ${openingBalance < -0.005 ? 'acc-balance-negative' : openingBalance > 0.005 ? 'acc-balance-positive' : ''}" /><button onclick="saveAccountOpeningBalance()" class="acc-opening-balance-save shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold">Save</button></div></div>
+        <div class="acc-balance-summary-card acc-opening-balance-card"><div class="acc-balance-summary-label flex items-center gap-1"><span>Opening balance${hasSavedOpeningBalance ? ' · saved' : ' · derived'}</span><button type="button" data-fh-info="opening-balance" aria-label="About opening balance" aria-expanded="false" class="fh-info-trigger"><i class="fa-solid fa-circle-info" aria-hidden="true"></i></button></div><div class="flex items-center gap-1.5 mt-1"><span class="acc-balance-summary-currency">$</span><input id="acc-opening-balance-input" type="number" step="0.01" value="${Number(openingBalance).toFixed(2)}" class="acc-opening-balance-input min-w-0 flex-1 w-full rounded-lg px-2 py-1 text-sm font-bold accounting-num ${openingBalance < -0.005 ? 'acc-balance-negative' : openingBalance > 0.005 ? 'acc-balance-positive' : ''}" /><button onclick="saveAccountOpeningBalance()" class="acc-opening-balance-save shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold">Save</button></div></div>
         ${hasInterestRate ? `<div class="acc-balance-summary-card acc-interest-rate-card"><div class="acc-balance-summary-label">${interestRateLabel}</div><div class="text-sm font-bold accounting-num mt-1">${Number(acc.interestRate).toFixed(2)}%</div></div>` : ''}
         <div class="acc-balance-summary-card"><div class="acc-balance-summary-label">${balanceLabel}</div><div class="text-base font-bold accounting-num acc-balance-value mt-1 ${currentBalance < -0.005 ? 'acc-balance-negative' : currentBalance > 0.005 ? 'acc-balance-positive' : ''}">${formatFinancial(currentBalance)}</div></div>
         <div class="acc-balance-summary-card"><div class="acc-balance-summary-label">Activity records</div><div class="text-base font-bold mt-1">${activity.length}</div></div>
@@ -9218,10 +9273,10 @@ Bonus" rows="4"></textarea></div>
           const favorableDebtReduction = acc.type === 'debt' && negative;
           const changeText = entry.change === 0 ? '—' : formatFinancial(Math.abs(entry.change), negative);
           rows.innerHTML += `
-            <tr class="acc-activity-row cursor-pointer" data-activity-entry-id="${escapeHtml(String(entry.id))}" tabindex="0" role="button" aria-label="Open transaction ${escapeHtml(entry.vendor || entry.description || entry.type || 'activity record')}" onclick="openAccountActivityTransaction('${String(entry.id).replace(/'/g, '&#39;')}')" onkeydown="if(event.target===this&&(event.key==='Enter'||event.key===' ')){event.preventDefault();openAccountActivityTransaction('${String(entry.id).replace(/'/g, '&#39;')}');}">
+            <tr class="acc-activity-row" data-activity-entry-id="${escapeHtml(String(entry.id))}">
               <td class="px-3 py-1.5 whitespace-nowrap">${formatDateMDY(entry.date)}</td>
-              <td class="px-3 py-1.5">${escapeHtml(entry.vendor || '—')}</td>
-              <td class="px-3 py-1.5">${escapeHtml(entry.description || '—')} <button type="button" onclick="event.stopPropagation();openAccountActivityTransaction('${String(entry.id).replace(/'/g, '&#39;')}')" class="inline-flex align-middle text-[9px] text-indigo-600 dark:text-indigo-400 hover:underline" title="Open transaction" aria-label="Open transaction"><i class="fa-solid fa-arrow-up-right-from-square"></i></button></td>
+              <td class="px-3 py-1.5"><button type="button" data-account-activity-transaction-id="${escapeHtml(String(entry.transactionId || entry.id).replace(/_incoming$/, ''))}" class="account-activity-vendor-link text-left font-medium text-indigo-600 dark:text-indigo-400 hover:underline" title="Open transaction for editing" aria-label="Edit transaction: ${escapeHtml(entry.vendor || entry.description || entry.type || 'activity record')}">${escapeHtml(entry.vendor || '—')}</button></td>
+              <td class="px-3 py-1.5">${escapeHtml(entry.description || '—')}</td>
               <td class="px-3 py-1.5"><span class="px-2 py-0.5 rounded text-[10px] bg-gray-100 dark:bg-gray-800">${entry.type}</span>${entry.matchNeedsReview ? '<span class="ml-1 px-1.5 py-0.5 rounded text-[9px] bg-amber-500/10 text-amber-600">Match needs review</span>' : entry.reconciled ? '<span class="ml-1 px-1.5 py-0.5 rounded text-[9px] fh-status-income-fill/10 fh-status-income">Statement matched</span>' : ''}</td>
               <td class="px-4 py-3 text-right font-semibold ${favorableDebtReduction || (!negative && entry.change > 0) ? 'fh-status-income' : negative ? 'text-rose-600' : 'text-gray-400'} accounting-num">${changeText}</td>
               <td class="px-3 py-1.5 text-right font-bold accounting-num">${formatFinancial(runningBalance)}</td>
@@ -9278,7 +9333,7 @@ Bonus" rows="4"></textarea></div>
       const runningById=new Map(); all.forEach(entry=>{ running += Number(entry.change)||0; runningById.set(String(entry.id),running); });
       tbody.innerHTML=`<tr class="acc-opening-balance-row"><td class="px-3 py-1.5">—</td><td class="px-3 py-1.5">—</td><td class="px-4 py-3 font-semibold" colspan="1">Opening balance</td><td class="px-3 py-1.5">Opening balance</td><td class="px-3 py-1.5 text-right">—</td><td class="px-3 py-1.5 text-right font-bold accounting-num">${formatFinancial(running)}</td></tr>`;
       if(!entries.length) tbody.innerHTML+='<tr><td colspan="6" class="px-4 py-4 text-center text-xs text-gray-400">No activity matches these filters.</td></tr>';
-      else entries.forEach(entry=>{ const negative=entry.change<0; const favorable=acc.type==='debt'&&negative; const changeText=entry.change===0?'—':formatFinancial(Math.abs(entry.change),negative); tbody.innerHTML += `<tr class="acc-activity-row cursor-pointer" data-activity-entry-id="${escapeHtml(String(entry.id))}" tabindex="0" role="button" aria-label="Open transaction ${escapeHtml(entry.vendor || entry.description || entry.type || 'activity record')}" onclick="openAccountActivityTransaction('${String(entry.id).replace(/'/g, '&#39;')}')" onkeydown="if(event.target===this&&(event.key==='Enter'||event.key===' ')){event.preventDefault();openAccountActivityTransaction('${String(entry.id).replace(/'/g, '&#39;')}');}"><td class="px-3 py-1.5 whitespace-nowrap">${formatDateMDY(entry.date)}</td><td class="px-3 py-1.5">${escapeHtml(entry.vendor||'—')}</td><td class="px-3 py-1.5"><button type="button" onclick="event.stopPropagation();openAccountActivityTransaction('${String(entry.id).replace(/'/g,'&#39;')}')" class="text-left font-medium text-indigo-600 dark:text-indigo-400 hover:underline">${escapeHtml(entry.description||'—')}</button></td><td class="px-3 py-1.5">${escapeHtml(entry.type||'')}</td><td class="px-4 py-3 text-right font-semibold accounting-num ${favorable||(!negative&&entry.change>0)?'fh-status-income':negative?'text-rose-600':'text-gray-400'}">${changeText}</td><td class="px-3 py-1.5 text-right font-bold accounting-num">${formatFinancial(runningById.get(String(entry.id)) ?? 0)}</td></tr>`; });
+      else entries.forEach(entry=>{ const negative=entry.change<0; const favorable=acc.type==='debt'&&negative; const changeText=entry.change===0?'—':formatFinancial(Math.abs(entry.change),negative); tbody.innerHTML += `<tr class="acc-activity-row" data-activity-entry-id="${escapeHtml(String(entry.id))}"><td class="px-3 py-1.5 whitespace-nowrap">${formatDateMDY(entry.date)}</td><td class="px-3 py-1.5"><button type="button" data-account-activity-transaction-id="${escapeHtml(String(entry.transactionId || entry.id).replace(/_incoming$/, ''))}" class="account-activity-vendor-link text-left font-medium text-indigo-600 dark:text-indigo-400 hover:underline" title="Open transaction for editing" aria-label="Edit transaction: ${escapeHtml(entry.vendor||entry.description||entry.type||'activity record')}">${escapeHtml(entry.vendor||'—')}</button></td><td class="px-3 py-1.5">${escapeHtml(entry.description||'—')}</td><td class="px-3 py-1.5">${escapeHtml(entry.type||'')}</td><td class="px-4 py-3 text-right font-semibold accounting-num ${favorable||(!negative&&entry.change>0)?'fh-status-income':negative?'text-rose-600':'text-gray-400'}">${changeText}</td><td class="px-3 py-1.5 text-right font-bold accounting-num">${formatFinancial(runningById.get(String(entry.id)) ?? 0)}</td></tr>`; });
       const foot=document.getElementById('acc-detail-foot'); if(foot) foot.innerHTML=`<tr><td colspan="4" class="px-3 py-1.5">Filtered activity total (${entries.length} records)</td><td class="px-4 py-3 text-right accounting-num">${formatFinancial(Math.abs(total),total<0)}</td><td class="px-4 py-3 text-right accounting-num">${formatFinancial(Number(acc.balance)||0)}</td></tr>`;
       updateAccountActivityFilterIndicators();
     }
@@ -10161,7 +10216,7 @@ ${acc.name}`);
       const status = errors ? 'Needs correction' : warnings ? 'Review recommended' : 'No structural issues detected';
       const tone = errors ? 'border-rose-300 bg-rose-50 dark:border-rose-900 dark:bg-rose-950/20' : warnings ? 'border-amber-300 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/20' : 'border-emerald-300 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/20';
       const rows = findings.length ? findings.map(renderIntegrityFindingRow).join('') : '<li class="text-xs fh-status-income">Budget structure, split amounts and pool allocations passed the current checks.</li>';
-      host.innerHTML = `<div class="space-y-2"><div class="flex flex-wrap items-center justify-between gap-2"><div class="flex items-center gap-2"><div class="text-xs font-bold">Budget structure</div><button type="button" data-fh-info="budget-structure" aria-label="About budget structure checks" title="About these checks" class="inline-flex items-center justify-center w-5 h-5 rounded-full border border-gray-300 dark:border-gray-700 text-[10px] text-gray-500 hover:text-current">i</button></div><div class="text-xs font-semibold">${status} · ${errors} errors · ${warnings} warnings</div></div><ul class="list-disc pl-5 space-y-1">${rows}</ul></div>`;
+      host.innerHTML = `<div class="space-y-2"><div class="flex flex-wrap items-center justify-between gap-2"><div class="flex items-center gap-2"><div class="text-xs font-bold">Budget structure</div><button type="button" data-fh-info="budget-structure" aria-label="About budget structure checks" aria-expanded="false" title="About these checks" class="fh-info-trigger"><i class="fa-solid fa-circle-info" aria-hidden="true"></i></button></div><div class="text-xs font-semibold">${status} · ${errors} errors · ${warnings} warnings</div></div><ul class="list-disc pl-5 space-y-1">${rows}</ul></div>`;
     }
     function getVariablePoolAmbiguousTransactionIds(period) {
       const records = [1,2,3].map(cycle => ({ cycle, rec: getZbbPoolRecord(period, cycle) }))
@@ -10342,7 +10397,7 @@ ${acc.name}`);
       const status = errors ? 'Action required' : warnings ? 'Review recommended' : 'No exceptions detected';
       const tone = errors ? 'border-rose-300 bg-rose-50 dark:border-rose-900 dark:bg-rose-950/20' : warnings ? 'border-amber-300 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/20' : 'border-emerald-300 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/20';
       const rows = findings.map(renderIntegrityFindingRow).join('');
-      host.innerHTML = `<div class="space-y-2"><div class="flex flex-wrap items-center justify-between gap-2"><div class="flex items-center gap-2"><div class="text-xs font-bold">Actuals &amp; funding checks</div><button type="button" data-fh-info="funding-integrity" aria-label="About actuals and funding checks" title="About these checks" class="inline-flex items-center justify-center w-5 h-5 rounded-full border border-gray-300 dark:border-gray-700 text-[10px] text-gray-500 hover:text-current">i</button></div><div class="text-xs font-semibold">${status} · ${errors} errors · ${warnings} warnings · ${infos} notes</div></div><ul class="list-disc pl-5 space-y-1">${rows}</ul></div>`;
+      host.innerHTML = `<div class="space-y-2"><div class="flex flex-wrap items-center justify-between gap-2"><div class="flex items-center gap-2"><div class="text-xs font-bold">Actuals &amp; funding checks</div><button type="button" data-fh-info="funding-integrity" aria-label="About actuals and funding checks" aria-expanded="false" title="About these checks" class="fh-info-trigger"><i class="fa-solid fa-circle-info" aria-hidden="true"></i></button></div><div class="text-xs font-semibold">${status} · ${errors} errors · ${warnings} warnings · ${infos} notes</div></div><ul class="list-disc pl-5 space-y-1">${rows}</ul></div>`;
     }
 
     // Phase 3.3: compare monthly budget lines with ledger-backed actuals.
@@ -10357,33 +10412,34 @@ ${acc.name}`);
       const components = getFinancialReportingComponents(txs).filter(c => { const tx=c.transaction||{}; const category=normalize(c.category||tx.category); const vendor=normalize(tx.vendor||tx.payee||''); const desc=normalize(tx.desc||tx.description||tx.bankDescription||''); return !(c.section==='expense' && (tx.type==='Transfer' || category==='transfer' || !!tx.transferToAccountId || (category==='uncategorized' && (/^transfer/.test(vendor)||/^transfer/.test(desc)||/^cardload/.test(vendor)||/^loadfrom/.test(vendor))))); });
       const rows = [];
       const findings = [];
+      const today = new Date().toISOString().slice(0,10);
       const pushCategoryRows = (items, section, ledgerSection) => {
         const seen = new Map();
         (items || []).forEach(item => {
           const key = normalize(item.name);
-          if (!key) { findings.push({level:'error',text:`${section}: “${item.name || 'Unnamed line'}” cannot be matched because it has no usable name.`}); return; }
+          if (!key) { findings.push({level:'error',kind:'mapping',text:`${section}: “${item.name || 'Unnamed line'}” cannot be matched because it has no usable name.`}); return; }
           seen.set(key,(seen.get(key)||0)+1);
         });
         (items || []).forEach(item => {
           const key = normalize(item.name);
           if (!key || seen.get(key) > 1) {
-            if (key && seen.get(key)>1) findings.push({level:'error',text:`${section}: duplicate budget names normalize to “${item.name}”; actuals cannot be assigned uniquely.`});
+            if (key && seen.get(key)>1) findings.push({level:'error',kind:'mapping',text:`${section}: duplicate budget names normalize to “${item.name}”; actuals cannot be assigned uniquely.`});
             return;
           }
+          // Spending buckets are intentionally matched to expense SUBCATEGORIES,
+          // never to their parent category. Income continues to match by category.
           let matches = components.filter(c => c.section === ledgerSection && (ledgerSection === 'expense'
             ? normalize(c.subcategory) === key && normalize(c.subcategory) !== 'uncategorized'
             : normalize(c.category) === key));
-          // Income created from a linked scheduled payday can legitimately have no
-          // category. If there is exactly one planned income line, use that explicit
-          // scheduled-income relationship rather than leaving the salary actual blank.
           if (ledgerSection === 'income' && !matches.length && (zbb.incomes || []).length === 1) {
             const scheduledIncomeIds = new Set((state.calendarBills || []).filter(b => b && b.type === 'income' && String(b.date || '').slice(0,7) === period).map(b => String(b.id)));
             matches = components.filter(c => c.section === 'income' && !String(c.transaction?.category || '').trim() && c.transaction?.calendarBillId && scheduledIncomeIds.has(String(c.transaction.calendarBillId)));
           }
-          const actualCents = matches.reduce((sum,c)=>sum+zbbMoneyCents(c.amount),0);
           const budgetCents = zbbMoneyCents(item.monthly);
-          rows.push({section,name:item.name,budgetCents,actualCents,source:ledgerSection==='income'?'Income transactions':'Expense reporting components · subcategory',matched:matches.length>0});
-          if (!matches.length) findings.push({level:'info',text:`${section} “${item.name}” has no matching ${ledgerSection==='income'?'income':'expense subcategory'} ledger activity in ${period}.`});
+          const hasActivity = matches.length > 0;
+          const actualCents = hasActivity ? matches.reduce((sum,c)=>sum+zbbMoneyCents(c.amount),0) : null;
+          rows.push({section,name:item.name,budgetCents,actualCents,source:ledgerSection==='income'?'Income transactions · category':'Expense transactions · subcategory',matched:hasActivity,status:hasActivity?'Recorded':'Awaiting activity',statusKind:hasActivity?'recorded':'pending'});
+          if (!hasActivity) findings.push({level:'info',kind:'missing-activity',text:`${section} “${item.name}” has no matching ${ledgerSection==='income'?'income category':'expense subcategory'} ledger activity in ${period}. This is awaiting activity, not a mapping error.`});
         });
       };
       pushCategoryRows(zbb.incomes || [], 'Income', 'income');
@@ -10403,16 +10459,20 @@ ${acc.name}`);
         (items||[]).forEach(item=>{
           const key=normalize(item.name), matches=billGroups.get(key)||[];
           if (!key || itemCounts.get(key)>1 || matches.length===0) {
-            if (key && itemCounts.get(key)>1) findings.push({level:'error',text:`${section}: duplicate budget names prevent a unique scheduled-item match for “${item.name}”.`});
-            else if (key && matches.length===0) findings.push({level:'info',text:`${section} “${item.name}” has no exactly named scheduled ${billType==='debt'?'debt payment':'bill'} in ${period}; no ledger actual was inferred.`});
+            if (key && itemCounts.get(key)>1) findings.push({level:'error',kind:'mapping',text:`${section}: duplicate budget names prevent a unique scheduled-item match for “${item.name}”.`});
+            else if (key && matches.length===0) findings.push({level:'info',kind:'missing-activity',text:`${section} “${item.name}” has no exactly named scheduled ${billType==='debt'?'debt payment':'bill'} in ${period}; no ledger actual was inferred.`});
             return;
           }
           const budgetCents=zbbMoneyCents(item.monthly);
           const scheduledCents=matches.reduce((sum,b)=>sum+zbbMoneyCents(b.amount),0);
           const paidCents=matches.reduce((sum,b)=>sum+getCalendarBillSettlement(b).paidCents,0);
-          rows.push({section,name:item.name,budgetCents,actualCents:paidCents,source:`${matches.length} scheduled item(s); linked ledger payments`,matched:true,scheduledCents});
-          if (scheduledCents !== budgetCents) findings.push({level:'warning',text:`${section} “${item.name}”: budget plan ${formatFinancial(budgetCents/100)} differs from scheduled amount ${formatFinancial(scheduledCents/100)}.`});
-          if (paidCents !== scheduledCents) findings.push({level:'info',text:`${section} “${item.name}”: ${formatFinancial(paidCents/100)} of ${formatFinancial(scheduledCents/100)} scheduled has been settled through linked ledger payments.`});
+          const outstandingCents=Math.max(0,scheduledCents-paidCents);
+          const hasPayment=paidCents>0;
+          const hasFutureDue=matches.some(b=>String(b.date||'')>today);
+          const status=outstandingCents<=1?'Settled':hasPayment?'Partially paid':hasFutureDue?'Upcoming':'Unpaid';
+          rows.push({section,name:item.name,budgetCents,actualCents:hasPayment?paidCents:null,source:`${matches.length} scheduled item(s); linked ledger payments`,matched:true,scheduledCents,outstandingCents,status,statusKind:outstandingCents<=1?'recorded':hasFutureDue?'pending':'attention'});
+          if (scheduledCents !== budgetCents) findings.push({level:'warning',kind:'amount-difference',text:`${section} “${item.name}”: budget plan ${formatFinancial(budgetCents/100)} differs from scheduled amount ${formatFinancial(scheduledCents/100)}.`});
+          if (outstandingCents>1) findings.push({level:'info',kind:'missing-activity',text:`${section} “${item.name}”: ${formatFinancial(paidCents/100)} paid of ${formatFinancial(scheduledCents/100)} scheduled; ${formatFinancial(outstandingCents/100)} remains ${hasFutureDue?'upcoming':'unpaid'}.`});
         });
       };
       pushScheduledRows(zbb.bills || [], 'expense', 'Fixed bills');
@@ -10421,19 +10481,41 @@ ${acc.name}`);
       const budgetKeys = new Set();
       (zbb.incomes||[]).forEach(item=>budgetKeys.add(`income:${normalize(item.name)}`));
       (zbb.variable||[]).forEach(item=>budgetKeys.add(`expense:${normalize(item.name)}`));
-      const unmatchedActuals = components.filter(c=>{const key=c.section==='expense'?(normalize(c.subcategory)!=='uncategorized'?normalize(c.subcategory):normalize(c.category)):normalize(c.category);return !budgetKeys.has(`${c.section}:${key}`);});
+      // Expense budget buckets are subcategories. Never silently fall back to a
+      // parent category when a transaction has no subcategory: doing so makes a
+      // category look like a valid spending bucket and hides missing taxonomy.
+      const unmatchedActuals = components.filter(c=>{
+        const key=c.section==='expense'?normalize(c.subcategory):normalize(c.category);
+        return !budgetKeys.has(`${c.section}:${key}`);
+      });
       const uniqueUnmatched = new Map();
-      unmatchedActuals.forEach(c=>{const label=c.section==='expense'?(c.subcategory && normalize(c.subcategory)!=='uncategorized'?c.subcategory:c.category):c.category;const key=`${c.section}:${normalize(label)}`;if(!uniqueUnmatched.has(key))uniqueUnmatched.set(key,{section:c.section,category:label});});
-      uniqueUnmatched.forEach(item=>findings.push({level:'info',text:`Ledger ${item.section} subcategory “${item.category}” has no corresponding budget line. It remains in ledger reporting and is not assigned to another line.`}));
+      unmatchedActuals.forEach(c=>{
+        const label=c.section==='expense'?(c.subcategory && normalize(c.subcategory)!=='uncategorized'?c.subcategory:'Uncategorized (missing subcategory)'):c.category;
+        const key=`${c.section}:${normalize(label)}`;
+        if(!uniqueUnmatched.has(key))uniqueUnmatched.set(key,{section:c.section,category:label,transactionIds:new Set()});
+        const id=c.transaction?.id;if(id)uniqueUnmatched.get(key).transactionIds.add(String(id));
+      });
+      uniqueUnmatched.forEach(item=>findings.push({level:'info',kind:'unbudgeted-activity',text:`Ledger ${item.section} subcategory “${item.category}” has no corresponding budget line. It remains in ledger reporting and is not assigned to another line.`,affectedTransactionIds:[...item.transactionIds]}));
 
-      // Savings targets are balance goals, not ledger expense categories. Only
-      // explicitly linked buckets/accounts are shown, and no transfer is treated
-      // as an expense or contribution without an explicit savings activity record.
+      // Sinking-fund monthly actuals come from dated bucket allocation/release
+      // history. Internal bucket transfers are excluded. Accumulated balances are
+      // displayed as references only and are never compared to monthly contributions.
       (zbb.savings||[]).forEach(item=>{
         const bucket=item.linkedBucketId?getSinkingBucketById(item.linkedBucketId):sinkingBucketLedger().buckets.find(b=>String(b.linkedZbbItemId||'')===String(item.id));
         const account=item.linkedAccountId?(state.accounts||[]).find(a=>String(a.id)===String(item.linkedAccountId)&&a.type==='asset'):null;
-        if (!bucket && !account) findings.push({level:'info',text:`Savings goal “${item.name}” has no explicit linked bucket or asset account. Its balance cannot be reconciled to ledger activity automatically.`});
-        else rows.push({section:'Savings balance reference',name:item.name,budgetCents:zbbMoneyCents(item.monthly),actualCents:null,source:bucket?`Linked sinking-fund balance: ${formatFinancial(bucket.balance||0)}`:`Linked account balance: ${formatFinancial(account.balance||0)}`,matched:true,balanceReference:true});
+        if (bucket) {
+          const history=(bucket.history||[]).filter(h=>h && String(h.date||'').slice(0,7)===period);
+          const hasContributionHistory=history.some(h=>['allocation','release'].includes(String(h.type||'')));
+          const actualCents=hasContributionHistory?history.reduce((sum,h)=>sum+(h.type==='allocation'?zbbMoneyCents(h.amount):h.type==='release'?-zbbMoneyCents(h.amount):0),0):null;
+          rows.push({section:'Savings contributions',name:item.name,budgetCents:zbbMoneyCents(item.monthly),actualCents,source:`Monthly bucket allocations · current balance ${formatFinancial(bucket.balance||0)}`,matched:hasContributionHistory,status:hasContributionHistory?'Recorded':'Awaiting contribution',statusKind:hasContributionHistory?'recorded':'pending',balanceReference:true});
+          if (!hasContributionHistory) findings.push({level:'info',kind:'missing-activity',text:`Savings goal “${item.name}” has no dated bucket allocation or release activity in ${period}. Current accumulated balance (${formatFinancial(bucket.balance||0)}) is shown as a reference, not as this month's contribution.`});
+        } else if (account) {
+          rows.push({section:'Savings balance reference',name:item.name,budgetCents:null,actualCents:null,source:`Linked account balance: ${formatFinancial(account.balance||0)} · monthly contribution activity not separately tracked`,matched:false,status:'Balance reference only',statusKind:'reference',balanceReference:true});
+          findings.push({level:'info',kind:'reference-only',text:`Savings goal “${item.name}” is linked to an asset account. Its accumulated balance is a reference; monthly contributions cannot be isolated from account balance changes without dated contribution records.`});
+        } else {
+          rows.push({section:'Savings balance reference',name:item.name,budgetCents:null,actualCents:null,source:'No linked bucket or asset account',matched:false,status:'Not linked',statusKind:'attention',balanceReference:true});
+          findings.push({level:'info',kind:'reference-only',text:`Savings goal “${item.name}” has no explicitly linked bucket or asset account. No balance or contribution actual was inferred.`});
+        }
       });
       return {rows,findings};
     }
@@ -10461,12 +10543,14 @@ ${acc.name}`);
       });
       current.forEach((finding,fingerprint)=>{
         let entry=state.integrityExceptionRegister.find(e=>e.fingerprint===fingerprint && e.period===period);
+        const affectedIds=Array.isArray(finding.affectedTransactionIds)?finding.affectedTransactionIds.filter(Boolean).map(String):[];
         if (!entry) {
-          entry={id:`iex-${Date.now()}-${state.integrityExceptionRegister.length}`,fingerprint,period,level:finding.level,description:finding.text,status:'open',firstSeenAt:now,lastSeenAt:now};
+          entry={id:`iex-${Date.now()}-${state.integrityExceptionRegister.length}`,fingerprint,period,level:finding.level,kind:finding.kind||'general',description:finding.text,affectedTransactionIds:affectedIds,affectedTransactionCount:affectedIds.length,status:'open',firstSeenAt:now,lastSeenAt:now};
           state.integrityExceptionRegister.push(entry);
           state.integrityExceptionEvents.push({id:`iev-${Date.now()}-${state.integrityExceptionEvents.length}`,exceptionId:entry.id,fingerprint,period,action:'exception_detected',reason:'Detected by budget-to-ledger reconciliation.',at:now});
         } else {
-          entry.lastSeenAt=now; entry.level=finding.level; entry.description=finding.text;
+          entry.lastSeenAt=now; entry.level=finding.level; entry.description=finding.text; entry.kind=finding.kind||entry.kind||'general';
+          entry.affectedTransactionIds=affectedIds; entry.affectedTransactionCount=affectedIds.length;
           if (entry.status==='resolved') { entry.status='open'; delete entry.resolvedAt; state.integrityExceptionEvents.push({id:`iev-${Date.now()}-${state.integrityExceptionEvents.length}`,exceptionId:entry.id,fingerprint,period,action:'reopened_on_recheck',reason:'The scoped reconciliation reports this exception again.',at:now}); }
         }
       });
@@ -10484,6 +10568,7 @@ ${acc.name}`);
       entry.lastAcknowledgedAt=now;
       saveData();
       renderZbbPlanner();
+      renderFinancialReviewExceptionRegister();
     }
     function getIntegrityExceptionPresentation(description) {
       const text=String(description||'');
@@ -10534,27 +10619,102 @@ ${acc.name}`);
         const ack=events.filter(v=>v.action==='acknowledged').slice(-1)[0];
         const status=e.status==='resolved'?'Resolved':latestEvent?.action==='acknowledged'?'Reviewed':'Open';
         const presentation=getIntegrityExceptionPresentation(e.description);
+        const affected=(e.affectedTransactionIds||[]).map(id=>(state.transactions||[]).find(tx=>String(tx.id)===String(id))).filter(Boolean);
+        const affectedMarkup=affected.length?`<div class="mt-3 rounded-lg border border-gray-200 dark:border-gray-700 p-2"><div class="text-[10px] font-bold uppercase tracking-wide text-gray-500 mb-1">Affected transactions · ${affected.length}</div><div class="space-y-1.5">${affected.map(tx=>{const account=(state.accounts||[]).find(a=>String(a.id)===String(tx.accountId||tx.account));const vendor=tx.vendor||tx.payee||tx.desc||tx.description||'Unnamed vendor';const sub=tx.subcategory||'No subcategory';const cat=tx.category||'Uncategorized';return `<div class="flex flex-wrap items-center justify-between gap-2 border-t border-gray-100 dark:border-gray-800 pt-1.5"><div class="min-w-0"><div class="text-xs font-semibold">${escapeHtml(vendor)}</div><div class="text-[10px] text-gray-500">${escapeHtml(formatDateMDY(tx.date))} · ${escapeHtml(account?.name||'Account unavailable')} · ${escapeHtml(cat)} / ${escapeHtml(sub)}</div></div><div class="flex items-center gap-2"><strong class="text-xs accounting-num">${formatFinancial(Number(tx.amount)||0)}</strong><button type="button" class="fh-theme-link text-[10px] font-semibold underline whitespace-nowrap" onclick="event.preventDefault();event.stopPropagation();openLedgerTransaction('${escapeHtml(String(tx.id))}')">View transaction <i class="fa-solid fa-arrow-up-right-from-square ml-1" aria-hidden="true"></i></button></div></div>`;}).join('')}</div></div>`:`<div class="mt-2 text-[10px] text-gray-500">No individual transaction references were retained for this exception. Re-run reconciliation to attach affected records where available.</div>`;
         const dateLabel=value=>value?formatDateTimeMDY(value):'';
         const history=events.map(v=>`<div class="flex flex-wrap justify-between gap-x-3 gap-y-1 border-t border-gray-100 dark:border-gray-800 py-1.5 text-[10px]"><span class="font-medium">${eventLabel(v.action)}${v.reason?` · ${escapeHtml(v.reason)}`:''}</span><time class="text-gray-500">${escapeHtml(dateLabel(v.at))}</time></div>`).join('');
-        return `<article class="fh-integrity-exception-row"><div class="flex flex-wrap items-center justify-between gap-2"><div class="min-w-0"><span class="text-[10px] font-semibold uppercase tracking-wide">${escapeHtml(e.level)} · ${status}</span><div class="text-xs font-semibold mt-0.5">${escapeHtml(presentation.title)}</div></div>${e.status==='resolved'?'':`<button type="button" class="text-[11px] fh-theme-link underline whitespace-nowrap" onclick="acknowledgeIntegrityException('${e.id}')">Review</button>`}</div><p class="text-[11px] text-gray-600 dark:text-gray-300 mt-1">${escapeHtml(presentation.detail)}</p><div class="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-gray-500 mt-1"><span>First seen ${escapeHtml(dateLabel(e.firstSeenAt))}</span>${e.resolvedAt?`<span>Resolved ${escapeHtml(dateLabel(e.resolvedAt))}</span>`:''}${ack?.reason?`<span>Review note: ${escapeHtml(ack.reason)}</span>`:''}</div><details class="fh-integrity-event-history mt-1"><summary>History · ${events.length} events</summary><div class="pt-1">${history||'<p class="text-[10px] text-gray-500">No recorded events.</p>'}</div></details></article>`;
+        return `<article class="fh-integrity-exception-row"><div class="flex flex-wrap items-center justify-between gap-2"><div class="min-w-0"><span class="text-[10px] font-semibold uppercase tracking-wide">${escapeHtml(e.level)} · ${status}</span><div class="text-xs font-semibold mt-0.5">${escapeHtml(presentation.title)}</div></div>${e.status==='resolved'?'':`<button type="button" class="text-[11px] fh-theme-link underline whitespace-nowrap" onclick="acknowledgeIntegrityException('${e.id}')">Review</button>`}</div><p class="text-[11px] text-gray-600 dark:text-gray-300 mt-1">${escapeHtml(presentation.detail)}</p>${affectedMarkup}<div class="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-gray-500 mt-1"><span>First seen ${escapeHtml(dateLabel(e.firstSeenAt))}</span>${e.resolvedAt?`<span>Resolved ${escapeHtml(dateLabel(e.resolvedAt))}</span>`:''}${ack?.reason?`<span>Review note: ${escapeHtml(ack.reason)}</span>`:''}</div><details class="fh-integrity-event-history mt-1"><summary>History · ${events.length} events</summary><div class="pt-1">${history||'<p class="text-[10px] text-gray-500">No recorded events.</p>'}</div></details></article>`;
       }).join('');
       return `<details class="fh-monthly-subpanel"><summary class="fh-monthly-subpanel-summary"><strong>Exception register</strong><span class="fh-monthly-summary-meta">${open.length} open · ${resolved} resolved</span></summary><div class="fh-monthly-subpanel-body space-y-2">${rows||'<p class="text-xs text-gray-500">No exceptions recorded for this month.</p>'}<p class="text-[10px] text-gray-500">Reviewing an exception records a reason; it does not clear the issue. An exception is resolved only when a later check no longer finds it. Local history is append-only in this file, but is not tamper-proof.</p></div></details>`;
     }
+    function renderFinancialReviewExceptionRegister() {
+      const host=document.getElementById('financial-review-exception-list');
+      if(!host)return;
+      const safeText=value=>escapeHtml(String(value==null?'':value));
+      const safeDate=value=>{try{return value?formatDateTimeMDY(value):'—';}catch(_){return safeText(value||'—');}};
+      // Saved history must always render, even if refreshing the current
+      // reconciliation or formatting one malformed legacy record fails.
+      try {
+        const activePeriod=state.selectedZbbPeriod||document.getElementById('monthly-close-period')?.value||new Date().toISOString().slice(0,7);
+        if(typeof getActiveZbbTemplate==='function' && typeof getBudgetLedgerReconciliation==='function' && typeof syncIntegrityExceptionRegister==='function') {
+          try {
+            const activeBudget=getActiveZbbTemplate();
+            const latestReconciliation=getBudgetLedgerReconciliation(activePeriod,activeBudget);
+            syncIntegrityExceptionRegister(activePeriod,latestReconciliation.findings||[]);
+          } catch (refreshError) {
+            console.warn('Exception register refresh skipped; saved history will still be shown.',refreshError);
+          }
+        }
+        const entries=(Array.isArray(state.integrityExceptionRegister)?state.integrityExceptionRegister:[]).slice()
+          .sort((a,b)=>String(b?.lastSeenAt||b?.firstSeenAt||'').localeCompare(String(a?.lastSeenAt||a?.firstSeenAt||'')));
+        const events=Array.isArray(state.integrityExceptionEvents)?state.integrityExceptionEvents:[];
+        const open=entries.filter(e=>e?.status!=='resolved').length;
+        const resolved=entries.length-open;
+        const count=document.getElementById('financial-review-exception-count');
+        if(count)count.textContent=`${open} open · ${resolved} resolved`;
+        const statusFilter=document.getElementById('financial-review-exception-filter')?.value||'all';
+        const levelFilter=document.getElementById('financial-review-exception-severity')?.value||'all';
+        const filtered=entries.filter(e=>{
+          const ev=events.filter(v=>String(v?.exceptionId)===String(e?.id));
+          const reviewed=ev.some(v=>v.action==='acknowledged')&&e.status!=='resolved';
+          const status=e.status==='resolved'?'resolved':reviewed?'reviewed':'open';
+          return (statusFilter==='all'||statusFilter===status)&&(levelFilter==='all'||String(e.level||'info').toLowerCase()===levelFilter);
+        });
+        const rows=filtered.map(e=>{
+          try {
+            const ev=events.filter(v=>String(v?.exceptionId)===String(e?.id)).sort((a,b)=>String(a?.at||'').localeCompare(String(b?.at||'')));
+            const reviewed=ev.some(v=>v.action==='acknowledged')&&e.status!=='resolved';
+            const status=e.status==='resolved'?'Resolved':reviewed?'Under review':'Open';
+            const tone=e.status==='resolved'?'fh-status-income':reviewed?'text-sky-600 dark:text-sky-300':e.level==='error'?'text-rose-600 dark:text-rose-300':e.level==='warning'?'text-amber-600 dark:text-amber-300':'text-gray-500';
+            const presentation=getIntegrityExceptionPresentation(e.description);
+            const affectedIds=Array.isArray(e.affectedTransactionIds)?e.affectedTransactionIds:[];
+            const affected=affectedIds.map(id=>(state.transactions||[]).find(tx=>String(tx?.id)===String(id))).filter(Boolean);
+            const affectedMarkup=affected.length
+              ? `<div class="mt-3 rounded-lg border border-gray-200 dark:border-gray-700 p-2"><div class="text-[10px] font-bold uppercase tracking-wide text-gray-500 mb-1">Affected transactions · ${affected.length}</div><div class="space-y-1.5">${affected.map(tx=>{
+                  const account=(state.accounts||[]).find(a=>String(a?.id)===String(tx.accountId||tx.account));
+                  const vendor=tx.vendor||tx.payee||tx.desc||tx.description||tx.bankDescription||tx.statementDescription||'Unnamed vendor';
+                  return `<div class="flex flex-wrap items-center justify-between gap-2 border-t border-gray-100 dark:border-gray-800 pt-1.5"><div class="min-w-0"><div class="text-xs font-semibold">${safeText(vendor)}</div><div class="text-[10px] text-gray-500">${safeText(formatDateMDY(tx.date))} · ${safeText(account?.name||'Account unavailable')} · ${safeText(tx.category||'Uncategorized')} / ${safeText(tx.subcategory||'No subcategory')}</div></div><div class="flex items-center gap-2"><strong class="text-xs accounting-num">${safeText(formatFinancial(Number(tx.amount)||0))}</strong><button type="button" class="fh-theme-link text-[10px] font-semibold underline whitespace-nowrap" onclick="event.preventDefault();event.stopPropagation();openLedgerTransaction('${safeText(String(tx.id))}')">View transaction <i class="fa-solid fa-arrow-up-right-from-square ml-1" aria-hidden="true"></i></button></div></div>`;
+                }).join('')}</div></div>`
+              : `<div class="mt-2 text-[10px] text-gray-500">${affectedIds.length?'The linked transaction record could not be found in the current ledger.':'No individual transaction references were retained for this exception. Re-run the relevant reconciliation to attach affected records where available.'}</div>`;
+            const history=ev.map(v=>`<div class="flex flex-wrap justify-between gap-2 border-t border-gray-100 dark:border-gray-800 py-1.5 text-[10px]"><span>${safeText(({exception_detected:'Detected',acknowledged:'Reviewed',auto_resolved_on_recheck:'Resolved on recheck',reopened_on_recheck:'Reopened on recheck'}[v.action]||'Updated'))}${v.reason?` · ${safeText(v.reason)}`:''}</span><time class="text-gray-500">${safeDate(v.at)}</time></div>`).join('');
+            return `<details class="fh-integrity-exception-row"><summary class="flex flex-wrap items-center justify-between gap-2 cursor-pointer"><span class="min-w-0"><span class="block text-[10px] font-semibold uppercase tracking-wide ${tone}">${safeText(String(e.level||'info').toUpperCase())} · ${status}</span><strong class="block text-xs mt-0.5">${safeText(presentation.title)}</strong><span class="block text-[10px] text-gray-500">${safeText(e.period||'')} · First seen ${safeDate(e.firstSeenAt)}</span></span><span class="text-xs text-gray-500">${ev.length} ${ev.length===1?'event':'events'} <i class="fa-solid fa-chevron-down ml-1"></i></span></summary><div class="pt-2"><p class="text-xs text-gray-600 dark:text-gray-300">${safeText(presentation.detail)}</p>${affectedMarkup}<div class="flex flex-wrap gap-2 mt-2">${e.status!=='resolved'?`<button type="button" class="fh-action-button fh-action-button-secondary fh-action-button-compact" onclick="event.preventDefault();event.stopPropagation();acknowledgeIntegrityException('${safeText(e.id)}')">Record review</button>`:''}</div><details class="fh-integrity-event-history mt-2"><summary>History (${ev.length})</summary><div class="pt-1">${history||'<p class="text-[10px] text-gray-500">No recorded events.</p>'}</div></details></div></details>`;
+          } catch(rowError) {
+            console.warn('One exception record could not be fully formatted.',rowError,e);
+            return `<article class="fh-integrity-exception-row"><strong>${safeText(e.level||'info')} · ${safeText(e.status||'open')}</strong><p class="text-xs mt-1">${safeText(e.description||'Exception details unavailable.')}</p><p class="text-[10px] text-gray-500 mt-1">Record ID: ${safeText(e.id||'unknown')} · Some details could not be displayed.</p></article>`;
+          }
+        }).join('');
+        host.innerHTML=rows||`<p class="text-xs text-gray-500">${entries.length?'No exceptions match these filters.':'No exceptions have been recorded. Run the relevant financial checks to populate this register.'}</p>`;
+      } catch(registerError) {
+        console.error('Exception register rendering failed.',registerError);
+        const entries=Array.isArray(state.integrityExceptionRegister)?state.integrityExceptionRegister:[];
+        host.innerHTML=entries.length
+          ? entries.map(e=>`<article class="fh-integrity-exception-row"><strong>${safeText(e?.level||'info')} · ${safeText(e?.status||'open')}</strong><p class="text-xs mt-1">${safeText(e?.description||'Exception details unavailable.')}</p><p class="text-[10px] text-gray-500 mt-1">Record ID: ${safeText(e?.id||'unknown')}</p></article>`).join('')
+          : '<p class="text-xs text-gray-500">No saved exceptions are available.</p>';
+      }
+    }
+
     function renderBudgetLedgerReconciliation(period,zbb) {
       const host=document.getElementById('zbb-budget-ledger-reconciliation-panel');
       if(!host)return;
       const result=getBudgetLedgerReconciliation(period,zbb);
-      const exceptionEntries=syncIntegrityExceptionRegister(period,result.findings);
+      syncIntegrityExceptionRegister(period,result.findings);
       const errors=result.findings.filter(f=>f.level==='error').length;
-      const warnings=result.findings.filter(f=>f.level==='warning').length;
-      const status=errors?'Mapping errors':warnings?'Differences to review':'Reconciliation review complete';
+      const amountDifferences=result.findings.filter(f=>f.kind==='amount-difference').length;
+      const missingActivity=result.findings.filter(f=>f.kind==='missing-activity').length;
+      const otherNotes=result.findings.filter(f=>!['amount-difference','missing-activity'].includes(f.kind) && f.level!=='error').length;
+      const status=errors?'Mapping issues':amountDifferences?'Amount differences to review':missingActivity?'Awaiting ledger activity':'Reconciliation up to date';
+      const statusTone=errors?'text-rose-600 dark:text-rose-300':amountDifferences?'text-amber-600 dark:text-amber-300':missingActivity?'text-sky-600 dark:text-sky-300':'fh-status-income';
+      const statusPill=`<span class="text-[11px] font-semibold ${statusTone}">${status}</span>`;
       const rows=result.rows.map(row=>{
-        const variance=row.actualCents===null?null:row.actualCents-row.budgetCents;
+        const variance=row.actualCents===null||row.budgetCents===null?null:row.actualCents-row.budgetCents;
         const varianceLabel=variance===null?'—':formatFinancial(variance/100,variance<0);
-        return `<tr class="border-t border-gray-100 dark:border-gray-800"><td class="px-2 py-2"><div class="font-semibold">${escapeHtml(row.name)}</div><div class="text-[10px] text-gray-400">${escapeHtml(row.section)} · ${escapeHtml(row.source)}</div></td><td class="px-2 py-2 text-right accounting-num">${formatFinancial(row.budgetCents/100)}</td><td class="px-2 py-2 text-right accounting-num">${row.actualCents===null?'Not comparable':formatFinancial(row.actualCents/100)}</td><td class="px-2 py-2 text-right accounting-num">${varianceLabel}</td></tr>`;
+        const statusClass=row.statusKind==='recorded'?'fh-status-income':row.statusKind==='attention'?'text-amber-600 dark:text-amber-300':row.statusKind==='reference'?'text-gray-500':'text-sky-600 dark:text-sky-300';
+        return `<tr class="border-t border-gray-100 dark:border-gray-800"><td class="px-2 py-2"><div class="font-semibold">${escapeHtml(row.name)}</div><div class="text-[10px] text-gray-400">${escapeHtml(row.section)} · ${escapeHtml(row.source)}</div></td><td class="px-2 py-2 text-right accounting-num">${row.budgetCents===null?'—':formatFinancial(row.budgetCents/100)}</td><td class="px-2 py-2 text-right accounting-num">${row.actualCents===null?'—':formatFinancial(row.actualCents/100)}</td><td class="px-2 py-2 text-right accounting-num">${varianceLabel}</td><td class="px-2 py-2 text-right text-[10px] font-semibold ${statusClass}">${escapeHtml(row.status||'—')}</td></tr>`;
       }).join('');
-      const findings=result.findings.map(f=>`<li class="text-xs ${f.level==='error'?'text-rose-700 dark:text-rose-300':f.level==='warning'?'text-amber-800 dark:text-amber-300':'text-gray-600 dark:text-gray-300'}">${escapeHtml(f.text)}</li>`).join('');
-      host.innerHTML=`<details class="fh-monthly-subpanel"><summary class="fh-monthly-subpanel-summary"><strong>Budget-to-ledger reconciliation</strong><span class="fh-monthly-summary-meta">${errors?`${errors} errors`:warnings?`${warnings} differences to review`:'No mapping differences'}</span></summary><div class="fh-monthly-subpanel-body space-y-3"><div class="flex flex-wrap items-center justify-between gap-2"><span class="text-[11px] text-gray-500">${escapeHtml(period)} · Planned amounts compared with linked ledger activity</span><span class="text-xs font-semibold">${errors} errors · ${warnings} differences</span></div><div class="overflow-x-auto"><table class="w-full text-xs"><thead><tr class="text-[10px] uppercase tracking-wide text-gray-400"><th class="px-2 py-1 text-left">Budget line / source</th><th class="px-2 py-1 text-right">Planned</th><th class="px-2 py-1 text-right">Ledger actual</th><th class="px-2 py-1 text-right">Variance</th></tr></thead><tbody>${rows||'<tr><td colspan="4" class="px-2 py-3 text-gray-400">No budget lines available to reconcile.</td></tr>'}</tbody></table></div><ul class="fh-monthly-findings">${findings||'<li class="text-xs fh-status-income">No mapping or settlement exceptions were detected.</li>'}</ul><details class="fh-monthly-help"><summary>How matching works</summary><p>Income is matched by category or an explicitly linked scheduled income item. Variable expenses are matched by normalized subcategory. Fixed bills and debt payments are matched to scheduled items by exact normalized description and linked ledger payments. Savings goals show linked balance references only. Transfers and account balances are not treated as expenses. Unmatched items remain unassigned rather than being guessed.</p></details>${renderIntegrityExceptionRegister(period,exceptionEntries)}</div></details>`;
+      const findings=result.findings.map(f=>`<li class="text-xs ${f.level==='error'?'text-rose-700 dark:text-rose-300':f.level==='warning'?'text-amber-800 dark:text-amber-300':f.kind==='missing-activity'?'text-sky-700 dark:text-sky-300':'text-gray-600 dark:text-gray-300'}">${escapeHtml(f.text)}</li>`).join('');
+      const summaries=`<div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-[11px]"><div class="rounded-lg bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 p-2"><strong class="block text-base accounting-num ${errors?'text-rose-600 dark:text-rose-300':'fh-status-income'}">${errors}</strong><span class="text-gray-500">Mapping issues</span></div><div class="rounded-lg bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 p-2"><strong class="block text-base accounting-num ${amountDifferences?'text-amber-600 dark:text-amber-300':'fh-status-income'}">${amountDifferences}</strong><span class="text-gray-500">Amount differences</span></div><div class="rounded-lg bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 p-2"><strong class="block text-base accounting-num ${missingActivity?'text-sky-600 dark:text-sky-300':'fh-status-income'}">${missingActivity}</strong><span class="text-gray-500">Awaiting activity</span></div><div class="rounded-lg bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 p-2"><strong class="block text-base accounting-num">${otherNotes}</strong><span class="text-gray-500">Other notes</span></div></div>`;
+      host.innerHTML=`<details class="fh-monthly-subpanel"><summary class="fh-monthly-subpanel-summary"><strong>Budget-to-ledger reconciliation</strong><span class="fh-monthly-summary-meta">${status}</span></summary><div class="fh-monthly-subpanel-body space-y-3"><div class="flex flex-wrap items-center justify-between gap-2"><span class="text-[11px] text-gray-500">${escapeHtml(period)} · Planned amounts compared with linked ledger activity</span>${statusPill}</div>${summaries}<div class="overflow-x-auto"><table class="w-full text-xs"><thead><tr class="text-[10px] uppercase tracking-wide text-gray-400"><th class="px-2 py-1 text-left">Budget line / source</th><th class="px-2 py-1 text-right">Planned</th><th class="px-2 py-1 text-right">Ledger actual</th><th class="px-2 py-1 text-right">Variance</th><th class="px-2 py-1 text-right">Status</th></tr></thead><tbody>${rows||'<tr><td colspan="5" class="px-2 py-3 text-gray-400">No budget lines available to reconcile.</td></tr>'}</tbody></table></div><ul class="fh-monthly-findings">${findings||'<li class="text-xs fh-status-income">No mapping, amount or activity exceptions were detected.</li>'}</ul><details class="fh-monthly-help"><summary>How matching works</summary><p>Income is matched by category or an explicitly linked scheduled income item. Variable spending buckets are matched strictly against expense subcategories, never parent categories. Fixed bills and debt payments are matched to scheduled items by normalized description and linked ledger payments. Sinking-fund monthly contributions use dated bucket allocation/release history; accumulated balances are shown separately as references and are not compared with monthly contributions. Transfers and account balances are not treated as expenses. Unmatched items remain unassigned rather than being guessed.</p></details></div></details>`;
+      renderFinancialReviewExceptionRegister();
     }
 
     function renderZbbBudgetVsActual(period, zbb, cycle) {
@@ -10626,13 +10786,13 @@ ${acc.name}`);
         const over = row.actual > row.budget + 0.005;
         const valueClass = row.duplicate ? 'text-amber-600 dark:text-amber-400' : row.unbudgeted || over ? 'text-rose-600 dark:text-rose-400' : 'fh-status-income';
         const varianceLabel = row.unbudgeted ? 'Unbudgeted' : row.duplicate ? 'Duplicate budget name' : row.remaining < -0.005 ? `${money(Math.abs(row.remaining))} over` : `${money(row.remaining)} left`;
-        const detail = row.transactions.length ? `<details class="fh-bva-transaction-disclosure mt-2"><summary class="inline-flex items-center gap-2 cursor-pointer list-none text-[10px] font-semibold text-gray-500 hover:text-current"><i class="fa-solid fa-chevron-right text-[9px] transition-transform" aria-hidden="true"></i><span>Show transactions (${row.transactions.length})</span></summary><div class="fh-bva-transactions mt-2 overflow-x-auto"><table class="w-full text-[11px]"><thead><tr class="text-[9px] uppercase tracking-wide text-gray-400"><th class="text-left py-1.5 pr-2 font-semibold">Date</th><th class="text-left py-1.5 pr-2 font-semibold">Vendor</th><th class="text-right py-1.5 font-semibold">Amount</th></tr></thead><tbody>${row.transactions.map(tx => `<tr class="border-t border-gray-100 dark:border-gray-800"><td class="py-1.5 pr-2 whitespace-nowrap text-gray-400 accounting-num">${escapeHtml(formatDateMDY(tx.date))}</td><td class="py-1.5 pr-2 min-w-0"><button type="button" class="font-semibold fh-theme-link hover:underline text-left truncate max-w-full" onclick="openLedgerTransaction('${escapeHtml(tx.id || '')}')" title="Open ${escapeHtml(tx.vendor || tx.payee || 'transaction')} for editing">${escapeHtml(tx.vendor || tx.payee || 'Unnamed vendor')} <i class="fa-solid fa-arrow-up-right-from-square text-[9px] ml-1" aria-hidden="true"></i></button></td><td class="py-1.5 text-right accounting-num whitespace-nowrap">${money(tx.amount)}</td></tr>`).join('')}</tbody></table></div></details>` : '';
-        return `<div class="fh-bva-row rounded-lg border border-gray-200 dark:border-gray-800 px-3 py-2"><div class="grid grid-cols-[minmax(0,1fr)_repeat(3,minmax(68px,auto))] gap-2 items-center text-xs"><div class="min-w-0"><div class="flex flex-wrap items-center gap-x-2 gap-y-0.5"><span class="font-semibold truncate">${escapeHtml(row.name)}</span>${row.parentCategories?.length ? `<span class="text-[10px] text-gray-400">${row.parentCategories.map(escapeHtml).join(' · ')}</span>` : ''}</div>${row.duplicate ? '<div class="text-[10px] text-amber-600">Rename or consolidate duplicate budget categories</div>' : row.unbudgeted ? '<div class="text-[10px] text-gray-400">No matching planned subcategory</div>' : ''}</div><div class="text-right"><div class="text-[9px] text-gray-400">BUDGET</div><strong class="accounting-num">${money(row.budget)}</strong></div><div class="text-right"><div class="text-[9px] text-gray-400">ACTUAL</div><strong class="accounting-num">${money(row.actual)}</strong></div><div class="text-right"><div class="text-[9px] text-gray-400">VARIANCE</div><strong class="accounting-num ${valueClass}">${varianceLabel}</strong></div></div>${detail}</div>`;
+        const detail = row.transactions.length ? `<details class="fh-bva-transaction-disclosure mt-2"><summary class="inline-flex items-center gap-2 cursor-pointer list-none text-[10px] font-semibold text-gray-500 hover:text-current"><i class="fa-solid fa-chevron-right text-[9px] transition-transform" aria-hidden="true"></i><span>Show transactions (${row.transactions.length})</span></summary><div class="fh-bva-transactions mt-2 overflow-x-auto"><table class="w-full text-[11px]"><thead><tr class="text-[9px] uppercase tracking-wide text-gray-400"><th class="text-left py-1.5 pr-2 font-semibold">Date</th><th class="text-left py-1.5 pr-2 font-semibold">Vendor</th><th class="text-right py-1.5 font-semibold">Amount</th></tr></thead><tbody>${row.transactions.map(tx => `<tr class="border-t border-gray-100 dark:border-gray-800"><td class="py-1.5 pr-2 whitespace-nowrap text-gray-400 accounting-num">${escapeHtml(formatDateMDY(tx.date))}</td><td class="py-1.5 pr-2 min-w-0"><button type="button" class="font-semibold fh-theme-link hover:underline text-left truncate max-w-full" onclick="openLedgerTransaction('${escapeHtml(tx.id || '')}')" title="Open ${escapeHtml(tx.vendor || tx.payee || 'transaction')} for editing">${escapeHtml(tx.vendor || tx.payee || 'Unnamed vendor')} <i class="fa-solid fa-arrow-up-right-from-square text-[9px] ml-1" aria-hidden="true"></i></button></td><td class="py-1.5 text-right accounting-num whitespace-nowrap">${formatFinancial(Number(tx.amount)||0)}</td></tr>`).join('')}</tbody></table></div></details>` : '';
+        return `<div class="fh-bva-row rounded-lg border border-gray-200 dark:border-gray-800 px-3 py-2"><div class="grid grid-cols-[minmax(0,1fr)_repeat(3,minmax(68px,auto))] gap-2 items-center text-xs"><div class="min-w-0"><div class="flex flex-wrap items-center gap-x-2 gap-y-0.5"><span class="font-semibold truncate">${escapeHtml(row.name)}</span>${row.parentCategories?.length ? `<span class="text-[10px] text-gray-400">${row.parentCategories.map(escapeHtml).join(' · ')}</span>` : ''}</div>${row.duplicate ? '<div class="text-[10px] text-amber-600">Rename or consolidate duplicate budget categories</div>' : row.unbudgeted ? '<div class="text-[10px] text-gray-400">No matching budget subcategory exists for this spending</div>' : ''}</div><div class="text-right"><div class="text-[9px] text-gray-400">BUDGET</div><strong class="accounting-num">${money(row.budget)}</strong></div><div class="text-right"><div class="text-[9px] text-gray-400">ACTUAL</div><strong class="accounting-num">${money(row.actual)}</strong></div><div class="text-right"><div class="text-[9px] text-gray-400">VARIANCE</div><strong class="accounting-num ${valueClass}">${varianceLabel}</strong></div></div>${detail}</div>`;
       };
       host.innerHTML = `<div class="flex flex-wrap items-center justify-between gap-2"><div><div class="text-sm font-semibold">Paycheque ${cycle} spending comparison</div><div class="text-[11px] text-gray-400">${escapeHtml(start)} to ${escapeHtml(end)}</div></div><span class="text-[10px] rounded-full px-2.5 py-1 border ${remainingTotal >= -0.005 ? 'fh-status-income-border fh-status-income-bg fh-status-income' : 'border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-900 dark:bg-rose-950/30 dark:text-rose-300'}">${remainingTotal >= -0.005 ? 'Within variable budget' : 'Over variable budget'}</span></div>
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 text-xs"><div class="rounded-xl bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 p-3"><div class="text-gray-400">Budgeted variable pool</div><strong class="block text-base mt-1 accounting-num">${money(budgetTotal)}</strong></div><div class="rounded-xl bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 p-3"><div class="text-gray-400">Actual net spending</div><strong class="block text-base mt-1 accounting-num">${money(actualTotal)}</strong></div><div class="rounded-xl bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 p-3"><div class="text-gray-400">Remaining / (over)</div><strong class="block text-base mt-1 accounting-num ${remainingTotal < -0.005 ? 'text-rose-600 dark:text-rose-400' : 'fh-status-income'}">${money(remainingTotal)}</strong></div><div class="rounded-xl bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 p-3"><div class="text-gray-400">Budget used</div><strong class="block text-base mt-1 accounting-num">${budgetTotal > 0 ? `${usedPct.toFixed(1)}%` : '—'}</strong></div></div>
         <div class="h-2 rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden"><div class="h-full ${usedPct > 100 ? 'bg-rose-500' : 'theme-progress-fill'}" style="width:${Math.max(0, Math.min(100, usedPct))}%"></div></div>
-        <div class="space-y-2"><div class="grid grid-cols-[minmax(0,1fr)_repeat(3,minmax(68px,auto))] gap-2 px-3 text-[9px] uppercase tracking-wide text-gray-400"><div>Variable category</div><div class="text-right">Budget</div><div class="text-right">Actual</div><div class="text-right">Variance</div></div>${rows.length ? rows.map(rowMarkup).join('') : '<p class="text-xs text-gray-400 py-2">No variable budget categories are configured for this paycheque.</p>'}${unbudgeted.map(rowMarkup).join('')}</div>
+        <div class="space-y-2"><div class="grid grid-cols-[minmax(0,1fr)_repeat(3,minmax(68px,auto))] gap-2 px-3 text-[9px] uppercase tracking-wide text-gray-400"><div>Variable category</div><div class="text-right">Budget</div><div class="text-right">Actual</div><div class="text-right">Variance</div></div>${rows.length ? rows.map(rowMarkup).join('') : '<p class="text-xs text-gray-400 py-2">No variable spending allocations are configured for this paycheque. Actual spending below is shown as unbudgeted.</p>'}${unbudgeted.map(rowMarkup).join('')}</div>
 `;
     }
 
@@ -10980,13 +11140,13 @@ ${acc.name}`);
       const monthlyPanel = document.getElementById('zbb-monthly-rollup');
       if (monthlyPanel) monthlyPanel.innerHTML = `
         <div class="flex flex-wrap items-center justify-between gap-2 mb-3"><div><h3 class="font-bold text-sm">Monthly totals</h3><p class="text-[10px] text-gray-500">Paycheques 1 &amp; 2 · Third cheque shown separately when applicable</p></div></div>
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 text-xs">
-          <div class="p-2 rounded-lg bg-gray-50 dark:bg-gray-950"><div class="text-gray-400">Income</div><strong>${formatFinancial(monthlyIncome)}</strong></div>
-          <div class="p-2 rounded-lg bg-gray-50 dark:bg-gray-950"><div class="text-gray-400">Fixed bills</div><strong>${formatFinancial(monthlyBills, true)}</strong></div>
-          <div class="p-2 rounded-lg bg-gray-50 dark:bg-gray-950"><div class="text-gray-400">Variable</div><strong>${formatFinancial(monthlyVariable, true)}</strong></div>
-          <div class="p-2 rounded-lg bg-gray-50 dark:bg-gray-950"><div class="text-gray-400">Debt</div><strong>${formatFinancial(monthlyDebt, true)}</strong></div>
-          <div class="p-2 rounded-lg bg-gray-50 dark:bg-gray-950"><div class="text-gray-400">Savings</div><strong>${formatFinancial(monthlySavings, true)}</strong></div>
-          <div class="p-2 rounded-lg bg-gray-50 dark:bg-gray-950"><div class="text-gray-400">Unallocated</div><strong>${formatFinancial(monthlyRemaining)}</strong></div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-2 text-xs fh-monthly-total-grid">
+          <div class="fh-monthly-total-card"><div>Income</div><strong>${formatFinancial(monthlyIncome)}</strong></div>
+          <div class="fh-monthly-total-card"><div>Fixed bills</div><strong>${formatFinancial(monthlyBills, true)}</strong></div>
+          <div class="fh-monthly-total-card"><div>Variable</div><strong>${formatFinancial(monthlyVariable, true)}</strong></div>
+          <div class="fh-monthly-total-card"><div>Debt</div><strong>${formatFinancial(monthlyDebt, true)}</strong></div>
+          <div class="fh-monthly-total-card"><div>Savings</div><strong>${formatFinancial(monthlySavings, true)}</strong></div>
+          <div class="fh-monthly-total-card"><div>Unallocated</div><strong>${formatFinancial(monthlyRemaining)}</strong></div>
         </div>
         ${hasThirdPayday ? `<div class="mt-3 rounded-xl border border-indigo-200 dark:border-indigo-900 bg-indigo-50/50 dark:bg-indigo-950/20 p-3"><div class="flex items-center justify-between gap-2 mb-2"><strong class="text-xs">Third paycheque · separate allocation</strong><span class="text-[10px] text-indigo-500">Not included above</span></div><div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-xs"><div><div class="text-gray-400">Income</div><strong>${formatFinancial(cycle3.income)}</strong></div><div><div class="text-gray-400">Fixed bills</div><strong>${formatFinancial(cycle3.bills,true)}</strong></div><div><div class="text-gray-400">Variable</div><strong>${formatFinancial(cycle3.variable,true)}</strong></div><div><div class="text-gray-400">Debt</div><strong>${formatFinancial(cycle3.debt,true)}</strong></div><div><div class="text-gray-400">Savings</div><strong>${formatFinancial(cycle3.savings,true)}</strong></div><div><div class="text-gray-400">Unallocated</div><strong>${formatFinancial(cycle3.remaining)}</strong></div></div></div>` : ''}`;
       let incomeSum = cycle1.income * 0 + 0, billsSum = 0, variableSum = 0, debtSum = 0, savingsSum = 0;
@@ -11666,9 +11826,9 @@ ${acc.name}`);
             : settlementStatus === 'needs-review' ? 'Payment history needs review'
             : b.paid ? (isInc ? 'Received' : 'Paid') : (isInc ? 'Not received' : 'Unpaid');
           badges += `
-            <div draggable="${!b.paid}" ondragstart="startCalendarBillDrag(event, '${b.id}')" onclick="editCalendarItem('${b.id}', event)" title="${escapeHtml(b.desc || 'Scheduled item')}${b.vendor && !isDebt ? ' · Vendor: ' + escapeHtml(b.vendor) : ''} · ${escapeHtml(statusTitle)}" class="fh-calendar-notification-row" data-notification-kind="${notificationKind}" data-completed="${b.paid ? 'true' : 'false'}" data-settlement-status="${settlementStatus}">
+            <div draggable="${!b.paid}" ondragstart="startCalendarBillDrag(event, '${b.id}')" onclick="editCalendarItem('${b.id}', event)" title="${escapeHtml((b.vendor || '').trim() || (b.desc || '').trim() || 'Scheduled item')} · ${escapeHtml(statusTitle)}" class="fh-calendar-notification-row" data-notification-kind="${notificationKind}" data-completed="${b.paid ? 'true' : 'false'}" data-settlement-status="${settlementStatus}">
               <span class="fh-calendar-notification-chip" data-notification-kind="${notificationKind}">
-                <span class="fh-calendar-notification-name">${escapeHtml(b.desc || 'Scheduled item')}</span>
+                <span class="fh-calendar-notification-name">${escapeHtml((b.vendor || '').trim() || (b.desc || '').trim() || 'Scheduled item')}</span>
                 <span class="accounting-num fh-calendar-notification-amount">${formatFinancial(b.amount, !isInc)}</span>
               </span>
               ${paymentDateInfo}
@@ -12709,7 +12869,7 @@ No payment links or balance changes were retained.`);
       if (amountCents > settlement.remainingCents && !confirm(`This payment exceeds the remaining scheduled amount by ${formatFinancial((amountCents-settlement.remainingCents)/100)}. Record the actual payment and flag the bill as overpaid?`)) return;
       if (bill.paymentStatus==='legacy-unlinked') { alert('This scheduled item is already marked paid but has no linked ledger transaction. Select the existing payment from the list to connect it; FinHub will not create another payment until the old status is reconciled.'); return; }
       {
-        if (Number(funding.balance)<amount && !confirm(`The selected funding account currently has ${formatFinancial(funding.balance)}. Record this payment anyway?`)) return;
+        if (bill.type !== 'income' && Number(funding.balance)<amount && !confirm(`The selected funding account currently has ${formatFinancial(funding.balance)}. Record this payment anyway?`)) return;
         const expectedType = bill.type==='income'?'Income':bill.type==='debt'?'Debt Payment':'Expense';
         let debt = null, principalCents = 0, paymentType = '';
         if (bill.type==='debt') {
@@ -12723,7 +12883,11 @@ No payment links or balance changes were retained.`);
         }
         captureUndo(`Record payment for scheduled item "${bill.desc||bill.id}"`);
         let transaction = {
-          id:generateUniqueTransactionId('tx'), date, desc:bill.desc||'', vendor:bill.vendor||'Scheduled item',
+          id:generateUniqueTransactionId('tx'), date,
+          // Older scheduled items may have the merchant stored in desc while vendor is blank.
+          // Promote that legacy value to Vendor and use a neutral description default.
+          desc:(String(bill.vendor||'').trim() ? (String(bill.desc||'').trim() || 'Scheduled item') : 'Scheduled item'),
+          vendor:(String(bill.vendor||'').trim() || (String(bill.desc||'').trim() || 'Scheduled item')),
           type:expectedType, category:bill.category||(bill.type==='debt'?'Debt Payment':''),
           subcategory:bill.type==='debt'?paymentType:(bill.subcategory||''), amount, accountId:funding.id,
           calendarBillId:bill.id, scheduledMatchStatus:'matched', source:'calendar-bill-payment'
@@ -14703,10 +14867,10 @@ No payment links or balance changes were retained.`);
           const isOutflow = (t.type === 'Expense' && Number(t.amount) >= 0) || t.type === 'Debt Payment' || t.type === 'Interest Charge' ||
             (t.type === 'Transfer' && t.externalTransferDirection !== 'in');
           ledgerTableRows.push(`
-            <tr class="  cursor-pointer" data-transaction-id="${escapeHtml(String(t.id))}" onclick="openLedgerTransaction('${escapeHtml(String(t.id))}')" onkeydown="if(event.target===this&&(event.key==='Enter'||event.key===' ')){event.preventDefault();openLedgerTransaction('${escapeHtml(String(t.id))}');}" tabindex="0" aria-label="Open transaction ${escapeHtml(t.vendor || t.desc || formatDateMDY(t.date))}">
+            <tr data-transaction-id="${escapeHtml(String(t.id))}">
               <td data-label="Date" class="px-3 py-1.5"><div class="flex items-center gap-2"><input type="checkbox" class="ledger-row-select accent-indigo-600" data-id="${t.id}" ${selectedLedgerIds.has(String(t.id))?'checked':''} onclick="event.stopPropagation()" onchange="toggleLedgerTransactionSelection('${t.id}',this.checked)" aria-label="Select transaction dated ${formatDateMDY(t.date)}"><span>${formatDateMDY(t.date)}</span></div></td>
               <td data-label="Vendor" class="px-3 py-1.5"><a href="#" class="text-indigo-600 dark:text-indigo-300 hover:underline" onclick="event.preventDefault();event.stopPropagation();openLedgerTransaction('${escapeHtml(String(t.id))}')">${escapeHtml(t.vendor || 'Vendor not recorded')}</a></td>
-              <td data-label="Description" class="px-3 py-1.5">${t.desc || '-'}</td>
+              <td data-label="Description" class="px-3 py-1.5">${escapeHtml(t.desc || '—')}</td>
               <td data-label="Type" class="px-3 py-1.5"><span class="px-2 py-0.5 rounded text-[10px] bg-gray-100 dark:bg-gray-800">${t.type === 'Transfer' ? 'Internal Transfer' : (t.type === 'Expense' && Number(t.amount) < 0 && t.refundOfTransactionId ? 'Refund / reimbursement' : displayFinHubTransactionType(t.type))}</span></td>
               <td data-label="Category" class="px-3 py-1.5">${t.type === 'Expense' && Array.isArray(t.splits) && t.splits.length ? `<details class="split-allocation-breakdown inline-block" onclick="event.stopPropagation()"><summary class="cursor-pointer inline-flex items-center rounded-md px-2 py-1 text-[10px] font-bold bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 /20">Split</summary><div class="absolute z-30 mt-1 min-w-56 max-w-72 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-xl p-3 space-y-2" onclick="event.stopPropagation()"><div class="text-[10px] font-bold text-gray-500 uppercase tracking-wide">Category allocation</div>${t.splits.map(a => `<div class="flex justify-between gap-4 text-xs"><span class="min-w-0 font-semibold">${escapeHtml(a.category || 'Uncategorized')}</span><strong class="accounting-num whitespace-nowrap">${formatFinancial((Number(a.amountCents)||0)/100)}</strong></div>`).join('')}<div class="border-t border-gray-200 dark:border-gray-700 pt-2 flex justify-between text-xs font-bold"><span>Total allocated</span><span>${formatFinancial(t.amount)}</span></div></div></details>` : (t.category || '-')}</td>
               <td data-label="Subcategory" class="px-3 py-1.5">${t.type === 'Expense' && Array.isArray(t.splits) && t.splits.length ? `<details class="split-allocation-breakdown inline-block" onclick="event.stopPropagation()"><summary class="cursor-pointer inline-flex items-center rounded-md px-2 py-1 text-[10px] font-bold bg-indigo-500/10 text-indigo-600 dark:text-indigo-300">Split</summary><div class="absolute z-30 mt-1 min-w-56 max-w-72 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-xl p-3 space-y-2" onclick="event.stopPropagation()"><div class="text-[10px] font-bold text-gray-500 uppercase tracking-wide">Subcategory allocation</div>${t.splits.map(a => `<div class="flex justify-between gap-4 text-xs"><span class="min-w-0">${escapeHtml(a.subcategory || 'No subcategory')}</span><strong class="accounting-num whitespace-nowrap">${formatFinancial((Number(a.amountCents)||0)/100)}</strong></div>`).join('')}<div class="border-t border-gray-200 dark:border-gray-700 pt-2 flex justify-between text-xs font-bold"><span>Total allocated</span><span>${formatFinancial(t.amount)}</span></div></div></details>` : (t.subcategory || '-')}</td>
@@ -17096,7 +17260,20 @@ No payment links or balance changes were retained.`);
       state.incomeCategories = state.incomeCategories || [];
       const idx = Number(document.getElementById('income-cat-edit-index').value);
       const name = document.getElementById('income-cat-name').value.trim();
-      const subcategories = document.getElementById('income-cat-subs').value.split('\n').map(v => v.trim()).filter(Boolean).map(name => ({name}));
+      const enteredSubcategoryNames = document.getElementById('income-cat-subs').value.split('\n').map(v => v.trim()).filter(Boolean);
+      const previousBucket = idx >= 0 ? state.incomeCategories[idx] : null;
+      const previousSubcategories = Array.isArray(previousBucket?.subcategories) ? previousBucket.subcategories : [];
+      const subcategoryByName = new Map(previousSubcategories.map(sub => {
+        const subName = typeof sub === 'string' ? sub : sub?.name;
+        return [String(subName || '').toLowerCase(), typeof sub === 'string' ? {name:sub} : (sub || {})];
+      }));
+      const seenSubcategories = new Set();
+      const subcategories = enteredSubcategoryNames.filter(subName => {
+        const key = subName.toLowerCase();
+        if (seenSubcategories.has(key)) return false;
+        seenSubcategories.add(key);
+        return true;
+      }).map(subName => ({...(subcategoryByName.get(subName.toLowerCase()) || {}), name:subName}));
       if (!name || name.toLowerCase() === 'transfer') { alert('Enter a valid income bucket name. Transfer is reserved.'); return; }
       if (state.incomeCategories.some((c, i) => i !== idx && c.name.toLowerCase() === name.toLowerCase())) { alert('An income bucket with that name already exists.'); return; }
       const oldName = idx >= 0 ? state.incomeCategories[idx]?.name : '';
@@ -17768,24 +17945,59 @@ No payment links or balance changes were retained.`);
       return (state.transactions || []).find(t => String(t.id) === id) || null;
     }
 
+    // Canonical debt-payment decomposition. All reporting surfaces use integer cents
+    // and the same source precedence; missing/contradictory splits are surfaced rather
+    // than silently inventing principal or interest.
+    function resolveDebtPaymentComponents(transaction) {
+      if (!transaction || !['Debt Payment','Debt Payment Reversal'].includes(transaction.type)) {
+        return { valid:false, reason:'not-a-debt-payment', totalCents:0, principalCents:0, interestCents:0 };
+      }
+      const cents = value => {
+        const n=Number(value);
+        if(!Number.isFinite(n)) return null;
+        const c=Math.round(n*100);
+        return Number.isSafeInteger(c) && Math.abs(n*100-c)<1e-7 ? c : null;
+      };
+      const totalCents=cents(transaction.amount);
+      if(totalCents===null) return {valid:false,reason:'invalid-total',totalCents:null,principalCents:null,interestCents:null};
+      const absTotal=Math.abs(totalCents);
+      const payment=(state.debtPayments||[]).find(p=>String(p.id)===String(transaction.debtPaymentId||'')||String(p.transactionId)===String(transaction.id))||null;
+      const bill=(state.calendarBills||[]).find(b=>String(b.id)===String(transaction.calendarBillId||''))||null;
+      const principalCents=resolveAccountIntegrityDebtPrincipalCents(transaction,payment,bill);
+      if(principalCents===null) return {valid:false,reason:'principal-unresolved',totalCents:absTotal,principalCents:null,interestCents:null};
+      let interestCents=null;
+      const explicitInterest=transaction.debtInterestAmount ?? payment?.interestAmount;
+      if(explicitInterest!==undefined && explicitInterest!==null && explicitInterest!=='') interestCents=cents(explicitInterest);
+      else if(transaction.type==='Debt Payment Reversal') {
+        const original=(state.transactions||[]).find(t=>String(t.id)===String(transaction.reversalOfTransactionId||''));
+        const originalParts=original?resolveDebtPaymentComponents(original):null;
+        const originalTotal=original?cents(original.amount):null;
+        if(originalParts?.valid && originalTotal>0) interestCents=Math.round(originalParts.interestCents*absTotal/Math.abs(originalTotal));
+      }
+      if(interestCents===null) interestCents=Math.max(0,absTotal-principalCents);
+      if(interestCents<0 || principalCents<0 || principalCents+interestCents!==absTotal) {
+        return {valid:false,reason:'split-does-not-equal-total',totalCents:absTotal,principalCents,interestCents,varianceCents:absTotal-principalCents-interestCents};
+      }
+      return {valid:true,reason:null,totalCents:absTotal,principalCents,interestCents,payment, bill};
+    }
+
     function getDebtReportPaymentParts(transaction, accountId) {
-      if (!transaction) return { payment: 0, principal: 0, interest: 0, principalChange: 0 };
-      const payment = (state.debtPayments || []).find(p =>
-        String(p.id) === String(transaction.debtPaymentId || '') ||
-        String(p.transactionId) === String(transaction.id)
-      );
-      const linkedDebtId = transaction.debtAccountId || payment?.accountId;
-      if (String(linkedDebtId || '') !== String(accountId)) return { payment: 0, principal: 0, interest: 0, principalChange: 0 };
-      const sign = transaction.type === 'Debt Payment Reversal' ? -1 : 1;
-      if (transaction.type !== 'Debt Payment' && transaction.type !== 'Debt Payment Reversal') return { payment: 0, principal: 0, interest: 0, principalChange: 0 };
-      const amount = Number(transaction.amount) || 0;
-      const principalRaw = Number(transaction.debtPrincipalAmount ?? payment?.principalAmount ?? amount) || 0;
-      const interestRaw = Number(transaction.debtInterestAmount ?? payment?.interestAmount ?? Math.max(0, amount - principalRaw)) || 0;
+      if (!transaction || !['Debt Payment','Debt Payment Reversal'].includes(transaction.type)) return { payment:0, principal:0, interest:0, principalChange:0, splitValid:true };
+      const payment=(state.debtPayments||[]).find(p=>String(p.id)===String(transaction.debtPaymentId||'')||String(p.transactionId)===String(transaction.id));
+      const linkedDebtId=transaction.debtAccountId||payment?.accountId;
+      if(String(linkedDebtId||'')!==String(accountId)) return {payment:0,principal:0,interest:0,principalChange:0,splitValid:true};
+      const parts=resolveDebtPaymentComponents(transaction);
+      const sign=transaction.type==='Debt Payment Reversal'?-1:1;
+      const principal=parts.principalCents===null?0:parts.principalCents/100;
+      const interest=parts.interestCents===null?0:parts.interestCents/100;
       return {
-        payment: amount * sign,
-        principal: principalRaw * sign,
-        interest: interestRaw * sign,
-        principalChange: (transaction.type === 'Debt Payment' ? -principalRaw : principalRaw)
+        payment:(Number(transaction.amount)||0)*sign,
+        principal:principal*sign,
+        interest:interest*sign,
+        principalChange:transaction.type==='Debt Payment'?-principal:principal,
+        splitValid:parts.valid,
+        splitError:parts.reason,
+        splitVarianceCents:parts.varianceCents??0
       };
     }
 
@@ -17933,13 +18145,16 @@ No payment links or balance changes were retained.`);
         const payment=(state.debtPayments||[]).find(p=>String(p.id)===String(t.debtPaymentId||'')||String(p.transactionId)===String(t.id));
         const debt=accounts.find(a=>String(a.id)===String(t.debtAccountId||payment?.accountId));
         const funding=(state.accounts||[]).find(a=>!a.archived&&String(a.id)===String(t.accountId));
+        const parts=resolveDebtPaymentComponents(t);
         const sign=t.type==='Debt Payment Reversal'?-1:1;
-        const principal=(Number(t.debtPrincipalAmount??payment?.principalAmount??t.amount)||0)*sign;
-        const interest=(Number(t.debtInterestAmount??payment?.interestAmount??Math.max(0,(Number(t.amount)||0)-Math.abs(principal)))||0)*sign;
+        const principal=(parts.principalCents===null?0:parts.principalCents/100)*sign;
+        const interest=(parts.interestCents===null?0:parts.interestCents/100)*sign;
         const amount=(Number(t.amount)||0)*sign;
         const balance=runningAfter.get(String(t.id));
         const values={date:ledgerDateKey(t.date)||String(t.date||''),debt:String(debt?.name||'Unknown debt'),amount,principal,interest,funding:String(funding?.name||'Not recorded'),balance:balance===undefined?null:Number(balance)};
-        const html=`<tr><td class="px-3 py-3 whitespace-nowrap">${escapeHtml(formatDateMDY(values.date))}</td><td class="px-3 py-3">${escapeHtml(values.debt)}</td><td class="px-3 py-3 text-right accounting-num">${debtReportMoney(amount)}</td><td class="px-3 py-3 text-right accounting-num">${debtReportMoney(principal)}</td><td class="px-3 py-3 text-right accounting-num">${debtReportMoney(interest)}</td><td class="px-3 py-3">${escapeHtml(values.funding)}</td><td class="px-3 py-3 text-right accounting-num">${balance===undefined?'—':debtReportMoney(balance)}</td><td class="px-3 py-3"><button type="button" class="text-indigo-600 dark:text-indigo-400 font-semibold" onclick="openTransactionModal('${escapeHtml(t.id)}')">Open transaction</button></td></tr>`;
+        const splitVariance=(parts.varianceCents||0)/100;
+        const splitWarning=!parts.valid?`<div class="text-[10px] text-amber-600 dark:text-amber-300 mt-1" title="Recorded payment total does not equal principal plus interest">Split needs review${parts.varianceCents!==undefined?`: ${debtReportMoney(splitVariance)} variance`:''}</div>`:'';
+        const html=`<tr><td class="px-3 py-3 whitespace-nowrap">${escapeHtml(formatDateMDY(values.date))}</td><td class="px-3 py-3">${escapeHtml(values.debt)}${splitWarning}</td><td class="px-3 py-3 text-right accounting-num">${debtReportMoney(amount)}</td><td class="px-3 py-3 text-right accounting-num">${debtReportMoney(principal)}</td><td class="px-3 py-3 text-right accounting-num">${debtReportMoney(interest)}</td><td class="px-3 py-3">${escapeHtml(values.funding)}</td><td class="px-3 py-3 text-right accounting-num">${balance===undefined?'—':debtReportMoney(balance)}</td><td class="px-3 py-3 text-center"><button type="button" class="fh-open-details-icon" aria-label="Open transaction for ${escapeHtml(values.debt)} dated ${escapeHtml(formatDateMDY(values.date))}" title="Open transaction details" onclick="openTransactionModal('${escapeHtml(String(t.id))}')"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></button></td></tr>`;
         return {values,html};
       });
       renderDebtHistoryFilteredRows();
@@ -18194,12 +18409,15 @@ No payment links or balance changes were retained.`);
       rows.forEach(t => {
         const funding = state.accounts.find(a => String(a.id) === String(t.accountId));
         const payment = t.debtPaymentId ? payments.get(t.debtPaymentId) : (state.debtPayments || []).find(p => String(p.transactionId) === String(t.id));
-        const principal = t.debtPrincipalAmount !== undefined ? Number(t.debtPrincipalAmount) : (t.type === 'Debt Payment' ? Number(t.amount) : 0);
+        const splitParts = ['Debt Payment','Debt Payment Reversal'].includes(t.type) ? resolveDebtPaymentComponents(t) : null;
+        const principal = splitParts?.valid ? splitParts.principalCents / 100 : (t.type === 'Debt Payment' || t.type === 'Debt Payment Reversal' ? null : 0);
         const postedDirectlyToDebtAccount = String(t.accountId || '') === String(accId) && ['Expense', 'Income'].includes(t.type);
         const kind = t.type === 'Interest Charge'
           ? 'Interest charged to balance'
           : t.type === 'Debt Payment'
             ? (principal === 0 && Number(t.amount) > 0 ? 'Interest-only payment' : 'Debt payment')
+            : t.type === 'Debt Payment Reversal'
+              ? 'Debt payment reversal'
             : postedDirectlyToDebtAccount && t.type === 'Expense'
               ? 'Credit / debt purchase'
               : postedDirectlyToDebtAccount && t.type === 'Income'
@@ -18222,8 +18440,8 @@ No payment links or balance changes were retained.`);
           <td class="py-3 pr-3">${escapeHtml(t.vendor || 'Vendor not recorded')}${(t.bankDescription || t.statementDescription) ? `<div class="text-[10px] text-gray-400" title="Bank Description">${escapeHtml(t.bankDescription || t.statementDescription)}</div>` : ''}${t.desc ? `<div class="text-[10px] text-gray-400" title="Description">${escapeHtml(t.desc)}</div>` : ''}</td>
           <td class="py-3 pr-3">${kind}</td>
           <td class="py-3 pr-3 text-right font-semibold accounting-num">${formatFinancial(t.amount)}</td>
-          <td class="py-3 pr-3 text-right accounting-num">${t.type === 'Debt Payment' ? formatFinancial(principal) : '—'}</td>
-          <td class="py-3">${escapeHtml(treatment)}</td>
+          <td class="py-3 pr-3 text-right accounting-num">${['Debt Payment','Debt Payment Reversal'].includes(t.type) ? (principal === null ? '<span class="text-amber-500 text-xs font-semibold" title="Principal/interest split cannot be verified from the recorded transaction and linked records.">Needs review</span>' : formatFinancial(principal)) : '—'}</td>
+          <td class="py-3">${escapeHtml(treatment)}${splitParts && !splitParts.valid ? `<div class="text-[10px] text-amber-500 mt-1">Split needs review · ${escapeHtml(splitParts.reason || 'unverified split')}</div>` : ''}</td>
           <td class="py-3 text-right whitespace-nowrap">${actions}</td>
         </tr>`;
       });
@@ -18255,15 +18473,31 @@ No payment links or balance changes were retained.`);
               : 'Principal + interest: the default assigns the full payment to principal. Adjust the principal portion to match the lender statement; the remainder is interest.';
       }
     }
+    function findDebtPaymentForTransaction(transaction) {
+      if (!transaction) return { payment: null, ambiguous: false };
+      const matches = (state.debtPayments || []).filter(payment =>
+        (payment.transactionId != null && String(payment.transactionId) === String(transaction.id)) ||
+        (transaction.debtPaymentId != null && String(payment.id) === String(transaction.debtPaymentId))
+      );
+      return { payment: matches.length === 1 ? matches[0] : null, ambiguous: matches.length > 1 };
+    }
+
     function openDebtPaymentFromTransaction() {
       const editId = document.getElementById('tx-edit-id')?.value || '';
       const existingTx = editId ? state.transactions.find(t => String(t.id) === String(editId)) : null;
       if (editId && !existingTx) { alert('The original transaction could not be found. No changes were made.'); return; }
-      if (existingTx?.debtPaymentId) {
-        const payment = (state.debtPayments || []).find(p => String(p.id) === String(existingTx.debtPaymentId));
-        if (!payment) { alert('The linked debt payment record could not be found. No changes were made.'); return; }
+      // The debt-payment relationship is stored on both sides for new records,
+      // but older/imported records may only retain debtPayments[].transactionId.
+      // Resolve either direction before considering the Expense-conversion path.
+      const linkedPayment = existingTx ? findDebtPaymentForTransaction(existingTx) : { payment: null, ambiguous: false };
+      if (linkedPayment.ambiguous) { alert('This transaction is linked to more than one debt-payment record. Resolve the duplicate links before editing.'); return; }
+      if (linkedPayment.payment) {
         closeTransactionModal();
-        openDebtPaymentModal(payment.id);
+        openDebtPaymentModal(linkedPayment.payment.id);
+        return;
+      }
+      if (existingTx?.debtPaymentId) {
+        alert('This transaction references a debt payment that could not be found. No changes were made.');
         return;
       }
       if (existingTx?.calendarBillId) {
@@ -18476,10 +18710,13 @@ No payment links or balance changes were retained.`);
         if (getDebtPaymentLinkedReversals(oldTransaction.id).length) { alert('This debt payment has one or more linked reversals. Resolve those reversals before editing the original payment.'); return; }
       }
       if (conversionTxId && !conversionTransaction) { alert('The original Expense transaction could not be found. No changes were made.'); return; }
-      if (conversionTransaction && (conversionTransaction.type !== 'Expense' || conversionTransaction.calendarBillId || conversionTransaction.debtPaymentId)) {
-        alert('Only an unlinked Expense can be converted to a Debt Payment. No changes were made.'); return;
+      const conversionCalendarBill = conversionTransaction?.calendarBillId ? (state.calendarBills || []).find(b=>String(b.id)===String(conversionTransaction.calendarBillId)) : null;
+      const conversionCalendarOwners = conversionTransaction ? getCalendarBillsLinkedToTransactionId(conversionTransaction.id) : [];
+      const conversionCalendarValid = !conversionTransaction?.calendarBillId || !!(conversionCalendarBill && conversionCalendarBill.type==='debt' && conversionCalendarOwners.length===1 && String(conversionCalendarOwners[0].id)===String(conversionCalendarBill.id) && String(resolveDebtAccountForBill(conversionCalendarBill)?.id||'')===String(accountId));
+      if (conversionTransaction && (conversionTransaction.type !== 'Expense' || conversionTransaction.debtPaymentId || !conversionCalendarValid)) {
+        alert('Only an Expense with no existing debt-payment link can be converted. If it is calendar-linked, it must belong to one valid debt-type scheduled item for the selected debt account. No changes were made.'); return;
       }
-      const conversionFunding = conversionTransaction ? state.accounts.find(a => String(a.id) === String(conversionTransaction.accountId) && a.type === 'asset') : null;
+      const conversionFunding = conversionTransaction ? state.accounts.find(a => String(a.id) === String(conversionTransaction.accountId) && a.type === 'asset' && !a.archived) : null;
       if (conversionTransaction && !conversionFunding) { alert('The original Expense must have been paid from an asset account such as chequing or savings. No changes were made.'); return; }
       if (!debtAcc || !fundingAcc || amount <= 0 || principalAmount > amount + 0.005) {
         alert('Select the debt being paid, choose an active asset funding account, and enter a valid payment split. Principal cannot exceed the total payment.');
@@ -18586,6 +18823,10 @@ No payment links or balance changes were retained.`);
         alert('FinHub could not apply the principal portion to the selected debt account. No payment was saved.');
         return;
       }
+      // A converted bank-paid Expense keeps its original calendarBillId. Once its
+      // type and debt link are updated, re-evaluate that scheduled item's settlement
+      // so it becomes a valid debt payment without creating a second ledger movement.
+      if (paymentTransaction?.calendarBillId) syncCalendarBillForTransactionAndReversals(paymentTransaction);
       saveData(); closeDebtPaymentModal(); renderDebtPlanner(); renderDebtPaymentHistory(); renderLedger(); renderDashboard(); renderCalendar();
       return true;
     }
@@ -19649,12 +19890,54 @@ function openTransactionModal(requestedEditId = null) {
       const editId=document.getElementById('tx-edit-id').value;
       const existing=editId?state.transactions.find(t=>String(t.id)===String(editId)):null;
       if(editId && !existing){alert('The original transaction could not be found. No changes were made.');return;}
-      if(existing?.debtPaymentId){alert('This transaction is already linked to a debt payment. Edit it from Debt Payment History.');return;}
-      if(existing && (existing.type!=='Expense' || existing.calendarBillId)){alert('Only an unlinked bank-paid Expense can be converted in place.');return;}
+      const linkedPayment = existing ? findDebtPaymentForTransaction(existing) : { payment: null, ambiguous: false };
+      if(linkedPayment.ambiguous){alert('This transaction is linked to more than one debt-payment record. Resolve the duplicate links before editing.');return;}
+      if(linkedPayment.payment || existing?.debtPaymentId){alert('This transaction is already linked to a debt payment. Edit its principal, interest and funding details from Debt Payment History → Payment details.');return;}
+      // Debt-payment reversals are already posted ledger events, not Expenses awaiting
+      // conversion. Edit their split in place and reverse/reapply only their existing
+      // balance effects so the funding cash and restored debt principal remain correct.
+      if (existing && existing.type === 'Debt Payment Reversal' && (existing.isReversal || existing.reversalOfTransactionId)) {
+        const targetId = String(document.getElementById('tx-debt-target')?.value || existing.debtAccountId || '');
+        const fundingId = String(document.getElementById('tx-account')?.value || existing.accountId || '');
+        const debt = (state.accounts || []).find(a => String(a.id) === targetId && a.type === 'debt' && !a.archived);
+        const fundingAcc = (state.accounts || []).find(a => String(a.id) === fundingId && a.type === 'asset' && !a.archived);
+        const amount = Math.round(Math.abs(Number(document.getElementById('tx-amount')?.value) || 0) * 100) / 100;
+        const principal = Math.round(Math.abs(Number(document.getElementById('tx-debt-principal')?.value) || 0) * 100) / 100;
+        if (!debt || !fundingAcc || amount <= 0 || principal > amount + 0.005) {
+          alert('Choose the debt account and funding account for this reversal, and enter a valid split. Principal cannot exceed the reversal amount. No changes were made.'); return;
+        }
+        const date = document.getElementById('tx-date')?.value || existing.date;
+        if (!date) { alert('Enter a valid reversal date. No changes were made.'); return; }
+        const vendor = (document.getElementById('tx-vendor')?.value || '').trim() || existing.vendor || existing.desc || 'Debt payment reversal';
+        const desc = (document.getElementById('tx-desc')?.value || '').trim();
+        captureUndo(`Edit debt payment reversal split "${vendor}"`);
+        applyTransactionBalanceEffect(existing, -1);
+        existing.date = date;
+        existing.vendor = vendor;
+        existing.desc = desc || existing.desc || vendor;
+        existing.amount = amount;
+        existing.accountId = fundingId;
+        existing.debtAccountId = targetId;
+        existing.debtPrincipalAmount = principal;
+        existing.debtInterestAmount = Math.round((amount - principal) * 100) / 100;
+        existing.category = 'Debt Payment';
+        existing.subcategory = document.getElementById('tx-subcategory')?.value || existing.subcategory || existing.paymentType || 'Line of Credit Payment';
+        existing.paymentType = existing.subcategory;
+        // Keep reversal provenance/linkage intact; this is not a new payment.
+        applyTransactionBalanceEffect(existing, 1);
+        saveData();
+        closeTransactionModal();
+        renderDebtPaymentHistory(); renderLedger(); renderDashboard(); renderDebtPlanner();
+        return;
+      }
+      const linkedBill = existing?.calendarBillId ? (state.calendarBills || []).find(b=>String(b.id)===String(existing.calendarBillId)) : null;
+      const linkedBillOwner = existing ? getCalendarBillsLinkedToTransactionId(existing.id) : [];
       const target=document.getElementById('tx-debt-target');
       const funding=document.getElementById('tx-account');
       const debt=state.accounts.find(a=>String(a.id)===String(target?.value)&&a.type==='debt');
       const fundingAcc=state.accounts.find(a=>String(a.id)===String(funding?.value)&&a.type==='asset'&&!a.archived);
+      if(existing && existing.type!=='Expense'){alert('Only an Expense can be converted into a debt payment.');return;}
+      if(existing?.calendarBillId && (!linkedBill || linkedBill.type!=='debt' || linkedBillOwner.length!==1 || String(linkedBillOwner[0].id)!==String(linkedBill.id) || String(resolveDebtAccountForBill(linkedBill)?.id||'')!==String(debt?.id||''))){alert('This scheduled payment can only be converted when it is linked to one valid debt-type calendar item for the selected debt account. Review the scheduled item before converting it.');return;}
       const amount=Math.round((Number(document.getElementById('tx-amount').value)||0)*100)/100;
       const principal=Math.round((Number(document.getElementById('tx-debt-principal').value)||0)*100)/100;
       if(!debt || !fundingAcc || amount<=0 || principal>amount){alert('Choose a debt account and an asset funding account, and enter a valid principal amount no greater than the total payment.');return;}
@@ -20837,9 +21120,17 @@ function openTransactionModal(requestedEditId = null) {
         return `<div class="rounded-xl border p-3 flex flex-col justify-between gap-2 bg-white dark:bg-gray-900"><div class="flex items-start justify-between gap-3"><div class="min-w-0"><strong>${name}</strong><p class="text-gray-500 mt-1">${desc}</p><p class="text-[10px] text-gray-400 mt-1">${action}</p></div><span class="font-bold whitespace-nowrap ${count?'text-amber-600':'fh-status-income'}">${count} ${count?'to review':'clear'}</span></div>${actionHtml}</div>`;
       }).join('');
     }
+    let financialReviewExceptionRegisterInitialized=false;
+    function initializeFinancialReviewExceptionRegister(){
+      const host=document.getElementById('financial-review-exception-list');
+      if(!host)return false;
+      financialReviewExceptionRegisterInitialized=true;
+      renderFinancialReviewExceptionRegister();
+      return true;
+    }
     function switchCheckInPanel(panel){
-      ['monthly','yearly','history'].forEach(key=>{const section=document.getElementById(`checkin-panel-${key}`),tab=document.getElementById(`checkin-tab-${key}`);if(section)section.classList.toggle('hidden',key!==panel);if(tab){tab.classList.toggle('is-active',key===panel);}});
-      if(panel==='yearly')renderYearEndClose();if(panel==='history')renderCheckInSnapshotHistory();
+      ['monthly','yearly','history','exceptions'].forEach(key=>{const section=document.getElementById(`checkin-panel-${key}`),tab=document.getElementById(`checkin-tab-${key}`);if(section)section.classList.toggle('hidden',key!==panel);if(tab){tab.classList.toggle('is-active',key===panel);}});
+      if(panel==='yearly')renderYearEndClose();if(panel==='history')renderCheckInSnapshotHistory();if(panel==='exceptions'){initializeFinancialReviewExceptionRegister();requestAnimationFrame(()=>initializeFinancialReviewExceptionRegister());}
     }
     // Close history is an append-only event ledger. The monthlyCloseSnapshots/yearEndSnapshots
     // maps remain as compatibility projections for existing screens and reports; closeHistory
@@ -22876,7 +23167,15 @@ html.dark body[data-finhub-theme] .fh-status-income-fill{background:var(--fh-sta
   function applyAccountActivityColumnWidths(widthOverride){
     const table=getTable();if(!table)return;
     const header=table.querySelector('thead tr');if(!header)return;
-    const widths=widthOverride||getWidths();
+    const savedWidths=widthOverride||getWidths();
+    const wrapper=table.closest('.overflow-auto');
+    const naturalTotal=COLUMNS.reduce((sum,column)=>sum+savedWidths[column.key],0);
+    // Fill the available ledger width on desktop without shrinking user-sized
+    // columns on narrow screens. Saved widths remain unchanged in storage.
+    const available=wrapper ? wrapper.clientWidth : 0;
+    const targetTotal=Math.max(naturalTotal,available);
+    const scale=naturalTotal>0 ? targetTotal/naturalTotal : 1;
+    const widths={};COLUMNS.forEach(column=>{widths[column.key]=Math.round(savedWidths[column.key]*scale);});
     const total=COLUMNS.reduce((sum,column)=>sum+widths[column.key],0);
     table.style.tableLayout='fixed';table.style.width=total+'px';table.style.minWidth=total+'px';table.style.maxWidth='none';
     [...header.children].forEach((th,index)=>{
@@ -22898,7 +23197,7 @@ html.dark body[data-finhub-theme] .fh-status-income-fill{background:var(--fh-sta
         });
       });
     });
-    const wrapper=table.closest('.overflow-auto');if(wrapper)wrapper.style.overflowX='auto';
+    if(wrapper)wrapper.style.overflowX='auto';
   }
   function initAccountColumnResize(){
     const table=getTable();if(!table)return;
@@ -25952,6 +26251,7 @@ body[data-finhub-theme] .fh-content-card-header {
 <script id="fh-info-popover-foundation-script">
 (function(){
   const INFO={
+    'opening-balance':{title:'Opening balance',body:"This is the account balance at the start of its recorded activity. Saving a change adjusts the current account balance by the same difference; it does not create a transaction."},
     'bucket-migration':{title:'Sinking Funds opening-balance note',body:'Existing savings-goal balances were carried into the Sinking Funds buckets during setup. Any remaining cash in the linked savings account stays unallocated. Check the real account balance against the combined bucket balances before making further allocations.'},
     'bucket-balances':{title:'How bucket balances work',body:'Your real account balance is controlled by Accounts and the Transaction Log. Record deposits, transfers and spending there first. Then use Allocate or Release to update the virtual breakdown. Bucket actions do not create bank transactions or change account balances. Allocated bucket balances are excluded from Available to Spend when their linked accounts are selected.'},
     'budget-structure':{title:'Budget integrity review',body:'This review validates budget structure and arithmetic. It does not confirm that planned income will be received or that budget allocations have been funded in a bank account.'},
@@ -30528,5 +30828,359 @@ button[aria-describedby="acc-opening-balance-tooltip"]:focus-visible,
   flex:none !important;
 }
 </style>
+<style id="finhub-v215-account-summary-layout">
+/* v215: keep Account Actions distinct from the balance cards and give the
+   summary a predictable, compact grid at desktop and tablet widths. */
+#account-detail-modal #account-settings-summary > div {
+  display:flex !important;
+  flex-direction:column !important;
+  gap:.65rem !important;
+  padding:.7rem !important;
+}
+#account-detail-modal #account-settings-summary > div > .flex {
+  width:100% !important;
+  align-items:center !important;
+  justify-content:flex-end !important;
+  gap:.55rem !important;
+  padding:.45rem .55rem !important;
+  border:1px solid var(--fh-border,rgba(130,100,160,.22)) !important;
+  border-radius:.7rem !important;
+}
+#account-detail-modal #account-settings-summary #acc-detail-balance-summary {
+  display:grid !important;
+  grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+  gap:.55rem !important;
+  width:100% !important;
+}
+#account-detail-modal #account-settings-summary #acc-detail-balance-summary > .acc-balance-summary-card {
+  min-width:0 !important;
+  padding:.65rem .7rem !important;
+  border:1px solid var(--fh-border,rgba(130,100,160,.22)) !important;
+  border-radius:.7rem !important;
+  background:var(--fh-surface-raised,var(--fh-raised,transparent)) !important;
+}
+#account-detail-modal #account-settings-summary #acc-detail-balance-summary .acc-balance-summary-label {
+  line-height:1.25 !important;
+  min-height:1.6em;
+}
+@media(max-width:900px) {
+  #account-detail-modal #account-settings-summary #acc-detail-balance-summary {
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  }
+}
+@media(max-width:520px) {
+  #account-detail-modal #account-settings-summary > div > .flex {
+    align-items:stretch !important;
+    flex-wrap:wrap !important;
+  }
+  #account-detail-modal #account-settings-summary #acc-detail-balance-summary {
+    grid-template-columns:minmax(0,1fr) !important;
+  }
+}
+</style>
+
+<style id="finhub-v215-description-only-transaction-links">
+/* The Description field is the explicit editor link; Vendor and the rest of
+   each row remain selectable text rather than misleading click targets. */
+#ledger-table-container tbody#ledger-rows tr[data-transaction-id],
+#account-detail-modal tbody#acc-detail-rows tr.acc-activity-row { cursor:default !important; }
+#ledger-table-container tbody#ledger-rows td[data-label="Description"] a,
+#account-detail-modal tbody#acc-detail-rows td:nth-child(3) button { cursor:pointer !important; }
+</style>
+
+
+<style id="finhub-v217-account-summary-single-row-and-ledger-fill">
+/* v217: all five account balance summary cards stay on one aligned desktop row. */
+@media (min-width:901px) {
+  #account-detail-modal #account-settings-summary #acc-detail-balance-summary {
+    display:grid !important;
+    grid-template-columns:repeat(5,minmax(0,1fr)) !important;
+    align-items:stretch !important;
+    width:100% !important;
+  }
+  #account-detail-modal #account-settings-summary #acc-detail-balance-summary > .acc-balance-summary-card {
+    min-width:0 !important;
+    width:auto !important;
+    height:100% !important;
+    box-sizing:border-box !important;
+  }
+}
+#account-detail-modal #acc-activity-table {
+  border-collapse:separate !important;
+  border-spacing:0 !important;
+}
+#account-detail-modal #acc-activity-table thead th {
+  white-space:nowrap !important;
+  vertical-align:middle !important;
+}
+#account-detail-modal #acc-activity-table tbody td,
+#account-detail-modal #acc-activity-table tfoot td {
+  vertical-align:middle !important;
+  overflow-wrap:anywhere;
+}
+</style>
+
+
+
+<style id="finhub-v218-account-modal-balanced-width-and-padding">
+/* v218: give the account activity modal deliberate margins and internal breathing room. */
+#account-detail-modal {
+  padding:clamp(1rem,2vw,1.5rem) !important;
+  box-sizing:border-box !important;
+}
+#account-detail-modal > .fh-modal-surface {
+  width:min(90vw,86rem) !important;
+  max-width:min(90vw,86rem) !important;
+  height:92dvh !important;
+  max-height:92dvh !important;
+  padding:1rem 1.1rem !important;
+  box-sizing:border-box !important;
+  margin:0 auto !important;
+  gap:.65rem !important;
+}
+#account-detail-modal #account-settings-summary {
+  margin:0 !important;
+  flex:0 0 auto !important;
+}
+#account-detail-modal #account-settings-summary > div {
+  padding:.7rem .8rem !important;
+}
+#account-detail-modal > .fh-modal-surface > .overflow-auto {
+  min-width:0 !important;
+  width:100% !important;
+  border-radius:.7rem !important;
+}
+#account-detail-modal #acc-activity-table {
+  width:100% !important;
+  min-width:0 !important;
+  table-layout:fixed !important;
+}
+#account-detail-modal #acc-activity-table th:nth-child(1),
+#account-detail-modal #acc-activity-table td:nth-child(1) { width:10% !important; }
+#account-detail-modal #acc-activity-table th:nth-child(2),
+#account-detail-modal #acc-activity-table td:nth-child(2) { width:23% !important; }
+#account-detail-modal #acc-activity-table th:nth-child(3),
+#account-detail-modal #acc-activity-table td:nth-child(3) { width:25% !important; }
+#account-detail-modal #acc-activity-table th:nth-child(4),
+#account-detail-modal #acc-activity-table td:nth-child(4) { width:13% !important; }
+#account-detail-modal #acc-activity-table th:nth-child(5),
+#account-detail-modal #acc-activity-table td:nth-child(5) { width:13% !important; }
+#account-detail-modal #acc-activity-table th:nth-child(6),
+#account-detail-modal #acc-activity-table td:nth-child(6) { width:16% !important; }
+@media(max-width:900px) {
+  #account-detail-modal > .fh-modal-surface {
+    width:calc(100vw - 2rem) !important;
+    max-width:calc(100vw - 2rem) !important;
+    padding:.75rem !important;
+  }
+  #account-detail-modal > .fh-modal-surface > .overflow-auto {
+    overflow-x:auto !important;
+  }
+  #account-detail-modal #acc-activity-table { min-width:48rem !important; }
+}
+@media(max-width:520px) {
+  #account-detail-modal { padding:.5rem !important; }
+  #account-detail-modal > .fh-modal-surface {
+    width:calc(100vw - 1rem) !important;
+    max-width:calc(100vw - 1rem) !important;
+    height:calc(100dvh - 1rem) !important;
+    max-height:calc(100dvh - 1rem) !important;
+    padding:.6rem !important;
+  }
+}
+</style>
+
+
+<style id="finhub-v220-account-modal-narrower-width">
+/* v220: bring the account dialog in further while retaining usable ledger space. */
+@media (min-width:901px) {
+  #account-detail-modal > .fh-modal-surface {
+    width:min(70vw,68rem) !important;
+    max-width:min(70vw,68rem) !important;
+    padding:1rem 1.1rem !important;
+  }
+}
+</style>
+<style id="finhub-v220-account-summary-native-toggle">
+/* Let the native details/summary control own its open state. Keep the
+   disclosure affordance visible and above the panel content. */
+#account-detail-modal #account-settings-summary {
+  position:relative !important;
+  isolation:isolate !important;
+}
+#account-detail-modal #account-settings-summary > summary {
+  position:relative !important;
+  z-index:2 !important;
+  display:flex !important;
+  align-items:center !important;
+  min-height:2.35rem !important;
+  padding-right:2.5rem !important;
+  cursor:pointer !important;
+  user-select:none !important;
+  list-style:none !important;
+}
+#account-detail-modal #account-settings-summary > summary::-webkit-details-marker {
+  display:none !important;
+}
+#account-detail-modal #account-settings-summary > summary::marker {
+  content:"" !important;
+}
+#account-detail-modal #account-settings-summary > summary::after {
+  content:"";
+  position:absolute;
+  right:.9rem;
+  top:50%;
+  width:.48rem;
+  height:.48rem;
+  border-right:2px solid currentColor;
+  border-bottom:2px solid currentColor;
+  transform:translateY(-68%) rotate(45deg);
+  transition:transform .16s ease;
+  opacity:.8;
+  pointer-events:none;
+}
+#account-detail-modal #account-settings-summary[open] > summary::after {
+  transform:translateY(-30%) rotate(225deg);
+}
+#account-detail-modal #account-settings-summary:not([open]) > div {
+  display:none !important;
+}
+</style>
+
+
+<style id="finhub-v221-summary-full-header-hitarea-no-chevron">
+/* v221: make the complete summary heading the disclosure hit area. The
+   floating action group must not create an invisible overlay over the title. */
+#account-detail-modal #account-settings-summary {
+  position:relative!important;
+}
+#account-detail-modal #account-settings-summary > summary {
+  position:relative!important;
+  z-index:20!important;
+  width:100%!important;
+  box-sizing:border-box!important;
+  cursor:pointer!important;
+  -webkit-user-select:none!important;
+  user-select:none!important;
+}
+/* No decorative chevron: the archive/edit controls occupy this corner. */
+#account-detail-modal #account-settings-summary > summary::after {
+  content:none!important;
+  display:none!important;
+}
+/* Keep the action wrapper to its actual contents, not a full-width overlay. */
+#account-detail-modal #account-settings-summary > div > .flex {
+  z-index:21!important;
+  width:max-content!important;
+  max-width:max-content!important;
+  left:auto!important;
+  pointer-events:none!important;
+}
+#account-detail-modal #account-settings-summary > div > .flex > div:last-child,
+#account-detail-modal #account-settings-summary .acc-detail-action-btn {
+  pointer-events:auto!important;
+}
+</style>
+
+
+<style id="finhub-v225-add-account-modal-compact-layout">
+/* v225: keep the Add/Edit Account dialog compact instead of inheriting the
+   generic tablet rule that stretches every modal surface toward the viewport. */
+#account-modal {
+  box-sizing:border-box !important;
+  padding:1rem !important;
+  align-items:center !important;
+  justify-content:center !important;
+  overflow-y:auto !important;
+}
+#account-modal > .fh-modal-surface {
+  box-sizing:border-box !important;
+  width:min(31rem, calc(100vw - 2rem)) !important;
+  max-width:31rem !important;
+  max-height:calc(100dvh - 2rem) !important;
+  margin:0 auto !important;
+  padding:1rem !important;
+  overflow-x:hidden !important;
+  overflow-y:auto !important;
+  border-radius:1rem !important;
+  gap:.8rem !important;
+}
+#account-modal > .fh-modal-surface > h3 {
+  margin:0 !important;
+  font-size:1.15rem !important;
+  line-height:1.3 !important;
+}
+#account-modal #account-form {
+  display:flex !important;
+  flex-direction:column !important;
+  gap:.7rem !important;
+  min-width:0 !important;
+}
+#account-modal #account-form > div {
+  min-width:0 !important;
+}
+#account-modal #account-form label {
+  display:block !important;
+  margin-bottom:.3rem !important;
+  font-size:.78rem !important;
+  line-height:1.35 !important;
+  font-weight:650 !important;
+}
+#account-modal #account-form :is(input,select) {
+  box-sizing:border-box !important;
+  width:100% !important;
+  min-width:0 !important;
+  max-width:100% !important;
+  min-height:2.55rem !important;
+  padding:.5rem .7rem !important;
+  border-radius:.75rem !important;
+  font-size:.9rem !important;
+  line-height:1.3 !important;
+}
+#account-modal #account-form > .grid {
+  gap:.7rem !important;
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+}
+#account-modal #account-form > .flex {
+  display:grid !important;
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  gap:.65rem !important;
+  padding-top:.15rem !important;
+  margin:0 !important;
+}
+#account-modal #account-form > .flex button {
+  box-sizing:border-box !important;
+  width:100% !important;
+  min-width:0 !important;
+  min-height:2.55rem !important;
+  padding:.55rem .7rem !important;
+  border-radius:.75rem !important;
+  font-size:.9rem !important;
+}
+@media(max-width:520px) {
+  #account-modal {padding:.6rem !important;}
+  #account-modal > .fh-modal-surface {
+    width:100% !important;
+    max-width:31rem !important;
+    max-height:calc(100dvh - 1.2rem) !important;
+    padding:.85rem !important;
+  }
+  #account-modal #account-form > .grid {grid-template-columns:minmax(0,1fr) !important;}
+}
+</style>
+
 </body>
 </html>
+
+<style id="finhub-v227-financial-review-and-monthly-budget-layout">
+.fh-monthly-total-card{min-width:0;padding:.7rem .75rem;border:1px solid var(--fh-card-border,var(--fh-border,#334155));border-radius:.75rem;background:var(--fh-card-bg,rgba(148,163,184,.06));}
+.fh-monthly-total-card>div{font-size:.68rem;color:var(--fh-muted,#94a3b8);margin-bottom:.2rem;}
+.fh-monthly-total-card>strong{display:block;font-size:clamp(.78rem,1vw,.95rem);font-weight:750;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+#financial-review-exception-list .fh-integrity-exception-row{border:1px solid var(--fh-card-border,var(--fh-border,#334155));border-radius:.8rem;padding:.75rem;background:var(--fh-card-bg,rgba(148,163,184,.035));}
+#financial-review-exception-list .fh-integrity-exception-row>summary{list-style:none;}
+#financial-review-exception-list .fh-integrity-exception-row>summary::-webkit-details-marker{display:none;}
+#financial-review-exception-list .fh-integrity-exception-row[open]>summary .fa-chevron-down{transform:rotate(180deg);}
+#financial-review-exception-list .fh-integrity-exception-row summary .fa-chevron-down{transition:transform .15s ease;}
+#financial-review-exception-register .fh-disclosure-trigger{gap:1rem;}
+@media(max-width:640px){.fh-monthly-total-card{padding:.6rem;}.fh-monthly-total-card>strong{font-size:.78rem;}#financial-review-exception-register .fh-disclosure-trigger{align-items:flex-start;}}
+</style>
