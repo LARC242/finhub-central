@@ -1,4 +1,4 @@
-<!-- FinHub v238: Debt History Shared Open-Details Link + Vendor-First Calendar Labels -->
+<!-- FinHub v244: Mobile Calendar Info Compact + Centered Calendar Header Actions -->
 <!DOCTYPE html>
 
 <html class="dark" lang="en-US">
@@ -7935,9 +7935,9 @@ Bonus" rows="4"></textarea></div>
       host.innerHTML = `<div class="grid grid-cols-3 gap-2 mb-3 text-xs fh-scheduled-summary"><div class="rounded-lg fh-scheduled-card fh-scheduled-income p-2"><div class="fh-scheduled-label">Expected income</div><strong class="fh-scheduled-value accounting-num text-lg font-bold block mt-1">${formatFinancial(incomeTotal)}</strong></div><div class="rounded-lg fh-scheduled-card fh-scheduled-outflow p-2"><div class="fh-scheduled-label">Bills & debt</div><strong class="fh-scheduled-value accounting-num text-lg font-bold block mt-1">${formatFinancial(billTotal,true)}</strong></div><div class="rounded-lg fh-scheduled-card fh-scheduled-net ${incomeTotal-billTotal>=0?'fh-scheduled-net-positive':'fh-scheduled-net-negative'} p-2"><div class="fh-scheduled-label">Net scheduled</div><strong class="fh-scheduled-value accounting-num text-lg font-bold block mt-1">${formatFinancial(incomeTotal-billTotal)}</strong></div></div>` + items.map(b => {
         const income = b.type === 'income';
         const label = income ? 'Payday / Income' : b.type === 'debt' ? 'Debt payment' : 'Bill';
-        return `<div class="flex flex-wrap items-center justify-between gap-2 p-3 rounded-xl bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 text-xs">
-          <div class="min-w-0"><div class="font-semibold truncate">${escapeHtml(b.desc || b.vendor || label)}</div><div class="text-gray-400">${formatDateMDY(b.date)} · ${label}</div>${b.vendor && b.type !== 'debt' ? `<div class="text-gray-500 text-[10px] mt-0.5">Vendor: ${escapeHtml(b.vendor)}</div>` : ''}</div>
-          <div class="flex flex-wrap items-center justify-end gap-2"><div class="text-right"><div class="font-bold accounting-num ${income ? 'finhub-money-in' : 'finhub-money-out'}">${formatFinancial(outstandingAmount(b), !income)}</div>${getCalendarBillSettlement(b).paidCents>0?`<div class="text-[10px] text-amber-600">${formatFinancial(getCalendarBillSettlement(b).paidCents/100)} paid so far</div>`:''}</div>
+        return `<div class="fh-dashboard-upcoming-item flex flex-wrap items-center justify-between gap-2 p-3 rounded-xl bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 text-xs">
+          <div class="fh-dashboard-upcoming-title min-w-0"><div class="font-semibold truncate">${escapeHtml(b.desc || b.vendor || label)}</div><div class="text-gray-400">${formatDateMDY(b.date)} · ${label}</div>${b.vendor && b.type !== 'debt' ? `<div class="text-gray-500 text-[10px] mt-0.5">Vendor: ${escapeHtml(b.vendor)}</div>` : ''}</div>
+          <div class="fh-dashboard-upcoming-actions flex flex-wrap items-center justify-end gap-2"><div class="fh-dashboard-upcoming-amount text-right"><div class="font-bold accounting-num ${income ? 'finhub-money-in' : 'finhub-money-out'}">${formatFinancial(outstandingAmount(b), !income)}</div>${getCalendarBillSettlement(b).paidCents>0?`<div class="text-[10px] text-amber-600">${formatFinancial(getCalendarBillSettlement(b).paidCents/100)} paid so far</div>`:''}</div>
           <button type="button" onclick="markDashboardCalendarItemPaid(decodeURIComponent('${encodeURIComponent(String(b.id))}'))" class="px-2.5 py-1.5 rounded-lg ${income?' ':' '} text-white text-[11px] font-semibold whitespace-nowrap">${income?'Record Income':'Record Payment'}</button>
           <button type="button" onclick="openDashboardCalendarItem(decodeURIComponent('${encodeURIComponent(String(b.id))}'))" class="text-indigo-500  font-semibold whitespace-nowrap" title="Open this item in the Calendar"><i class="fa-solid fa-arrow-up-right-from-square"></i></button></div>
         </div>`;
@@ -31286,6 +31286,56 @@ button[aria-describedby="acc-opening-balance-tooltip"]:focus-visible,
 }
 </style>
 
+
+
+<!-- FinHub v243: Mobile upcoming-item action alignment -->
+<style id="finhub-v243-mobile-upcoming-action-alignment">
+@media (max-width: 600px) {
+  #sec-dashboard-upcoming-content .fh-dashboard-upcoming-item {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    align-items: start !important;
+    gap: .55rem !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+  #sec-dashboard-upcoming-content .fh-dashboard-upcoming-title {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+  #sec-dashboard-upcoming-content .fh-dashboard-upcoming-actions {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto auto !important;
+    align-items: center !important;
+    justify-content: end !important;
+    justify-items: end !important;
+    gap: .45rem !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+  #sec-dashboard-upcoming-content .fh-dashboard-upcoming-amount {
+    justify-self: start !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    text-align: left !important;
+    overflow-wrap: anywhere !important;
+  }
+  #sec-dashboard-upcoming-content .fh-dashboard-upcoming-actions > button {
+    justify-self: end !important;
+    white-space: nowrap !important;
+  }
+  #sec-dashboard-upcoming-content .fh-dashboard-upcoming-actions > button:last-child {
+    width: 2rem !important;
+    min-width: 2rem !important;
+    text-align: center !important;
+  }
+}
+@media (max-width: 380px) {
+  #sec-dashboard-upcoming-content .fh-dashboard-upcoming-actions { gap: .3rem !important; }
+  #sec-dashboard-upcoming-content .fh-dashboard-upcoming-actions > button:first-of-type { padding-left: .5rem !important; padding-right: .5rem !important; font-size: .65rem !important; }
+}
+</style>
+
 </body>
 </html>
 
@@ -31538,6 +31588,84 @@ button[aria-describedby="acc-opening-balance-tooltip"]:focus-visible,
     justify-self: start !important;
     max-width: 100% !important;
     white-space: normal !important;
+  }
+}
+</style>
+
+
+<style id="finhub-v244-mobile-calendar-info-and-header-actions">
+/* v244: Compact the payment detail bubble and centre Calendar page actions beneath its heading on phones only. */
+@media (max-width: 640px) {
+  /* Calendar page title remains first; its action buttons sit neatly below it. */
+  #tab-calendar > div:first-child {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: .7rem !important;
+    text-align: center !important;
+  }
+  #tab-calendar > div:first-child > div:first-child {
+    width: 100% !important;
+    min-width: 0 !important;
+    text-align: center !important;
+  }
+  #tab-calendar > div:first-child .fh-page-title,
+  #tab-calendar > div:first-child .fh-page-blurb {
+    text-align: center !important;
+  }
+  #tab-calendar > div:first-child > div:last-child {
+    width: 100% !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: .45rem !important;
+  }
+  #tab-calendar > div:nth-child(2) {
+    justify-content: center !important;
+    flex-wrap: wrap !important;
+  }
+  #tab-calendar > div:nth-child(2) > button {
+    flex: 0 1 auto !important;
+  }
+
+  /* Less padding and vertical whitespace, while retaining readable amounts. */
+  body > #fh-calendar-payment-details-overlay {
+    padding: .55rem !important;
+  }
+  body > #fh-calendar-payment-details-overlay > section[role="dialog"] {
+    width: min(100%, 22rem) !important;
+    max-width: calc(100vw - 1.1rem) !important;
+    padding: .85rem !important;
+    gap: .65rem !important;
+    border-radius: 1.1rem !important;
+  }
+  body > #fh-calendar-payment-details-overlay > section[role="dialog"] > header {
+    gap: .4rem !important;
+  }
+  body > #fh-calendar-payment-details-overlay #fh-calendar-payment-title {
+    font-size: .95rem !important;
+    line-height: 1.2 !important;
+  }
+  body > #fh-calendar-payment-details-overlay .fh-payment-status {
+    padding: .25rem .55rem !important;
+    font-size: .72rem !important;
+    line-height: 1.15 !important;
+  }
+  body > #fh-calendar-payment-details-overlay > section[role="dialog"] > div.space-y-3 {
+    gap: .45rem !important;
+  }
+  body > #fh-calendar-payment-details-overlay > section[role="dialog"] > div.space-y-3 > div {
+    font-size: .82rem !important;
+    column-gap: .45rem !important;
+  }
+  body > #fh-calendar-payment-details-overlay > section[role="dialog"] > div.space-y-3 > div > strong {
+    font-size: .82rem !important;
+  }
+  body > #fh-calendar-payment-details-overlay > section[role="dialog"] > footer button {
+    padding: .48rem .9rem !important;
+    font-size: .8rem !important;
   }
 }
 </style>
