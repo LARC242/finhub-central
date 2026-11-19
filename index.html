@@ -31323,3 +31323,104 @@ button[aria-describedby="acc-opening-balance-tooltip"]:focus-visible,
   }
 }
 </style>
+
+
+<!-- FinHub v241: Mobile page-header alignment and calendar info dialog positioning -->
+<style id="finhub-v241-mobile-header-and-calendar-dialog">
+@media (max-width: 767px) {
+  /* Use the centered page-heading treatment consistently across mobile pages. */
+  body#app-body > main .tab-content > .fh-page-header,
+  body#app-body > main .tab-content > .flex.flex-wrap.items-end.justify-between.gap-3,
+  body#app-body > main .tab-content > .flex.flex-col.md\:flex-row.md\:items-center,
+  body#app-body > main .tab-content > .dashboard-heading {
+    text-align: center !important;
+  }
+  body#app-body > main .tab-content > .fh-page-header .fh-page-header-copy,
+  body#app-body > main .tab-content > .fh-page-header-copy,
+  body#app-body > main .tab-content > .flex.flex-wrap.items-end.justify-between.gap-3 > div:first-child,
+  body#app-body > main .tab-content > .dashboard-heading {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    text-align: center !important;
+  }
+  body#app-body > main .tab-content > .fh-page-header .fh-page-header-title,
+  body#app-body > main .tab-content > .fh-page-header-copy h2,
+  body#app-body > main .tab-content > .flex.flex-wrap.items-end.justify-between.gap-3 > div:first-child > h2.fh-page-title,
+  body#app-body > main .tab-content > .dashboard-heading h2 {
+    width: 100% !important;
+    text-align: center !important;
+  }
+  body#app-body > main .tab-content > .fh-page-header .fh-page-header-description,
+  body#app-body > main .tab-content > .fh-page-header-copy p,
+  body#app-body > main .tab-content > .flex.flex-wrap.items-end.justify-between.gap-3 > div:first-child > p,
+  body#app-body > main .tab-content > .dashboard-heading p {
+    margin-left: auto !important;
+    margin-right: auto !important;
+    text-align: center !important;
+  }
+  /* Header actions remain centered beneath the page title instead of being squeezed beside it. */
+  body#app-body > main .tab-content > .flex.flex-wrap.items-end.justify-between.gap-3 {
+    justify-content: center !important;
+    align-items: center !important;
+  }
+  body#app-body > main .tab-content > .flex.flex-wrap.items-end.justify-between.gap-3 > button {
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  /* The payment details overlay is appended directly to body. Give it a true viewport
+     positioning context and center the dialog within the visible mobile viewport. */
+  body > #fh-calendar-payment-details-overlay {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    max-width: 100vw !important;
+    max-height: 100dvh !important;
+    box-sizing: border-box !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    place-items: center !important;
+    padding: max(.75rem, env(safe-area-inset-top)) max(.75rem, env(safe-area-inset-right)) max(.75rem, env(safe-area-inset-bottom)) max(.75rem, env(safe-area-inset-left)) !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    z-index: 10050 !important;
+  }
+  body > #fh-calendar-payment-details-overlay > section[role=\"dialog\"] {
+    position: relative !important;
+    inset: auto !important;
+    justify-self: center !important;
+    align-self: center !important;
+    width: min(100%, 25rem) !important;
+    max-width: calc(100vw - 1.5rem) !important;
+    min-width: 0 !important;
+    max-height: calc(100dvh - 1.5rem - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+    margin: auto !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+  }
+  body > #fh-calendar-payment-details-overlay > section[role=\"dialog\"] > header {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    align-items: start !important;
+    gap: .5rem !important;
+  }
+  body > #fh-calendar-payment-details-overlay #fh-calendar-payment-title {
+    overflow-wrap: anywhere !important;
+    text-align: left !important;
+  }
+  body > #fh-calendar-payment-details-overlay .fh-payment-status {
+    grid-column: 1 / -1 !important;
+    justify-self: start !important;
+    max-width: 100% !important;
+    white-space: normal !important;
+  }
+}
+</style>
