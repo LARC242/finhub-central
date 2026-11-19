@@ -951,6 +951,13 @@
       #tab-biweekly > .grid.grid-cols-1.sm\\:grid-cols-3.gap-3 > div { padding:.65rem; }
       #tab-biweekly .fh-planner-paired-sections { grid-template-columns:1fr; }
     }
+
+/* Mobile-only Paycheque Planner action alignment. */
+@media (max-width: 680px) {
+  .fh-planner-section > summary > .flex.flex-wrap.gap-2 { justify-content:flex-end !important; width:100%; }
+  .fh-planner-section > summary > .flex.flex-wrap.gap-2 > button { margin-left:auto; }
+}
+
 </style>
 <style id="finhub-v3-mobile-ledger">
     @media (max-width: 640px) {
@@ -4361,6 +4368,178 @@ body[data-finhub-theme] .fh-ledger-view-toggle:focus-visible {
   #account-detail-modal tr.acc-activity-row:hover { background:color-mix(in srgb,var(--fh-primary) 8%,transparent); }
   #account-detail-modal tr.acc-activity-row:focus-visible { outline:2px solid var(--fh-focus,var(--fh-primary)); outline-offset:-2px; }
 </style>
+<!-- FinHub v247: backup action theme styling, open-only exception default, safe metadata edits for settled scheduled items. -->
+
+<style id="finhub-v248-available-to-spend-dialog-responsive">
+/* Available to Spend: controlled dialog sizing on desktop and mobile.
+   Scoped to this dialog so no other modal or theme is affected. */
+#available-to-spend-modal {
+  padding: clamp(1rem, 3vh, 2rem) !important;
+  overflow-y: auto !important;
+}
+#available-to-spend-modal > .fh-modal-surface {
+  width: min(100%, 44rem) !important;
+  max-width: 44rem !important;
+  max-height: min(48rem, calc(100dvh - 3rem)) !important;
+  min-width: 0 !important;
+  margin: auto !important;
+  padding: 1.35rem !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1rem !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+#available-to-spend-modal > .fh-modal-surface > .flex:first-child {
+  align-items: flex-start !important;
+  flex: 0 0 auto !important;
+  min-width: 0 !important;
+  gap: 1rem !important;
+}
+#available-to-spend-modal-accessible-title {
+  line-height: 1.2 !important;
+  overflow-wrap: anywhere !important;
+}
+#available-to-spend-modal > .fh-modal-surface > .flex:first-child > div {
+  min-width: 0 !important;
+}
+#available-to-spend-modal > .fh-modal-surface > .flex:first-child > button {
+  flex: 0 0 auto !important;
+  min-width: 2.5rem !important;
+  min-height: 2.5rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border: 1px solid var(--fh-border) !important;
+  border-radius: .65rem !important;
+  background: var(--fh-raised) !important;
+  color: var(--fh-ink) !important;
+}
+#available-to-spend-account-list {
+  flex: 1 1 auto !important;
+  min-height: 8rem !important;
+  max-height: min(22rem, 38dvh) !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
+}
+#available-to-spend-modal > .fh-modal-surface > .rounded-xl {
+  flex: 0 0 auto !important;
+  min-width: 0 !important;
+  padding: 1rem !important;
+}
+#available-to-spend-modal > .fh-modal-surface > .rounded-xl p {
+  line-height: 1.45 !important;
+  overflow-wrap: anywhere !important;
+}
+#available-to-spend-modal > .fh-modal-surface > .flex.items-center.justify-between {
+  flex: 0 0 auto !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: .75rem 1rem !important;
+  min-width: 0 !important;
+  padding-top: .25rem !important;
+}
+#available-to-spend-modal-total {
+  flex: 1 1 18rem !important;
+  min-width: 0 !important;
+  line-height: 1.45 !important;
+  overflow-wrap: anywhere !important;
+}
+#available-to-spend-modal > .fh-modal-surface > .flex.items-center.justify-between > button {
+  flex: 0 0 auto !important;
+  min-width: 6rem !important;
+  background: var(--fh-primary) !important;
+  color: var(--fh-on-primary, #fff) !important;
+  border: 1px solid var(--fh-primary) !important;
+}
+@media (max-width: 639px) {
+  #available-to-spend-modal {
+    padding: .5rem !important;
+    align-items: center !important;
+  }
+  #available-to-spend-modal > .fh-modal-surface {
+    width: calc(100vw - 1rem) !important;
+    max-width: 30rem !important;
+    max-height: calc(100dvh - 1rem) !important;
+    padding: .9rem !important;
+    gap: .8rem !important;
+    border-radius: 1rem !important;
+  }
+  #available-to-spend-modal > .fh-modal-surface > .flex:first-child {
+    gap: .6rem !important;
+  }
+  #available-to-spend-modal-accessible-title {
+    font-size: 1.1rem !important;
+  }
+  #available-to-spend-modal > .fh-modal-surface > .flex:first-child p {
+    font-size: .78rem !important;
+    line-height: 1.35 !important;
+  }
+  #available-to-spend-account-list {
+    flex: 0 1 auto !important;
+    min-height: 7rem !important;
+    max-height: 32dvh !important;
+  }
+  #available-to-spend-account-list > * {
+    min-width: 0 !important;
+  }
+  #available-to-spend-modal > .fh-modal-surface > .rounded-xl {
+    padding: .8rem !important;
+    gap: .55rem !important;
+  }
+  #available-to-spend-modal > .fh-modal-surface > .rounded-xl label {
+    line-height: 1.35 !important;
+  }
+  #available-to-spend-modal > .fh-modal-surface > .rounded-xl p {
+    font-size: .72rem !important;
+  }
+  #available-to-spend-modal > .fh-modal-surface > .flex.items-center.justify-between {
+    align-items: stretch !important;
+    flex-direction: column !important;
+    gap: .65rem !important;
+  }
+  #available-to-spend-modal-total {
+    flex: 0 0 auto !important;
+    font-size: .72rem !important;
+  }
+  #available-to-spend-modal > .fh-modal-surface > .flex.items-center.justify-between > button {
+    width: 100% !important;
+    min-height: 2.65rem !important;
+  }
+}
+</style>
+
+
+<style id="finhub-v249-paycheque-header-action-alignment">
+/* Keep Paycheque Planner header actions grouped at the right edge,
+   immediately before the section expand/collapse chevron. */
+#tab-biweekly .fh-planner-section > summary.fh-planner-summary {
+  flex-wrap: wrap;
+}
+#tab-biweekly .fh-planner-section > summary.fh-planner-summary > div:first-child {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+#tab-biweekly .fh-planner-section > summary.fh-planner-summary > button {
+  margin-left: auto;
+  flex: 0 0 auto;
+}
+#tab-biweekly .fh-planner-section > summary.fh-planner-summary > .flex.flex-wrap.gap-2 {
+  width: auto !important;
+  margin-left: auto;
+  justify-content: flex-end !important;
+  flex: 0 1 auto;
+}
+#tab-biweekly .fh-planner-section > summary.fh-planner-summary::after {
+  margin-left: .9rem;
+}
+@media (max-width: 680px) {
+  #tab-biweekly .fh-planner-section > summary.fh-planner-summary > .flex.flex-wrap.gap-2 {
+    width: auto !important;
+    margin-left: auto;
+  }
+}
+</style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 min-h-screen flex flex-col md:flex-row transition-colors duration-200 relative" id="app-body">
 <!-- UNDO TOAST NOTIFICATION -->
@@ -4603,7 +4782,7 @@ body[data-finhub-theme] .fh-ledger-view-toggle:focus-visible {
 <div class="fh-reorderable-section rounded-xl" id="financial-close-data-health"><h4 class="font-semibold text-sm mb-2">Data Health &amp; Integrity</h4><details class="fh-disclosure" data-fh-drag-ready="false" id="data-health-details" open=""><summary class="fh-disclosure-trigger"><span><strong class="text-sm">Data Health &amp; Integrity</strong><span class="block text-xs text-gray-500 mt-1">Read-only checks for common data quality issues</span></span></summary><div class="fh-disclosure-panel p-4"><div class="flex items-center justify-between gap-2 mb-3"><p class="text-xs text-gray-500">These checks flag records for review; they do not change your data.</p><button class="border rounded-lg px-3 py-1.5 text-xs" onclick="renderDataHealth()" type="button">Run checks</button></div><div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs" id="data-health-results"></div></div></details></div>
 
 </div>
-<div class="hidden space-y-4" id="checkin-panel-exceptions"><div class="fh-reorderable-section rounded-xl" id="financial-review-exception-register"><details class="fh-disclosure" id="financial-review-exceptions-details" open=""><summary class="fh-disclosure-trigger"><span><strong class="text-sm">Exception Register</strong><span class="block text-xs text-gray-500 mt-1">Track issues identified across FinHub until a later check confirms they are resolved.</span></span><span class="text-xs font-semibold text-gray-500" id="financial-review-exception-count">0 open · 0 resolved</span></summary><div class="fh-disclosure-panel p-4 space-y-3"><div class="flex flex-wrap items-center justify-between gap-2"><p class="text-xs text-gray-500">Reviewing an exception records a reason; it does not clear the issue. Exceptions resolve only when a subsequent check no longer finds them.</p><div class="flex gap-2"><select id="financial-review-exception-filter" class="fh-standard-control rounded-lg border px-2 py-1 text-xs" onchange="renderFinancialReviewExceptionRegister()"><option value="all">All statuses</option><option value="open">Open</option><option value="reviewed">Under review</option><option value="resolved">Resolved</option></select><select id="financial-review-exception-severity" class="fh-standard-control rounded-lg border px-2 py-1 text-xs" onchange="renderFinancialReviewExceptionRegister()"><option value="all">All levels</option><option value="error">Errors</option><option value="warning">Warnings</option><option value="info">Info</option></select></div></div><div id="financial-review-exception-list" class="space-y-2"><p class="text-xs text-gray-500">Loading saved exceptions…</p></div><p class="text-[10px] text-gray-500">Exception history is retained locally and is append-only in this file, but is not tamper-proof.</p></div></details></div></div>
+<div class="hidden space-y-4" id="checkin-panel-exceptions"><div class="fh-reorderable-section rounded-xl" id="financial-review-exception-register"><details class="fh-disclosure" id="financial-review-exceptions-details" open=""><summary class="fh-disclosure-trigger"><span><strong class="text-sm">Exception Register</strong><span class="block text-xs text-gray-500 mt-1">Track issues identified across FinHub until a later check confirms they are resolved.</span></span><span class="text-xs font-semibold text-gray-500" id="financial-review-exception-count">0 open · 0 resolved</span></summary><div class="fh-disclosure-panel p-4 space-y-3"><div class="flex flex-wrap items-center justify-between gap-2"><p class="text-xs text-gray-500">Reviewing an exception records a reason; it does not clear the issue. Exceptions resolve only when a subsequent check no longer finds them.</p><div class="flex gap-2"><select id="financial-review-exception-filter" class="fh-standard-control rounded-lg border px-2 py-1 text-xs" onchange="renderFinancialReviewExceptionRegister()"><option value="open" selected>Open issues</option><option value="reviewed">Under review</option><option value="resolved">Resolved history</option><option value="all">All statuses</option></select><select id="financial-review-exception-severity" class="fh-standard-control rounded-lg border px-2 py-1 text-xs" onchange="renderFinancialReviewExceptionRegister()"><option value="all">All levels</option><option value="error">Errors</option><option value="warning">Warnings</option><option value="info">Info</option></select></div></div><div id="financial-review-exception-list" class="space-y-2"><p class="text-xs text-gray-500">Loading saved exceptions…</p></div><p class="text-[10px] text-gray-500">Exception history is retained locally and is append-only in this file, but is not tamper-proof.</p></div></details></div></div>
 <div class="hidden space-y-4" id="checkin-panel-yearly"><div class="space-y-3"><details class="fh-disclosure" data-global-collapsible="true"><summary class="fh-disclosure-trigger"><span>Year-End Review</span><span class="global-collapsible-description">Review the full year, confirm monthly close coverage and save a year-end snapshot.</span></summary><div class="fh-disclosure-panel p-4 space-y-3"><div class="flex flex-wrap items-center justify-between gap-2"><div><h3 class="text-sm font-bold">Year-End Close</h3><p class="text-xs text-gray-500">Review the year, work through the checklist and save a snapshot. Closing does not lock transactions.</p></div><div class="flex gap-2"><input class="border rounded-lg px-2 py-1 text-xs w-24" id="year-end-period" max="2200" min="2000" type="number"/><button class="border rounded-lg px-3 py-1 text-xs" onclick="refreshYearEndCloseReview()" type="button">Refresh review</button></div></div><div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs" id="year-end-summary"></div><div class="rounded-xl bg-gray-50 dark:bg-gray-950 p-3 space-y-2"><div class="flex items-center justify-between text-sm font-semibold"><span id="year-end-progress-label">0 of 8 complete</span><span id="year-end-progress-percent">0%</span></div><div class="h-2.5 rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden"><div class="h-full rounded-full fh-theme-progress" id="year-end-progress-bar" style="width:0%"></div></div></div><div class="space-y-2 text-xs" id="year-end-checklist"></div><div class="flex flex-wrap gap-2"><button class="px-3 py-2 rounded-lg text-xs fh-theme-primary-button" onclick="completeYearEndClose()">Save year-end snapshot</button><button class="hidden px-3 py-2 border rounded-lg text-xs" id="year-end-reopen" onclick="reopenYearEndClose()">Reopen year</button></div><div class="text-xs text-gray-500" id="year-end-history"></div></div></details></div></div>
 <div class="hidden space-y-4" id="checkin-panel-history"><div class="rounded-2xl border border-gray-200 dark:border-gray-800 p-4"><h3 class="text-lg font-bold mb-3">Snapshot History</h3><div class="overflow-x-auto" id="checkin-snapshot-history"></div></div></div>
 </section>
@@ -5236,6 +5415,11 @@ body[data-finhub-theme] .fh-ledger-view-toggle:focus-visible {
 </summary>
 <div class="fh-settings-subsection-content"><div class="flex justify-end"><button class="fh-action-button fh-action-button-primary px-3 py-1 rounded-lg text-xs font-semibold" onclick="event.preventDefault();openMerchantRuleModal()"><i class="fa-solid fa-plus mr-1"></i> Add Rule</button></div><div class="space-y-2" id="merchant-rules-list"></div></div>
 </details>
+<!-- INCOME PAYER AUTO-TAGGING RULES -->
+<details class="fh-settings-subsection" id="settings-income-vendor-rules-details">
+<summary class="list-none cursor-pointer flex flex-wrap justify-between items-center gap-3 border-b fh-theme-border pb-3"><span><span class="text-md font-bold theme-text">Income Payer Auto-Tagging Rules</span><span class="ml-2 text-xs fh-theme-muted" id="settings-income-vendor-rules-count"></span></span><span class="flex items-center gap-3"><span class="text-xs fh-theme-muted">Click to expand</span><i class="fa-solid fa-chevron-down fh-theme-muted"></i></span></summary>
+<div class="fh-settings-subsection-content"><div class="flex justify-end"><button class="fh-action-button fh-action-button-primary px-3 py-1 rounded-lg text-xs font-semibold" onclick="event.preventDefault();openIncomeVendorRuleModal()"><i class="fa-solid fa-plus mr-1"></i> Add Rule</button></div><div class="space-y-2" id="income-vendor-rules-list"></div></div>
+</details>
 <!-- VENDOR NAME CLEANUP RULES -->
 <div class="fh-theme-surface p-6 rounded-2xl border fh-theme-border space-y-4 shadow-sm">
 <div class="flex flex-wrap justify-between items-center gap-2 border-b fh-theme-border pb-3"><div><h3 class="text-md font-bold">Vendor Name Cleanup Rules</h3><p class="text-xs fh-theme-muted mt-1">Turn bank descriptions such as “TIM HORTONS #0048 OTTAWA ON” into consistent vendor names.</p></div><div class="flex gap-2"><button class="fh-action-button fh-action-button-secondary px-3 py-1.5 rounded-lg text-xs font-semibold" onclick="applyVendorCleanupToExisting()">Apply to existing</button><button class="fh-action-button fh-action-button-primary px-3 py-1.5 rounded-lg text-xs font-semibold" onclick="openVendorRuleModal()"><i class="fa-solid fa-plus mr-1"></i>Add rule</button></div></div>
@@ -5625,6 +5809,17 @@ Bonus" rows="4"></textarea></div>
 </form>
 </div>
 </div>
+<!-- MODAL: INCOME VENDOR AUTO-TAG RULE -->
+<div aria-labelledby="income-vendor-rule-modal-title" aria-modal="true" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50" id="income-vendor-rule-modal" role="dialog">
+<div class="dark:border-gray-800 w-full max-w-md space-y-4 fh-modal-surface">
+<h3 class="text-lg font-bold" id="income-vendor-rule-modal-title">Add Income Vendor Auto-Tag Rule</h3>
+<input id="ivr-edit-index" type="hidden" value="-1"/>
+<form class="space-y-3" id="income-vendor-rule-form" onsubmit="saveIncomeVendorRule(event)">
+<div><label class="block text-xs font-semibold text-gray-500 mb-1">Payer / Vendor Keyword</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="ivr-keyword" placeholder="e.g. Employer Name" required="" type="text"/></div>
+<div><label class="block text-xs font-semibold text-gray-500 mb-1">Income Category</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="ivr-category"></select></div>
+<div><label class="block text-xs font-semibold text-gray-500 mb-1">Subcategory</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="ivr-subcategory" placeholder="e.g. Salary" type="text"/></div>
+<div class="flex space-x-3 pt-3"><button class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel fh-modal-secondary-action" onclick="closeIncomeVendorRuleModal()" type="button">Cancel</button><button class="flex-1 py-2 text-white rounded-xl text-sm font-semibold theme-bg" type="submit">Save Rule</button></div>
+</form></div></div>
 <!-- MODAL: ADD / EDIT ZBB ITEM WITH DOLLAR OR PCT SPLIT -->
 <div aria-labelledby="zbb-modal-title" aria-modal="true" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50" id="zbb-item-modal" role="dialog">
 <div class="dark:border-gray-800 w-full max-w-md space-y-4 fh-modal-surface">
@@ -5898,7 +6093,7 @@ Bonus" rows="4"></textarea></div>
 <select aria-hidden="true" class="hidden" id="tx-type" onchange="updateTransactionTypeFields()" tabindex="-1"></select>
 </div><div class="tx-two-column-row grid grid-cols-2 gap-3 items-start" id="tx-vendor-amount-row"><div>
 <div class="tx-field-header flex items-center justify-between gap-2 mb-1 min-w-0"><label class="block text-xs font-semibold text-gray-500 whitespace-nowrap shrink-0" id="tx-vendor-label">Vendor <span class="text-rose-500">*</span></label><div class="tx-vendor-actions flex items-center justify-end gap-2 min-w-0"><button aria-hidden="true" class="fh-inline-action text-[10px] font-semibold text-indigo-500 whitespace-nowrap shrink-0 leading-tight" disabled="" hidden="" onclick="applySavedVendorCleanupToForm()" type="button">Apply saved cleanup</button><button aria-hidden="true" class="fh-inline-action text-[10px] font-semibold text-indigo-500 whitespace-nowrap shrink-0 leading-tight" disabled="" hidden="" onclick="openVendorRuleModalFromTransaction()" type="button">Create cleanup rule</button></div></div>
-<input class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="tx-vendor" oninput="applySmartMerchantRules(this.value)" placeholder="e.g. Costco" required="" type="text"/>
+<input class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="tx-vendor" oninput="if(document.getElementById('tx-type')?.value==='Income') applySmartIncomeVendorRules(this.value); else applySmartMerchantRules(this.value)" placeholder="e.g. Costco" required="" type="text"/>
 </div><div id="tx-amount-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Total Amount ($)</label><input 0.01"="" class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="tx-amount" min="0.01" oninput="updateInlineDebtSplit(false); if(document.getElementById('tx-is-split')?.value==='true') updateSplitRemainderPreview(); step=" step="0.01" type="number"/></div></div>
 <div aria-live="polite" class="hidden col-span-2 -mt-2 pl-1 text-[10px] leading-none whitespace-nowrap text-emerald-600 dark:text-emerald-400" id="tx-category-rule-match-indicator"><i aria-hidden="true" class="fa-solid fa-circle-check mr-1"></i><span id="tx-category-rule-match-text">Saved rule applied</span></div>
 </div>
@@ -6627,6 +6822,7 @@ Bonus" rows="4"></textarea></div>
       showHiddenAccounts: true,
       netWorthSnapshots: [],
       merchantRules: [],
+      incomeVendorRules: [],
       importRules: [],
       statementCsvMappings: {},
       vendorCleanupRules: [],
@@ -6687,6 +6883,7 @@ Bonus" rows="4"></textarea></div>
     state.statementReconciliation.groups = Array.isArray(state.statementReconciliation.groups) ? state.statementReconciliation.groups : [];
     state.vendorCleanupRules = Array.isArray(state.vendorCleanupRules) ? state.vendorCleanupRules : [];
     state.merchantRules = Array.isArray(state.merchantRules) ? state.merchantRules : [];
+    state.incomeVendorRules = Array.isArray(state.incomeVendorRules) ? state.incomeVendorRules : [];
     state.importRules = Array.isArray(state.importRules) ? state.importRules : [];
     state.statementCsvMappings = state.statementCsvMappings && typeof state.statementCsvMappings === 'object' ? state.statementCsvMappings : {};
     // Income buckets are stored separately from expense buckets. Preserve any legacy
@@ -8446,7 +8643,7 @@ Bonus" rows="4"></textarea></div>
         const expectedCents = hasOpening && openingCents !== null ? openingCents + totalDeltaCents : null;
         const varianceCents = expectedCents !== null && currentCents !== null ? currentCents - expectedCents : null;
         const issues = accountIssues.get(id) || [];
-        if (!hasOpening) issues.push({severity:'warning',message:'No saved opening balance; the current balance cannot be independently verified from recorded activity.'});
+        if (!hasOpening) issues.push({severity:'info',message:'No saved opening balance has been recorded. This is an informational baseline status, not a balance error; enter an opening balance if you want this account independently verified.'});
         if (currentCents === null) issues.push({severity:'error',message:'Stored account balance is not a valid safe currency amount.'});
         if (hasOpening && openingCents === null) issues.push({severity:'error',message:'Saved opening balance is not a valid safe currency amount.'});
         if (!supported) issues.push({severity:'error',message:'One or more ledger amounts could not be safely reconstructed.'});
@@ -8479,9 +8676,9 @@ Bonus" rows="4"></textarea></div>
       const money = cents => cents === null || cents === undefined ? '—' : formatFinancial(cents/100);
       const statusLabel = {verified:'Verified',variance:'Variance', 'baseline-needed':'Baseline needed',review:'Review',exception:'Exception'};
       const rows = audit.results.map(r => {
-        const issueHtml = r.issues.length ? `<ul class="list-disc pl-4 space-y-1">${r.issues.map(i=>`<li class="${i.severity==='error'?'text-rose-600':'text-amber-600'}">${escapeHtml(i.message)}</li>`).join('')}</ul>` : '<span class="text-gray-400">No account-specific exceptions</span>';
+        const issueHtml = r.issues.length ? `<ul class="list-disc pl-4 space-y-1">${r.issues.map(i=>`<li class="${i.severity==='error'?'text-rose-600':i.severity==='warning'?'text-amber-600':'text-sky-600'}">${escapeHtml(i.message)}</li>`).join('')}</ul>` : '<span class="text-gray-400">No account-specific exceptions</span>';
         const variance = r.varianceCents === null ? '—' : money(r.varianceCents);
-        const statusClass = r.status==='verified'?'fh-status-income':(r.status==='exception'?'text-rose-600':'text-amber-600');
+        const statusClass = r.status==='verified'?'fh-status-income':(r.status==='exception'?'text-rose-600':r.status==='baseline-needed'?'text-sky-600':'text-amber-600');
         return `<tr class="border-t fh-theme-divider"><td class="px-3 py-2"><strong>${escapeHtml(r.name)}</strong><div class="text-[10px] text-gray-500">${escapeHtml(r.type)}${r.archived?' · archived':''}</div></td><td class="px-3 py-2 text-right accounting-num">${money(r.openingCents)}</td><td class="px-3 py-2 text-right accounting-num">${money(r.totalDeltaCents)}</td><td class="px-3 py-2 text-right accounting-num">${money(r.expectedCents)}</td><td class="px-3 py-2 text-right accounting-num">${money(r.currentCents)}</td><td class="px-3 py-2 text-right accounting-num">${variance}</td><td class="px-3 py-2"><strong class="${statusClass}">${statusLabel[r.status]}</strong><div class="text-[10px] text-gray-500">${r.activityCount} ledger effects</div><div class="mt-1 text-[10px]">${issueHtml}</div></td></tr>`;
       }).join('');
       const globalHtml = audit.globalIssues.length ? `<div class="mt-3 rounded-lg border border-rose-300/50 p-3 text-xs"><strong class="text-rose-600">Ledger-wide exceptions</strong><ul class="list-disc pl-4 mt-1">${audit.globalIssues.map(i=>`<li>${escapeHtml(i.message)}</li>`).join('')}</ul></div>` : '';
@@ -13023,10 +13220,10 @@ No payment links or balance changes were retained.`);
       const editId = document.getElementById('cal-edit-id').value;
       const recurring = document.getElementById('cal-recurring').value;
       const existingBill = editId ? state.calendarBills.find(b => b.id === editId) : null;
-      if (existingBill?.paid) {
-        alert('This bill is already settled. Reverse or delete its payment transaction(s) before changing its financial details.');
-        return;
-      }
+      // Settled items may still need non-financial maintenance (for example,
+      // assigning a category). The linked-payment guard below protects amount,
+      // transaction type and debt-account/principal details without blocking
+      // safe metadata edits such as category, subcategory, vendor or due date.
       const existingPayments = existingBill ? getCalendarBillPaymentTransactions(existingBill) : [];
       const existingMissingPaymentLinks = existingBill ? getCalendarBillSettlement(existingBill).missingIds : [];
       if (existingBill && (existingPayments.length || existingMissingPaymentLinks.length)) {
@@ -14163,8 +14360,20 @@ No payment links or balance changes were retained.`);
     let ledgerFilterSearchTerms = {};
     let activeLedgerFilter = null;
     let activeLedgerFilterTrigger = null;
+    function ledgerTransactionAccountIds(t) {
+      // Include every account participating in a ledger transaction, not only
+      // the primary/funding account. This makes account filtering bidirectional
+      // for transfers and includes the liability account on debt-payment entries.
+      return [...new Set([t.accountId, t.transferToAccountId, t.debtAccountId]
+        .filter(id => id !== undefined && id !== null && String(id) !== '')
+        .map(id => String(id)))];
+    }
+    function ledgerTransactionAccountNames(t) {
+      const ids = new Set(ledgerTransactionAccountIds(t));
+      return (state.accounts || []).filter(a => ids.has(String(a.id))).map(a => String(a.name || '(Unnamed account)'));
+    }
     function ledgerFilterValue(t, key) {
-      const acc = state.accounts.find(a => a.id === t.accountId);
+      const acc = state.accounts.find(a => String(a.id) === String(t.accountId));
       if (key === 'date') return formatDateMDY(t.date);
       if (key === 'vendor') return t.vendor || '(No vendor)';
       if (key === 'desc') return t.desc || '(No description)';
@@ -14750,8 +14959,8 @@ No payment links or balance changes were retained.`);
       renderLedgerActiveFilterChips();
       const matchedTxs = state.transactions.filter(t => {
         if (globalSearch) {
-          const accountName = (state.accounts.find(a => String(a.id) === String(t.accountId)) || {}).name || '';
-          const haystack = [t.vendor, t.desc, t.category, t.subcategory, t.type, accountName, t.amount, t.date].join(' ').toLowerCase();
+          const accountNames = ledgerTransactionAccountNames(t).join(' ');
+          const haystack = [t.vendor, t.desc, t.category, t.subcategory, t.type, accountNames, t.amount, t.date].join(' ').toLowerCase();
           if (!haystack.includes(globalSearch)) return false;
         }
         if (!window.closeLedgerFilterPeriod) {
@@ -14773,7 +14982,10 @@ No payment links or balance changes were retained.`);
           const value = ledgerFilterValue(t, filterKey);
           const selected = ledgerFilterSelections[filterKey] || [];
           if (selected.length) {
-            if ((filterKey === 'category' || filterKey === 'subcategory') && t.type === 'Expense' && Array.isArray(t.splits) && t.splits.length) {
+            if (filterKey === 'account') {
+              const associatedNames = ledgerTransactionAccountNames(t);
+              if (!associatedNames.some(name => selected.includes(name))) return false;
+            } else if ((filterKey === 'category' || filterKey === 'subcategory') && t.type === 'Expense' && Array.isArray(t.splits) && t.splits.length) {
               const hasAllocationMatch = t.splits.some(a => {
                 const allocationValue = filterKey === 'category' ? (a.category || '(Uncategorized)') : (a.subcategory || '(No subcategory)');
                 const otherKey = filterKey === 'category' ? 'subcategory' : 'category';
@@ -14786,7 +14998,8 @@ No payment links or balance changes were retained.`);
           }
           const searchTerm = ledgerFilterSearchTerms[filterKey] || '';
           if (searchTerm) {
-            const normalizedValue = String(value).toLowerCase().replace(/[,$]/g, '').replace(/[()]/g, '');
+            const searchableValue = filterKey === 'account' ? ledgerTransactionAccountNames(t).join(' ') : value;
+            const normalizedValue = String(searchableValue).toLowerCase().replace(/[,$]/g, '').replace(/[()]/g, '');
             const normalizedTerm = searchTerm.toLowerCase().replace(/[,$]/g, '').replace(/[()]/g, '');
             if (!normalizedValue.includes(normalizedTerm)) return false;
           }
@@ -17141,6 +17354,14 @@ No payment links or balance changes were retained.`);
         `;
       });
 
+      const incomeRules = state.incomeVendorRules || [];
+      const incomeRulesCount = document.getElementById('settings-income-vendor-rules-count');
+      if (incomeRulesCount) incomeRulesCount.textContent = `(${incomeRules.length} rules)`;
+      const incomeRulesList = document.getElementById('income-vendor-rules-list');
+      if (incomeRulesList) {
+        incomeRulesList.innerHTML = incomeRules.map((r, idx) => `<div class="flex flex-wrap justify-between items-center gap-2 bg-gray-50 dark:bg-gray-950 p-2.5 rounded-xl text-xs"><div><strong>${escapeHtml(r.keyword)}</strong> &rarr; <span class="text-indigo-400 theme-text">${escapeHtml(r.category)}${r.subcategory ? ' : ' + escapeHtml(r.subcategory) : ''}</span></div><div class="flex gap-3"><button onclick="openIncomeVendorRuleModal(${idx})" class="text-indigo-400" title="Edit income rule"><i class="fa-solid fa-pen"></i></button><button onclick="deleteIncomeVendorRule(${idx})" class="text-rose-500" title="Delete income rule"><i class="fa-solid fa-trash"></i></button></div></div>`).join('') || '<p class="text-xs text-gray-400">No income payer rules yet.</p>';
+      }
+
       const vendorRulesList = document.getElementById('vendor-cleanup-rules-list');
       if (vendorRulesList) {
         vendorRulesList.innerHTML = '';
@@ -17293,6 +17514,57 @@ No payment links or balance changes were retained.`);
       captureUndo(`Delete income bucket "${bucket.name}"`);
       state.incomeCategories.splice(idx, 1); if (state.lastUsedIncomeCategory === bucket.name) delete state.lastUsedIncomeCategory;
       saveData(); renderSettings(); renderLedger(); renderDashboard();
+    }
+
+    function openIncomeVendorRuleModal(editIndex = -1) {
+      const select = document.getElementById('ivr-category');
+      select.innerHTML = (state.incomeCategories || []).map(c => `<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`).join('');
+      document.getElementById('income-vendor-rule-form').reset();
+      document.getElementById('ivr-edit-index').value = String(editIndex);
+      const existing = editIndex >= 0 ? (state.incomeVendorRules || [])[editIndex] : null;
+      document.getElementById('income-vendor-rule-modal-title').textContent = existing ? 'Edit Income Payer Auto-Tag Rule' : 'Add Income Payer Auto-Tag Rule';
+      if (existing) { document.getElementById('ivr-keyword').value = existing.keyword || ''; document.getElementById('ivr-category').value = existing.category || ''; document.getElementById('ivr-subcategory').value = existing.subcategory || ''; }
+      document.getElementById('income-vendor-rule-modal').classList.remove('hidden');
+    }
+    function closeIncomeVendorRuleModal() { document.getElementById('income-vendor-rule-modal').classList.add('hidden'); }
+    function saveIncomeVendorRule(e) {
+      e.preventDefault();
+      const keyword = document.getElementById('ivr-keyword').value.trim();
+      const category = document.getElementById('ivr-category').value;
+      const subcategory = document.getElementById('ivr-subcategory').value.trim();
+      if (!keyword || !category) return;
+      state.incomeVendorRules = state.incomeVendorRules || [];
+      const idx = Number(document.getElementById('ivr-edit-index').value);
+      captureUndo(idx >= 0 ? 'Edit income payer rule' : 'Add income payer rule');
+      const rule = {keyword, category, subcategory};
+      if (idx >= 0 && state.incomeVendorRules[idx]) state.incomeVendorRules[idx] = rule;
+      else { const old = state.incomeVendorRules.find(r => normalizeStatementText(r.keyword) === normalizeStatementText(keyword)); if (old) Object.assign(old, rule); else state.incomeVendorRules.unshift(rule); }
+      saveData(); closeIncomeVendorRuleModal(); renderSettings();
+    }
+    function deleteIncomeVendorRule(idx) { if (!state.incomeVendorRules?.[idx]) return; captureUndo('Delete income payer rule'); state.incomeVendorRules.splice(idx, 1); saveData(); renderSettings(); }
+    function applySmartIncomeVendorRules(value) {
+      const type = document.getElementById('tx-type')?.value;
+      if (type !== 'Income') return;
+      const vendor = document.getElementById('tx-vendor');
+      const category = document.getElementById('tx-category');
+      const subcategory = document.getElementById('tx-subcategory');
+      const indicator = document.getElementById('tx-category-rule-match-indicator');
+      if (!category || !subcategory) return;
+      const normalized = normalizeStatementText(value || '');
+      const rule = (state.incomeVendorRules || []).filter(r => normalizeStatementText(r.keyword) && normalized.includes(normalizeStatementText(r.keyword))).sort((a,b) => normalizeStatementText(b.keyword).length - normalizeStatementText(a.keyword).length)[0];
+      if (!rule) {
+        if (vendor?.dataset.autoIncomeRuleCategory && category.value === vendor.dataset.autoIncomeRuleCategory && subcategory.value === (vendor.dataset.autoIncomeRuleSubcategory || '')) { category.value = ''; refreshTransactionBucketOptions(''); subcategory.value = ''; }
+        if (vendor) { delete vendor.dataset.autoIncomeRuleCategory; delete vendor.dataset.autoIncomeRuleSubcategory; }
+        indicator?.classList.add('hidden'); return;
+      }
+      refreshTransactionBucketOptions(rule.category);
+      category.value = rule.category;
+      updateSubcategoryDropdown();
+      subcategory.value = rule.subcategory || '';
+      if (vendor) { vendor.dataset.autoIncomeRuleCategory = rule.category; vendor.dataset.autoIncomeRuleSubcategory = rule.subcategory || ''; }
+      const text = document.getElementById('tx-category-rule-match-text');
+      if (text) text.textContent = 'Saved income rule applied';
+      indicator?.classList.remove('hidden');
     }
 
     function openTypeModal() { document.getElementById('type-modal').classList.remove('hidden'); }
@@ -19137,6 +19409,7 @@ No payment links or balance changes were retained.`);
       const selectedType = typeSelect?.value || '';
       let selectedCategory = categorySelect?.value || '';
       if(selectedType==='Expense') applySmartMerchantRules(document.getElementById('tx-vendor')?.value||'');
+      if(selectedType==='Income') applySmartIncomeVendorRules(document.getElementById('tx-vendor')?.value||'');
       const isTransfer = selectedType === 'Transfer';
       const isDebt = selectedType === 'Debt';
       // Dynamic terminology only; creditor remains separate from the liability account selector.
@@ -20609,6 +20882,7 @@ function openTransactionModal(requestedEditId = null) {
       state.statementReconciliation.groups = Array.isArray(state.statementReconciliation.groups) ? state.statementReconciliation.groups : [];
       state.vendorCleanupRules = Array.isArray(state.vendorCleanupRules) ? state.vendorCleanupRules : [];
       state.merchantRules = Array.isArray(state.merchantRules) ? state.merchantRules : [];
+    state.incomeVendorRules = Array.isArray(state.incomeVendorRules) ? state.incomeVendorRules : [];
       state.appVisualTheme = ['finhubblue','classic','silver','colorful','oceanpop','midnightpop','pastelbreeze','purplepulse','oceanslate','forestmint','custom'].includes(state.appVisualTheme) ? state.appVisualTheme : 'finhubblue';
       if (!isValidHexColor(state.appAccentHex)) delete state.appAccentHex;
       if (!isValidHexColor(state.appBackgroundHex)) delete state.appBackgroundHex;
@@ -21360,7 +21634,7 @@ function openTransactionModal(requestedEditId = null) {
 </div>
 <div class="p-4 border-t border-gray-200 dark:border-gray-800 flex flex-wrap justify-end gap-2">
 <button class="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-xs font-semibold fh-btn-cancel fh-modal-secondary-action" onclick="cancelBackupImportPreview()">Cancel</button>
-<button class="px-4 py-2 rounded-lg text-white text-xs font-semibold" onclick="confirmBackupImport()">Replace FinHub data</button>
+<button class="px-4 py-2 rounded-lg text-xs font-semibold finhub-action-save fh-modal-primary-action" onclick="confirmBackupImport()">Replace FinHub data</button>
 </div>
 </div>
 </div>
@@ -31669,3 +31943,5 @@ button[aria-describedby="acc-opening-balance-tooltip"]:focus-visible,
   }
 }
 </style>
+
+<!-- FinHub v246: Transaction Log account filter matches all associated accounts (transfer source/destination and debt account); based on v244. -->
