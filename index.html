@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 
-<html class="dark" lang="en">
+<html class="dark" lang="en-US">
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>FinHub Central - Financial Command Center</title>
-<meta content="stage3b-buttons-actions-number-typography-reporting-engine-v1" name="finhub-build-stage"/><meta content="v203-mobile-control-focus-styling" name="finhub-revision"/>
+<meta content="stage3b-buttons-actions-number-typography-reporting-engine-v1" name="finhub-build-stage"/><meta content="v209-date-format-standardization" name="finhub-revision"/>
 <meta content="2" name="finhub-schema-version"/>
 <link href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23132A44'/%3E%3Cpath d='M18 45V19h28v7H26v5h17v7H26v7z' fill='%2300FBEA'/%3E%3Ccircle cx='47' cy='16' r='7' fill='%23FF2687'/%3E%3Ccircle cx='15' cy='49' r='5' fill='%23D8FF76'/%3E%3C/svg%3E" rel="icon" type="image/svg+xml"/>
 <script src="https://cdn.tailwindcss.com"></script>
@@ -210,8 +210,6 @@
     }
 
     @media(max-width:640px) {
-      #ledger-mobile-cards { grid-template-columns:1fr !important; }
-      #ledger-mobile-cards .ledger-mobile-row { grid-template-columns:20px minmax(0,1fr) auto !important; }
     }
     .finhub-form-actions { display:flex; gap:.55rem; align-items:center; }
     .finhub-action-btn { flex:1 1 0; min-height:42px; padding:.65rem .9rem; border-radius:.75rem; font-size:.82rem; font-weight:700; text-align:center; border:1px solid transparent; }
@@ -986,32 +984,7 @@
 #ledger-column-options label { padding:.35rem !important; border-radius:.45rem !important; font-size:.65rem !important; }
 #ledger-summary { position:static !important; margin:1rem 0 0 !important; }
 </style>
-<style id="finhub-v9-ledger-cards">
-#ledger-mobile-cards {
-  display:grid !important;
-  grid-template-columns:repeat(auto-fit,minmax(min(100%,310px),1fr)) !important;
-  gap:.75rem !important; align-items:stretch !important; padding:.2rem 0 !important;
-}
-#ledger-mobile-cards.hidden { display:none !important; }
-#ledger-mobile-cards .ledger-mobile-row {
-  box-sizing:border-box !important; width:100% !important; min-width:0 !important;
-  display:grid !important; grid-template-columns:20px minmax(0,1fr) auto !important;
-  align-items:center !important; gap:.55rem !important; padding:.75rem !important;
-  margin:0 !important; border-radius:1rem !important; cursor:pointer;
-}
-#ledger-mobile-cards .ledger-mobile-row:hover { border-color:var(--fh-primary) !important; box-shadow:0 4px 14px rgba(15,23,42,.08) !important; }
-#ledger-mobile-cards .ledger-mobile-row:focus-visible { outline:2px solid var(--fh-primary) !important; outline-offset:3px !important; }
-#ledger-mobile-cards .ledger-mobile-row:focus-within { border-color:var(--fh-primary) !important; }
-#ledger-mobile-cards .ledger-mobile-date { font-size:.68rem !important; line-height:1.2 !important; color:inherit !important; opacity:.68; }
-#ledger-mobile-cards .ledger-mobile-vendor { font-size:.84rem !important; font-weight:700 !important; line-height:1.25 !important; overflow:hidden !important; text-overflow:ellipsis !important; white-space:nowrap !important; color:inherit !important; }
-#ledger-mobile-cards .ledger-mobile-amount { font-size:.8rem !important; font-weight:750 !important; white-space:nowrap !important; text-align:right !important; }
-#ledger-mobile-cards .ledger-mobile-details { grid-column:2 / -1; display:flex; flex-wrap:wrap; gap:.35rem .8rem; min-width:0; padding-top:.25rem; }
-#ledger-mobile-cards .ledger-mobile-field { min-width:0; max-width:100%; font-size:.68rem; line-height:1.3; overflow-wrap:anywhere; }
-#ledger-mobile-cards .ledger-mobile-field-label { display:inline; margin-right:.25rem; font-size:.58rem; font-weight:700; text-transform:uppercase; letter-spacing:.045em; opacity:.62; }
-#ledger-mobile-cards input[type=checkbox] { width:16px !important; height:16px !important; cursor:pointer; }
-#ledger-list-settings label { min-width:0; }
-@media (max-width:639px) { #ledger-mobile-cards { grid-template-columns:1fr !important; } }
-</style>
+
 <style id="finhub-v9-ledger-controls">
 #ledger-column-settings { margin:.3rem .45rem .45rem !important; padding:.55rem !important; border-radius:.6rem !important; }
 #ledger-column-settings > div:first-child { margin-bottom:.4rem !important; }
@@ -4317,6 +4290,52 @@ html body#app-body > aside#finhub-sidebar .sidebar-brand-copy h1 {
 }
 </style>
 
+<style id="finhub-v207-smart-matcher-and-ledger-toggle">
+body[data-finhub-theme] #cal-payment-match-workspace { min-width:0; }
+body[data-finhub-theme] #cal-payment-match-search { box-sizing:border-box; min-width:0; }
+body[data-finhub-theme] #cal-payment-match-search:focus { outline:2px solid var(--fh-primary); outline-offset:1px; }
+body[data-finhub-theme] .fh-calendar-match-card {
+  display:block; width:100%; min-width:0; padding:.65rem .7rem; text-align:left;
+  border:1px solid var(--fh-surface-border); border-radius:.7rem;
+  background:var(--fh-surface-raised); color:var(--fh-surface-text);
+  transition:border-color .12s ease, background-color .12s ease, box-shadow .12s ease;
+}
+body[data-finhub-theme] .fh-calendar-match-card:hover { border-color:var(--fh-primary); }
+body[data-finhub-theme] .fh-calendar-match-card.is-selected,
+body[data-finhub-theme] .fh-calendar-match-card[aria-pressed="true"] {
+  border-color:var(--fh-primary); background:var(--fh-surface-selected,var(--fh-surface-raised));
+  box-shadow:0 0 0 1px color-mix(in srgb,var(--fh-primary) 22%,transparent);
+}
+body[data-finhub-theme] .fh-calendar-match-badge {
+  display:inline-flex; align-items:center; border:1px solid var(--fh-surface-border);
+  border-radius:999px; padding:.12rem .42rem; font-size:9px; font-weight:700;
+  background:var(--fh-surface); color:var(--fh-primary);
+}
+body[data-finhub-theme] .fh-ledger-view-toggle-group {
+  display:inline-flex; align-items:center; gap:.2rem; padding:.22rem;
+  border:1px solid var(--fh-surface-border); border-radius:.8rem;
+  background:var(--fh-surface-raised); color:var(--fh-surface-text);
+}
+body[data-finhub-theme] .fh-ledger-view-toggle {
+  min-height:2rem; padding:.42rem .8rem; border:1px solid transparent;
+  border-radius:.58rem; background:transparent; color:var(--fh-muted);
+  font-size:.72rem; font-weight:650; line-height:1.15;
+  transition:background-color .12s ease,color .12s ease,border-color .12s ease;
+}
+body[data-finhub-theme] .fh-ledger-view-toggle.is-active {
+  background:var(--fh-action-primary,var(--fh-primary)); color:var(--fh-on-primary,#fff);
+  border-color:var(--fh-action-primary,var(--fh-primary));
+  box-shadow:0 1px 2px rgba(0,0,0,.12);
+}
+body[data-finhub-theme] .fh-ledger-view-toggle:focus-visible {
+  outline:2px solid var(--fh-primary); outline-offset:2px;
+}
+@media(max-width:640px) {
+  body[data-finhub-theme] #cal-payment-match-filters { gap:.35rem; }
+  body[data-finhub-theme] #cal-payment-match-filters .ledger-filter-button { font-size:.62rem; padding:.38rem .48rem; }
+  body[data-finhub-theme] .fh-calendar-match-card { padding:.6rem; }
+}
+</style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 min-h-screen flex flex-col md:flex-row transition-colors duration-200 relative" id="app-body">
 <!-- UNDO TOAST NOTIFICATION -->
@@ -4933,7 +4952,7 @@ html body#app-body > aside#finhub-sidebar .sidebar-brand-copy h1 {
 <details class="fh-disclosure">
 <summary class="fh-disclosure-trigger"><span>Debt Payment History</span><span class="global-collapsible-description">Recorded payments, principal, interest and funding accounts.</span></summary>
 <div class="fh-disclosure-panel p-4">
-<div class="flex flex-wrap gap-2 mb-3"><label class="text-xs fh-theme-muted flex items-center gap-1">From <input class="fh-theme-raised border fh-theme-border rounded-lg px-2 py-1.5" id="debt-history-from" onchange="renderDebtReporting()" type="date"/></label><label class="text-xs fh-theme-muted flex items-center gap-1">To <input class="fh-theme-raised border fh-theme-border rounded-lg px-2 py-1.5" id="debt-history-to" onchange="renderDebtReporting()" type="date"/></label></div>
+<div class="flex flex-wrap gap-2 mb-3"><label class="text-xs fh-theme-muted flex items-center gap-1">From <input class="fh-theme-raised border fh-theme-border rounded-lg px-2 py-1.5" id="debt-history-from" onchange="renderDebtReporting()" lang="en-US" type="date"/></label><label class="text-xs fh-theme-muted flex items-center gap-1">To <input class="fh-theme-raised border fh-theme-border rounded-lg px-2 py-1.5" id="debt-history-to" onchange="renderDebtReporting()" lang="en-US" type="date"/></label></div>
 <div class="overflow-x-auto"><table class="fh-data-table w-full min-w-[760px] text-left text-xs"><thead class="fh-theme-muted fh-theme-raised"><tr><th class="px-3 py-2"><div class="debt-filter-head">Date <button aria-label="Filter and sort Date" class="debt-filter-trigger" data-debt-filter-key="date" onclick="toggleDebtHistoryFilter('date',this)" title="Filter and sort Date" type="button"><i aria-hidden="true" class="fa-solid fa-filter debt-history-filter-icon"></i><i aria-hidden="true" class="fa-solid fa-chevron-down debt-history-chevron"></i></button></div></th><th class="px-3 py-2"><div class="debt-filter-head">Debt Account <button aria-label="Filter and sort Debt Account" class="debt-filter-trigger" data-debt-filter-key="debt" onclick="toggleDebtHistoryFilter('debt',this)" title="Filter and sort Debt Account" type="button"><i aria-hidden="true" class="fa-solid fa-filter debt-history-filter-icon"></i><i aria-hidden="true" class="fa-solid fa-chevron-down debt-history-chevron"></i></button></div></th><th class="px-3 py-2 text-right"><div class="debt-filter-head">Total Payment <button aria-label="Filter and sort Total Payment" class="debt-filter-trigger" data-debt-filter-key="amount" onclick="toggleDebtHistoryFilter('amount',this)" title="Filter and sort Total Payment" type="button"><i aria-hidden="true" class="fa-solid fa-filter debt-history-filter-icon"></i><i aria-hidden="true" class="fa-solid fa-chevron-down debt-history-chevron"></i></button></div></th><th class="px-3 py-2 text-right"><div class="debt-filter-head">Principal <button aria-label="Filter and sort Principal" class="debt-filter-trigger" data-debt-filter-key="principal" onclick="toggleDebtHistoryFilter('principal',this)" title="Filter and sort Principal" type="button"><i aria-hidden="true" class="fa-solid fa-filter debt-history-filter-icon"></i><i aria-hidden="true" class="fa-solid fa-chevron-down debt-history-chevron"></i></button></div></th><th class="px-3 py-2 text-right"><div class="debt-filter-head">Interest <button aria-label="Filter and sort Interest" class="debt-filter-trigger" data-debt-filter-key="interest" onclick="toggleDebtHistoryFilter('interest',this)" title="Filter and sort Interest" type="button"><i aria-hidden="true" class="fa-solid fa-filter debt-history-filter-icon"></i><i aria-hidden="true" class="fa-solid fa-chevron-down debt-history-chevron"></i></button></div></th><th class="px-3 py-2"><div class="debt-filter-head">Funding Account <button aria-label="Filter and sort Funding Account" class="debt-filter-trigger" data-debt-filter-key="funding" onclick="toggleDebtHistoryFilter('funding',this)" title="Filter and sort Funding Account" type="button"><i aria-hidden="true" class="fa-solid fa-filter debt-history-filter-icon"></i><i aria-hidden="true" class="fa-solid fa-chevron-down debt-history-chevron"></i></button></div></th><th class="px-3 py-2 text-right"><div class="debt-filter-head">Resulting Balance <button aria-label="Filter and sort Resulting Balance" class="debt-filter-trigger" data-debt-filter-key="balance" onclick="toggleDebtHistoryFilter('balance',this)" title="Filter and sort Resulting Balance" type="button"><i aria-hidden="true" class="fa-solid fa-filter debt-history-filter-icon"></i><i aria-hidden="true" class="fa-solid fa-chevron-down debt-history-chevron"></i></button></div></th><th class="px-3 py-2">Original</th></tr></thead><tbody class="divide-y fh-theme-divider" id="debt-report-history-rows"></tbody></table></div>
 <p class="hidden text-xs fh-theme-muted py-4" id="debt-report-history-empty">No recorded debt payments match these filters.</p>
 </div>
@@ -4966,9 +4985,9 @@ html body#app-body > aside#finhub-sidebar .sidebar-brand-copy h1 {
 <p class="text-sm fh-theme-muted fh-page-blurb">Search, filter, review and manage your transactions.</p>
 </div>
 <div class="flex items-center space-x-2">
-<div class="flex fh-theme-surface p-1 rounded-xl border fh-theme-border">
-<button class="px-3 py-1 rounded-lg text-xs font-semibold text-white theme-bg" id="ledger-view-table-btn" onclick="setLedgerView('table')">Table View</button>
-<button class="px-3 py-1 rounded-lg text-xs font-semibold fh-theme-muted" id="ledger-view-cal-btn" onclick="setLedgerView('list')">List View</button>
+<div class="fh-ledger-view-toggle-group" id="ledger-view-toggle-group" role="group" aria-label="Transaction display mode">
+<button aria-pressed="true" class="fh-ledger-view-toggle is-active" id="ledger-view-table-btn" onclick="setLedgerView('table')" type="button">Table View</button>
+<button aria-pressed="false" class="fh-ledger-view-toggle" id="ledger-view-cal-btn" onclick="setLedgerView('list')" type="button">List View</button>
 </div>
 </div>
 </div>
@@ -4977,7 +4996,7 @@ html body#app-body > aside#finhub-sidebar .sidebar-brand-copy h1 {
 <div aria-label="Transaction filter" class="hidden" id="ledger-filter-popover" role="dialog">
 <div class="p-3 border-b fh-theme-border flex items-center justify-between gap-2"><strong class="text-xs" id="ledger-filter-title">Filter</strong><button aria-label="Close filter" class="fh-theme-muted dark:" onclick="closeLedgerFilter()"><i class="fa-solid fa-xmark"></i></button></div>
 <div class="hidden px-3 pt-3" id="ledger-sort-options"></div>
-<div class="hidden px-3 pt-3" id="ledger-date-filter-controls"><div class="text-[10px] font-bold uppercase tracking-wide fh-theme-muted mb-2">Date range</div><label class="sr-only" for="ledger-period-preset">Period</label><select class="w-full border rounded-lg px-2.5 py-2 text-xs fh-theme-surface fh-theme-border" id="ledger-period-preset" onchange="setLedgerPeriodPreset(this.value)"><option selected="" value="all">All Dates</option><option value="current">This month</option><option value="last">Last month</option><option value="3months">Last 3 months</option><option value="year">This year</option><option value="custom">Custom range</option></select><div class="hidden flex flex-wrap items-center gap-1.5 mt-2" id="ledger-custom-date-range"><label class="text-[10px] fh-theme-muted" for="ledger-date-from">From</label><input class="border rounded-lg px-2 py-1.5 text-xs fh-theme-surface" id="ledger-date-from" onchange="renderLedger()" type="date"/><label class="text-[10px] fh-theme-muted" for="ledger-date-to">To</label><input class="border rounded-lg px-2 py-1.5 text-xs fh-theme-surface" id="ledger-date-to" onchange="renderLedger()" type="date"/></div></div>
+<div class="hidden px-3 pt-3" id="ledger-date-filter-controls"><div class="text-[10px] font-bold uppercase tracking-wide fh-theme-muted mb-2">Date range</div><label class="sr-only" for="ledger-period-preset">Period</label><select class="w-full border rounded-lg px-2.5 py-2 text-xs fh-theme-surface fh-theme-border" id="ledger-period-preset" onchange="setLedgerPeriodPreset(this.value)"><option selected="" value="all">All Dates</option><option value="current">This month</option><option value="last">Last month</option><option value="3months">Last 3 months</option><option value="year">This year</option><option value="custom">Custom range</option></select><div class="hidden flex flex-wrap items-center gap-1.5 mt-2" id="ledger-custom-date-range"><label class="text-[10px] fh-theme-muted" for="ledger-date-from">From</label><input class="border rounded-lg px-2 py-1.5 text-xs fh-theme-surface" id="ledger-date-from" onchange="renderLedger()" lang="en-US" type="date"/><label class="text-[10px] fh-theme-muted" for="ledger-date-to">To</label><input class="border rounded-lg px-2 py-1.5 text-xs fh-theme-surface" id="ledger-date-to" onchange="renderLedger()" lang="en-US" type="date"/></div></div>
 <div class="p-3"><input class="w-full fh-theme-raised border fh-theme-border rounded-lg px-3 py-2 text-xs" id="ledger-filter-search" oninput="updateLedgerFilterSearch(this.value)" placeholder="Search transactions or narrow options..." type="search"/></div>
 <div class="px-3 pb-2" id="ledger-filter-options"></div>
 <div class="p-3 border-t fh-theme-border flex justify-between items-center"><button class="text-[10px] fh-theme-muted hover:underline" onclick="clearActiveLedgerFilter()">Clear this filter</button><button class="px-3 py-1.5 rounded-lg text-white text-xs font-semibold theme-bg" onclick="closeLedgerFilter()">Done</button></div>
@@ -4995,7 +5014,7 @@ html body#app-body > aside#finhub-sidebar .sidebar-brand-copy h1 {
 <div class="flex items-center gap-1.5">
 <button class="ledger-subtle-control" id="ledger-auto-fit-all" onclick="autoFitLedgerColumns()" title="Fit all visible columns to the current table width" type="button"><i class="fa-solid fa-arrows-left-right-to-line mr-1"></i>Auto-Fit All</button>
 <button aria-expanded="false" class="ledger-subtle-control" id="ledger-table-options-toggle" onclick="toggleLedgerColumnSettings()" title="Show or hide table options" type="button"><i class="fa-solid fa-sliders mr-1"></i>Table options</button>
-<button aria-expanded="false" class="ledger-subtle-control hidden" id="ledger-list-options-toggle" onclick="toggleLedgerListSettings()" title="Choose details shown in List View" type="button"><i class="fa-solid fa-list-check mr-1"></i>List details</button>
+<button aria-expanded="false" class="ledger-subtle-control hidden" id="ledger-list-options-toggle" onclick="toggleLedgerListSettings()" title="Choose columns shown in List View" type="button"><i class="fa-solid fa-list-check mr-1"></i>List columns</button>
 <button class="ledger-subtle-control" onclick="exportLedgerCsv()" title="Export transactions" type="button"><i class="fa-solid fa-download mr-1"></i>Export</button>
 </div>
 </div><div class="hidden p-4 mb-3 border border-indigo-200 dark:border-indigo-900 rounded-xl bg-indigo-50/50 dark:bg-indigo-950/20" id="ledger-column-settings">
@@ -5004,7 +5023,7 @@ html body#app-body > aside#finhub-sidebar .sidebar-brand-copy h1 {
 <div class="flex justify-end mt-3"><button class="text-xs text-indigo-600 dark:text-indigo-400 underline" onclick="resetLedgerColumnWidths()" type="button">Reset column widths</button></div>
 </div>
 <div class="hidden p-4 mb-3 border fh-theme-border rounded-xl fh-theme-surface shadow-sm" id="ledger-list-settings">
-<div class="flex flex-wrap items-center justify-between gap-2 mb-3"><div><h4 class="text-sm font-bold">Customize List View details</h4><p class="text-xs fh-theme-muted mt-1">Choose which transaction details appear on each list item. These settings do not change filtering or transaction data.</p></div>
+<div class="flex flex-wrap items-center justify-between gap-2 mb-3"><div><h4 class="text-sm font-bold">Customize List View columns</h4><p class="text-xs fh-theme-muted mt-1">Choose which columns appear in the compact transaction list. Subcategory is shown when available; otherwise FinHub displays the parent category.</p></div>
 <button class="text-xs text-indigo-600 dark:text-indigo-300 underline" onclick="resetLedgerListFields()" type="button">Restore defaults</button></div>
 <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 text-xs" id="ledger-list-field-options"></div>
 </div>
@@ -5025,7 +5044,7 @@ html body#app-body > aside#finhub-sidebar .sidebar-brand-copy h1 {
 </div>
 <div aria-live="polite" class="flex flex-wrap items-center gap-2 px-1 mb-2" id="ledger-active-filter-chips"></div>
 <div aria-label="List View filters" class="hidden flex flex-wrap items-center gap-2 mb-3" id="ledger-filter-strip"></div>
-<div class="hidden space-y-1.5" id="ledger-mobile-cards"></div>
+<div class="hidden" id="ledger-mobile-cards"></div>
 <div class="fh-theme-surface rounded-2xl border fh-theme-border overflow-x-auto overflow-y-visible shadow-sm custom-scrollbar" id="ledger-table-container">
 <table class="w-full text-left text-sm" style="min-width:1100px">
 <thead class="fh-theme-raised text-xs uppercase border-b fh-theme-border fh-theme-muted">
@@ -5315,7 +5334,7 @@ html body#app-body > aside#finhub-sidebar .sidebar-brand-copy h1 {
 <details class="border border-gray-200 dark:border-gray-800 rounded-xl p-3">
 <summary class="cursor-pointer text-xs font-semibold">Statement balance check <span class="font-normal text-gray-400">· optional</span></summary>
 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3">
-<div><label class="block text-xs font-semibold text-gray-500 mb-1">Statement ending date</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="recon-end-date" onchange="persistStatementBatch();renderStatementBalanceCheck()" type="date"/></div>
+<div><label class="block text-xs font-semibold text-gray-500 mb-1">Statement ending date</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="recon-end-date" onchange="persistStatementBatch();renderStatementBalanceCheck()" lang="en-US" type="date"/></div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Statement opening balance</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="recon-opening-balance" onchange="persistStatementBatch()" oninput="renderStatementBalanceCheck()" placeholder="Opening balance" step="0.01" type="number"/></div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Statement closing balance</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="recon-closing-balance" onchange="persistStatementBatch()" oninput="renderStatementBalanceCheck()" placeholder="Closing balance" step="0.01" type="number"/></div>
 <div class="sm:col-span-3 text-xs text-gray-500" id="recon-balance-check">Optionally enter the statement's opening and closing balances to compare the statement activity with FinHub.</div>
@@ -5366,8 +5385,8 @@ html body#app-body > aside#finhub-sidebar .sidebar-brand-copy h1 {
 <input id="acc-activity-search" oninput="filterAccountActivity()" type="search"/>
 <select id="acc-activity-type" onchange="filterAccountActivity()"><option value="">All types</option></select>
 <select id="acc-activity-period" onchange="filterAccountActivity()"><option value="all">All periods</option></select>
-<input id="acc-activity-from" onchange="filterAccountActivity()" type="date"/>
-<input id="acc-activity-to" onchange="filterAccountActivity()" type="date"/>
+<input id="acc-activity-from" onchange="filterAccountActivity()" lang="en-US" type="date"/>
+<input id="acc-activity-to" onchange="filterAccountActivity()" lang="en-US" type="date"/>
 <input id="acc-activity-min" oninput="filterAccountActivity()" type="number"/>
 <input id="acc-activity-max" oninput="filterAccountActivity()" type="number"/>
 <select id="acc-activity-sort" onchange="filterAccountActivity()"><option value="date-desc">Date: newest first</option><option value="date-asc">Date: oldest first</option><option value="vendor-asc">Vendor: A to Z</option><option value="vendor-desc">Vendor: Z to A</option><option value="description-asc">Description: A to Z</option><option value="description-desc">Description: Z to A</option><option value="type-asc">Type: A to Z</option><option value="amount-desc">Amount: largest first</option><option value="amount-asc">Amount: smallest first</option></select>
@@ -5408,7 +5427,7 @@ html body#app-body > aside#finhub-sidebar .sidebar-brand-copy h1 {
 <div class="text-xs font-semibold text-indigo-700 dark:text-indigo-300">Promotional or scheduled APR change (optional)</div>
 <div class="grid grid-cols-2 gap-3">
 <div><label class="block text-[10px] text-gray-500 mb-1">New APR (%)</label><input class="w-full bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-2 text-sm" id="ed-apr-after-change" min="0" placeholder="e.g. 26.99" step="0.01" type="number"/></div>
-<div><label class="block text-[10px] text-gray-500 mb-1">Effective date</label><input class="w-full bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-2 text-sm" id="ed-apr-change-date" type="date"/></div>
+<div><label class="block text-[10px] text-gray-500 mb-1">Effective date</label><input class="w-full bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-2 text-sm" id="ed-apr-change-date" lang="en-US" type="date"/></div>
 </div>
 <p class="text-[10px] text-gray-500">Enter both fields to include a future rate change in payoff estimates. Leave both blank when the APR is not scheduled to change.</p>
 </div>
@@ -5448,7 +5467,7 @@ html body#app-body > aside#finhub-sidebar .sidebar-brand-copy h1 {
 </div>
 <div class="grid grid-cols-2 gap-3">
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">My Split Percentage (%)</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="jb-split" required="" step="1" type="number" value="50"/></div>
-<div><label class="block text-xs font-semibold text-gray-500 mb-1">Due Date</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="jb-date" required="" type="date"/></div>
+<div><label class="block text-xs font-semibold text-gray-500 mb-1">Due Date</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="jb-date" required="" lang="en-US" type="date"/></div>
 </div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Notes / Comments</label><textarea class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-2 text-xs" id="jb-notes" placeholder="Add optional notes..." rows="2"></textarea></div>
 <div class="flex space-x-3 pt-3">
@@ -5475,7 +5494,7 @@ html body#app-body > aside#finhub-sidebar .sidebar-brand-copy h1 {
 </div>
 <div>
 <label class="block text-xs font-semibold text-gray-500 mb-1" for="joint-et-date">E-Transfer date</label>
-<input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="joint-et-date" required="" type="date"/>
+<input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="joint-et-date" required="" lang="en-US" type="date"/>
 </div>
 <div>
 <label class="block text-xs font-semibold text-gray-500 mb-1" for="joint-et-account">Funding account</label>
@@ -5614,7 +5633,7 @@ Bonus" rows="4"></textarea></div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Starting Balance ($)</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="zbb-start-bal" min="0" step="0.01" type="number"/></div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Target Balance ($)</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="zbb-target-bal" min="0" step="0.01" type="number"/></div>
 </div>
-<div><label class="block text-xs font-semibold text-gray-500 mb-1">Target Date</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="zbb-target-date" type="date"/></div>
+<div><label class="block text-xs font-semibold text-gray-500 mb-1">Target Date</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="zbb-target-date" lang="en-US" type="date"/></div>
 </div>
 <div class="flex space-x-3 pt-3">
 <button class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel fh-modal-secondary-action" onclick="closeZbbItemModal()" type="button">Cancel</button>
@@ -5632,7 +5651,7 @@ Bonus" rows="4"></textarea></div>
 </div>
 <form class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3" id="calendar-form" onsubmit="saveCalendarItem(event)">
 <input id="cal-edit-id" type="hidden" value=""/>
-<div><label class="block text-xs font-semibold text-gray-500 mb-1">Due Date</label><input class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-date" required="" type="date"/></div>
+<div><label class="block text-xs font-semibold text-gray-500 mb-1" id="cal-date-label">Due Date</label><input class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-date" required="" lang="en-US" type="date"/></div>
 <div class="fh-calendar-recurrence-row">
 <label class="block text-xs font-semibold text-gray-500 mb-1">Recurrence Schedule</label>
 <select class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-recurring">
@@ -5656,11 +5675,11 @@ Bonus" rows="4"></textarea></div>
 <button aria-pressed="false" class="tx-kind-card fh-calendar-type-option" data-calendar-type="debt" data-tx-kind="Debt" onclick="setCalendarType('debt')" type="button"><i aria-hidden="true" class="fa-solid fa-credit-card"></i><span>Debt</span></button>
 </div>
 </div>
-<div class="cal-paired-row cal-vendor-amount-row" id="cal-vendor-description-row"><div id="cal-vendor-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Vendor <span class="text-rose-500">*</span></label><input class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-vendor" placeholder="e.g. Employer, utility or service provider" required="" type="text"/></div><div class="cal-amount-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Amount ($)</label><input class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-amount" required="" step="0.01" type="number"/></div><div class="hidden" id="cal-principal-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Principal portion ($)</label><input class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-principal-amount" min="0" placeholder="Defaults to full payment" step="0.01" type="number"/></div></div>
+<div class="cal-paired-row cal-vendor-amount-row" id="cal-vendor-description-row"><div id="cal-vendor-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1"><span id="cal-vendor-label">Vendor</span> <span class="text-rose-500">*</span></label><input class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-vendor" placeholder="e.g. Employer, utility or service provider" required="" type="text"/></div><div class="cal-amount-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Amount ($)</label><input class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-amount" required="" step="0.01" type="number"/></div><div class="hidden" id="cal-principal-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Principal portion ($)</label><input class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-principal-amount" min="0" placeholder="Defaults to full payment" step="0.01" type="number"/></div></div>
 <div class="cal-paired-row cal-category-row" id="cal-category-row"><div id="cal-category-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Category</label><select class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-category" onchange="handleCalendarCategoryChange()"><option value="">-- None --</option></select></div>
 <div id="cal-subcategory-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Subcategory</label><select class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-subcategory" onchange="handleCalendarSubcategoryChange()"><option value="">-- None --</option></select></div></div>
 <div class="cal-paired-row cal-funding-description-row" id="cal-funding-row"><div><label class="block text-xs font-semibold text-gray-500 mb-1">Description (optional)</label><input class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-desc" placeholder="Additional context (optional)" type="text"/></div><div class="cal-account-wrap">
-<label class="block text-xs font-semibold text-gray-500 mb-1">Funding Account</label>
+<label class="block text-xs font-semibold text-gray-500 mb-1" id="cal-account-label">Funding Account</label>
 <select class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-account"></select>
 </div></div>
 <div class="hidden sm:col-span-2" id="cal-debt-account-wrap">
@@ -5669,16 +5688,28 @@ Bonus" rows="4"></textarea></div>
 <p class="text-[10px] text-gray-400 mt-1">Enter zero for an interest-only payment; only the principal portion reduces this balance.</p>
 </div>
 <div class="hidden sm:col-span-2 rounded-xl border border-gray-200 dark:border-gray-800 p-3 space-y-3" id="cal-payment-panel">
-<div class="flex items-center justify-between gap-2"><strong class="text-xs">Payment history</strong><span class="text-[10px] font-semibold" id="cal-payment-status"></span></div>
+<div class="flex items-center justify-between gap-2"><strong class="text-xs" id="cal-payment-heading">Payment history</strong><span class="text-[10px] font-semibold" id="cal-payment-status"></span></div>
 <div class="text-xs text-gray-500" id="cal-payment-summary"></div>
 <div class="space-y-1" id="cal-payment-history"></div>
 <div class="border-t border-gray-200 dark:border-gray-800 pt-3 space-y-2" id="cal-payment-entry">
-<div class="grid grid-cols-2 gap-2"><div><label class="block text-[10px] font-semibold text-gray-500 mb-1">Payment amount ($)</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-2 text-xs" id="cal-payment-amount" min="0.01" step="0.01" type="number"/></div><div><label class="block text-[10px] font-semibold text-gray-500 mb-1">Payment date</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-2 text-xs" id="cal-payment-date" type="date"/></div></div>
-<div><label class="block text-[10px] font-semibold text-gray-500 mb-1">Funding account</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-2 text-xs" id="cal-payment-account"></select></div>
+<div class="grid grid-cols-2 gap-2"><div><label class="block text-[10px] font-semibold text-gray-500 mb-1" id="cal-payment-amount-label">Payment amount ($)</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-2 text-xs" id="cal-payment-amount" min="0.01" step="0.01" type="number"/></div><div><label class="block text-[10px] font-semibold text-gray-500 mb-1" id="cal-payment-date-label">Payment date</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-2 text-xs" id="cal-payment-date" lang="en-US" type="date"/></div></div>
+<div><label class="block text-[10px] font-semibold text-gray-500 mb-1" id="cal-payment-account-label">Funding account</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-2 text-xs" id="cal-payment-account"></select></div>
 <div class="hidden" id="cal-payment-principal-wrap"><label class="block text-[10px] font-semibold text-gray-500 mb-1">Principal portion ($)</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-2 text-xs" id="cal-payment-principal" min="0" step="0.01" type="number"/></div>
-<div><label class="block text-[10px] font-semibold text-gray-500 mb-1">Or link an existing ledger transaction</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-2 text-xs" id="cal-payment-existing"><option value="">Create a new payment transaction</option></select></div>
-<button class="w-full rounded-lg px-3 py-2 text-xs font-semibold text-white theme-bg" onclick="recordCalendarBillPayment()" type="button">Record / Link Payment</button>
-<p class="text-[10px] text-gray-400">Each payment is recorded once in the ledger. FinHub links it to this scheduled item without duplicating its account-balance effect.</p>
+<div class="space-y-2" id="cal-payment-match-workspace">
+<label class="block text-[10px] font-semibold text-gray-500 mb-1" id="cal-payment-existing-label">Find an existing ledger transaction</label>
+<div class="relative"><i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-xs" style="color:var(--fh-muted)"></i><input aria-label="Search existing transactions" autocomplete="off" class="w-full rounded-lg border px-3 py-2 pl-9 text-xs" id="cal-payment-match-search" oninput="renderCalendarTransactionMatches()" placeholder="Search vendor, description, amount, date or account..." style="background:var(--fh-surface-raised);border-color:var(--fh-surface-border);color:var(--fh-surface-text)" type="search"></div>
+<div class="flex flex-wrap gap-1.5" id="cal-payment-match-filters">
+<button aria-pressed="false" class="ledger-filter-button" data-match-filter="exact" onclick="toggleCalendarTransactionMatchFilter('exact',this)" type="button">Exact amount</button>
+<button aria-pressed="false" class="ledger-filter-button" data-match-filter="account" onclick="toggleCalendarTransactionMatchFilter('account',this)" type="button">Same account</button>
+<button aria-pressed="false" class="ledger-filter-button" data-match-filter="date" onclick="toggleCalendarTransactionMatchFilter('date',this)" type="button">Within 14 days</button>
+</div>
+<div class="flex items-center justify-between gap-2"><span class="text-[10px]" id="cal-payment-match-count" style="color:var(--fh-muted)">Suggested matches appear first</span><button class="text-[10px] font-semibold hidden" id="cal-payment-match-clear" onclick="clearCalendarTransactionMatchSelection()" style="color:var(--fh-primary)" type="button">Clear selection</button></div>
+<div aria-live="polite" class="space-y-1.5" id="cal-payment-match-results"></div>
+<div class="hidden rounded-lg border p-2.5 text-xs" id="cal-payment-match-selected" style="border-color:var(--fh-primary);background:var(--fh-surface-selected,var(--fh-surface-raised));color:var(--fh-surface-text)"></div>
+<select aria-hidden="true" class="hidden" id="cal-payment-existing" tabindex="-1"><option value="">Create a new payment transaction</option></select>
+</div>
+<button class="w-full rounded-lg px-3 py-2 text-xs font-semibold text-white theme-bg" onclick="recordCalendarBillPayment()" type="button"><span id="cal-payment-submit-label">Record / Link Payment</span></button>
+<p class="text-[10px] text-gray-400" id="cal-payment-help">Each payment is recorded once in the ledger. FinHub links it to this scheduled item without duplicating its account-balance effect.</p>
 </div>
 </div>
 <div class="finhub-form-actions fh-calendar-modal-actions">
@@ -5712,7 +5743,7 @@ Bonus" rows="4"></textarea></div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">From account</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="transfer-from" required=""></select></div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">To account</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="transfer-to" required=""></select></div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Amount ($)</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="transfer-amount" min="0.01" required="" step="0.01" type="number"/></div>
-<div><label class="block text-xs font-semibold text-gray-500 mb-1">Date</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="transfer-date" required="" type="date"/></div>
+<div><label class="block text-xs font-semibold text-gray-500 mb-1">Date</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="transfer-date" required="" lang="en-US" type="date"/></div>
 <div class="flex gap-2 pt-2"><button class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel fh-modal-secondary-action" onclick="closeTransferModal()" type="button">Cancel</button><button class="fh-action-button fh-action-button-primary flex-1 fh-modal-primary-action" type="submit">Transfer</button></div>
 </form>
 </div>
@@ -5782,7 +5813,7 @@ Bonus" rows="4"></textarea></div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Real Savings Account</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="sinking-bucket-account" required=""></select></div>
 <div class="grid grid-cols-2 gap-3">
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Savings Target ($)</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="sinking-bucket-target" min="0" placeholder="Optional" step="0.01" type="number"/></div>
-<div><label class="block text-xs font-semibold text-gray-500 mb-1">Target Date</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="sinking-bucket-target-date" type="date"/></div>
+<div><label class="block text-xs font-semibold text-gray-500 mb-1">Target Date</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="sinking-bucket-target-date" lang="en-US" type="date"/></div>
 </div>
 <p class="hidden text-[10px] text-amber-600 dark:text-amber-400" id="sinking-bucket-edit-note">A bucket with a balance or activity history cannot be moved to another real account. Release its balance and create a new bucket under the other account instead.</p>
 <div class="flex items-center justify-between gap-3 pt-2"><button class="hidden px-3 py-2 rounded-xl text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 disabled:opacity-45 disabled:cursor-not-allowed" id="sinking-bucket-delete-btn" onclick="deleteSinkingBucketFromEditor()" type="button">Delete Bucket</button><div class="flex gap-2 flex-1 justify-end"><button class="px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel fh-modal-secondary-action" onclick="closeSinkingBucketModal()" type="button">Cancel</button><button class="px-4 py-2 text-white rounded-xl text-sm font-semibold theme-bg" type="submit">Save Bucket</button></div></div>
@@ -5800,7 +5831,7 @@ Bonus" rows="4"></textarea></div>
 <div class="rounded-lg bg-gray-50 dark:bg-gray-950 p-3 text-xs text-gray-500" id="sinking-bucket-activity-context"></div>
 <div class="hidden" id="sinking-bucket-transfer-destination-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Move To Bucket</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="sinking-bucket-transfer-destination"></select></div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1" id="sinking-bucket-activity-amount-label">Amount ($)</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="sinking-bucket-activity-amount" min="0.01" required="" step="0.01" type="number"/></div>
-<div><label class="block text-xs font-semibold text-gray-500 mb-1">Date</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="sinking-bucket-activity-date" required="" type="date"/></div>
+<div><label class="block text-xs font-semibold text-gray-500 mb-1">Date</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="sinking-bucket-activity-date" required="" lang="en-US" type="date"/></div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Note (optional)</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="sinking-bucket-activity-note" maxlength="120" placeholder="e.g. Christmas contribution" type="text"/></div>
 <div class="flex gap-2 pt-2"><button class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel fh-modal-secondary-action" onclick="closeSinkingBucketActivityModal()" type="button">Cancel</button><button class="flex-1 py-2 text-white rounded-xl text-sm font-semibold theme-bg" type="submit">Save Activity</button></div>
 </form>
@@ -5818,7 +5849,7 @@ Bonus" rows="4"></textarea></div>
 <input id="tx-is-split" type="hidden" value="false"/>
 <div class="space-y-3 min-w-0" id="tx-entry-fields">
 <div class="grid grid-cols-2 gap-3">
-<div><label class="block text-xs font-semibold text-gray-500 mb-1">Date</label><input class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="tx-date" required="" type="date"/></div>
+<div><label class="block text-xs font-semibold text-gray-500 mb-1">Date</label><input class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="tx-date" required="" lang="en-US" type="date"/></div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1" id="tx-account-label">Account</label><select class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="tx-account"></select></div>
 </div>
 <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] leading-4 text-gray-400 border-b border-gray-100 dark:border-gray-800 pb-2">
@@ -5930,7 +5961,7 @@ Bonus" rows="4"></textarea></div>
 <input id="interest-charge-edit-id" type="hidden" value=""/>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Debt account receiving the interest charge</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="interest-charge-debt" required=""></select></div>
 <div class="grid grid-cols-2 gap-3">
-<div><label class="block text-xs font-semibold text-gray-500 mb-1">Charge date</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="interest-charge-date" required="" type="date"/></div>
+<div><label class="block text-xs font-semibold text-gray-500 mb-1">Charge date</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="interest-charge-date" required="" lang="en-US" type="date"/></div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Interest amount ($)</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="interest-charge-amount" min="0.01" required="" step="0.01" type="number"/></div>
 </div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Description</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="interest-charge-description" required="" type="text" value="Monthly interest charge"/></div>
@@ -5948,7 +5979,7 @@ Bonus" rows="4"></textarea></div>
 <form class="space-y-3" id="debt-payment-form" onsubmit="saveDebtPayment(event)">
 <input id="dp-edit-id" type="hidden" value=""/>
 <input id="dp-existing-tx-id" type="hidden" value=""/>
-<div><label class="block text-xs font-semibold text-gray-500 mb-1">Date</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="dp-date" required="" type="date"/></div>
+<div><label class="block text-xs font-semibold text-gray-500 mb-1">Date</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="dp-date" required="" lang="en-US" type="date"/></div>
 <input id="dp-payment-type" type="hidden" value="Other Debt Payment"/>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Total payment ($)</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="dp-amount" min="0.01" oninput="updateDebtPaymentSplit()" required="" step="0.01" type="number"/></div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Paid from</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="dp-funding-account" required=""></select></div>
@@ -6054,14 +6085,49 @@ Bonus" rows="4"></textarea></div>
       });
     }
 
-    function formatDateMDY(value) {
-      if (!value) return '—';
-      const raw = String(value).trim();
-      const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
-      if (match) return `${match[2]}-${match[3]}-${match[1]}`;
+    function finHubDateParts(value) {
+      if (value instanceof Date) {
+        if (Number.isNaN(value.getTime())) return null;
+        return { year:value.getFullYear(), month:value.getMonth()+1, day:value.getDate() };
+      }
+      const raw = String(value ?? '').trim();
+      if (!raw) return null;
+      const iso = raw.match(/^(\d{4})-(\d{2})-(\d{2})(?:$|T|\s)/);
+      if (iso) {
+        const year=Number(iso[1]), month=Number(iso[2]), day=Number(iso[3]);
+        const maxDay = month >= 1 && month <= 12 ? new Date(Date.UTC(year,month,0)).getUTCDate() : 0;
+        return day >= 1 && day <= maxDay ? {year,month,day} : null;
+      }
+      const mdy = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+      if (mdy) {
+        const month=Number(mdy[1]), day=Number(mdy[2]), year=Number(mdy[3]);
+        const maxDay = month >= 1 && month <= 12 ? new Date(Date.UTC(year,month,0)).getUTCDate() : 0;
+        return day >= 1 && day <= maxDay ? {year,month,day} : null;
+      }
       const parsed = new Date(raw);
-      if (Number.isNaN(parsed.getTime())) return raw;
-      return `${String(parsed.getMonth()+1).padStart(2,'0')}-${String(parsed.getDate()).padStart(2,'0')}-${parsed.getFullYear()}`;
+      if (Number.isNaN(parsed.getTime())) return null;
+      return {year:parsed.getFullYear(),month:parsed.getMonth()+1,day:parsed.getDate()};
+    }
+    function formatDateMDY(value) {
+      if (value == null || value === '') return '—';
+      const parts = finHubDateParts(value);
+      if (!parts) return String(value);
+      return `${String(parts.month).padStart(2,'0')}/${String(parts.day).padStart(2,'0')}/${parts.year}`;
+    }
+    function formatDateTimeMDY(value) {
+      if (value == null || value === '') return '—';
+      const raw = value instanceof Date ? '' : String(value).trim();
+      if (/^\d{4}-\d{2}-\d{2}$/.test(raw) || /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(raw)) return formatDateMDY(value);
+      const parsed = value instanceof Date ? value : new Date(raw);
+      if (Number.isNaN(parsed.getTime())) return String(value);
+      return `${formatDateMDY(parsed)} ${parsed.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}`;
+    }
+    function parseFinHubDateInput(value) {
+      const raw=String(value ?? '').trim();
+      if (!raw) return '';
+      const parts=finHubDateParts(raw);
+      if (!parts) return null;
+      return `${parts.year}-${String(parts.month).padStart(2,'0')}-${String(parts.day).padStart(2,'0')}`;
     }
     function escapeHtml(value) { return String(value ?? '').replace(/[&<>\"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[ch])); }
 
@@ -6299,9 +6365,10 @@ Bonus" rows="4"></textarea></div>
       const amount = Math.round((Number(String(entered).replace(/[$,]/g,'')) || 0) * 100) / 100;
       if (!(amount > 0) || amount - remaining > 0.009) { alert(`Enter an amount greater than $0 and no more than $${remaining.toFixed(2)}.`); return false; }
       const ratio = originalAmountCents > 0 ? amount / (originalAmountCents / 100) : 0;
-      const date = options.date || prompt('Reversal date (YYYY-MM-DD):', new Date().toISOString().slice(0,10));
-      if (date == null) return false;
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) { alert('Enter the date as YYYY-MM-DD.'); return false; }
+      const enteredDate = options.date || prompt('Reversal date (MM/DD/YYYY):', formatDateMDY(new Date()));
+      if (enteredDate == null) return false;
+      const date = parseFinHubDateInput(enteredDate);
+      if (!date) { alert('Enter a valid date as MM/DD/YYYY.'); return false; }
       const duplicateReversal=(state.transactions||[]).find(t=>String(t.reversalOfTransactionId||'')===String(original.id)&&String(t.date||'')===date&&Math.abs(Math.abs(Number(t.amount)||0)-amount)<0.005);
       if(duplicateReversal){alert('A reversal for this original transaction, date and amount already exists. FinHub has not created another transaction. Open the existing reversal instead.');return false;}
       const vendor = original.vendor || original.desc || 'Transaction reversal';
@@ -6708,7 +6775,7 @@ Bonus" rows="4"></textarea></div>
       if (ageDays !== null) {
         const date = new Date(state.lastBackupAt);
         const due = ageDays >= BACKUP_REMINDER_DAYS;
-        message = `Last JSON export initiated: ${date.toLocaleDateString()} ${date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })} · ${ageDays} day(s) ago${due ? ' · Backup due' : ''}`;
+        message = `Last JSON export initiated: ${formatDateMDY(date)} ${date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })} · ${ageDays} day(s) ago${due ? ' · Backup due' : ''}`;
         className = `w-full text-right text-[10px] ${due ? 'text-amber-500' : 'text-gray-400'}`;
       }
       statuses.forEach(el => {
@@ -6777,7 +6844,7 @@ Bonus" rows="4"></textarea></div>
         const copy = JSON.parse(raw);
         if (!copy || !copy.state) throw new Error('Safety copy is incomplete.');
         const date = new Date(copy.createdAt);
-        status.textContent = `Available · ${copy.reason || 'Safety copy'} · ${Number.isFinite(date.getTime()) ? date.toLocaleString() : 'date unavailable'}`;
+        status.textContent = `Available · ${copy.reason || 'Safety copy'} · ${Number.isFinite(date.getTime()) ? formatDateTimeMDY(date) : 'date unavailable'}`;
         button.classList.remove('hidden');
       } catch (error) {
         status.textContent = 'A local safety copy exists but could not be read.';
@@ -7248,7 +7315,7 @@ Bonus" rows="4"></textarea></div>
       // Native disclosure sections (including Settings). The native open property
       // is the sole source of truth for these sections.
       document.querySelectorAll('.tab-content details').forEach(details => {
-        if (details.closest('#tab-calendar') || details.id === 'debt-simulator-details') return;
+        if (details.closest('#tab-calendar') || details.closest('.split-allocation-breakdown') || details.id === 'debt-simulator-details') return;
         if (!details.querySelector(':scope > summary')) return;
         if (seen.has(details)) return;
         seen.add(details);
@@ -7622,7 +7689,7 @@ Bonus" rows="4"></textarea></div>
     }
 
     function getPageDisclosureItems(page) {
-      if (!page) return [];
+      if (!page || page.id === 'tab-ledger') return [];
       const items = [];
       const seen = new Set();
 
@@ -7651,7 +7718,7 @@ Bonus" rows="4"></textarea></div>
       if (page.id !== 'tab-calendar') {
         page.querySelectorAll('details').forEach((details, index) => {
           if (!details.querySelector(':scope > summary')) return;
-          if (details.closest('[role="dialog"],.modal,.modal-backdrop')) return;
+          if (details.closest('[role="dialog"],.modal,.modal-backdrop,.split-allocation-breakdown')) return;
           const key = getDisclosureSectionKey(details, index);
           if (seen.has(key)) return;
           seen.add(key);
@@ -7695,7 +7762,7 @@ Bonus" rows="4"></textarea></div>
       preferences[pageKey] = preferences[pageKey] || {};
       page.querySelectorAll('details').forEach((details, index) => {
         if (!details.querySelector(':scope > summary')) return;
-        if (details.closest('[role="dialog"],.modal,.modal-backdrop')) return;
+        if (details.closest('[role="dialog"],.modal,.modal-backdrop,.split-allocation-breakdown')) return;
         preferences[pageKey][getDisclosureSectionKey(details, index)] = !!details.open;
       });
       saveDisclosurePreferences(preferences);
@@ -7708,14 +7775,14 @@ Bonus" rows="4"></textarea></div>
       if (!saved) return;
       page.querySelectorAll('details').forEach((details, index) => {
         if (!details.querySelector(':scope > summary')) return;
-        if (details.closest('[role="dialog"],.modal,.modal-backdrop')) return;
+        if (details.closest('[role="dialog"],.modal,.modal-backdrop,.split-allocation-breakdown')) return;
         const key = getDisclosureSectionKey(details, index);
         if (Object.prototype.hasOwnProperty.call(saved, key)) details.open = !!saved[key];
       });
     }
 
     function ensurePageDisclosureToolbar(page) {
-      if (!page || page.id === 'tab-calendar') return;
+      if (!page || page.id === 'tab-calendar' || page.id === 'tab-ledger') return;
       // The Dashboard toolbar is intentionally nested in its action row. Search
       // the whole page so repeated initialization never creates a duplicate.
       let toolbar = page.querySelector('.fh-page-disclosure-toolbar');
@@ -7753,7 +7820,7 @@ Bonus" rows="4"></textarea></div>
 
     function updatePageDisclosureToolbar(page) {
       const toolbar = page?.querySelector('.fh-page-disclosure-toolbar');
-      if (!toolbar) return;
+      if (!toolbar || page?.id === 'tab-ledger') { toolbar?.remove(); return; }
       const items = getPageDisclosureItems(page);
       const expand = toolbar.querySelector('[data-fh-disclosure-action="expand"]');
       const collapse = toolbar.querySelector('[data-fh-disclosure-action="collapse"]');
@@ -8345,7 +8412,7 @@ Bonus" rows="4"></textarea></div>
       if (!host || !summary) return;
       const audit = inspectAccountLedgerIntegrity();
       const t = audit.totals;
-      summary.innerHTML = `<div class="grid grid-cols-2 sm:grid-cols-5 gap-2 mb-3"><div class="rounded-lg p-2 fh-theme-raised"><strong class="block text-lg accounting-num">${t.accounts}</strong><span class="text-[10px] text-gray-500">Accounts checked</span></div><div class="rounded-lg p-2 fh-theme-raised"><strong class="block text-lg accounting-num fh-status-income">${t.verified}</strong><span class="text-[10px] text-gray-500">Verified</span></div><div class="rounded-lg p-2 fh-theme-raised"><strong class="block text-lg accounting-num text-amber-600">${t.variance}</strong><span class="text-[10px] text-gray-500">Balance variances</span></div><div class="rounded-lg p-2 fh-theme-raised"><strong class="block text-lg accounting-num text-amber-600">${t.baselineNeeded}</strong><span class="text-[10px] text-gray-500">Opening balance needed</span></div><div class="rounded-lg p-2 fh-theme-raised"><strong class="block text-lg accounting-num text-rose-600">${t.exceptions}</strong><span class="text-[10px] text-gray-500">Account exceptions</span></div></div><p class="text-[10px] text-gray-500">Ledger-wide exceptions: ${audit.globalIssues.length}. Read-only check completed ${new Date().toLocaleString()}. Accounts without a saved opening balance cannot be independently verified; their baseline is not inferred from the current balance.</p>`;
+      summary.innerHTML = `<div class="grid grid-cols-2 sm:grid-cols-5 gap-2 mb-3"><div class="rounded-lg p-2 fh-theme-raised"><strong class="block text-lg accounting-num">${t.accounts}</strong><span class="text-[10px] text-gray-500">Accounts checked</span></div><div class="rounded-lg p-2 fh-theme-raised"><strong class="block text-lg accounting-num fh-status-income">${t.verified}</strong><span class="text-[10px] text-gray-500">Verified</span></div><div class="rounded-lg p-2 fh-theme-raised"><strong class="block text-lg accounting-num text-amber-600">${t.variance}</strong><span class="text-[10px] text-gray-500">Balance variances</span></div><div class="rounded-lg p-2 fh-theme-raised"><strong class="block text-lg accounting-num text-amber-600">${t.baselineNeeded}</strong><span class="text-[10px] text-gray-500">Opening balance needed</span></div><div class="rounded-lg p-2 fh-theme-raised"><strong class="block text-lg accounting-num text-rose-600">${t.exceptions}</strong><span class="text-[10px] text-gray-500">Account exceptions</span></div></div><p class="text-[10px] text-gray-500">Ledger-wide exceptions: ${audit.globalIssues.length}. Read-only check completed ${formatDateTimeMDY(new Date())}. Accounts without a saved opening balance cannot be independently verified; their baseline is not inferred from the current balance.</p>`;
       const money = cents => cents === null || cents === undefined ? '—' : formatFinancial(cents/100);
       const statusLabel = {verified:'Verified',variance:'Variance', 'baseline-needed':'Baseline needed',review:'Review',exception:'Exception'};
       const rows = audit.results.map(r => {
@@ -8649,9 +8716,10 @@ Bonus" rows="4"></textarea></div>
     function editAccountReconciliationDate(id) {
       const acc = state.accounts.find(a => a.id === id);
       if (!acc) return;
-      const nextDate = prompt('Enter the reconciliation date (YYYY-MM-DD):', acc.lastReconciledAt || new Date().toISOString().slice(0,10));
-      if (nextDate === null) return;
-      if (nextDate && !/^\d{4}-\d{2}-\d{2}$/.test(nextDate)) { alert('Please use YYYY-MM-DD format.'); return; }
+      const enteredDate = prompt('Enter the reconciliation date (MM/DD/YYYY):', formatDateMDY(acc.lastReconciledAt || new Date()));
+      if (enteredDate === null) return;
+      const nextDate = parseFinHubDateInput(enteredDate);
+      if (enteredDate && !nextDate) { alert('Please enter a valid date as MM/DD/YYYY.'); return; }
       if ((nextDate || '') === (acc.lastReconciledAt || '')) return;
       captureUndo(`Edit reconciliation date for "${acc.name}"`);
       acc.lastReconciledAt = nextDate || '';
@@ -8710,10 +8778,10 @@ Bonus" rows="4"></textarea></div>
       const x = i => pad + (snaps.length === 1 ? (width-pad*2)/2 : i*(width-pad*2)/(snaps.length-1));
       const y = v => height-pad - ((v-min)/(max-min))*(height-pad*2);
       const points = snaps.map((s,i) => `${x(i)},${y(Number(s.netWorth)||0)}`).join(' ');
-      const labels = snaps.map((s,i) => `<text x="${x(i)}" y="${height-8}" text-anchor="middle" font-size="10" fill="currentColor">${s.date.slice(5)}</text>`).join('');
-      const dots = snaps.map((s,i) => `<circle cx="${x(i)}" cy="${y(Number(s.netWorth)||0)}" r="4" fill="#6366f1"><title>${s.date}: ${formatFinancial(s.netWorth)}</title></circle>`).join('');
+      const labels = snaps.map((s,i) => `<text x="${x(i)}" y="${height-8}" text-anchor="middle" font-size="10" fill="currentColor">${formatDateMDY(s.date).slice(0,5)}</text>`).join('');
+      const dots = snaps.map((s,i) => `<circle cx="${x(i)}" cy="${y(Number(s.netWorth)||0)}" r="4" fill="#6366f1"><title>${formatDateMDY(s.date)}: ${formatFinancial(s.netWorth)}</title></circle>`).join('');
       el.innerHTML = `<div class="w-full overflow-x-auto"><svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Net worth trend line chart" class="w-full min-w-[320px]" style="max-height:220px"><line x1="${pad}" y1="${height-pad}" x2="${width-pad}" y2="${height-pad}" stroke="currentColor" opacity=".2"/><polyline points="${points}" fill="none" stroke="#6366f1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>${dots}${labels}</svg></div>`;
-      note.textContent = `${snaps.length} recorded snapshot${snaps.length===1?'':'s'} · ${snaps[0].date} to ${snaps[snaps.length-1].date}. This chart changes when a snapshot is recorded.`;
+      note.textContent = `${snaps.length} recorded snapshot${snaps.length===1?'':'s'} · ${formatDateMDY(snaps[0].date)} to ${formatDateMDY(snaps[snaps.length-1].date)}. This chart changes when a snapshot is recorded.`;
     }
 
     function renderSpendingCategoryChart() {
@@ -8837,7 +8905,7 @@ Bonus" rows="4"></textarea></div>
           const row = document.createElement('tr');
           const date = document.createElement('td');
           date.className = 'whitespace-nowrap';
-          date.textContent = t.date || '—';
+          date.textContent = formatDateMDY(t.date);
           const vendor = document.createElement('td');
           vendor.className = 'min-w-0';
           const vendorName = document.createElement('div');
@@ -8860,7 +8928,7 @@ Bonus" rows="4"></textarea></div>
           open.className = 'fh-open-details-icon';
           open.innerHTML = '<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>';
           open.title = 'Open transaction details';
-          open.setAttribute('aria-label', `Open transaction for ${String(t.vendor || t.desc || 'vendor')} dated ${t.date || 'unknown date'}`);
+          open.setAttribute('aria-label', `Open transaction for ${String(t.vendor || t.desc || 'vendor')} dated ${formatDateMDY(t.date)}`);
           open.addEventListener('click', () => {
             if (t.type === 'Interest Charge') openInterestChargeModal(String(t.id));
             else if (t.type === 'Debt Payment' && t.debtPaymentId) openDebtPaymentModal(String(t.debtPaymentId));
@@ -8928,7 +8996,7 @@ Bonus" rows="4"></textarea></div>
         container.innerHTML += `
           <div class="bg-gray-50 dark:bg-gray-950 p-3 rounded-xl border border-gray-200 dark:border-gray-800 text-xs space-y-1 relative group">
             <div class="flex justify-between text-gray-400">
-              <span>Date: ${snap.date}</span>
+              <span>Date: ${formatDateMDY(snap.date)}</span>
               <button onclick="deleteSnapshot('${snap.id}')" title="Delete Snapshot" class="text-rose-500 opacity-60 hover:opacity-100"><i class="fa-solid fa-trash"></i></button>
             </div>
             <div class="flex justify-between font-bold text-sm"><span>Net Worth</span><span class="fh-status-income accounting-num">${formatFinancial(snap.netWorth)}</span></div>
@@ -9394,7 +9462,7 @@ Bonus" rows="4"></textarea></div>
         return;
       }
       host.innerHTML = archived.map(account => {
-        const date = account.archivedAt ? new Date(account.archivedAt).toLocaleDateString() : 'Date not recorded';
+        const date = account.archivedAt ? formatDateMDY(account.archivedAt) : 'Date not recorded';
         const type = account.type === 'debt' ? 'Liability' : 'Asset';
         return `<div class="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950 text-xs"><div><div class="font-semibold">${escapeHtml(account.name)}</div><div class="text-gray-400">${type} · Archived ${date} · Historical balance ${formatFinancial(account.balance)}</div></div><div class="flex gap-2"><button onclick="openAccountDetail('${account.id}')" class="px-2.5 py-1.5 rounded-lg bg-gray-200 dark:bg-gray-800">History</button><button onclick="restoreAccountById('${account.id}')" class="px-2.5 py-1.5 rounded-lg   text-white font-semibold">Restore</button><button onclick="permanentlyDeleteArchivedAccountById('${account.id}')" class="px-2.5 py-1.5 rounded-lg   text-white font-semibold">Permanently Delete</button></div></div>`;
       }).join('');
@@ -9477,7 +9545,7 @@ ${acc.name}`);
       return dates;
     }
     function formatScheduledPayday(date) {
-      return date.toLocaleDateString('en-CA', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+      return `${date.toLocaleDateString('en-US', { weekday: 'long' })}, ${formatDateMDY(date)}`;
     }
     function refreshPaydaySelector(period) {
       const dates = getScheduledPaydaysForMonth(period);
@@ -9937,7 +10005,7 @@ ${acc.name}`);
           const pct = target > 0 ? Math.min(100, Math.max(0, balance / target * 100)) : 0;
           const history = (bucket.history || []).slice(0,3).map(item => {
             const label = item.type === 'opening' ? 'Opening allocation' : item.type === 'allocation' ? 'Allocated' : item.type === 'release' ? 'Released' : item.type === 'transfer-in' ? `Moved in${item.otherBucketName ? ` · ${escapeHtml(item.otherBucketName)}` : ''}` : item.type === 'transfer-out' ? `Moved out${item.otherBucketName ? ` · ${escapeHtml(item.otherBucketName)}` : ''}` : 'Activity';
-            return `<div class="flex justify-between gap-2 text-[10px] text-gray-400"><span class="truncate">${escapeHtml(item.date || '')} · ${label}${item.note ? ` · ${escapeHtml(item.note)}` : ''}</span><span class="shrink-0 accounting-num">${formatFinancial(item.amount)}</span></div>`;
+            return `<div class="flex justify-between gap-2 text-[10px] text-gray-400"><span class="truncate">${escapeHtml(formatDateMDY(item.date))} · ${label}${item.note ? ` · ${escapeHtml(item.note)}` : ''}</span><span class="shrink-0 accounting-num">${formatFinancial(item.amount)}</span></div>`;
           }).join('');
           return `<div class="fh-sinking-bucket-row grid grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-1 items-center border-b border-gray-200 dark:border-gray-800 py-2">
             <div class="min-w-0"><div class="font-semibold text-xs">${escapeHtml(bucket.name)}</div><div class="text-[10px] text-gray-400">${target > 0 ? `${pct.toFixed(0)}% of ${formatFinancial(target)} target` : 'No target set'}${bucket.targetDate ? ` · Due ${escapeHtml(bucket.targetDate)}` : ''}</div>${target > 0 ? `<div class="mt-1 h-1 rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden max-w-sm"><div class="h-full bg-indigo-600 theme-bg" style="width:${pct}%"></div></div>` : ''}</div>
@@ -10441,7 +10509,7 @@ ${acc.name}`);
         const ack=events.filter(v=>v.action==='acknowledged').slice(-1)[0];
         const status=e.status==='resolved'?'Resolved':latestEvent?.action==='acknowledged'?'Reviewed':'Open';
         const presentation=getIntegrityExceptionPresentation(e.description);
-        const dateLabel=value=>value?new Date(value).toLocaleString():'';
+        const dateLabel=value=>value?formatDateTimeMDY(value):'';
         const history=events.map(v=>`<div class="flex flex-wrap justify-between gap-x-3 gap-y-1 border-t border-gray-100 dark:border-gray-800 py-1.5 text-[10px]"><span class="font-medium">${eventLabel(v.action)}${v.reason?` · ${escapeHtml(v.reason)}`:''}</span><time class="text-gray-500">${escapeHtml(dateLabel(v.at))}</time></div>`).join('');
         return `<article class="fh-integrity-exception-row"><div class="flex flex-wrap items-center justify-between gap-2"><div class="min-w-0"><span class="text-[10px] font-semibold uppercase tracking-wide">${escapeHtml(e.level)} · ${status}</span><div class="text-xs font-semibold mt-0.5">${escapeHtml(presentation.title)}</div></div>${e.status==='resolved'?'':`<button type="button" class="text-[11px] fh-theme-link underline whitespace-nowrap" onclick="acknowledgeIntegrityException('${e.id}')">Review</button>`}</div><p class="text-[11px] text-gray-600 dark:text-gray-300 mt-1">${escapeHtml(presentation.detail)}</p><div class="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-gray-500 mt-1"><span>First seen ${escapeHtml(dateLabel(e.firstSeenAt))}</span>${e.resolvedAt?`<span>Resolved ${escapeHtml(dateLabel(e.resolvedAt))}</span>`:''}${ack?.reason?`<span>Review note: ${escapeHtml(ack.reason)}</span>`:''}</div><details class="fh-integrity-event-history mt-1"><summary>History · ${events.length} events</summary><div class="pt-1">${history||'<p class="text-[10px] text-gray-500">No recorded events.</p>'}</div></details></article>`;
       }).join('');
@@ -10533,7 +10601,7 @@ ${acc.name}`);
         const over = row.actual > row.budget + 0.005;
         const valueClass = row.duplicate ? 'text-amber-600 dark:text-amber-400' : row.unbudgeted || over ? 'text-rose-600 dark:text-rose-400' : 'fh-status-income';
         const varianceLabel = row.unbudgeted ? 'Unbudgeted' : row.duplicate ? 'Duplicate budget name' : row.remaining < -0.005 ? `${money(Math.abs(row.remaining))} over` : `${money(row.remaining)} left`;
-        const detail = row.transactions.length ? `<details class="fh-bva-transaction-disclosure mt-2"><summary class="inline-flex items-center gap-2 cursor-pointer list-none text-[10px] font-semibold text-gray-500 hover:text-current"><i class="fa-solid fa-chevron-right text-[9px] transition-transform" aria-hidden="true"></i><span>Show transactions (${row.transactions.length})</span></summary><div class="fh-bva-transactions mt-2 overflow-x-auto"><table class="w-full text-[11px]"><thead><tr class="text-[9px] uppercase tracking-wide text-gray-400"><th class="text-left py-1.5 pr-2 font-semibold">Date</th><th class="text-left py-1.5 pr-2 font-semibold">Vendor</th><th class="text-right py-1.5 font-semibold">Amount</th></tr></thead><tbody>${row.transactions.map(tx => `<tr class="border-t border-gray-100 dark:border-gray-800"><td class="py-1.5 pr-2 whitespace-nowrap text-gray-400 accounting-num">${escapeHtml(tx.date || '')}</td><td class="py-1.5 pr-2 min-w-0"><button type="button" class="font-semibold fh-theme-link hover:underline text-left truncate max-w-full" onclick="openLedgerTransaction('${escapeHtml(tx.id || '')}')" title="Open ${escapeHtml(tx.vendor || tx.payee || 'transaction')} for editing">${escapeHtml(tx.vendor || tx.payee || 'Unnamed vendor')} <i class="fa-solid fa-arrow-up-right-from-square text-[9px] ml-1" aria-hidden="true"></i></button></td><td class="py-1.5 text-right accounting-num whitespace-nowrap">${money(tx.amount)}</td></tr>`).join('')}</tbody></table></div></details>` : '';
+        const detail = row.transactions.length ? `<details class="fh-bva-transaction-disclosure mt-2"><summary class="inline-flex items-center gap-2 cursor-pointer list-none text-[10px] font-semibold text-gray-500 hover:text-current"><i class="fa-solid fa-chevron-right text-[9px] transition-transform" aria-hidden="true"></i><span>Show transactions (${row.transactions.length})</span></summary><div class="fh-bva-transactions mt-2 overflow-x-auto"><table class="w-full text-[11px]"><thead><tr class="text-[9px] uppercase tracking-wide text-gray-400"><th class="text-left py-1.5 pr-2 font-semibold">Date</th><th class="text-left py-1.5 pr-2 font-semibold">Vendor</th><th class="text-right py-1.5 font-semibold">Amount</th></tr></thead><tbody>${row.transactions.map(tx => `<tr class="border-t border-gray-100 dark:border-gray-800"><td class="py-1.5 pr-2 whitespace-nowrap text-gray-400 accounting-num">${escapeHtml(formatDateMDY(tx.date))}</td><td class="py-1.5 pr-2 min-w-0"><button type="button" class="font-semibold fh-theme-link hover:underline text-left truncate max-w-full" onclick="openLedgerTransaction('${escapeHtml(tx.id || '')}')" title="Open ${escapeHtml(tx.vendor || tx.payee || 'transaction')} for editing">${escapeHtml(tx.vendor || tx.payee || 'Unnamed vendor')} <i class="fa-solid fa-arrow-up-right-from-square text-[9px] ml-1" aria-hidden="true"></i></button></td><td class="py-1.5 text-right accounting-num whitespace-nowrap">${money(tx.amount)}</td></tr>`).join('')}</tbody></table></div></details>` : '';
         return `<div class="fh-bva-row rounded-lg border border-gray-200 dark:border-gray-800 px-3 py-2"><div class="grid grid-cols-[minmax(0,1fr)_repeat(3,minmax(68px,auto))] gap-2 items-center text-xs"><div class="min-w-0"><div class="flex flex-wrap items-center gap-x-2 gap-y-0.5"><span class="font-semibold truncate">${escapeHtml(row.name)}</span>${row.parentCategories?.length ? `<span class="text-[10px] text-gray-400">${row.parentCategories.map(escapeHtml).join(' · ')}</span>` : ''}</div>${row.duplicate ? '<div class="text-[10px] text-amber-600">Rename or consolidate duplicate budget categories</div>' : row.unbudgeted ? '<div class="text-[10px] text-gray-400">No matching planned subcategory</div>' : ''}</div><div class="text-right"><div class="text-[9px] text-gray-400">BUDGET</div><strong class="accounting-num">${money(row.budget)}</strong></div><div class="text-right"><div class="text-[9px] text-gray-400">ACTUAL</div><strong class="accounting-num">${money(row.actual)}</strong></div><div class="text-right"><div class="text-[9px] text-gray-400">VARIANCE</div><strong class="accounting-num ${valueClass}">${varianceLabel}</strong></div></div>${detail}</div>`;
       };
       host.innerHTML = `<div class="flex flex-wrap items-center justify-between gap-2"><div><div class="text-sm font-semibold">Paycheque ${cycle} spending comparison</div><div class="text-[11px] text-gray-400">${escapeHtml(start)} to ${escapeHtml(end)}</div></div><span class="text-[10px] rounded-full px-2.5 py-1 border ${remainingTotal >= -0.005 ? 'fh-status-income-border fh-status-income-bg fh-status-income' : 'border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-900 dark:bg-rose-950/30 dark:text-rose-300'}">${remainingTotal >= -0.005 ? 'Within variable budget' : 'Over variable budget'}</span></div>
@@ -10579,7 +10647,7 @@ ${acc.name}`);
         while (next <= date) next.setDate(next.getDate() + 14);
         return next;
       };
-      const fmtDate = date => date ? date.toLocaleDateString('en-CA', {year:'numeric',month:'short',day:'numeric'}) : 'Not projected';
+      const fmtDate = date => date ? formatDateMDY(date) : 'Not projected';
       const cards = [];
       let totalSaved = 0, totalTargets = 0, onTrack = 0, attention = 0, reached = 0;
 
@@ -10991,7 +11059,7 @@ ${acc.name}`);
         });
         if (sectionKey === 'variable') {
           const archived = (state.archivedVariableBuckets || []);
-          const archiveMarkup = `<div class="mt-4 border-t border-gray-200 dark:border-gray-800 pt-3"><div class="flex items-center justify-between gap-2 mb-2"><div class="flex items-center gap-2 text-xs font-semibold"><span><i class="fa-solid fa-box-archive mr-1 text-amber-500"></i>Archived variable buckets</span><button type="button" data-fh-info="archived-variable-buckets" aria-label="About archived variable buckets" aria-expanded="false" class="fh-info-trigger"><i class="fa-solid fa-circle-info" aria-hidden="true"></i></button></div><span class="text-[10px] text-gray-400">${archived.length} archived</span></div>${archived.length ? archived.map((bucket,index)=>`<div class="flex items-center justify-between gap-2 p-2 mb-1 rounded-lg bg-gray-50 dark:bg-gray-950 text-xs"><div><strong>${escapeHtml(bucket.name || 'Unnamed bucket')}</strong><div class="text-[10px] text-gray-400">Archived ${bucket.archivedAt ? new Date(bucket.archivedAt).toLocaleDateString() : 'previously'}</div></div><button type="button" onclick="restoreVariableBucket(${index})" class="px-2.5 py-1.5 rounded-lg  text-white font-semibold"><i class="fa-solid fa-rotate-left mr-1"></i>Restore</button></div>`).join('') : '<p class="text-[10px] text-gray-400">No archived buckets.</p>'}</div>`;
+          const archiveMarkup = `<div class="mt-4 border-t border-gray-200 dark:border-gray-800 pt-3"><div class="flex items-center justify-between gap-2 mb-2"><div class="flex items-center gap-2 text-xs font-semibold"><span><i class="fa-solid fa-box-archive mr-1 text-amber-500"></i>Archived variable buckets</span><button type="button" data-fh-info="archived-variable-buckets" aria-label="About archived variable buckets" aria-expanded="false" class="fh-info-trigger"><i class="fa-solid fa-circle-info" aria-hidden="true"></i></button></div><span class="text-[10px] text-gray-400">${archived.length} archived</span></div>${archived.length ? archived.map((bucket,index)=>`<div class="flex items-center justify-between gap-2 p-2 mb-1 rounded-lg bg-gray-50 dark:bg-gray-950 text-xs"><div><strong>${escapeHtml(bucket.name || 'Unnamed bucket')}</strong><div class="text-[10px] text-gray-400">Archived ${bucket.archivedAt ? formatDateMDY(bucket.archivedAt) : 'previously'}</div></div><button type="button" onclick="restoreVariableBucket(${index})" class="px-2.5 py-1.5 rounded-lg  text-white font-semibold"><i class="fa-solid fa-rotate-left mr-1"></i>Restore</button></div>`).join('') : '<p class="text-[10px] text-gray-400">No archived buckets.</p>'}</div>`;
           const allocated = variablePoolState.allocated;
           const unallocated = variablePoolState.poolBudget - allocated;
           const over = unallocated < -0.0001;
@@ -11184,12 +11252,12 @@ ${acc.name}`);
       const categoryRows = Object.entries(categoryTotals).sort((a,b)=>b[1]-a[1]).map(([name,value])=>`<div class="flex justify-between gap-3 py-1.5 border-b border-gray-100 dark:border-gray-800 text-xs"><span class="truncate">${escapeHtml(name)}</span><strong class="accounting-num">${formatFinancial(value)}</strong></div>`).join('') || '<p class="text-xs text-gray-400">No expense transactions in this date range.</p>';
       const decisionText = rec.decision ? `Last decision: ${rec.decision === 'carry' ? 'Carried forward' : 'Reset'} · ${formatFinancial(rec.carryOut||0)} moved to next paycheque` : 'No end-of-paycheque decision recorded yet.';
       const usedPct = (basePool + carryIn) > 0 ? Math.round((actuals / (basePool + carryIn)) * 100) : 0;
-      const historyRows = (rec.decisionHistory || []).slice().reverse().map(h => `<div class="text-[10px] text-gray-400 py-1 border-t border-gray-100 dark:border-gray-800">${new Date(h.date).toLocaleString()} · ${h.decision === 'carry' ? 'Carried' : 'Reset'} · ${formatFinancial(h.amount)} to ${escapeHtml(h.destination || 'next paycheque')}</div>`).join('') || '<div class="text-[10px] text-gray-400">No prior decisions for this paycheque.</div>';
+      const historyRows = (rec.decisionHistory || []).slice().reverse().map(h => `<div class="text-[10px] text-gray-400 py-1 border-t border-gray-100 dark:border-gray-800">${formatDateTimeMDY(h.date)} · ${h.decision === 'carry' ? 'Carried' : 'Reset'} · ${formatFinancial(h.amount)} to ${escapeHtml(h.destination || 'next paycheque')}</div>`).join('') || '<div class="text-[10px] text-gray-400">No prior decisions for this paycheque.</div>';
       const bucketControls = (state.categories||[]).map(cat=>`<label class="inline-flex items-center gap-1.5 text-xs mr-3 mb-1"><input type="checkbox" ${selectedBuckets.includes(cat.name)?'checked':''} onchange="toggleVariablePoolCategory('${String(cat.name).replace(/'/g, "\\'")}',this.checked)" class="fh-theme-checkbox">${escapeHtml(cat.name)}</label>`).join('');
       host.innerHTML = `<div class="flex flex-wrap items-center justify-between gap-2"><div><div class="font-bold text-sm">Paycheque ${cycle} · Shared pool</div><div class="text-[10px] text-gray-400">Combined variable allocation across all variable budget lines</div></div><div class="text-right"><div class="text-[10px] text-gray-400">Available before spending</div><strong class="text-lg accounting-num">${formatFinancial(basePool+carryIn)}</strong></div></div>
         <div class="grid grid-cols-2 md:grid-cols-5 gap-2"><div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-950"><div class="text-[10px] text-gray-400">Budgeted pool</div><strong>${formatFinancial(basePool)}</strong></div><div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-950"><div class="text-[10px] text-gray-400">Carry-in</div><strong>${formatFinancial(carryIn)}</strong></div><div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-950"><div class="text-[10px] text-gray-400">Actual expenses</div><strong>${formatFinancial(actuals,true)}</strong></div><div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-950"><div class="text-[10px] text-gray-400">Pool used</div><strong>${usedPct}%</strong></div><div class="p-3 rounded-xl ${remaining<0?'bg-rose-500/10':'fh-status-income-fill/10'}"><div class="text-[10px] text-gray-400">Remaining</div><strong class="${remaining<0?'text-rose-500':'fh-status-income'}">${formatFinancial(remaining)}</strong></div></div>
         <div class="rounded-xl border border-gray-200 dark:border-gray-800 p-3"><div class="text-xs font-semibold mb-2">Which spending buckets count toward this pool?</div><div>${bucketControls || '<span class="text-xs text-gray-400">Add expense buckets in Settings.</span>'}</div></div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3"><div><label class="block text-xs font-semibold text-gray-500 mb-1">Paycheque ${cycle} start date</label><input type="date" value="${rec.startDate||''}" onchange="updateZbbPoolDate(${cycle},'startDate',this.value)" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div><div><label class="block text-xs font-semibold text-gray-500 mb-1">Paycheque ${cycle} end date</label><input type="date" value="${rec.endDate||''}" onchange="updateZbbPoolDate(${cycle},'endDate',this.value)" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div></div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3"><div><label class="block text-xs font-semibold text-gray-500 mb-1">Paycheque ${cycle} start date</label><input lang="en-US" type="date" value="${rec.startDate||''}" onchange="updateZbbPoolDate(${cycle},'startDate',this.value)" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div><div><label class="block text-xs font-semibold text-gray-500 mb-1">Paycheque ${cycle} end date</label><input lang="en-US" type="date" value="${rec.endDate||''}" onchange="updateZbbPoolDate(${cycle},'endDate',this.value)" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></div></div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><h4 class="text-xs font-bold uppercase tracking-wide text-gray-500 mb-2">Actual spending by category</h4>${categoryRows}</div><div class="rounded-xl border border-gray-200 dark:border-gray-800 p-3 space-y-2"><h4 class="text-xs font-bold uppercase tracking-wide text-gray-500">End-of-paycheque decision</h4><p class="text-xs text-gray-400">Choose what happens to the remaining shared pool. You'll see the amount and confirm before it is carried forward or released.</p><div class="text-sm font-bold accounting-num ${remaining<0?'text-rose-500':'fh-status-income'}">${formatFinancial(Math.max(0,remaining))} available to carry</div><div class="flex flex-wrap gap-2"><button onclick="commitVariablePoolDecision(${cycle},'carry')" class="px-3 py-2 rounded-lg  text-white text-xs font-semibold theme-bg">Carry forward</button><button onclick="commitVariablePoolDecision(${cycle},'reset')" class="px-3 py-2 rounded-lg bg-gray-200 dark:bg-gray-800 text-xs font-semibold">Reset pool</button></div><p class="text-[10px] text-gray-400">${decisionText}</p><div class="pt-2"><div class="text-[10px] font-semibold text-gray-500 mb-1">Decision history</div>${historyRows}</div></div></div>
         ${remaining<0?`<p class="text-xs font-semibold text-rose-500">The shared pool is over budget by ${formatFinancial(Math.abs(remaining))}. A carry-forward will be $0 until the overspend is covered.</p>`:''}
         <p class="text-[10px] text-gray-400">Actual spending is pulled from Transaction Log entries dated within the selected range. Transfers, income and debt-payment transactions are not included. Set the dates to match your actual pay cycle before relying on the remaining balance.</p>`;
@@ -11531,7 +11599,7 @@ ${acc.name}`);
       const filter=document.getElementById('upcoming-bills-filter'),host=document.getElementById('prepopulated-bills-list');if(!filter||!host)return;
       if(!filter.value){const n=new Date();filter.value=`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}`;}
       const ym=filter.value,items=(state.calendarBills||[]).filter(b=>!b.recurrenceOccurrenceDeleted&&!b.paid&&String(b.date||'').startsWith(ym)).sort((a,b)=>String(a.date||'').localeCompare(String(b.date||'')));
-      host.innerHTML=items.length?items.map(b=>{const inc=b.type==='income';return `<div class="flex flex-wrap justify-between items-center gap-2 p-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950 text-xs"><div><strong>${escapeHtml(b.desc||'Scheduled item')}</strong><span class="ml-2 text-gray-500">${formatDateMDY(b.date)} · ${inc?'Income':b.type==='debt'?'Debt payment':'Bill'}</span>${b.vendor && b.type !== 'debt' ? `<div class="text-[10px] text-gray-500 mt-0.5">Vendor: ${escapeHtml(b.vendor)}</div>` : ''}</div><div class="flex items-center gap-3"><strong class="${inc?'fh-status-income':'text-rose-600'} accounting-num">${formatFinancial(b.amount,!inc)}</strong><button onclick="markBillPaid('${b.id}')" class="px-3 py-1.5   text-white rounded-lg font-semibold">${inc?'Mark Received':'Mark Paid'}</button></div></div>`;}).join(''):'<div class="text-xs text-gray-400 py-3">No unpaid scheduled items for this month.</div>';
+      host.innerHTML=items.length?items.map(b=>{const inc=b.type==='income';return `<div class="flex flex-wrap justify-between items-center gap-2 p-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950 text-xs"><div><strong>${escapeHtml(b.desc||'Scheduled item')}</strong><span class="ml-2 text-gray-500">${formatDateMDY(b.date)} · ${inc?'Income':b.type==='debt'?'Debt payment':'Bill'}</span>${b.vendor && b.type !== 'debt' ? `<div class="text-[10px] text-gray-500 mt-0.5">${inc?'Source':'Vendor'}: ${escapeHtml(b.vendor)}</div>` : ''}</div><div class="flex items-center gap-3"><strong class="${inc?'fh-status-income':'text-rose-600'} accounting-num">${formatFinancial(b.amount,!inc)}</strong><button onclick="markBillPaid('${b.id}')" class="px-3 py-1.5   text-white rounded-lg font-semibold">${inc?'Mark Received':'Mark Paid'}</button></div></div>`;}).join(''):'<div class="text-xs text-gray-400 py-3">No unpaid scheduled items for this month.</div>';
     }
     function renderCalendar() {
       ensureRecurringCalendarOccurrences();
@@ -11556,18 +11624,30 @@ ${acc.name}`);
           const isDebt = b.type === 'debt';
           
           const notificationKind = isInc ? 'income' : (isDebt ? 'debt' : 'expense');
-          const settlement = getCalendarBillSettlement(b);
+          // Reconcile the checkbox from the ledger-backed settlement every time the
+          // Calendar renders. This prevents a stale saved `paid` flag from leaving a
+          // fully received paycheque visually unchecked after recording/linking.
+          const settlement = syncCalendarBillPaymentState(b);
+          const isPartiallySettled = settlement.paidCents > 0 && settlement.remainingCents > 0 &&
+            settlement.missingIds.length === 0 && settlement.validTransactions.length === settlement.transactions.length;
+          const settlementStatus = b.paid ? 'received' : isPartiallySettled ? 'partial' :
+            (settlement.missingIds.length || settlement.validTransactions.length !== settlement.transactions.length) ? 'needs-review' : 'unpaid';
+          const outstandingText = formatFinancial(Math.max(0, settlement.remainingCents) / 100);
           const paymentDateInfo = settlement.validTransactions.length
-            ? `<button type="button" class="fh-calendar-paid-date-info fh-info-trigger" onclick="event.stopPropagation();showCalendarPaymentDates('${String(b.id).replace(/'/g, "\\'")}')" aria-label="View actual payment dates for ${escapeHtml(b.desc || 'scheduled item')}" title="View actual payment dates"><i class="fa-solid fa-circle-info" aria-hidden="true"></i></button>`
+            ? `<button type="button" class="fh-calendar-paid-date-info fh-info-trigger" onclick="event.stopPropagation();showCalendarPaymentDates('${String(b.id).replace(/'/g, "\\'")}')" aria-label="View actual ${isInc ? 'receipt' : 'payment'} dates for ${escapeHtml(b.desc || 'scheduled item')}" title="View actual ${isInc ? 'receipt' : 'payment'} dates"><i class="fa-solid fa-circle-info" aria-hidden="true"></i></button>`
             : '';
+          const statusTitle = settlementStatus === 'partial'
+            ? `${isInc ? 'Partially received' : 'Partially paid'} · ${outstandingText} outstanding`
+            : settlementStatus === 'needs-review' ? 'Payment history needs review'
+            : b.paid ? (isInc ? 'Received' : 'Paid') : (isInc ? 'Not received' : 'Unpaid');
           badges += `
-            <div draggable="${!b.paid}" ondragstart="startCalendarBillDrag(event, '${b.id}')" onclick="editCalendarItem('${b.id}', event)" title="${escapeHtml(b.desc || 'Scheduled item')}${b.vendor && !isDebt ? ' · Vendor: ' + escapeHtml(b.vendor) : ''}" class="fh-calendar-notification-row" data-notification-kind="${notificationKind}" data-completed="${b.paid ? 'true' : 'false'}">
+            <div draggable="${!b.paid}" ondragstart="startCalendarBillDrag(event, '${b.id}')" onclick="editCalendarItem('${b.id}', event)" title="${escapeHtml(b.desc || 'Scheduled item')}${b.vendor && !isDebt ? ' · Vendor: ' + escapeHtml(b.vendor) : ''} · ${escapeHtml(statusTitle)}" class="fh-calendar-notification-row" data-notification-kind="${notificationKind}" data-completed="${b.paid ? 'true' : 'false'}" data-settlement-status="${settlementStatus}">
               <span class="fh-calendar-notification-chip" data-notification-kind="${notificationKind}">
                 <span class="fh-calendar-notification-name">${escapeHtml(b.desc || 'Scheduled item')}</span>
                 <span class="accounting-num fh-calendar-notification-amount">${formatFinancial(b.amount, !isInc)}</span>
               </span>
               ${paymentDateInfo}
-              <input type="checkbox" class="fh-calendar-notification-checkbox" ${b.paid ? 'checked' : ''} onclick="event.stopPropagation()" onchange="toggleCalendarItemPaid('${b.id}', event)" aria-label="${b.paid ? (isInc ? 'Income received' : 'Payment paid') : (isInc ? 'Mark income as received' : 'Mark payment as paid')}" title="${b.paid ? (isInc ? 'Received' : 'Paid') : (isInc ? 'Mark received' : 'Mark paid')}" />
+              <input type="checkbox" class="fh-calendar-notification-checkbox" ${b.paid ? 'checked' : ''} data-settlement-status="${settlementStatus}" onclick="event.stopPropagation()" onchange="toggleCalendarItemPaid('${b.id}', event)" aria-label="${b.paid ? (isInc ? 'Income received' : 'Payment paid') : isPartiallySettled ? (isInc ? 'Income partially received' : 'Payment partially paid') : (isInc ? 'Mark income as received' : 'Mark payment as paid')}" title="${escapeHtml(statusTitle)}" />
             </div>
           `;
         });
@@ -11874,7 +11954,7 @@ No payment links or balance changes were retained.`);
                   <strong>Reverse and unlink</strong>
                   <p class="mt-1" style="color:var(--fh-muted,var(--text-secondary,#6b7280))">Create a separate reversal transaction to correct the account balance, preserve the original transaction, and remove its association with this scheduled item.</p>
                   <label class="block mt-3 text-xs font-semibold" for="fh-unpay-reversal-date">Reversal date</label>
-                  <input id="fh-unpay-reversal-date" type="date" value="${localToday}" class="mt-1 w-full rounded-lg border px-3 py-2 text-sm"
+                  <input id="fh-unpay-reversal-date" lang="en-US" type="date" value="${localToday}" class="mt-1 w-full rounded-lg border px-3 py-2 text-sm"
                     style="background:var(--fh-input,var(--fh-raised,transparent));color:var(--fh-ink,var(--text-primary,#1f2937));border-color:var(--fh-border,rgba(120,130,150,.3))">
                 </div>` : `
                 <div class="rounded-xl border p-3 text-xs leading-relaxed" style="border-color:var(--fh-border,rgba(120,130,150,.25));color:var(--fh-muted,var(--text-secondary,#6b7280))">
@@ -12064,8 +12144,39 @@ No payment links or balance changes were retained.`);
       });
     }
 
+    function syncCalendarTerminology(type = document.getElementById('cal-type')?.value || 'expense') {
+      const income = type === 'income';
+      const setText = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
+      setText('cal-date-label', income ? 'Expected Date' : 'Due Date');
+      setText('cal-vendor-label', income ? 'Payer / Source' : 'Vendor');
+      setText('cal-account-label', income ? 'Deposit Account' : 'Funding Account');
+      setText('cal-payment-heading', income ? 'Receipt history' : 'Payment history');
+      setText('cal-payment-amount-label', income ? 'Amount received ($)' : 'Payment amount ($)');
+      setText('cal-payment-date-label', income ? 'Date received' : 'Payment date');
+      setText('cal-payment-account-label', income ? 'Deposit account' : 'Funding account');
+      setText('cal-payment-existing-label', income ? 'Find an existing income transaction' : 'Find an existing payment transaction');
+      setText('cal-payment-submit-label', income ? 'Record / Link Receipt' : 'Record / Link Payment');
+      setText('cal-payment-help', income
+        ? 'Each receipt is recorded once in the ledger. FinHub links it to this scheduled item without duplicating its account-balance effect.'
+        : 'Each payment is recorded once in the ledger. FinHub links it to this scheduled item without duplicating its account-balance effect.');
+      const vendor = document.getElementById('cal-vendor');
+      if (vendor) vendor.placeholder = income ? 'e.g. Employer, client or benefit provider' : 'e.g. Employer, utility or service provider';
+      const existing = document.getElementById('cal-payment-existing');
+      if (existing) {
+        const first = existing.querySelector('option[value=""]');
+        if (first) first.textContent = income ? 'Create a new income transaction' : 'Create a new payment transaction';
+      }
+      const matchSearch = document.getElementById('cal-payment-match-search');
+      if (matchSearch) matchSearch.placeholder = income
+        ? 'Search payer, description, amount, date or account...'
+        : 'Search vendor, description, amount, date or account...';
+      const paidButton = document.getElementById('cal-modal-paid-btn');
+      if (paidButton) paidButton.innerHTML = `<i class="fa-solid fa-check mr-1"></i> ${income ? 'Received' : 'Paid'}`;
+    }
+
     function toggleCalendarDebtAccount() {
       syncCalendarTypeSelector();
+      syncCalendarTerminology();
       const wrap = document.getElementById('cal-debt-account-wrap');
       const type = document.getElementById('cal-type')?.value;
       if (wrap) wrap.classList.toggle('hidden', type !== 'debt');
@@ -12117,7 +12228,10 @@ No payment links or balance changes were retained.`);
       document.getElementById('cal-date').value = item.date;
       ['cal-payment-amount','cal-payment-principal'].forEach(id=>{const input=document.getElementById(id);if(input){delete input.dataset.userEdited;input.value='';}});
       const paymentDateInput=document.getElementById('cal-payment-date');if(paymentDateInput)paymentDateInput.value=new Date().toISOString().slice(0,10);
-      const paymentExistingSelect=document.getElementById('cal-payment-existing');if(paymentExistingSelect)paymentExistingSelect.value='';
+      const paymentExistingSelect=document.getElementById('cal-payment-existing');if(paymentExistingSelect){paymentExistingSelect.value='';delete paymentExistingSelect.dataset.matchPriorState;}
+      const paymentMatchSearch=document.getElementById('cal-payment-match-search');if(paymentMatchSearch)paymentMatchSearch.value='';
+      const paymentMatchResults=document.getElementById('cal-payment-match-results');if(paymentMatchResults)paymentMatchResults.dataset.showAll='false';
+      document.querySelectorAll('#cal-payment-match-filters [data-match-filter]').forEach(button=>{button.setAttribute('aria-pressed','false');button.classList.remove('has-selection');});
       document.getElementById('cal-desc').value = item.desc || '';
       document.getElementById('cal-vendor').value = item.vendor || '';
       document.getElementById('cal-type').value = item.type;
@@ -12139,6 +12253,168 @@ No payment links or balance changes were retained.`);
       recordCalendarBillPayment();
     }
 
+    function getCalendarExistingPaymentCandidates(bill) {
+      if (!bill) return [];
+      const expectedType = bill.type === 'income' ? 'Income' : bill.type === 'debt' ? 'Debt Payment' : 'Expense';
+      const debtId = bill.type === 'debt' ? String(resolveDebtAccountForBill(bill)?.id || '') : '';
+      return (state.transactions || []).filter(tx =>
+        tx.type === expectedType &&
+        (state.accounts || []).some(account => String(account.id) === String(tx.accountId) && account.type === 'asset' && !account.archived) &&
+        !tx.calendarBillId && !tx.refundOfTransactionId && !tx.isReversal && !tx.reversalOfTransactionId && !tx.reconciledDuplicate &&
+        (bill.type !== 'debt' || String(tx.debtAccountId || '') === debtId)
+      );
+    }
+
+    function calendarMatchDateDistanceDays(a, b) {
+      if (!a || !b || !/^\d{4}-\d{2}-\d{2}$/.test(String(a)) || !/^\d{4}-\d{2}-\d{2}$/.test(String(b))) return null;
+      const left = Date.parse(`${a}T12:00:00Z`), right = Date.parse(`${b}T12:00:00Z`);
+      return Number.isFinite(left) && Number.isFinite(right) ? Math.round(Math.abs(left - right) / 86400000) : null;
+    }
+
+    function getCalendarTransactionMatchFilters() {
+      const host = document.getElementById('cal-payment-match-filters');
+      return new Set(host ? [...host.querySelectorAll('[data-match-filter][aria-pressed="true"]')].map(button => button.dataset.matchFilter) : []);
+    }
+
+    function toggleCalendarTransactionMatchFilter(filter, button) {
+      if (!['exact','account','date'].includes(filter) || !button) return;
+      const active = button.getAttribute('aria-pressed') === 'true';
+      button.setAttribute('aria-pressed', active ? 'false' : 'true');
+      button.classList.toggle('has-selection', !active);
+      renderCalendarTransactionMatches();
+    }
+
+    function selectCalendarTransactionMatch(transactionId) {
+      const select = document.getElementById('cal-payment-existing');
+      if (!select) return;
+      const exists = [...select.options].some(option => String(option.value) === String(transactionId));
+      if (!exists) return;
+      if (!select.value && !select.dataset.matchPriorState) {
+        const amount = document.getElementById('cal-payment-amount');
+        const date = document.getElementById('cal-payment-date');
+        const account = document.getElementById('cal-payment-account');
+        select.dataset.matchPriorState = JSON.stringify({
+          amount: amount?.value || '', date: date?.value || '', account: account?.value || '',
+          amountUserEdited: amount?.dataset.userEdited || '',
+          principal: document.getElementById('cal-payment-principal')?.value || '',
+          principalUserEdited: document.getElementById('cal-payment-principal')?.dataset.userEdited || ''
+        });
+      }
+      select.value = String(transactionId);
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+      renderCalendarTransactionMatches();
+    }
+
+    function clearCalendarTransactionMatchSelection() {
+      const select = document.getElementById('cal-payment-existing');
+      if (!select) return;
+      select.value = '';
+      if (select.dataset.matchPriorState) {
+        try {
+          const prior = JSON.parse(select.dataset.matchPriorState);
+          const amount = document.getElementById('cal-payment-amount');
+          const date = document.getElementById('cal-payment-date');
+          const account = document.getElementById('cal-payment-account');
+          const principal = document.getElementById('cal-payment-principal');
+          if (amount) { amount.value = prior.amount; if (prior.amountUserEdited) amount.dataset.userEdited = prior.amountUserEdited; else delete amount.dataset.userEdited; }
+          if (date) date.value = prior.date;
+          if (account && [...account.options].some(option => String(option.value) === String(prior.account))) account.value = prior.account;
+          if (principal) { principal.value = prior.principal; if (prior.principalUserEdited) principal.dataset.userEdited = prior.principalUserEdited; else delete principal.dataset.userEdited; }
+        } catch (error) {
+          console.warn('Could not restore the payment-entry fields after clearing a match.', error);
+        }
+        delete select.dataset.matchPriorState;
+      }
+      renderCalendarTransactionMatches();
+    }
+
+    function toggleCalendarTransactionMatchShowAll() {
+      const results = document.getElementById('cal-payment-match-results');
+      if (!results) return;
+      results.dataset.showAll = results.dataset.showAll === 'true' ? 'false' : 'true';
+      renderCalendarTransactionMatches();
+    }
+
+    function renderCalendarTransactionMatches() {
+      const results = document.getElementById('cal-payment-match-results');
+      const selectedHost = document.getElementById('cal-payment-match-selected');
+      const count = document.getElementById('cal-payment-match-count');
+      const clearButton = document.getElementById('cal-payment-match-clear');
+      const select = document.getElementById('cal-payment-existing');
+      const billId = document.getElementById('cal-edit-id')?.value;
+      const bill = (state.calendarBills || []).find(item => String(item.id) === String(billId));
+      if (!results || !selectedHost || !select || !bill) return;
+
+      const selected = (state.transactions || []).find(tx => String(tx.id) === String(select.value));
+      const accountId = document.getElementById('cal-payment-account')?.value || bill.accountId || '';
+      const targetAmountCents = transactionAmountToCents(Number(document.getElementById('cal-payment-amount')?.value) || 0);
+      const targetDate = bill.date || document.getElementById('cal-date')?.value || '';
+      const scheduledText = `${bill.vendor || ''} ${bill.desc || ''}`.trim().toLocaleLowerCase();
+      const tokens = scheduledText.split(/[^a-z0-9]+/).filter(word => word.length > 2);
+      const searchTerm = (document.getElementById('cal-payment-match-search')?.value || '').trim().toLocaleLowerCase();
+      const filters = getCalendarTransactionMatchFilters();
+      const candidates = getCalendarExistingPaymentCandidates(bill).map(tx => {
+        const acc = (state.accounts || []).find(account => String(account.id) === String(tx.accountId));
+        const amountCents = transactionAmountToCents(Math.abs(Number(tx.amount) || 0));
+        const amountDiff = Math.abs(amountCents - targetAmountCents);
+        const sameAccount = String(tx.accountId) === String(accountId);
+        const dateDistance = calendarMatchDateDistanceDays(String(tx.date || ''), String(targetDate || ''));
+        const txText = `${tx.vendor || ''} ${tx.desc || ''}`.toLocaleLowerCase();
+        const textMatch = !!scheduledText && (txText.includes(scheduledText) || scheduledText.includes(txText));
+        const tokenMatches = tokens.filter(token => txText.includes(token)).length;
+        let score = 0;
+        if (targetAmountCents > 0 && amountDiff === 0) score += 120;
+        else if (targetAmountCents > 0 && amountDiff <= Math.max(100, Math.round(targetAmountCents * .02))) score += 65;
+        else if (targetAmountCents > 0 && amountDiff <= Math.max(500, Math.round(targetAmountCents * .10))) score += 25;
+        if (sameAccount) score += 45;
+        if (textMatch) score += 55;
+        score += Math.min(4, tokenMatches) * 9;
+        if (dateDistance !== null) score += dateDistance === 0 ? 40 : dateDistance <= 3 ? 32 : dateDistance <= 7 ? 24 : dateDistance <= 14 ? 14 : dateDistance <= 31 ? 5 : 0;
+        if (bill.category && tx.category && String(bill.category).toLowerCase() === String(tx.category).toLowerCase()) score += 5;
+        const source = typeof transactionSourceShortLabel === 'function' ? transactionSourceShortLabel(tx) : (tx.source || 'Ledger transaction');
+        const amountText = `${tx.amount ?? ''} ${Math.abs(Number(tx.amount) || 0)} ${formatFinancial(Math.abs(Number(tx.amount) || 0))}`;
+        const searchable = `${tx.date || ''} ${tx.vendor || ''} ${tx.desc || ''} ${acc?.name || ''} ${amountText} ${source}`.toLocaleLowerCase();
+        return { tx, acc, amountCents, amountDiff, sameAccount, dateDistance, score, source, searchable };
+      });
+
+      let filtered = candidates;
+      if (searchTerm) filtered = filtered.filter(item => item.searchable.includes(searchTerm));
+      if (filters.has('exact')) filtered = filtered.filter(item => targetAmountCents > 0 && item.amountDiff === 0);
+      if (filters.has('account')) filtered = filtered.filter(item => item.sameAccount);
+      if (filters.has('date')) filtered = filtered.filter(item => item.dateDistance !== null && item.dateDistance <= 14);
+      filtered.sort((a,b) => b.score - a.score || (b.tx.date || '').localeCompare(a.tx.date || '') || String(a.tx.id).localeCompare(String(b.tx.id)));
+
+      const showAll = results.dataset.showAll === 'true' || !!searchTerm || filters.size > 0;
+      const displayed = showAll ? filtered : filtered.slice(0, 5);
+      if (count) count.textContent = filtered.length
+        ? `${filtered.length} matching transaction${filtered.length === 1 ? '' : 's'}${showAll ? '' : ' · showing the 5 strongest suggestions'}`
+        : 'No matching transactions';
+      if (clearButton) clearButton.classList.toggle('hidden', !selected);
+
+      if (selected) {
+        const account = (state.accounts || []).find(item => String(item.id) === String(selected.accountId));
+        selectedHost.classList.remove('hidden');
+        selectedHost.innerHTML = `<div class="flex items-start justify-between gap-2"><div class="min-w-0"><div class="font-semibold">Selected: ${escapeHtml(selected.vendor || selected.desc || 'Transaction')}</div><div class="mt-1 text-[10px]" style="color:var(--fh-muted)">${escapeHtml(formatDateMDY(selected.date))} · ${escapeHtml(account?.name || 'Unknown account')} · ${escapeHtml(typeof transactionSourceShortLabel === 'function' ? transactionSourceShortLabel(selected) : 'Ledger transaction')}</div></div><strong class="accounting-num shrink-0">${formatFinancial(Math.abs(Number(selected.amount) || 0))}</strong></div><p class="mt-1 text-[10px]" style="color:var(--fh-muted)">This existing transaction will be linked; FinHub will not create another ledger entry.</p>`;
+      } else {
+        selectedHost.classList.add('hidden');
+        selectedHost.innerHTML = '';
+      }
+
+      if (!filtered.length) {
+        results.innerHTML = `<div class="rounded-lg border px-3 py-3 text-center text-[11px]" style="border-color:var(--fh-surface-border);color:var(--fh-muted)">${candidates.length ? 'No transactions match those search terms or filters. Try clearing a filter or broadening your search.' : 'No eligible unlinked transactions are available. You can record a new transaction using the fields above.'}</div>`;
+        return;
+      }
+
+      results.innerHTML = displayed.map(item => {
+        const tx = item.tx;
+        const selectedClass = selected && String(selected.id) === String(tx.id) ? ' is-selected' : '';
+        const badge = item.amountDiff === 0 && targetAmountCents > 0 ? 'Exact amount' : item.score >= 75 ? 'Strong match' : item.sameAccount ? 'Same account' : 'Possible match';
+        const dateText = item.dateDistance === null ? '' : `${item.dateDistance} day${item.dateDistance === 1 ? '' : 's'} from scheduled date`;
+        return `<button type="button" class="fh-calendar-match-card${selectedClass}" data-calendar-match-id="${escapeHtml(String(tx.id))}" onclick="selectCalendarTransactionMatch(this.dataset.calendarMatchId)" aria-pressed="${selected && String(selected.id) === String(tx.id) ? 'true' : 'false'}"><span class="flex min-w-0 items-start justify-between gap-2"><span class="min-w-0"><strong class="block truncate text-xs">${escapeHtml(tx.vendor || tx.desc || 'Transaction')}</strong><span class="mt-1 block truncate text-[10px]" style="color:var(--fh-muted)">${escapeHtml(formatDateMDY(tx.date))} · ${escapeHtml(item.acc?.name || 'Unknown account')}</span></span><strong class="accounting-num shrink-0 text-xs">${formatFinancial(Math.abs(Number(tx.amount) || 0))}</strong></span><span class="mt-1.5 flex flex-wrap items-center gap-1.5"><span class="fh-calendar-match-badge">${badge}</span><span class="text-[10px]" style="color:var(--fh-muted)">${escapeHtml(item.source)}${dateText ? ` · ${escapeHtml(dateText)}` : ''}</span></span></button>`;
+      }).join('') + (!showAll && filtered.length > displayed.length
+        ? `<button class="w-full rounded-lg border px-3 py-2 text-[10px] font-semibold" onclick="toggleCalendarTransactionMatchShowAll()" style="border-color:var(--fh-surface-border);color:var(--fh-primary)" type="button">Show all ${filtered.length} matches</button>` : '');
+    }
+
     function renderCalendarBillPaymentPanel(bill) {
       const panel = document.getElementById('cal-payment-panel');
       if (!panel || !bill) return;
@@ -12150,16 +12426,25 @@ No payment links or balance changes were retained.`);
       const legacyPaidWithoutLink = !!bill.paid && settlement.transactions.length===0 && bill.paymentStatus==='legacy-unlinked';
       const invalidLinkedPayments = settlement.transactions.length !== settlement.validTransactions.length;
       const needsReview = settlement.missingIds.length>0 || invalidLinkedPayments;
-      const status = needsReview ? 'Needs review · payment link mismatch' : legacyPaidWithoutLink ? 'Paid · ledger link needs review' : settlement.paidCents > amountCents ? 'Overpaid' : remainingCents === 0 ? 'Paid' : settlement.paidCents > 0 ? 'Partially paid' : 'Unpaid';
+      const isIncome = bill.type === 'income';
+      syncCalendarTerminology(bill.type);
+      const status = needsReview ? (isIncome ? 'Needs review · receipt link mismatch' : 'Needs review · payment link mismatch')
+        : legacyPaidWithoutLink ? (isIncome ? 'Received · ledger link needs review' : 'Paid · ledger link needs review')
+        : settlement.paidCents > amountCents ? (isIncome ? 'Excess received' : 'Overpaid')
+        : remainingCents === 0 ? (isIncome ? 'Received' : 'Paid')
+        : settlement.paidCents > 0 ? (isIncome ? 'Partially received' : 'Partially paid')
+        : (isIncome ? 'Not received' : 'Unpaid');
       document.getElementById('cal-payment-status').textContent = status;
-      document.getElementById('cal-payment-summary').innerHTML = `Scheduled: <strong>${formatFinancial(amountCents/100)}</strong> · Paid: <strong>${formatFinancial(settlement.paidCents/100)}</strong> · Remaining: <strong>${formatFinancial((amountCents-settlement.paidCents)/100)}</strong>`;
+      document.getElementById('cal-payment-summary').innerHTML = isIncome
+        ? `Expected: <strong>${formatFinancial(amountCents/100)}</strong> · Received: <strong>${formatFinancial(settlement.paidCents/100)}</strong> · Outstanding: <strong>${formatFinancial((amountCents-settlement.paidCents)/100)}</strong>`
+        : `Scheduled: <strong>${formatFinancial(amountCents/100)}</strong> · Paid: <strong>${formatFinancial(settlement.paidCents/100)}</strong> · Remaining: <strong>${formatFinancial((amountCents-settlement.paidCents)/100)}</strong>`;
       const history = document.getElementById('cal-payment-history');
       history.innerHTML = (settlement.transactions.length ? settlement.transactions.map(tx => {
         const netCents = Math.max(0, transactionAmountToCents(Math.abs(Number(tx.amount)||0)) - getTransactionReversedAmountCents(tx.id));
         const acc = state.accounts.find(a => String(a.id) === String(tx.accountId));
         const validPayment = settlement.validTransactions.includes(tx);
-        return `<div class="flex items-center justify-between gap-2 rounded-lg bg-gray-50 dark:bg-gray-950 px-2 py-1.5 text-[10px]"><div class="min-w-0"><div class="font-semibold">${escapeHtml(formatDateMDY(tx.date))} · ${escapeHtml(acc?.name || 'Unknown account')}</div><div class="text-gray-400 truncate">${escapeHtml(tx.vendor || tx.desc || 'Payment')} · ${!validPayment ? 'needs review · not counted' : netCents < transactionAmountToCents(Math.abs(Number(tx.amount)||0)) ? 'net of reversals' : 'posted'}</div></div><div class="flex items-center gap-2"><strong class="accounting-num">${formatFinancial(netCents/100)}</strong><button type="button" class="text-indigo-500" onclick="closeCalendarModal();openTransactionModal('${escapeHtml(tx.id)}')" title="Open ledger transaction"><i class="fa-solid fa-arrow-up-right-from-square"></i></button></div></div>`;
-      }).join('') : '<p class="text-[10px] text-gray-400">No payments recorded yet.</p>') + settlement.missingIds.map(missingId=>`<div class="rounded-lg border border-amber-400/50 bg-amber-50 dark:bg-amber-950/30 px-2 py-2 text-[10px]"><div class="font-semibold text-amber-700 dark:text-amber-300">Missing ledger transaction: ${escapeHtml(missingId)}</div><p class="text-gray-500 mt-1">This reference is preserved. Confirm the transaction is genuinely missing before removing the broken link.</p><button type="button" class="mt-1 text-amber-700 dark:text-amber-300 font-semibold" onclick="resolveMissingCalendarBillPaymentLink('${escapeHtml(bill.id)}','${escapeHtml(missingId)}')">Review and resolve missing link</button></div>`).join('');
+        return `<div class="flex items-center justify-between gap-2 rounded-lg bg-gray-50 dark:bg-gray-950 px-2 py-1.5 text-[10px]"><div class="min-w-0"><div class="font-semibold">${escapeHtml(formatDateMDY(tx.date))} · ${escapeHtml(acc?.name || 'Unknown account')}</div><div class="text-gray-400 truncate">${escapeHtml(tx.vendor || tx.desc || (isIncome ? 'Receipt' : 'Payment'))} · ${!validPayment ? 'needs review · not counted' : netCents < transactionAmountToCents(Math.abs(Number(tx.amount)||0)) ? 'net of reversals' : 'posted'}</div></div><div class="flex items-center gap-2"><strong class="accounting-num">${formatFinancial(netCents/100)}</strong><button type="button" class="text-indigo-500" onclick="closeCalendarModal();openTransactionModal('${escapeHtml(tx.id)}')" title="Open ledger transaction"><i class="fa-solid fa-arrow-up-right-from-square"></i></button></div></div>`;
+      }).join('') : `<p class="text-[10px] text-gray-400">${isIncome ? 'No receipts recorded yet.' : 'No payments recorded yet.'}</p>`) + settlement.missingIds.map(missingId=>`<div class="rounded-lg border border-amber-400/50 bg-amber-50 dark:bg-amber-950/30 px-2 py-2 text-[10px]"><div class="font-semibold text-amber-700 dark:text-amber-300">Missing ledger transaction: ${escapeHtml(missingId)}</div><p class="text-gray-500 mt-1">This reference is preserved. Confirm the transaction is genuinely missing before removing the broken link.</p><button type="button" class="mt-1 text-amber-700 dark:text-amber-300 font-semibold" onclick="resolveMissingCalendarBillPaymentLink('${escapeHtml(bill.id)}','${escapeHtml(missingId)}')">Review and resolve missing link</button></div>`).join('');
       const entry = document.getElementById('cal-payment-entry');
       entry.classList.toggle('hidden', remainingCents <= 0 || needsReview);
       const amountInput = document.getElementById('cal-payment-amount');
@@ -12171,6 +12456,8 @@ No payment links or balance changes were retained.`);
         const current = bill.accountId || '';
         accountSelect.innerHTML = (state.accounts||[]).filter(a=>a.type==='asset'&&!a.archived).map(a=>`<option value="${escapeHtml(a.id)}" ${String(a.id)===String(current)?'selected':''}>${escapeHtml(a.name)}</option>`).join('');
       }
+      if (accountSelect) accountSelect.onchange = renderCalendarTransactionMatches;
+      if (dateInput) dateInput.onchange = renderCalendarTransactionMatches;
       const principalWrap = document.getElementById('cal-payment-principal-wrap');
       if (principalWrap) principalWrap.classList.toggle('hidden', bill.type !== 'debt');
       const principalInput = document.getElementById('cal-payment-principal');
@@ -12182,12 +12469,18 @@ No payment links or balance changes were retained.`);
       const existingSelect = document.getElementById('cal-payment-existing');
       if (existingSelect) {
         const selected = existingSelect.value;
-        const expectedType = bill.type === 'income' ? 'Income' : bill.type === 'debt' ? 'Debt Payment' : 'Expense';
-        const options = (state.transactions||[]).filter(tx => tx.type===expectedType && (state.accounts||[]).some(account=>String(account.id)===String(tx.accountId)&&account.type==='asset') && !tx.calendarBillId && !tx.refundOfTransactionId && !tx.isReversal && !tx.reversalOfTransactionId && !tx.reconciledDuplicate && (!bill.type || bill.type!=='debt' || String(tx.debtAccountId||'')===String(resolveDebtAccountForBill(bill)?.id||''))).map(tx=>{const acc=(state.accounts||[]).find(account=>String(account.id)===String(tx.accountId));return `<option value="${escapeHtml(tx.id)}">${escapeHtml(tx.date)} · ${escapeHtml(tx.vendor||tx.desc||'Transaction')} · ${escapeHtml(acc?.name||'Account')} · ${formatFinancial(tx.amount)}</option>`;}).join('');
-        existingSelect.innerHTML = '<option value="">Create a new payment transaction</option>' + options;
-        if (selected && [...existingSelect.options].some(o=>o.value===selected)) existingSelect.value=selected;
+        const candidates = getCalendarExistingPaymentCandidates(bill);
+        existingSelect.innerHTML = `<option value="">${bill.type === 'income' ? 'Create a new income transaction' : 'Create a new payment transaction'}</option>` + candidates.map(tx => {
+          const acc=(state.accounts||[]).find(account=>String(account.id)===String(tx.accountId));
+          return `<option value="${escapeHtml(tx.id)}">${escapeHtml(formatDateMDY(tx.date))} · ${escapeHtml(tx.vendor||tx.desc||'Transaction')} · ${escapeHtml(acc?.name||'Account')} · ${formatFinancial(tx.amount)}</option>`;
+        }).join('');
+        if (selected && [...existingSelect.options].some(option=>option.value===selected)) existingSelect.value=selected;
+        else existingSelect.value='';
       }
-      if (amountInput) amountInput.oninput = () => { amountInput.dataset.userEdited='1'; if (bill.type==='debt' && principalInput && !principalInput.dataset.userEdited) { const val=Math.max(0,Number(amountInput.value)||0); const scheduledPrincipal=Math.max(0,Number(bill.principalAmount??bill.amount)||0); principalInput.value=(Number(bill.amount)>0?Math.min(val,Math.round(scheduledPrincipal*val/Number(bill.amount)*100)/100):0).toFixed(2); } };
+      const matchResults = document.getElementById('cal-payment-match-results');
+      if (matchResults && matchResults.dataset.showAll !== 'true') matchResults.dataset.showAll = 'false';
+      renderCalendarTransactionMatches();
+      if (amountInput) amountInput.oninput = () => { amountInput.dataset.userEdited='1'; if (bill.type==='debt' && principalInput && !principalInput.dataset.userEdited) { const val=Math.max(0,Number(amountInput.value)||0); const scheduledPrincipal=Math.max(0,Number(bill.principalAmount??bill.amount)||0); principalInput.value=(Number(bill.amount)>0?Math.min(val,Math.round(scheduledPrincipal*val/Number(bill.amount)*100)/100):0).toFixed(2); }  renderCalendarTransactionMatches(); };
       if (principalInput) principalInput.oninput = () => { principalInput.dataset.userEdited='1'; };
       if (existingSelect) existingSelect.onchange = () => {
         const tx=(state.transactions||[]).find(row=>String(row.id)===String(existingSelect.value));
@@ -12374,7 +12667,7 @@ No payment links or balance changes were retained.`);
         captureUndo(`Link payment to scheduled item "${bill.desc||bill.id}"`);
         try { linkCalendarBillPayment(bill, existing); } catch(error) { alert(error.message); return; }
         saveData();
-        const select=document.getElementById('cal-payment-existing');if(select)select.value='';
+        const select=document.getElementById('cal-payment-existing');if(select){select.value='';delete select.dataset.matchPriorState;}
         ['cal-payment-amount','cal-payment-principal'].forEach(id=>{const input=document.getElementById(id);if(input){delete input.dataset.userEdited;input.value='';}});
         renderCalendarBillPaymentPanel(bill);
         renderLedger(); renderDashboard(); renderCalendar(); renderZbbFundingTracker(); renderDebtPlanner(); renderDebtPaymentHistory();
@@ -12479,8 +12772,14 @@ No payment links or balance changes were retained.`);
       const bill = state.calendarBills.find(b => b.id === id);
       if (!bill) return;
       const rootId = bill.recurrenceRootId || bill.id;
+      // Ending a series from a selected future occurrence must not be blocked
+      // by payment history on earlier, already-completed occurrences. Only
+      // the selected occurrence and later occurrences are being removed.
       const affectedBills = deleteFuture
-        ? (state.calendarBills||[]).filter(item=>String(item.id)===String(rootId) || String(item.recurrenceRootId||'')===String(rootId))
+        ? (state.calendarBills||[]).filter(item =>
+            (String(item.id)===String(rootId) || String(item.recurrenceRootId||'')===String(rootId)) &&
+            String(item.date||'') >= String(bill.date||'')
+          )
         : [bill];
       const hasPaymentHistory = affectedBills.find(item=>getCalendarBillPaymentTransactions(item).length>0 || item.paid);
       if (hasPaymentHistory) { alert(`Cannot delete this scheduled item or series because “${hasPaymentHistory.desc||'a scheduled occurrence'}” has payment history. Resolve its ledger payments first.`); return; }
@@ -12822,7 +13121,7 @@ No payment links or balance changes were retained.`);
           <div class="min-w-0"><div class="text-xs font-semibold">${escapeHtml(bill?.name || a.billName || 'Deleted bill')} <span class="font-normal text-gray-500">· ${label}</span></div>
           <div class="text-xs accounting-num font-bold mt-1 ${a.reversedAt ? 'line-through text-gray-400' : 'text-amber-700 dark:text-amber-300'}">${signed}${formatFinancial(Math.abs(Number(a.amountCents)||0)/100)}${a.type === 'waived' ? ' covered' : ''}</div>
           <div class="text-[11px] text-gray-500 mt-1">${escapeHtml(a.reason || 'No reason entered')}</div>
-          <div class="text-[10px] text-gray-400 mt-1">${a.reversedAt ? 'Reversed' : 'Recorded'}${a.createdAt ? ' · ' + escapeHtml(new Date(a.createdAt).toLocaleDateString()) : ''}</div></div>
+          <div class="text-[10px] text-gray-400 mt-1">${a.reversedAt ? 'Reversed' : 'Recorded'}${a.createdAt ? ' · ' + escapeHtml(formatDateMDY(a.createdAt)) : ''}</div></div>
           ${a.reversedAt ? '' : `<button onclick="reverseJointAdjustment('${a.id}')" class="text-[11px] font-semibold text-rose-600 dark:text-rose-400 shrink-0">Reverse</button>`}
         </div>`;
       }).join('');
@@ -13231,11 +13530,7 @@ No payment links or balance changes were retained.`);
     function toggleLedgerTransactionSelection(id, checked) {
       if (checked) selectedLedgerIds.add(String(id)); else selectedLedgerIds.delete(String(id));
       const card = Array.from(document.querySelectorAll('#ledger-mobile-cards .ledger-mobile-row')).find(el => String(el.dataset.transactionId) === String(id));
-      if (card) {
-        card.classList.toggle('ring-2', !!checked);
-        card.classList.toggle('ring-indigo-500/40', !!checked);
-        card.classList.toggle('border-indigo-500/60', !!checked);
-      }
+      if (card) card.classList.toggle('is-selected', !!checked);
       updateLedgerSelectionUI();
     }
     function selectAllFilteredTransactions() {
@@ -13263,7 +13558,7 @@ No payment links or balance changes were retained.`);
       const groupId = `offset_${Date.now()}_${Math.random().toString(36).slice(2,7)}`;
       const income = a.type === 'Income' ? a : b;
       const expense = a.type === 'Expense' ? a : b;
-      if (!confirm(`Match these two existing entries as an offsetting pair?\n\nIncome: ${income.date || ''} · ${income.vendor || income.desc || 'Income'} · ${formatFinancial(Math.abs(Number(income.amount)||0))}\nExpense: ${expense.date || ''} · ${expense.vendor || expense.desc || 'Expense'} · ${formatFinancial(Math.abs(Number(expense.amount)||0))}\n\nThis only links the records. It will NOT create a transaction or change account balances. The matched Income will be excluded from income totals.`)) return;
+      if (!confirm(`Match these two existing entries as an offsetting pair?\n\nIncome: ${formatDateMDY(income.date)} · ${income.vendor || income.desc || 'Income'} · ${formatFinancial(Math.abs(Number(income.amount)||0))}\nExpense: ${formatDateMDY(expense.date)} · ${expense.vendor || expense.desc || 'Expense'} · ${formatFinancial(Math.abs(Number(expense.amount)||0))}\n\nThis only links the records. It will NOT create a transaction or change account balances. The matched Income will be excluded from income totals.`)) return;
       captureUndo('Match existing offsetting transactions');
       [a,b].forEach(t => {
         t.matchedOffsetGroupId = groupId;
@@ -13509,9 +13804,9 @@ No payment links or balance changes were retained.`);
           if (match.status === 'unique') {
             counterpart = match.candidates[0];
           } else if (match.status === 'ambiguous') {
-            const sourceLabel = `${sourceTx.date || 'No date'} · ${sourceTx.vendor || sourceTx.desc || 'Outgoing transaction'} · ${formatFinancial(sourceTx.amount)}`;
+            const sourceLabel = `${formatDateMDY(sourceTx.date)} · ${sourceTx.vendor || sourceTx.desc || 'Outgoing transaction'} · ${formatFinancial(sourceTx.amount)}`;
             const options = match.candidates.map((candidate, index) => {
-              const date = candidate.date || 'No date';
+              const date = formatDateMDY(candidate.date);
               const description = candidate.vendor || candidate.desc || candidate.statementDescription || 'Incoming transaction';
               const account = state.accounts.find(a => String(a.id) === String(candidate.accountId))?.name || 'Destination account';
               const reconciled = candidate.statementMatchNeedsReview ? ' · Match needs review' : (statementTransactionReconciledForAccount(candidate,candidate.accountId) ? ' · Statement matched' : '');
@@ -13526,7 +13821,7 @@ No payment links or balance changes were retained.`);
             }
             counterpart = match.candidates[selectedIndex];
           } else {
-            issues.push(`${sourceTx.vendor || sourceTx.desc || 'Transaction'} (${sourceTx.date || 'no date'}, ${formatFinancial(sourceTx.amount)}): ${match.status === 'invalid' ? 'source must be an outgoing Expense or an existing transfer to the selected destination' : 'no matching destination Income transaction'}`);
+            issues.push(`${sourceTx.vendor || sourceTx.desc || 'Transaction'} (${formatDateMDY(sourceTx.date)}, ${formatFinancial(sourceTx.amount)}): ${match.status === 'invalid' ? 'source must be an outgoing Expense or an existing transfer to the selected destination' : 'no matching destination Income transaction'}`);
           }
           if (counterpart) {
             reservedDestinationIds.add(String(counterpart.id));
@@ -13579,7 +13874,7 @@ No payment links or balance changes were retained.`);
           : ` The selected transactions will become Internal Transfers from their existing accounts to ${destinationName}. Their amounts will be removed from source balances and added to the destination balance.`)
         : clearBucket ? ' The bucket and subcategory will be cleared.' : (targetCategory ? ` The bucket will be set to “${targetCategory}”.` : '');
       const typeDetail = typeValue ? (typeValue==='Transfer' && transferMode==='match' ? ' Type will be “Internal Transfer”; FinHub will preserve correct balances for ordinary Expense/Income pairs and remove duplicate destination credits from transfers already created.' : ` Type will become “${typeValue==='Transfer'?'Internal Transfer':typeValue}”; account balances will be adjusted to preserve the correct effect of each transaction.`) : '';
-      const pairDetail = transferMode==='match' && transferPairs.length ? `\n\nPairs to be linked:\n${transferPairs.slice(0,8).map(pair=>`• ${pair.source.date} ${pair.source.vendor||pair.source.desc||'Outgoing'} ${formatFinancial(pair.source.amount)} ↔ ${pair.destination.date} ${pair.destination.vendor||pair.destination.desc||'Incoming'}`).join('\n')}${transferPairs.length>8?`\n…and ${transferPairs.length-8} more.`:''}` : '';
+      const pairDetail = transferMode==='match' && transferPairs.length ? `\n\nPairs to be linked:\n${transferPairs.slice(0,8).map(pair=>`• ${formatDateMDY(pair.source.date)} ${pair.source.vendor||pair.source.desc||'Outgoing'} ${formatFinancial(pair.source.amount)} ↔ ${formatDateMDY(pair.destination.date)} ${pair.destination.vendor||pair.destination.desc||'Incoming'}`).join('\n')}${transferPairs.length>8?`\n…and ${transferPairs.length-8} more.`:''}` : '';
       if (!confirm(`Apply the selected changes to ${valid.length} transaction${valid.length===1?'':'s'}?${typeDetail}${confirmationDetail}${pairDetail}`))return;
       if (typeValue === 'Transfer' && transferMode === 'match') captureStatementUndo('Bulk match existing transactions as internal transfers');
       else captureUndo('Bulk edit transaction types and details');
@@ -13681,7 +13976,7 @@ No payment links or balance changes were retained.`);
     let activeLedgerFilterTrigger = null;
     function ledgerFilterValue(t, key) {
       const acc = state.accounts.find(a => a.id === t.accountId);
-      if (key === 'date') return t.date || '';
+      if (key === 'date') return formatDateMDY(t.date);
       if (key === 'vendor') return t.vendor || '(No vendor)';
       if (key === 'desc') return t.desc || '(No description)';
       if (key === 'type') return (t.type === 'Expense' && Number(t.amount) < 0 && t.refundOfTransactionId) ? 'Refund / reimbursement' : displayFinHubTransactionType(t.type);
@@ -14107,12 +14402,16 @@ No payment links or balance changes were retained.`);
       }
       const tableButton = document.getElementById('ledger-view-table-btn');
       const listButton = document.getElementById('ledger-view-cal-btn');
-      if (tableButton) tableButton.className = mode === 'table'
-        ? 'px-3 py-1.5 rounded-lg text-xs font-semibold text-white theme-bg shadow-sm'
-        : 'px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-500 dark:text-gray-400  ';
-      if (listButton) listButton.className = mode === 'list'
-        ? 'px-3 py-1.5 rounded-lg text-xs font-semibold text-white theme-bg shadow-sm'
-        : 'px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-500 dark:text-gray-400  ';
+      if (tableButton) {
+        const active = mode === 'table';
+        tableButton.classList.toggle('is-active', active);
+        tableButton.setAttribute('aria-pressed', active ? 'true' : 'false');
+      }
+      if (listButton) {
+        const active = mode === 'list';
+        listButton.classList.toggle('is-active', active);
+        listButton.setAttribute('aria-pressed', active ? 'true' : 'false');
+      }
       document.getElementById('ledger-density-controls')?.classList.toggle('hidden', mode !== 'table');
       document.getElementById('ledger-table-options-toggle')?.classList.toggle('hidden', mode !== 'table');
       document.getElementById('ledger-list-options-toggle')?.classList.toggle('hidden', mode !== 'list');
@@ -14121,14 +14420,19 @@ No payment links or balance changes were retained.`);
     }
 
     const LEDGER_LIST_FIELDS = [
-      ['date','Date'],['description','Description'],['type','Type'],['category','Category'],
-      ['subcategory','Subcategory'],['account','Account'],['transferAccount','Transfer account'],
-      ['amount','Amount'],['running','Running balance'],['source','Source'],['reconciliation','Statement match']
+      ['date','Date'],['vendor','Vendor / Description'],['subcategory','Subcategory'],['amount','Amount']
     ];
-    const LEDGER_LIST_DEFAULT_HIDDEN = ['description','subcategory','transferAccount','running','source','reconciliation'];
+    const LEDGER_LIST_DEFAULT_HIDDEN = [];
     function ledgerListPrefs() {
-      state.ledgerListPrefs = state.ledgerListPrefs || { hidden: [...LEDGER_LIST_DEFAULT_HIDDEN] };
-      state.ledgerListPrefs.hidden = Array.isArray(state.ledgerListPrefs.hidden) ? state.ledgerListPrefs.hidden : [...LEDGER_LIST_DEFAULT_HIDDEN];
+      // Migrate legacy card-detail preferences once so the new primary
+      // Subcategory column is visible by default in the compact list.
+      if (!state.ledgerListPrefs || Number(state.ledgerListPrefs.layoutVersion) !== 2) {
+        state.ledgerListPrefs = { hidden: [], layoutVersion: 2 };
+      }
+      const allowed = new Set(LEDGER_LIST_FIELDS.map(([field]) => field));
+      state.ledgerListPrefs.hidden = Array.isArray(state.ledgerListPrefs.hidden)
+        ? [...new Set(state.ledgerListPrefs.hidden.filter(field => allowed.has(field)))]
+        : [...LEDGER_LIST_DEFAULT_HIDDEN];
       return state.ledgerListPrefs;
     }
     function openLedgerListSettings() {
@@ -14136,7 +14440,7 @@ No payment links or balance changes were retained.`);
       const host = document.getElementById('ledger-list-field-options');
       if (!panel || !host) return;
       const prefs = ledgerListPrefs();
-      host.innerHTML = LEDGER_LIST_FIELDS.map(([key,label]) => `<label class="flex items-center gap-2 cursor-pointer rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-950 p-2"><input type="checkbox" ${prefs.hidden.includes(key) ? '' : 'checked'} onchange="toggleLedgerListField('${key}',this.checked)"><span>${label}</span></label>`).join('');
+      host.innerHTML = LEDGER_LIST_FIELDS.map(([key,label]) => `<label class="flex items-center gap-2 cursor-pointer rounded-lg border fh-theme-border fh-theme-raised p-2"><input type="checkbox" ${prefs.hidden.includes(key) ? '' : 'checked'} onchange="toggleLedgerListField('${key}',this.checked)"><span>${label}</span></label>`).join('');
       panel.classList.remove('hidden');
       document.getElementById('ledger-list-options-toggle')?.setAttribute('aria-expanded','true');
     }
@@ -14158,7 +14462,7 @@ No payment links or balance changes were retained.`);
       openLedgerListSettings();
     }
     function resetLedgerListFields() {
-      state.ledgerListPrefs = { hidden: [...LEDGER_LIST_DEFAULT_HIDDEN] };
+      state.ledgerListPrefs = { hidden: [...LEDGER_LIST_DEFAULT_HIDDEN], layoutVersion: 2 };
       saveData(); renderLedger(); openLedgerListSettings();
     }
     function openLedgerTransaction(id) {
@@ -14167,44 +14471,42 @@ No payment links or balance changes were retained.`);
       if (transaction.type === 'Interest Charge') openInterestChargeModal(String(transaction.id));
       else openTransactionModal(String(transaction.id));
     }
-    function ledgerListFieldHtml(t, key, runningBalances) {
-      const account = (state.accounts || []).find(a => String(a.id) === String(t.accountId));
-      const destination = (state.accounts || []).find(a => String(a.id) === String(t.transferToAccountId));
-      let value = '';
-      if (key === 'date') value = formatDateMDY(t.date);
-      else if (key === 'description') value = escapeHtml(t.desc || '—');
-      else if (key === 'type') value = escapeHtml(t.type === 'Transfer' ? 'Internal Transfer' : (t.type === 'Expense' && Number(t.amount) < 0 && t.refundOfTransactionId ? 'Refund / reimbursement' : displayFinHubTransactionType(t.type)));
-      else if (key === 'category') value = escapeHtml(t.category || 'Uncategorized');
-      else if (key === 'subcategory') value = escapeHtml(t.subcategory || '—');
-      else if (key === 'account') value = escapeHtml(account?.name || 'Unknown account');
-      else if (key === 'transferAccount') value = escapeHtml(destination?.name || '—');
-      else if (key === 'amount') value = `<strong class="accounting-num ${((t.type === 'Expense' && Number(t.amount) >= 0) || t.type === 'Debt Payment' || t.type === 'Interest Charge' || (t.type === 'Transfer' && t.externalTransferDirection !== 'in'))?'finhub-money-out':'finhub-money-in'}">${formatFinancial(t.amount, ((t.type === 'Expense' && Number(t.amount) >= 0) || t.type === 'Debt Payment' || t.type === 'Interest Charge' || (t.type === 'Transfer' && t.externalTransferDirection !== 'in')))}</strong>`;
-      else if (key === 'running') {
-        const cell = renderLedgerRunningBalanceCell(t, runningBalances);
-        value = cell.replace(/^<td[^>]*>/, '').replace(/<\/td>$/, '');
-      } else if (key === 'source') value = escapeHtml(transactionSourceShortLabel(t));
-      else if (key === 'reconciliation') value = transactionStatementStatusBadge(t) || '—';
-      if (!value) value = '—';
-      const label = LEDGER_LIST_FIELDS.find(([field]) => field === key)?.[1] || key;
-      return `<span class="ledger-mobile-field"><span class="ledger-mobile-field-label">${label}</span>${value}</span>`;
+    function ledgerListFieldHtml(t, key) {
+      const isOutflow = (t.type === 'Expense' && Number(t.amount) >= 0) || t.type === 'Debt Payment' || t.type === 'Interest Charge' || (t.type === 'Transfer' && t.externalTransferDirection !== 'in');
+      if (key === 'date') return `<span class="ledger-mobile-cell ledger-mobile-date" data-list-field="date" title="${escapeHtml(formatDateMDY(t.date))}">${formatDateMDY(t.date)}</span>`;
+      if (key === 'vendor') {
+        const label = t.vendor || t.desc || t.bankDescription || t.statementDescription || 'Unspecified transaction';
+        return `<span class="ledger-mobile-cell ledger-mobile-vendor" data-list-field="vendor" title="${escapeHtml(label)}">${escapeHtml(label)}</span>`;
+      }
+      if (key === 'subcategory') {
+        const isSplit = t.type === 'Expense' && Array.isArray(t.splits) && t.splits.length > 0;
+        const label = isSplit ? 'Split' : (t.subcategory || t.category || 'Uncategorized');
+        const hint = isSplit ? 'Split transaction with multiple allocations' : (t.subcategory ? 'Subcategory' : 'Category (no subcategory assigned)');
+        return `<span class="ledger-mobile-cell ledger-mobile-subcategory" data-list-field="subcategory" title="${escapeHtml(hint + ': ' + label)}">${escapeHtml(label)}</span>`;
+      }
+      if (key === 'amount') return `<span class="ledger-mobile-cell ledger-mobile-amount accounting-num ${isOutflow?'finhub-money-out':'finhub-money-in'}" data-list-field="amount">${formatFinancial(t.amount,isOutflow)}</span>`;
+      return '';
     }
-    function renderLedgerListCards(transactions, runningBalances) {
+    function renderLedgerListCards(transactions) {
       const host = document.getElementById('ledger-mobile-cards');
       if (!host) return;
       const hidden = ledgerListPrefs().hidden;
-      const visible = key => !hidden.includes(key);
+      const visibleFields = LEDGER_LIST_FIELDS.map(([key]) => key).filter(key => !hidden.includes(key));
       host.innerHTML = transactions.length ? transactions.map(t => {
-        const isOutflow = (t.type === 'Expense' && Number(t.amount) >= 0) || t.type === 'Debt Payment' || t.type === 'Interest Charge' || (t.type === 'Transfer' && t.externalTransferDirection !== 'in');
         const id = escapeHtml(String(t.id));
-        const detailKeys = LEDGER_LIST_FIELDS.map(([key]) => key).filter(key => visible(key) && !['date','amount'].includes(key));
-        const details = detailKeys.length ? `<div class="ledger-mobile-details">${detailKeys.map(key => ledgerListFieldHtml(t,key,runningBalances)).join('')}</div>` : '';
-        return `<article class="ledger-mobile-row rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-sm  transition-shadow ${selectedLedgerIds.has(String(t.id)) ? 'ring-2 ring-indigo-500/40 border-indigo-500/60' : ''}" data-transaction-id="${id}" role="button" tabindex="0" aria-label="Open transaction ${escapeHtml(t.vendor || t.desc || t.date || '')}" onclick="openLedgerTransaction('${id}')" onkeydown="if(event.target===this&&(event.key==='Enter'||event.key===' ')){event.preventDefault();openLedgerTransaction('${id}');}">
-          <input type="checkbox" class="ledger-row-select accent-indigo-600" data-id="${id}" ${selectedLedgerIds.has(String(t.id))?'checked':''} onclick="event.stopPropagation()" onchange="toggleLedgerTransactionSelection(this.dataset.id,this.checked)" aria-label="Select transaction">
-          <div class="min-w-0">${visible('date') ? `<div class="ledger-mobile-date">${formatDateMDY(t.date)}</div>` : ''}<div class="ledger-mobile-vendor">${escapeHtml(t.vendor || 'Vendor not recorded')}</div>${(t.bankDescription || t.statementDescription) ? `<div class="text-[10px] text-gray-400 truncate" title="Bank Description">${escapeHtml(t.bankDescription || t.statementDescription)}</div>` : ''}${t.desc ? `<div class="text-[10px] text-gray-400 truncate" title="Description">${escapeHtml(t.desc)}</div>` : ''}</div>
-          ${visible('amount') ? `<div class="ledger-mobile-amount ${isOutflow?'finhub-money-out':'finhub-money-in'} accounting-num">${formatFinancial(t.amount,isOutflow)}</div>` : '<div></div>'}
-          ${details}
+        const isOutflow = (t.type === 'Expense' && Number(t.amount) >= 0) || t.type === 'Debt Payment' || t.type === 'Interest Charge' || (t.type === 'Transfer' && t.externalTransferDirection !== 'in');
+        const mainLabel = t.vendor || t.desc || t.bankDescription || t.statementDescription || 'Unspecified transaction';
+        const classification = (t.type === 'Expense' && Array.isArray(t.splits) && t.splits.length)
+          ? 'Split'
+          : (t.subcategory || t.category || 'Uncategorized');
+        const amountLabel = formatFinancial(t.amount,isOutflow);
+        const aria = `${formatDateMDY(t.date)} · ${mainLabel} · ${classification} · ${amountLabel}`;
+        const cells = visibleFields.map(key => ledgerListFieldHtml(t,key)).join('');
+        return `<article class="ledger-mobile-row ${selectedLedgerIds.has(String(t.id)) ? 'is-selected' : ''}" data-transaction-id="${id}" role="button" tabindex="0" aria-label="Open transaction ${escapeHtml(aria)}" title="Open transaction" onclick="openLedgerTransaction('${id}')" onkeydown="if(event.target===this&&(event.key==='Enter'||event.key===' ')){event.preventDefault();openLedgerTransaction('${id}');}">
+          <input type="checkbox" class="ledger-row-select" data-id="${id}" ${selectedLedgerIds.has(String(t.id))?'checked':''} onclick="event.stopPropagation()" onchange="toggleLedgerTransactionSelection(this.dataset.id,this.checked)" aria-label="Select transaction">
+          ${cells}
         </article>`;
-      }).join('') : '<div class="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 text-center text-xs text-gray-500">No matching transactions found.</div>';
+      }).join('') : '<div class="ledger-mobile-list-empty">No matching transactions found.</div>';
     }
 
     function clearLedgerCardFilters() {
@@ -14375,8 +14677,8 @@ No payment links or balance changes were retained.`);
           const isOutflow = (t.type === 'Expense' && Number(t.amount) >= 0) || t.type === 'Debt Payment' || t.type === 'Interest Charge' ||
             (t.type === 'Transfer' && t.externalTransferDirection !== 'in');
           ledgerTableRows.push(`
-            <tr class="  cursor-pointer" data-transaction-id="${escapeHtml(String(t.id))}" onclick="openLedgerTransaction('${escapeHtml(String(t.id))}')" onkeydown="if(event.target===this&&(event.key==='Enter'||event.key===' ')){event.preventDefault();openLedgerTransaction('${escapeHtml(String(t.id))}');}" tabindex="0" aria-label="Open transaction ${escapeHtml(t.vendor || t.desc || t.date || '')}">
-              <td data-label="Date" class="px-3 py-1.5"><div class="flex items-center gap-2"><input type="checkbox" class="ledger-row-select accent-indigo-600" data-id="${t.id}" ${selectedLedgerIds.has(String(t.id))?'checked':''} onclick="event.stopPropagation()" onchange="toggleLedgerTransactionSelection('${t.id}',this.checked)" aria-label="Select transaction ${t.date}"><span>${formatDateMDY(t.date)}</span></div></td>
+            <tr class="  cursor-pointer" data-transaction-id="${escapeHtml(String(t.id))}" onclick="openLedgerTransaction('${escapeHtml(String(t.id))}')" onkeydown="if(event.target===this&&(event.key==='Enter'||event.key===' ')){event.preventDefault();openLedgerTransaction('${escapeHtml(String(t.id))}');}" tabindex="0" aria-label="Open transaction ${escapeHtml(t.vendor || t.desc || formatDateMDY(t.date))}">
+              <td data-label="Date" class="px-3 py-1.5"><div class="flex items-center gap-2"><input type="checkbox" class="ledger-row-select accent-indigo-600" data-id="${t.id}" ${selectedLedgerIds.has(String(t.id))?'checked':''} onclick="event.stopPropagation()" onchange="toggleLedgerTransactionSelection('${t.id}',this.checked)" aria-label="Select transaction dated ${formatDateMDY(t.date)}"><span>${formatDateMDY(t.date)}</span></div></td>
               <td data-label="Vendor" class="px-3 py-1.5"><a href="#" class="text-indigo-600 dark:text-indigo-300 hover:underline" onclick="event.preventDefault();event.stopPropagation();openLedgerTransaction('${escapeHtml(String(t.id))}')">${escapeHtml(t.vendor || 'Vendor not recorded')}</a></td>
               <td data-label="Description" class="px-3 py-1.5">${t.desc || '-'}</td>
               <td data-label="Type" class="px-3 py-1.5"><span class="px-2 py-0.5 rounded text-[10px] bg-gray-100 dark:bg-gray-800">${t.type === 'Transfer' ? 'Internal Transfer' : (t.type === 'Expense' && Number(t.amount) < 0 && t.refundOfTransactionId ? 'Refund / reimbursement' : displayFinHubTransactionType(t.type))}</span></td>
@@ -16010,7 +16312,7 @@ No payment links or balance changes were retained.`);
       });
       if (normalizedLegacyRows) persistStatementBatch();
       const activeGroups=(state.statementReconciliation?.groups||[]).filter(g=>g.active!==false);
-      const groupsHtml=activeGroups.length?`<section class="border border-gray-200 dark:border-gray-800 rounded-xl p-3 space-y-2"><h4 class="font-bold text-sm">Saved grouped matches</h4>${activeGroups.map(g=>{const account=state.accounts.find(a=>a.id===g.accountId);return `<div class="flex flex-wrap justify-between items-center gap-2 border-t border-gray-100 dark:border-gray-800 pt-2"><div class="min-w-0"><div class="text-xs font-semibold">${escapeHtml(account?.name||'Account')} · ${g.bankRows?.length||0} bank row(s) ↔ ${g.transactionIds?.length||0} FinHub transaction(s)</div><div class="text-[10px] text-gray-400">${g.matchedAt?new Date(g.matchedAt).toLocaleString():''} · ${formatFinancial(g.total||0)}</div></div><button onclick="undoManualStatementMatch('${g.id}')" class="px-2.5 py-1.5 bg-gray-200 dark:bg-gray-800 rounded-lg text-xs">Undo group</button></div>`;}).join('')}</section>`:'';
+      const groupsHtml=activeGroups.length?`<section class="border border-gray-200 dark:border-gray-800 rounded-xl p-3 space-y-2"><h4 class="font-bold text-sm">Saved grouped matches</h4>${activeGroups.map(g=>{const account=state.accounts.find(a=>a.id===g.accountId);return `<div class="flex flex-wrap justify-between items-center gap-2 border-t border-gray-100 dark:border-gray-800 pt-2"><div class="min-w-0"><div class="text-xs font-semibold">${escapeHtml(account?.name||'Account')} · ${g.bankRows?.length||0} bank row(s) ↔ ${g.transactionIds?.length||0} FinHub transaction(s)</div><div class="text-[10px] text-gray-400">${g.matchedAt?formatDateTimeMDY(g.matchedAt):''} · ${formatFinancial(g.total||0)}</div></div><button onclick="undoManualStatementMatch('${g.id}')" class="px-2.5 py-1.5 bg-gray-200 dark:bg-gray-800 rounded-lg text-xs">Undo group</button></div>`;}).join('')}</section>`:'';
       if(!pendingStatementRows.length){host.innerHTML=groupsHtml||'<p class="text-xs text-gray-400">No statement rows loaded. Upload a CSV or paste statement rows to begin. Saved review batches and grouped matches will appear here.</p>';return;}
       const totalPages=Math.max(1,Math.ceil(pendingStatementRows.length/statementPreviewPageSize));
       statementPreviewPage=Math.max(0,Math.min(statementPreviewPage,totalPages-1));
@@ -16028,8 +16330,8 @@ No payment links or balance changes were retained.`);
       const ledgerTotalPages=Math.max(1,Math.ceil(candidates.length/manualCandidatePageSize));
       manualCandidatePage=Math.max(0,Math.min(manualCandidatePage,ledgerTotalPages-1));
       const visibleCandidates=candidates.slice(manualCandidatePage*manualCandidatePageSize,(manualCandidatePage+1)*manualCandidatePageSize);
-      const bankRowsHtml=pageRows.filter(r=>r.status==='pending').map(row=>`<label class="flex items-start gap-2 border-b border-gray-100 dark:border-gray-800 py-2 text-xs"><input type="checkbox" class="mt-0.5 accent-indigo-600" ${manualSelectedStatementIds.has(row.id)?'checked':''} onchange="toggleManualStatementSelection('${row.id}',this.checked)"><span class="min-w-0 flex-1"><span class="block font-semibold">${escapeHtml(row.description)}</span><span class="text-[10px] text-gray-400">${row.date} · ${row.type}</span></span><strong class="accounting-num whitespace-nowrap">${formatFinancial(row.amount)}</strong></label>`).join('') || '<p class="text-xs text-gray-400 py-2">No unmatched bank rows.</p>';
-      const ledgerRowsHtml=visibleCandidates.map(t=>{const direction=statementDirectionForTransaction(t,document.getElementById('recon-account')?.value);return `<label class="flex items-start gap-2 border-b border-gray-100 dark:border-gray-800 py-2 text-xs"><input type="checkbox" class="mt-0.5 accent-indigo-600" ${manualSelectedTransactionIds.has(t.id)?'checked':''} onchange="toggleManualTransactionSelection('${t.id}',this.checked)"><span class="min-w-0 flex-1"><span class="block font-semibold">${escapeHtml(t.vendor||t.desc||'Transaction')}</span><span class="text-[10px] text-gray-400">${t.date||'No date'} · ${direction==='Expense'?'Debit':'Credit'}${t.type==='Transfer'?' · Transfer':''}</span></span><strong class="accounting-num whitespace-nowrap">${formatFinancial(t.amount)}</strong></label>`;}).join('') || (manualSelectedStatementIds.size?'<p class="text-xs text-gray-400 py-2">No eligible unmatched FinHub transactions for this account.</p>':'<p class="text-xs text-gray-400 py-2">Select statement rows to see possible FinHub matches.</p>');
+      const bankRowsHtml=pageRows.filter(r=>r.status==='pending').map(row=>`<label class="flex items-start gap-2 border-b border-gray-100 dark:border-gray-800 py-2 text-xs"><input type="checkbox" class="mt-0.5 accent-indigo-600" ${manualSelectedStatementIds.has(row.id)?'checked':''} onchange="toggleManualStatementSelection('${row.id}',this.checked)"><span class="min-w-0 flex-1"><span class="block font-semibold">${escapeHtml(row.description)}</span><span class="text-[10px] text-gray-400">${formatDateMDY(row.date)} · ${row.type}</span></span><strong class="accounting-num whitespace-nowrap">${formatFinancial(row.amount)}</strong></label>`).join('') || '<p class="text-xs text-gray-400 py-2">No unmatched bank rows.</p>';
+      const ledgerRowsHtml=visibleCandidates.map(t=>{const direction=statementDirectionForTransaction(t,document.getElementById('recon-account')?.value);return `<label class="flex items-start gap-2 border-b border-gray-100 dark:border-gray-800 py-2 text-xs"><input type="checkbox" class="mt-0.5 accent-indigo-600" ${manualSelectedTransactionIds.has(t.id)?'checked':''} onchange="toggleManualTransactionSelection('${t.id}',this.checked)"><span class="min-w-0 flex-1"><span class="block font-semibold">${escapeHtml(t.vendor||t.desc||'Transaction')}</span><span class="text-[10px] text-gray-400">${formatDateMDY(t.date)} · ${direction==='Expense'?'Debit':'Credit'}${t.type==='Transfer'?' · Transfer':''}</span></span><strong class="accounting-num whitespace-nowrap">${formatFinancial(t.amount)}</strong></label>`;}).join('') || (manualSelectedStatementIds.size?'<p class="text-xs text-gray-400 py-2">No eligible unmatched FinHub transactions for this account.</p>':'<p class="text-xs text-gray-400 py-2">Select statement rows to see possible FinHub matches.</p>');
       const difference=totals.differenceCents;
       const differenceLabel=difference===0?'$0.00':`${difference<0?'-':'+'}${formatFinancial(Math.abs(difference)/100)}`;
       const canMatch=totals.bankRows.length>0&&totals.ledgerRows.length>0&&difference===0;
@@ -16378,7 +16680,7 @@ No payment links or balance changes were retained.`);
         if (candidates.length) {
           const best = candidates[0];
           const remaining = Math.max(0, Math.abs(Number(best.amount)||0) - getTransactionReversedAmount(best.id));
-          const choice = confirm(`Possible original debt payment found:\n\n${best.date} · ${best.vendor || best.desc || 'Debt payment'} · $${Math.abs(Number(best.amount)||0).toFixed(2)}\nRemaining reversible: $${remaining.toFixed(2)}\n\nLink this incoming reversal to that payment?\nChoose Cancel to import using the supplied Principal and Interest split without linking.`);
+          const choice = confirm(`Possible original debt payment found:\n\n${formatDateMDY(best.date)} · ${best.vendor || best.desc || 'Debt payment'} · $${Math.abs(Number(best.amount)||0).toFixed(2)}\nRemaining reversible: $${remaining.toFixed(2)}\n\nLink this incoming reversal to that payment?\nChoose Cancel to import using the supplied Principal and Interest split without linking.`);
           if (choice) {
             const prior = getDebtPaymentLinkedReversals(best.id);
             const remainingPrincipalCents = Math.max(0, transactionAmountToCents(Number(best.debtPrincipalAmount ?? best.principalAmount ?? 0)) - prior.reduce((sum, reversal) => sum + transactionAmountToCents(Number(reversal.debtPrincipalAmount) || 0), 0));
@@ -17345,7 +17647,7 @@ No payment links or balance changes were retained.`);
       const next = getNextDebtDueDate(debt);
       const rule = debt.dueWeekendRule || 'none';
       const ruleLabel = rule === 'previous-business-day' ? ' · previous business day' : rule === 'next-business-day' ? ' · next business day' : '';
-      return `Day ${day}${ruleLabel}${next ? ` · Next: ${next.toLocaleDateString(undefined,{month:'short',day:'numeric'})}` : ''}`;
+      return `Day ${day}${ruleLabel}${next ? ` · Next: ${formatDateMDY(next)}` : ''}`;
     }
 
     function simulateDebtPayoffForStrategy(debts, extraMonthly, strategy) {
@@ -17611,7 +17913,7 @@ No payment links or balance changes were retained.`);
         const amount=(Number(t.amount)||0)*sign;
         const balance=runningAfter.get(String(t.id));
         const values={date:ledgerDateKey(t.date)||String(t.date||''),debt:String(debt?.name||'Unknown debt'),amount,principal,interest,funding:String(funding?.name||'Not recorded'),balance:balance===undefined?null:Number(balance)};
-        const html=`<tr><td class="px-3 py-3 whitespace-nowrap">${escapeHtml(values.date)}</td><td class="px-3 py-3">${escapeHtml(values.debt)}</td><td class="px-3 py-3 text-right accounting-num">${debtReportMoney(amount)}</td><td class="px-3 py-3 text-right accounting-num">${debtReportMoney(principal)}</td><td class="px-3 py-3 text-right accounting-num">${debtReportMoney(interest)}</td><td class="px-3 py-3">${escapeHtml(values.funding)}</td><td class="px-3 py-3 text-right accounting-num">${balance===undefined?'—':debtReportMoney(balance)}</td><td class="px-3 py-3"><button type="button" class="text-indigo-600 dark:text-indigo-400 font-semibold" onclick="openTransactionModal('${escapeHtml(t.id)}')">Open transaction</button></td></tr>`;
+        const html=`<tr><td class="px-3 py-3 whitespace-nowrap">${escapeHtml(formatDateMDY(values.date))}</td><td class="px-3 py-3">${escapeHtml(values.debt)}</td><td class="px-3 py-3 text-right accounting-num">${debtReportMoney(amount)}</td><td class="px-3 py-3 text-right accounting-num">${debtReportMoney(principal)}</td><td class="px-3 py-3 text-right accounting-num">${debtReportMoney(interest)}</td><td class="px-3 py-3">${escapeHtml(values.funding)}</td><td class="px-3 py-3 text-right accounting-num">${balance===undefined?'—':debtReportMoney(balance)}</td><td class="px-3 py-3"><button type="button" class="text-indigo-600 dark:text-indigo-400 font-semibold" onclick="openTransactionModal('${escapeHtml(t.id)}')">Open transaction</button></td></tr>`;
         return {values,html};
       });
       renderDebtHistoryFilteredRows();
@@ -17890,7 +18192,7 @@ No payment links or balance changes were retained.`);
           if (t.calendarBillId) actions += `<button onclick="toggleCalendarItemPaid('${escapeHtml(t.calendarBillId)}', event)" class="text-amber-500  ml-2" title="Unmark scheduled payment">Unmark</button>`;
         }
         tbody.innerHTML += `<tr>
-          <td class="py-3 pr-3 whitespace-nowrap">${escapeHtml(t.date || '')}</td>
+          <td class="py-3 pr-3 whitespace-nowrap">${escapeHtml(formatDateMDY(t.date))}</td>
           <td class="py-3 pr-3">${escapeHtml(t.vendor || 'Vendor not recorded')}${(t.bankDescription || t.statementDescription) ? `<div class="text-[10px] text-gray-400" title="Bank Description">${escapeHtml(t.bankDescription || t.statementDescription)}</div>` : ''}${t.desc ? `<div class="text-[10px] text-gray-400" title="Description">${escapeHtml(t.desc)}</div>` : ''}</td>
           <td class="py-3 pr-3">${kind}</td>
           <td class="py-3 pr-3 text-right font-semibold accounting-num">${formatFinancial(t.amount)}</td>
@@ -18437,13 +18739,13 @@ No payment links or balance changes were retained.`);
         .filter(t=>t.refundRemaining>0.009)
         .filter(t=>!q || [t.date,t.vendor,t.desc,t.category,t.subcategory,formatFinancial(t.refundRemaining)].join(' ').toLowerCase().includes(q))
         .sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')) || String(b.id||'').localeCompare(String(a.id||'')));
-      select.innerHTML='<option value="">Choose original expense</option>'+rows.map(t=>`<option value="${escapeHtml(String(t.id))}">${escapeHtml(t.date||'No date')} · ${escapeHtml(t.vendor||t.desc||'Expense')} · ${escapeHtml(t.category||'Uncategorized')} · ${formatFinancial(t.refundRemaining)} refundable</option>`).join('');
+      select.innerHTML='<option value="">Choose original expense</option>'+rows.map(t=>`<option value="${escapeHtml(String(t.id))}">${escapeHtml(formatDateMDY(t.date))} · ${escapeHtml(t.vendor||t.desc||'Expense')} · ${escapeHtml(t.category||'Uncategorized')} · ${formatFinancial(t.refundRemaining)} refundable</option>`).join('');
       if(current && rows.some(t=>String(t.id)===String(current))) select.value=current;
       const body=document.getElementById('tx-refund-table-body');
       if(body) body.innerHTML = rows.length ? rows.map(t=>{
         const id=String(t.id), selected=String(select.value)===id;
         const vendor=t.vendor||t.desc||'—';
-        return `<tr role="radio" tabindex="0" aria-checked="${selected?'true':'false'}" data-refund-original-id="${escapeHtml(id)}" onclick="selectRefundOriginalFromTable('${escapeHtml(id).replace(/'/g,'&#39;')}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectRefundOriginalFromTable('${escapeHtml(id).replace(/'/g,'&#39;')}')}" class="cursor-pointer border-b border-gray-100 dark:border-gray-800 :var(--fh-hover-surface)] ${selected?'bg-[color:var(--fh-selected-surface)] ring-1 ring-inset ring-[color:var(--fh-primary)]':''}"><td class="px-2 py-2 whitespace-nowrap">${escapeHtml(t.date||'No date')}</td><td class="px-2 py-2 max-w-[150px] truncate" title="${escapeHtml(vendor)}">${escapeHtml(vendor)}</td><td class="px-2 py-2 max-w-[130px] truncate" title="${escapeHtml(t.category||'Uncategorized')}">${escapeHtml(t.category||'Uncategorized')}</td><td class="px-2 py-2 text-right tabular-nums">${formatFinancial(t.amount)}</td><td class="px-2 py-2 text-right tabular-nums font-semibold">${formatFinancial(t.refundRemaining)}</td></tr>`;
+        return `<tr role="radio" tabindex="0" aria-checked="${selected?'true':'false'}" data-refund-original-id="${escapeHtml(id)}" onclick="selectRefundOriginalFromTable('${escapeHtml(id).replace(/'/g,'&#39;')}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectRefundOriginalFromTable('${escapeHtml(id).replace(/'/g,'&#39;')}')}" class="cursor-pointer border-b border-gray-100 dark:border-gray-800 :var(--fh-hover-surface)] ${selected?'bg-[color:var(--fh-selected-surface)] ring-1 ring-inset ring-[color:var(--fh-primary)]':''}"><td class="px-2 py-2 whitespace-nowrap">${escapeHtml(formatDateMDY(t.date))}</td><td class="px-2 py-2 max-w-[150px] truncate" title="${escapeHtml(vendor)}">${escapeHtml(vendor)}</td><td class="px-2 py-2 max-w-[130px] truncate" title="${escapeHtml(t.category||'Uncategorized')}">${escapeHtml(t.category||'Uncategorized')}</td><td class="px-2 py-2 text-right tabular-nums">${formatFinancial(t.amount)}</td><td class="px-2 py-2 text-right tabular-nums font-semibold">${formatFinancial(t.refundRemaining)}</td></tr>`;
       }).join('') : '<tr><td colspan="5" class="px-2 py-4 text-center text-gray-400">No eligible original expenses match your search.</td></tr>';
       applyRefundOriginalSelection(false);
       initRefundOriginalTableResize();
@@ -19411,7 +19713,7 @@ function openTransactionModal(requestedEditId = null) {
           const normalize = value => String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
           const identity = normalize(vendor || desc);
           const duplicate = identity && state.transactions.find(t => t.date === date && String(t.accountId) === String(accountId) && t.type === 'Expense' && Math.abs(Math.abs(Number(t.amount)||0)-Math.abs(amount)) < 0.005 && normalize(t.vendor||t.desc) === identity);
-          if (duplicate && !confirm(`A similar transaction already exists (${duplicate.date}, ${duplicate.vendor || duplicate.desc}, ${formatFinancial(duplicate.amount)}). Add another anyway?`)) return;
+          if (duplicate && !confirm(`A similar transaction already exists (${formatDateMDY(duplicate.date)}, ${duplicate.vendor || duplicate.desc}, ${formatFinancial(duplicate.amount)}). Add another anyway?`)) return;
         }
         captureUndo(oldT ? 'Edit split expense allocations' : 'Add split expense');
         const idx = oldT ? state.transactions.findIndex(t => String(t.id) === String(editId)) : -1;
@@ -19448,7 +19750,7 @@ function openTransactionModal(requestedEditId = null) {
             return t.date===date && String(t.accountId)===String(accountId) && t.type===type &&
               sameAmount && sameRefundLink && existingIdentity===enteredIdentity;
           });
-          if (possibleDuplicate && !confirm(`A similar transaction already exists (${possibleDuplicate.date}, ${possibleDuplicate.vendor || possibleDuplicate.desc}, ${formatFinancial(possibleDuplicate.amount)}). Add another anyway?`)) return;
+          if (possibleDuplicate && !confirm(`A similar transaction already exists (${formatDateMDY(possibleDuplicate.date)}, ${possibleDuplicate.vendor || possibleDuplicate.desc}, ${formatFinancial(possibleDuplicate.amount)}). Add another anyway?`)) return;
         }
         if (editId && !state.transactions.some(t => String(t.id) === String(editId))) {
           alert('This transaction could not be found. The Transaction Log has not been changed.');
@@ -20332,7 +20634,7 @@ function openTransactionModal(requestedEditId = null) {
       const activeAccounts=(state.accounts||[]).filter(a=>!a.archived);
       const assets=activeAccounts.filter(a=>a.type==='asset').sort((a,b)=>String(a.name||'').localeCompare(String(b.name||'')));
       const liabilities=activeAccounts.filter(a=>a.type==='debt').sort((a,b)=>String(a.name||'').localeCompare(String(b.name||'')));
-      const balanceRows=[['BALANCE SHEET',''],['As of',new Date().toLocaleDateString('en-CA')],[],['ASSETS','BALANCE'],...assets.map(a=>[a.name||'Unnamed asset',fmt(a.balance)]),['TOTAL ASSETS',assets.reduce((n,a)=>n+(Number(a.balance)||0),0)],[],['LIABILITIES','BALANCE'],...liabilities.map(a=>[a.name||'Unnamed liability',Math.abs(Number(a.balance)||0)]),['TOTAL LIABILITIES',liabilities.reduce((n,a)=>n+Math.abs(Number(a.balance)||0),0)],[],['NET WORTH',assets.reduce((n,a)=>n+(Number(a.balance)||0),0)-liabilities.reduce((n,a)=>n+Math.abs(Number(a.balance)||0),0)]];
+      const balanceRows=[['BALANCE SHEET',''],['As of',formatDateMDY(new Date())],[],['ASSETS','BALANCE'],...assets.map(a=>[a.name||'Unnamed asset',fmt(a.balance)]),['TOTAL ASSETS',assets.reduce((n,a)=>n+(Number(a.balance)||0),0)],[],['LIABILITIES','BALANCE'],...liabilities.map(a=>[a.name||'Unnamed liability',Math.abs(Number(a.balance)||0)]),['TOTAL LIABILITIES',liabilities.reduce((n,a)=>n+Math.abs(Number(a.balance)||0),0)],[],['NET WORTH',assets.reduce((n,a)=>n+(Number(a.balance)||0),0)-liabilities.reduce((n,a)=>n+Math.abs(Number(a.balance)||0),0)]];
       const bs=XLSX.utils.aoa_to_sheet(balanceRows);bs['!cols']=[{wch:34},{wch:18}];bs['!autofilter']={ref:`A4:B${3+assets.length+liabilities.length+7}`};XLSX.utils.book_append_sheet(wb,bs,'Balance Sheet');
 
       // Convert formula-looking strings into real Excel formula cells. SheetJS does not
@@ -20488,7 +20790,7 @@ function openTransactionModal(requestedEditId = null) {
     function renderCheckInSnapshotHistory(){
       const host=document.getElementById('checkin-snapshot-history');if(!host)return;
       const rows=[...(state.closeHistory||[])].sort((a,b)=>String(b.occurredAt||'').localeCompare(String(a.occurredAt||'')));
-      host.innerHTML=rows.length?`<table class="w-full text-sm"><thead><tr class="bg-gray-100 dark:bg-gray-800"><th class="text-left p-2">Period</th><th class="text-left p-2">Type</th><th class="text-left p-2">Event</th><th class="text-left p-2">Recorded</th><th class="text-left p-2">Reason / Notes</th><th class="text-left p-2">Details</th><th class="text-left p-2">Action</th></tr></thead><tbody>${rows.map(x=>{const monthly=x.periodType==='monthly',period=String(x.periodKey||''),eventLabel=x.eventType==='reopened'?'Reopened':'Snapshot saved';return `<tr class="border-t border-gray-200 dark:border-gray-700"><td class="p-2">${escapeHtml(period)}</td><td class="p-2">${monthly?'Monthly':'Year-end'}</td><td class="p-2">${eventLabel} · #${Number(x.sequence)||1}</td><td class="p-2">${x.occurredAt?new Date(x.occurredAt).toLocaleString():'—'}</td><td class="p-2">${escapeHtml(x.reason||x.snapshot?.status||'—')}</td><td class="p-2"><details><summary class="cursor-pointer text-indigo-600 dark:text-cyan-300 underline">View saved figures</summary>${closeHistorySnapshotMarkup(x)}</details></td><td class="p-2"><button class="text-indigo-600 dark:text-cyan-300 underline" onclick="${monthly?`document.getElementById('monthly-close-period').value='${escapeHtml(period)}';switchCheckInPanel('monthly');renderMonthlyClose()`:`document.getElementById('year-end-period').value='${escapeHtml(period)}';switchCheckInPanel('yearly');renderYearEndClose()`}">Review period</button></td></tr>`;}).join('')}</tbody></table>`:'<p class="text-sm text-gray-500">No saved close history yet.</p>';
+      host.innerHTML=rows.length?`<table class="w-full text-sm"><thead><tr class="bg-gray-100 dark:bg-gray-800"><th class="text-left p-2">Period</th><th class="text-left p-2">Type</th><th class="text-left p-2">Event</th><th class="text-left p-2">Recorded</th><th class="text-left p-2">Reason / Notes</th><th class="text-left p-2">Details</th><th class="text-left p-2">Action</th></tr></thead><tbody>${rows.map(x=>{const monthly=x.periodType==='monthly',period=String(x.periodKey||''),eventLabel=x.eventType==='reopened'?'Reopened':'Snapshot saved';return `<tr class="border-t border-gray-200 dark:border-gray-700"><td class="p-2">${escapeHtml(period)}</td><td class="p-2">${monthly?'Monthly':'Year-end'}</td><td class="p-2">${eventLabel} · #${Number(x.sequence)||1}</td><td class="p-2">${x.occurredAt?formatDateTimeMDY(x.occurredAt):'—'}</td><td class="p-2">${escapeHtml(x.reason||x.snapshot?.status||'—')}</td><td class="p-2"><details><summary class="cursor-pointer text-indigo-600 dark:text-cyan-300 underline">View saved figures</summary>${closeHistorySnapshotMarkup(x)}</details></td><td class="p-2"><button class="text-indigo-600 dark:text-cyan-300 underline" onclick="${monthly?`document.getElementById('monthly-close-period').value='${escapeHtml(period)}';switchCheckInPanel('monthly');renderMonthlyClose()`:`document.getElementById('year-end-period').value='${escapeHtml(period)}';switchCheckInPanel('yearly');renderYearEndClose()`}">Review period</button></td></tr>`;}).join('')}</tbody></table>`:'<p class="text-sm text-gray-500">No saved close history yet.</p>';
     }
     function closePeriod(){return document.getElementById('monthly-close-period')?.value||new Date().toISOString().slice(0,7);}
     function closeMetrics(period){const tx=(state.transactions||[]).filter(t=>String(t.date||'').slice(0,7)===period),accounts=(state.accounts||[]).filter(a=>!a.archived),unrec=accounts.filter(a=>!a.lastReconciledAt||String(a.lastReconciledAt).slice(0,7)!==period),reporting=getFinancialReportingSummary(tx),income=reporting.income,expense=reporting.expenses,unmatched=tx.filter(t=>!(t.type==='Transfer'&&t.transferToAccountId?(t.transferStatementMatches||[]).length:(t.statementMatchId||t.statementMatchGroupId))),outstandingBills=(state.calendarBills||[]).filter(b=>!b.paid&&!b.recurrenceOccurrenceDeleted&&String(b.date||'').slice(0,7)===period);return {tx,accounts,unrec,income,expense,reporting,unmatched,outstandingBills};}
@@ -20519,13 +20821,13 @@ function openTransactionModal(requestedEditId = null) {
     }
     function renderMonthlyCloseHistory(){
       const el=document.getElementById('monthly-close-history');if(!el)return;const p=closePeriod(),items=(state.closeHistory||[]).filter(x=>x.periodType==='monthly'&&String(x.periodKey)===p).sort((a,b)=>Number(a.sequence)-Number(b.sequence));
-      el.innerHTML=items.length?'<b>Close history for this month</b><div class="mt-1 space-y-1">'+items.map(x=>`<div>Version ${Number(x.sequence)||1}: <strong>${x.eventType==='reopened'?'Reopened':escapeHtml(x.snapshot?.status||'saved')}</strong> · ${new Date(x.occurredAt).toLocaleString()}${x.reason?' · '+escapeHtml(x.reason):''}</div>`).join('')+'</div>':'No saved snapshots for this month.';
+      el.innerHTML=items.length?'<b>Close history for this month</b><div class="mt-1 space-y-1">'+items.map(x=>`<div>Version ${Number(x.sequence)||1}: <strong>${x.eventType==='reopened'?'Reopened':escapeHtml(x.snapshot?.status||'saved')}</strong> · ${formatDateTimeMDY(x.occurredAt)}${x.reason?' · '+escapeHtml(x.reason):''}</div>`).join('')+'</div>':'No saved snapshots for this month.';
     }
     function yearEndMetrics(year){const prefix=String(year),tx=(state.transactions||[]).filter(t=>String(t.date||'').startsWith(prefix)),accounts=(state.accounts||[]).filter(a=>!a.archived),months=Array.from({length:12},(_,i)=>`${prefix}-${String(i+1).padStart(2,'0')}`),snapshots=state.monthlyCloseSnapshots||{},closed=months.filter(m=>snapshots[m]&&snapshots[m].status==='completed').length,reporting=getFinancialReportingSummary(tx),income=reporting.income,expenses=reporting.expenses,unmatched=tx.filter(t=>!(t.type==='Transfer'&&t.transferToAccountId?(t.transferStatementMatches||[]).length:(t.statementMatchId||t.statementMatchGroupId))).length;return {tx,accounts,months,closed,income,expenses,reporting,unmatched};}
     function setYearEndCloseTask(key,checked){const year=Number(document.getElementById('year-end-period')?.value)||new Date().getFullYear();state.yearEndChecklist=state.yearEndChecklist||{};state.yearEndChecklist[year]=state.yearEndChecklist[year]||{};state.yearEndChecklist[year][key]=!!checked;saveData();renderYearEndClose();}
     function refreshMonthlyCloseReview(){const input=document.getElementById('monthly-close-period');if(input&&!input.value)input.value=new Date().toISOString().slice(0,7);renderMonthlyClose();renderDataHealth();renderCheckInSnapshotHistory();const btn=document.querySelector('#financial-close-period-blocks button[onclick="refreshMonthlyCloseReview()"]');if(btn){const prior=btn.textContent;btn.textContent='Updated';setTimeout(()=>{if(btn.isConnected)btn.textContent=prior;},1200);}}
     function refreshYearEndCloseReview(){const input=document.getElementById('year-end-period');if(input&&!input.value)input.value=new Date().getFullYear();renderYearEndClose();renderDataHealth();renderCheckInSnapshotHistory();const btn=document.querySelector('#checkin-panel-yearly button[onclick="refreshYearEndCloseReview()"]');if(btn){const prior=btn.textContent;btn.textContent='Updated';setTimeout(()=>{if(btn.isConnected)btn.textContent=prior;},1200);}}
-    function renderYearEndClose(){const year=Number(document.getElementById('year-end-period')?.value)||new Date().getFullYear(),d=yearEndMetrics(year),sum=document.getElementById('year-end-summary'),list=document.getElementById('year-end-checklist');if(!sum||!list)return;sum.innerHTML=[['Transactions',d.tx.length],['Income',formatFinancial(d.income)],['Expenses',formatFinancial(d.expenses)],['Monthly closes',`${d.closed}/12 completed`]].map(x=>`<div class="p-2 bg-gray-50 dark:bg-gray-950 rounded"><div class="text-gray-500">${x[0]}</div><b>${x[1]}</b></div>`).join('');const flags=state.yearEndChecklist?.[year]||{},done=YEAR_END_TASKS.filter(([key])=>!!flags[key]).length,pct=Math.round(done/YEAR_END_TASKS.length*100),label=document.getElementById('year-end-progress-label'),percent=document.getElementById('year-end-progress-percent'),bar=document.getElementById('year-end-progress-bar');if(label)label.textContent=`${done} of ${YEAR_END_TASKS.length} complete`;if(percent)percent.textContent=`${pct}%`;if(bar)bar.style.width=`${pct}%`;const actions={monthly_coverage:"switchCheckInPanel('history')",unmatched:`openYearUnmatched(${year})`,income_expenses:"switchTab('ledger')",debt_savings:"switchTab('debt')",account_balances:"switchTab('accounts')",bills_transfers:"switchTab('calendar')",net_worth:"switchTab('accounts')",backup:"exportData()"};list.innerHTML=YEAR_END_TASKS.map(([key,label])=>`<label class="p-2 border rounded flex items-center gap-2"><input type="checkbox" ${flags[key]?'checked':''} onchange="setYearEndCloseTask('${key}',this.checked)" class="fh-theme-checkbox"><span class="flex-1">${label}</span><button type="button" class="text-indigo-600 dark:text-cyan-300 underline text-xs whitespace-nowrap" onclick="${actions[key]}">Open</button></label>`).join('');const hist=document.getElementById('year-end-history'),snap=state.yearEndSnapshots?.[year],reopen=document.getElementById('year-end-reopen');if(reopen)reopen.classList.toggle('hidden',!snap||snap.status==='reopened');if(hist){const items=(state.closeHistory||[]).filter(x=>x.periodType==='yearly'&&String(x.periodKey)===String(year)).sort((a,b)=>Number(a.sequence)-Number(b.sequence));hist.innerHTML=items.length?'<b>Close history for this year</b><div class="mt-1 space-y-1">'+items.map(x=>`<div>Version ${Number(x.sequence)||1}: <strong>${x.eventType==='reopened'?'Reopened':escapeHtml(x.snapshot?.status||'saved')}</strong> · ${new Date(x.occurredAt).toLocaleString()}${x.reason?' · '+escapeHtml(x.reason):''}</div>`).join('')+'</div>':'No year-end snapshots saved.';}}
+    function renderYearEndClose(){const year=Number(document.getElementById('year-end-period')?.value)||new Date().getFullYear(),d=yearEndMetrics(year),sum=document.getElementById('year-end-summary'),list=document.getElementById('year-end-checklist');if(!sum||!list)return;sum.innerHTML=[['Transactions',d.tx.length],['Income',formatFinancial(d.income)],['Expenses',formatFinancial(d.expenses)],['Monthly closes',`${d.closed}/12 completed`]].map(x=>`<div class="p-2 bg-gray-50 dark:bg-gray-950 rounded"><div class="text-gray-500">${x[0]}</div><b>${x[1]}</b></div>`).join('');const flags=state.yearEndChecklist?.[year]||{},done=YEAR_END_TASKS.filter(([key])=>!!flags[key]).length,pct=Math.round(done/YEAR_END_TASKS.length*100),label=document.getElementById('year-end-progress-label'),percent=document.getElementById('year-end-progress-percent'),bar=document.getElementById('year-end-progress-bar');if(label)label.textContent=`${done} of ${YEAR_END_TASKS.length} complete`;if(percent)percent.textContent=`${pct}%`;if(bar)bar.style.width=`${pct}%`;const actions={monthly_coverage:"switchCheckInPanel('history')",unmatched:`openYearUnmatched(${year})`,income_expenses:"switchTab('ledger')",debt_savings:"switchTab('debt')",account_balances:"switchTab('accounts')",bills_transfers:"switchTab('calendar')",net_worth:"switchTab('accounts')",backup:"exportData()"};list.innerHTML=YEAR_END_TASKS.map(([key,label])=>`<label class="p-2 border rounded flex items-center gap-2"><input type="checkbox" ${flags[key]?'checked':''} onchange="setYearEndCloseTask('${key}',this.checked)" class="fh-theme-checkbox"><span class="flex-1">${label}</span><button type="button" class="text-indigo-600 dark:text-cyan-300 underline text-xs whitespace-nowrap" onclick="${actions[key]}">Open</button></label>`).join('');const hist=document.getElementById('year-end-history'),snap=state.yearEndSnapshots?.[year],reopen=document.getElementById('year-end-reopen');if(reopen)reopen.classList.toggle('hidden',!snap||snap.status==='reopened');if(hist){const items=(state.closeHistory||[]).filter(x=>x.periodType==='yearly'&&String(x.periodKey)===String(year)).sort((a,b)=>Number(a.sequence)-Number(b.sequence));hist.innerHTML=items.length?'<b>Close history for this year</b><div class="mt-1 space-y-1">'+items.map(x=>`<div>Version ${Number(x.sequence)||1}: <strong>${x.eventType==='reopened'?'Reopened':escapeHtml(x.snapshot?.status||'saved')}</strong> · ${formatDateTimeMDY(x.occurredAt)}${x.reason?' · '+escapeHtml(x.reason):''}</div>`).join('')+'</div>':'No year-end snapshots saved.';}}
     function openYearUnmatched(year){window.dataHealthTransactionIds=null;window.closeLedgerFilterPeriod=String(year);window.closeLedgerFilterOnlyUnmatched=true;ledgerFilterSelections={};ledgerFilterSearchTerms={};const p=document.getElementById('ledger-period-preset');if(p)p.value='all';switchTab('ledger');const host=document.getElementById('ledger-table-container');if(host)host.scrollIntoView({behavior:'smooth',block:'start'});}
     function reopenYearEndClose(){
       const year=Number(document.getElementById('year-end-period')?.value)||new Date().getFullYear(),snap=state.yearEndSnapshots?.[year];if(!snap||snap.status==='reopened')return;
@@ -22671,12 +22973,36 @@ html.dark body[data-finhub-theme] .fh-status-income-fill{background:var(--fh-sta
 
 </script>
 <style id="finhub-transaction-list-view">
-#ledger-mobile-cards{display:flex!important;flex-direction:column!important;gap:0!important;padding:0!important;border:1px solid rgba(148,163,184,.25);border-radius:12px;overflow:hidden}
-#ledger-mobile-cards.hidden{display:none!important}
-#ledger-mobile-cards .ledger-mobile-row{display:grid!important;grid-template-columns:24px 100px minmax(0,1fr) auto 34px!important;align-items:center!important;gap:.65rem!important;padding:.55rem .75rem!important;border:0!important;border-bottom:1px solid rgba(148,163,184,.2)!important;border-radius:0!important;min-height:46px!important;box-shadow:none!important}
-#ledger-mobile-cards .ledger-mobile-vendor{white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
-#ledger-mobile-cards .ledger-mobile-vendor a{color:inherit;text-decoration:underline;text-decoration-color:rgba(99,102,241,.5);text-underline-offset:3px;font-weight:650}
-@media(max-width:640px){#ledger-mobile-cards .ledger-mobile-row{grid-template-columns:20px 72px minmax(0,1fr) auto 30px!important;gap:.4rem!important;padding:.5rem .45rem!important}}
+/* Compact single-line Transaction List: one row per transaction on desktop and mobile. */
+#ledger-mobile-cards {
+  display:flex !important; flex-direction:column !important; gap:0 !important;
+  width:100% !important; min-width:0 !important; padding:0 !important;
+  border:1px solid var(--fh-border) !important; border-radius:.7rem !important;
+  overflow:hidden !important; background:var(--fh-card) !important;
+}
+#ledger-mobile-cards.hidden { display:none !important; }
+#ledger-mobile-cards .ledger-mobile-row {
+  box-sizing:border-box !important; display:flex !important; flex-direction:row !important;
+  align-items:center !important; gap:.65rem !important; width:100% !important; min-width:0 !important;
+  min-height:38px !important; margin:0 !important; padding:.42rem .7rem !important;
+  border:0 !important; border-bottom:1px solid var(--fh-border) !important; border-radius:0 !important;
+  background:var(--fh-card) !important; color:var(--fh-ink) !important; box-shadow:none !important;
+  cursor:pointer !important; text-align:left !important;
+  transition:background-color .12s ease,border-color .12s ease !important;
+}
+#ledger-mobile-cards .ledger-mobile-row:last-child { border-bottom:0 !important; }
+#ledger-mobile-cards .ledger-mobile-row:hover { background:var(--fh-raised) !important; }
+#ledger-mobile-cards .ledger-mobile-row:focus-visible { outline:2px solid var(--fh-primary) !important; outline-offset:-2px !important; }
+#ledger-mobile-cards .ledger-mobile-row.is-selected { background:var(--fh-surface-selected,var(--fh-raised)) !important; box-shadow:inset 3px 0 0 var(--fh-primary) !important; }
+#ledger-mobile-cards .ledger-row-select { flex:0 0 16px !important; width:16px !important; height:16px !important; margin:0 !important; accent-color:var(--fh-primary) !important; cursor:pointer !important; }
+#ledger-mobile-cards .ledger-mobile-cell { display:block; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; line-height:1.25; }
+#ledger-mobile-cards .ledger-mobile-date { flex:0 0 82px; width:82px; color:var(--fh-muted) !important; font-size:.68rem !important; font-variant-numeric:tabular-nums; }
+#ledger-mobile-cards .ledger-mobile-vendor { flex:1 1 220px; min-width:5rem; color:var(--fh-ink) !important; font-size:.78rem !important; font-weight:650 !important; }
+#ledger-mobile-cards .ledger-mobile-subcategory { flex:0 1 170px; min-width:4.5rem; color:var(--fh-muted) !important; font-size:.7rem !important; }
+#ledger-mobile-cards .ledger-mobile-amount { flex:0 0 auto; min-width:92px; color:var(--fh-ink) !important; font-size:.76rem !important; font-weight:750 !important; text-align:right !important; font-variant-numeric:tabular-nums; }
+#ledger-mobile-cards .ledger-mobile-list-empty { padding:1.1rem; color:var(--fh-muted); text-align:center; font-size:.75rem; }
+#ledger-list-settings label { min-width:0; }
+
 </style>
 <style id="finhub-drag-handle-upper-left">
 .fh-reorderable-section{position:relative!important;padding-top:1.25rem!important}
@@ -27067,109 +27393,24 @@ body[data-finhub-theme] #tab-debt .fh-amortization-card { overflow:hidden; }
   }
 }
 </style>
-<style id="finhub-v86-transaction-log-phone-card-layout">
+<style id="finhub-v208-compact-transaction-list-responsive">
+/* Narrow-screen refinements for the same single-line transaction rows. */
 @media (max-width:640px) {
-  #tab-ledger #ledger-mobile-cards {
-    display:flex !important;
-    flex-direction:column !important;
-    gap:.65rem !important;
-    width:100% !important;
-    min-width:0 !important;
-  }
-  #tab-ledger #ledger-mobile-cards > .ledger-mobile-row {
-    display:grid !important;
-    grid-template-columns:minmax(0,1fr) auto !important;
-    align-items:start !important;
-    gap:.45rem .65rem !important;
-    width:100% !important;
-    min-width:0 !important;
-    max-width:100% !important;
-    padding:.8rem !important;
-    cursor:pointer;
-  }
-  #tab-ledger #ledger-mobile-cards .ledger-mobile-row > input[type="checkbox"] {
-    grid-column:1;
-    grid-row:1;
-    justify-self:start;
-    width:20px !important;
-    height:20px !important;
-    min-height:20px !important;
-    margin:0 0 .2rem 0 !important;
-  }
-  #tab-ledger #ledger-mobile-cards .ledger-mobile-row > .min-w-0 {
-    grid-column:1;
-    grid-row:2;
-    min-width:0 !important;
-    max-width:100% !important;
-  }
-  #tab-ledger #ledger-mobile-cards .ledger-mobile-row > .ledger-mobile-amount {
-    grid-column:2;
-    grid-row:1 / span 2;
-    max-width:42vw;
-    overflow-wrap:anywhere;
-    text-align:right;
-    font-size:.95rem;
-    font-weight:750;
-    white-space:normal;
-  }
-  #tab-ledger #ledger-mobile-cards .ledger-mobile-details {
-    grid-column:1 / -1;
-    display:grid !important;
-    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
-    gap:.55rem .7rem !important;
-    min-width:0 !important;
-    padding-top:.65rem;
-    border-top:1px solid var(--fh-border);
-  }
-  #tab-ledger #ledger-mobile-cards .ledger-mobile-field {
-    display:flex;
-    flex-direction:column;
-    gap:.12rem;
-    min-width:0 !important;
-    overflow-wrap:anywhere;
-    font-size:.75rem;
-  }
-  #tab-ledger #ledger-mobile-cards .ledger-mobile-field-label {
-    color:var(--fh-muted);
-    font-size:.63rem;
-    font-weight:700;
-    text-transform:uppercase;
-    letter-spacing:.035em;
-  }
-  #tab-ledger #ledger-mobile-cards .ledger-mobile-vendor {
-    font-size:.9rem;
-    line-height:1.25;
-    font-weight:750;
-    overflow-wrap:anywhere;
-  }
-  #tab-ledger #ledger-mobile-cards .ledger-mobile-date {
-    font-size:.68rem;
-    color:var(--fh-muted);
-    margin-bottom:.15rem;
-  }
+  #tab-ledger #ledger-mobile-cards { display:flex !important; flex-direction:column !important; gap:0 !important; width:100% !important; min-width:0 !important; }
+  #tab-ledger #ledger-mobile-cards > .ledger-mobile-row { display:flex !important; flex-direction:row !important; align-items:center !important; gap:.38rem !important; width:100% !important; min-width:0 !important; max-width:100% !important; min-height:35px !important; padding:.38rem .42rem !important; }
+  #tab-ledger #ledger-mobile-cards .ledger-row-select { flex:0 0 15px !important; width:15px !important; height:15px !important; }
+  #tab-ledger #ledger-mobile-cards .ledger-mobile-date { flex:0 0 55px; width:55px; font-size:.61rem !important; }
+  #tab-ledger #ledger-mobile-cards .ledger-mobile-vendor { flex:1 1 auto; min-width:2.8rem; font-size:.7rem !important; }
+  #tab-ledger #ledger-mobile-cards .ledger-mobile-subcategory { flex:0 1 82px; min-width:2.8rem; max-width:24vw; font-size:.63rem !important; }
+  #tab-ledger #ledger-mobile-cards .ledger-mobile-amount { flex:0 0 auto; min-width:76px; font-size:.68rem !important; }
   #tab-ledger #ledger-table-container { display:none !important; }
   #tab-ledger #ledger-mobile-cards.hidden { display:none !important; }
   #tab-ledger #ledger-mobile-cards:not(.hidden) { display:flex !important; }
-  #tab-ledger #ledger-filter-strip:not(.hidden) {
-    display:flex !important;
-    flex-wrap:nowrap !important;
-    overflow-x:auto !important;
-    max-width:100% !important;
-    padding-bottom:.35rem;
-    -webkit-overflow-scrolling:touch;
-  }
-  #tab-ledger #ledger-table-toolbar > .fh-theme-raised {
-    align-items:stretch !important;
-  }
-  #tab-ledger #ledger-table-toolbar > .fh-theme-raised > div {
-    min-width:0 !important;
-    max-width:100% !important;
-  }
-  #tab-ledger #ledger-table-toolbar button,
-  #tab-ledger #ledger-table-toolbar label {
-    min-height:40px;
-  }
+  #tab-ledger #ledger-filter-strip:not(.hidden) { display:flex !important; flex-wrap:nowrap !important; overflow-x:auto !important; max-width:100% !important; padding-bottom:.35rem; -webkit-overflow-scrolling:touch; }
+  #tab-ledger #ledger-table-toolbar > .fh-theme-raised { align-items:stretch !important; }
+  #tab-ledger #ledger-table-toolbar > .fh-theme-raised > div { min-width:0 !important; max-width:100% !important; }
 }
+
 </style>
 <style id="finhub-v87-page-disclosure-controls">
   /* Compact secondary utilities: visually quieter than primary dashboard actions. */
@@ -30015,6 +30256,93 @@ button[aria-describedby="acc-opening-balance-tooltip"]:focus-visible,
   body[data-finhub-theme] #finhub-mobile-global-controls button {
     color:var(--fh-muted, var(--fh-ink, #475569)) !important;
   }
+}
+</style>
+
+
+<style id="finhub-v206-calendar-mobile-and-split-disclosure-refinements">
+/* Mobile Calendar view selector: use the active theme palette, not legacy utility colours. */
+@media (max-width:767px) {
+  body[data-finhub-theme] #tab-calendar #calendar-scheduled-calendar-btn.fh-calendar-view-toggle,
+  body[data-finhub-theme] #tab-calendar #calendar-scheduled-list-btn.fh-calendar-view-toggle {
+    min-height:2.25rem !important;
+    padding:.48rem .78rem !important;
+    border:1px solid var(--fh-border) !important;
+    border-radius:.7rem !important;
+    background:var(--fh-surface,var(--fh-card)) !important;
+    color:var(--fh-muted,var(--fh-ink)) !important;
+    font-size:.73rem !important;
+    font-weight:700 !important;
+    line-height:1.1 !important;
+    box-shadow:none !important;
+  }
+  body[data-finhub-theme] #tab-calendar #calendar-scheduled-calendar-btn.fh-calendar-view-toggle.is-active,
+  body[data-finhub-theme] #tab-calendar #calendar-scheduled-list-btn.fh-calendar-view-toggle.is-active {
+    border-color:var(--fh-primary) !important;
+    background:var(--fh-primary) !important;
+    color:var(--fh-action-text,#fff) !important;
+  }
+  body[data-finhub-theme] #tab-calendar #calendar-scheduled-calendar-btn.fh-calendar-view-toggle:focus-visible,
+  body[data-finhub-theme] #tab-calendar #calendar-scheduled-list-btn.fh-calendar-view-toggle:focus-visible {
+    outline:2px solid var(--fh-primary) !important;
+    outline-offset:2px !important;
+    box-shadow:none !important;
+  }
+}
+
+/* Payment-date info controls stay compact, circular, and on the same row as the scheduled item. */
+#tab-calendar button.fh-calendar-paid-date-info.fh-info-trigger {
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  flex:0 0 1.15rem !important;
+  width:1.15rem !important;
+  min-width:1.15rem !important;
+  max-width:1.15rem !important;
+  height:1.15rem !important;
+  min-height:1.15rem !important;
+  margin:0 .04rem !important;
+  padding:0 !important;
+  border:1px solid color-mix(in srgb,var(--fh-primary) 32%,transparent) !important;
+  border-radius:50% !important;
+  background:color-mix(in srgb,var(--fh-primary) 8%,transparent) !important;
+  color:var(--fh-primary) !important;
+  font-size:.68rem !important;
+  line-height:1 !important;
+  vertical-align:middle !important;
+  box-sizing:border-box !important;
+}
+#tab-calendar button.fh-calendar-paid-date-info.fh-info-trigger i {
+  display:block !important;
+  margin:0 !important;
+  font-size:.68rem !important;
+  line-height:1 !important;
+}
+/* An intentionally unchecked box with a dash means a partial receipt/payment,
+   not a failed save. Fully settled items retain the normal check mark. */
+#tab-calendar .fh-calendar-notification-checkbox[data-settlement-status="partial"] {
+  background:color-mix(in srgb,var(--fh-warning,#d97706) 12%,transparent) !important;
+  border-color:var(--fh-warning,#d97706) !important;
+  color:var(--fh-warning,#d97706) !important;
+}
+#tab-calendar .fh-calendar-notification-checkbox[data-settlement-status="partial"]::before {
+  width:.42rem !important;
+  height:0 !important;
+  border:0 !important;
+  border-top:2px solid currentColor !important;
+  transform:none !important;
+}
+@media (max-width:640px) {
+  #tab-calendar button.fh-calendar-paid-date-info.fh-info-trigger {
+    flex-basis:1.2rem !important;
+    width:1.2rem !important;
+    min-width:1.2rem !important;
+    max-width:1.2rem !important;
+    height:1.2rem !important;
+    min-height:1.2rem !important;
+    margin-inline:.04rem !important;
+  }
+  #tab-calendar button.fh-calendar-paid-date-info.fh-info-trigger i { font-size:.7rem !important; }
 }
 </style>
 
