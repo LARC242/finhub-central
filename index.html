@@ -5392,7 +5392,7 @@ body[data-finhub-theme] .fh-ledger-view-toggle:focus-visible {
 <div class="flex justify-between"><span class="text-gray-500">Variable bills:</span><span class="font-bold accounting-num" id="joint-variable-share-header">$ - </span></div>
 <div class="border-t border-gray-200 dark:border-gray-800 pt-3 flex justify-between font-bold text-md"><span>Original Share Total:</span><span class="text-pink-600 dark:text-pink-400 accounting-num" id="joint-total-sent-disp">$ - </span></div><div class="flex justify-between items-center text-sm"><span class="text-gray-500">Adjusted Amount Owed:</span><strong class="accounting-num" id="joint-adjusted-owed-disp">$ - </strong></div>
 <div class="pt-3 border-t border-gray-200 dark:border-gray-800 space-y-2">
-<div class="flex justify-between items-center text-xs text-gray-500"><span>Transfers Sent Logged:</span><input class="w-24 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded px-2 py-1 text-right font-bold text-xs accounting-num" id="joint-transfers-sent-input" onchange="saveTransfersSent(this.value)" step="0.01" type="number"/></div>
+<div class="flex justify-between items-center text-xs text-gray-500"><span>Payments / credits applied:</span><input class="w-24 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded px-2 py-1 text-right font-bold text-xs accounting-num" id="joint-transfers-sent-input" onchange="saveTransfersSent(this.value)" step="0.01" type="number"/></div>
 <div class="flex justify-between font-bold text-sm"><span>Remaining Due This Month:</span><span class="text-rose-600 dark:text-rose-400 accounting-num" id="joint-remaining-due">$ - </span></div>
 <div class="hidden flex justify-between text-xs font-semibold" id="joint-current-credit-row"><span class="text-emerald-700 dark:text-emerald-400">Credit / Overpayment This Month:</span><span class="text-emerald-700 dark:text-emerald-400 accounting-num" id="joint-current-credit">$0.00</span></div>
 </div>
@@ -14561,7 +14561,8 @@ No payment links or balance changes were retained.`);
       const reconciledAllocated = (state.householdSettlements || []).filter(s => String(s.ym) === String(ym) && !s.reversedAt && s.status !== 'void')
         .reduce((sum, settlement) => sum + (settlement.allocations || []).reduce((n, allocation) => n + Math.max(0, Number(allocation.amountCents) || 0), 0), 0);
       const monthBillIds = new Set((state.jointBills || []).filter(b => String(b.ym) === String(ym)).map(b => String(b.id)));
-      const appliedCredits = (state.householdSettlementCreditEvents || []).filter(event => !event.reversedAt && event.status !== 'void' && event.type === 'application' && monthBillIds.has(String(event.jointBillId)))
+      const activeSettlementIds = new Set((state.householdSettlements || []).filter(item => !item.reversedAt && item.status !== 'void').map(item => String(item.id)));
+      const appliedCredits = (state.householdSettlementCreditEvents || []).filter(event => !event.reversedAt && event.status !== 'void' && event.type === 'application' && activeSettlementIds.has(String(event.settlementId)) && monthBillIds.has(String(event.jointBillId)))
         .reduce((sum, event) => sum + Math.max(0, Number(event.amountCents) || 0), 0);
       return linked + legacy + reconciledAllocated + appliedCredits;
     }
@@ -15084,7 +15085,8 @@ No payment links or balance changes were retained.`);
       const monthBillIds = new Set((state.jointBills || []).filter(b => String(b.ym) === String(ym)).map(b => String(b.id)));
       const reconciledAllocated = (state.householdSettlements || []).filter(s => String(s.ym) === String(ym) && !s.reversedAt && s.status !== 'void')
         .reduce((sum, settlement) => sum + (settlement.allocations || []).reduce((n, allocation) => n + Math.max(0, Number(allocation.amountCents) || 0), 0), 0);
-      const appliedCredits = (state.householdSettlementCreditEvents || []).filter(event => !event.reversedAt && event.status !== 'void' && event.type === 'application' && monthBillIds.has(String(event.jointBillId)))
+      const activeSettlementIds = new Set((state.householdSettlements || []).filter(item => !item.reversedAt && item.status !== 'void').map(item => String(item.id)));
+      const appliedCredits = (state.householdSettlementCreditEvents || []).filter(event => !event.reversedAt && event.status !== 'void' && event.type === 'application' && activeSettlementIds.has(String(event.settlementId)) && monthBillIds.has(String(event.jointBillId)))
         .reduce((sum, event) => sum + Math.max(0, Number(event.amountCents) || 0), 0);
       state.jointMetaData[ym].legacyTransfersSent = Math.max(0, Math.round((nextValue - linkedTotal - reconciledAllocated - appliedCredits) * 100) / 100);
       state.jointMetaData[ym].transfersSent = nextValue;
