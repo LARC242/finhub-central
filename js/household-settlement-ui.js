@@ -148,6 +148,104 @@
     }
   }
 
+  function enhanceExpenseSearchPicker(select, placeholder) {
+    if (!select) return;
+    const wrapper = document.createElement('div');
+    wrapper.className = 'hhs-expense-search relative min-w-0 w-full';
+    select.parentNode.insertBefore(wrapper, select);
+    wrapper.appendChild(select);
+    select.classList.add('hhs-picker-native');
+
+    const input = document.createElement('input');
+    input.type = 'search';
+    input.autocomplete = 'off';
+    input.className = 'hhs-expense-search-input w-full min-w-0 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 text-xs text-gray-800 dark:text-gray-100 placeholder-gray-500';
+    input.placeholder = placeholder || 'Search vendor, date or amount…';
+    input.setAttribute('aria-label', placeholder || 'Search existing bill expenses');
+    const results = document.createElement('div');
+    results.className = 'hhs-expense-search-results hidden absolute left-0 right-0 top-full mt-1 z-[95] max-h-56 overflow-y-auto rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-xl p-1';
+    const selected = document.createElement('div');
+    selected.className = 'hhs-expense-search-selected hidden mt-1 text-[11px] text-sky-700 dark:text-sky-300';
+    wrapper.append(input, results, selected);
+
+    const optionRows = () => [...select.options].filter(option => option.value).map(option => ({
+      value: option.value,
+      label: option.textContent.trim(),
+      normalized: option.textContent.trim().toLowerCase()
+    }));
+
+    function choose(item) {
+      select.value = item.value;
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+      input.value = item.label;
+      input.dataset.selected = 'true';
+      selected.textContent = 'Selected: ' + item.label;
+      selected.classList.remove('hidden');
+      results.classList.add('hidden');
+    }
+
+    function render(query) {
+      const q = String(query || '').trim().toLowerCase();
+      const matches = optionRows().filter(item => !q || item.normalized.includes(q));
+      results.innerHTML = '';
+      if (!matches.length) {
+        const empty = document.createElement('div');
+        empty.className = 'px-3 py-3 text-xs text-gray-500 dark:text-gray-400';
+        empty.textContent = 'No matching expenses. Try another vendor, date or amount.';
+        results.appendChild(empty);
+      } else {
+        matches.slice(0, 60).forEach(item => {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'w-full flex items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-xs text-gray-700 dark:text-gray-200 hover:bg-sky-50 dark:hover:bg-gray-800 focus:bg-sky-50 dark:focus:bg-gray-800';
+          const label = document.createElement('span');
+          label.className = 'min-w-0 truncate';
+          label.textContent = item.label;
+          const mark = document.createElement('span');
+          mark.className = 'shrink-0 text-sky-600 dark:text-sky-300 font-semibold';
+          mark.textContent = 'Select';
+          button.append(label, mark);
+          button.addEventListener('click', () => choose(item));
+          results.appendChild(button);
+        });
+      }
+      results.classList.remove('hidden');
+    }
+
+    input.addEventListener('focus', () => render(input.value));
+    input.addEventListener('input', () => {
+      input.dataset.selected = 'false';
+      select.value = '';
+      selected.classList.add('hidden');
+      render(input.value);
+    });
+    input.addEventListener('keydown', event => {
+      if (event.key === 'Escape') results.classList.add('hidden');
+      if (event.key === 'Enter') {
+        const first = results.querySelector('button');
+        if (first) { event.preventDefault(); first.click(); }
+      }
+    });
+    document.addEventListener('click', event => {
+      if (!wrapper.contains(event.target)) results.classList.add('hidden');
+    });
+    select.addEventListener('change', () => {
+      const option = [...select.options].find(item => item.value === select.value);
+      if (option) {
+        input.value = option.textContent.trim();
+        selected.textContent = 'Selected: ' + option.textContent.trim();
+        selected.classList.remove('hidden');
+      }
+    });
+    const styleId = 'hhs-expense-search-style';
+    if (!document.getElementById(styleId)) {
+      const style = document.createElement('style');
+      style.id = styleId;
+      style.textContent = '.hhs-expense-search .hhs-picker-native{position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important;overflow:hidden!important;} .hhs-expense-search-input:focus{outline:2px solid var(--theme-primary,#0891b2);outline-offset:1px;}';
+      document.head.appendChild(style);
+    }
+  }
+
   function renderAllocationRows(ym) {
     const host = byId('hhs-allocation-rows');
     if (!host) return;
@@ -175,7 +273,7 @@
         <input class="hhs-allocation-amount w-full min-w-0 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-2 text-xs text-right accounting-num" type="number" min="0" step="0.01" value="0.00" aria-label="Amount allocated to ${esc(bill.name)}"/>
       `;
       host.appendChild(row);
-      enhanceHouseholdPicker(row.querySelector('.hhs-expense-transaction'), 'Choose existing bill expense');
+      enhanceExpenseSearchPicker(row.querySelector('.hhs-expense-transaction'), 'Search vendor, date or amount…');
       row.querySelector('.hhs-allocation-amount').addEventListener('input', updateSettlementAllocationTotals);
       row.querySelector('.hhs-expense-transaction').addEventListener('change', updateSettlementAllocationTotals);
     });
