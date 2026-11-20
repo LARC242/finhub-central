@@ -254,34 +254,31 @@
     if (!host) return;
     host.innerHTML = '';
     const monthBills = billsForMonth(ym);
-    if (!monthBills.length) {
-      host.innerHTML = '<p class="text-xs text-gray-500">There are no household bills for this month.</p>';
-      return;
-    }
+    if (!monthBills.length) { host.innerHTML = '<p class="text-xs text-gray-500">There are no household bills for this month.</p>'; return; }
     monthBills.forEach(bill => {
       const balance = core.billBalances(bill, settlements(), state.jointAdjustments || [], creditEvents());
-      const options = expenseCandidates(bill, ym);
       const row = document.createElement('div');
-      row.className = 'grid grid-cols-1 lg:grid-cols-[minmax(9rem,1fr)_minmax(13rem,1.7fr)_7rem] gap-2 items-center rounded-xl border border-gray-200 dark:border-gray-800 p-3';
+      row.className = 'grid grid-cols-1 lg:grid-cols-[minmax(10rem,1fr)_8rem_8rem] gap-2 items-center rounded-xl border border-gray-200 dark:border-gray-800 p-3';
       row.dataset.hhsBillId = String(bill.id);
-      row.innerHTML = `
-        <div class="min-w-0">
-          <div class="font-semibold text-xs">${esc(bill.name)}</div>
-          <div class="text-[10px] text-gray-500">Your share: ${esc(Number(bill.splitPct) || 0)}% · Remaining: ${esc(money(balance.outstandingCents))}</div>
-        </div>
-        <select class="hhs-expense-transaction w-full min-w-0 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-2 text-xs" aria-label="Existing expense transaction for ${esc(bill.name)}">
-          <option value="">Choose existing bill expense</option>
-          ${options.map(tx => `<option value="${esc(tx.id)}">${esc(transactionLabel(tx))}</option>`).join('')}
-        </select>
-        <input class="hhs-allocation-amount w-full min-w-0 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-2 text-xs text-right accounting-num" type="number" min="0" step="0.01" value="0.00" aria-label="Amount allocated to ${esc(bill.name)}"/>
-      `;
+      row.innerHTML = '<div class="min-w-0"><div class="font-semibold text-xs">' + esc(bill.name) + '</div><div class="text-[10px] text-gray-500">Your share: ' + esc(Number(bill.splitPct) || 0) + '% · Outstanding: ' + esc(money(balance.outstandingCents)) + '</div></div><div class="text-xs text-gray-500">Household obligation</div><input class="hhs-allocation-amount w-full min-w-0 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-2 text-xs text-right accounting-num" type="number" min="0" max="' + (balance.outstandingCents/100).toFixed(2) + '" step="0.01" value="0.00" aria-label="Amount allocated to ' + esc(bill.name) + '"/>';
       host.appendChild(row);
-      enhanceExpenseSearchPicker(row.querySelector('.hhs-expense-transaction'), 'Search vendor, date or amount…');
       row.querySelector('.hhs-allocation-amount').addEventListener('input', updateSettlementAllocationTotals);
-      row.querySelector('.hhs-expense-transaction').addEventListener('change', updateSettlementAllocationTotals);
     });
   }
-
+  function suggestBillAllocations() {
+    const bank = transactions().find(tx => String(tx.id) === String(byId('hhs-bank-transaction')?.value));
+    let remaining = bank ? cents(Math.abs(Number(bank.amount) || 0)) : 0;
+    const ym = byId('hhs-settlement-month')?.value || currentMonth();
+    [...document.querySelectorAll('#hhs-allocation-rows [data-hhs-bill-id]')].forEach(row => {
+      const bill = billsForMonth(ym).find(item => String(item.id) === String(row.dataset.hhsBillId));
+      const balance = bill ? core.billBalances(bill, settlements(), state.jointAdjustments || [], creditEvents()) : {outstandingCents:0};
+      const amount = Math.max(0, Math.min(balance.outstandingCents, remaining));
+      const input = row.querySelector('.hhs-allocation-amount');
+      if (input) input.value = (amount / 100).toFixed(2);
+      remaining -= amount;
+    });
+    updateSettlementAllocationTotals();
+  }
   function openHouseholdSettlementModal() {
     if (!core) { alert('Household Settlement reconciliation could not load. Refresh the app and try again.'); return; }
     const ym = currentMonth();
@@ -294,12 +291,12 @@
     const bankSelect = byId('hhs-bank-transaction');
     bankSelect.innerHTML = '<option value="">Choose an existing e-Transfer withdrawal</option>' +
       bankOptions.map(tx => '<option value="' + esc(tx.id) + '">' + esc(transactionLabel(tx)) + '</option>').join('');
-    bankSelect.onchange = updateSettlementAllocationTotals;
+    bankSelect.onchange = suggestBillAllocations;
     enhanceHouseholdPicker(bankSelect, 'Choose an existing e-Transfer withdrawal');
     renderAllocationRows(ym);
     byId('household-settlement-errors')?.classList.add('hidden');
     byId('household-settlement-modal')?.classList.remove('hidden');
-    updateSettlementAllocationTotals();
+    suggestBillAllocations();
   }
 
   function closeHouseholdSettlementModal() {
@@ -313,7 +310,6 @@
     const rows = [...document.querySelectorAll('#hhs-allocation-rows [data-hhs-bill-id]')];
     const allocations = rows.map(row => ({
       jointBillId: String(row.dataset.hhsBillId),
-      expenseTransactionId: String(row.querySelector('.hhs-expense-transaction')?.value || ''),
       amountCents: cents(row.querySelector('.hhs-allocation-amount')?.value)
     })).filter(item => Number.isSafeInteger(item.amountCents) && item.amountCents > 0);
     const input = {
@@ -375,7 +371,7 @@
     const summary = byId('household-settlement-summary');
     if (summary) summary.innerHTML = [
       ['Existing withdrawals linked', money(monthPosition.transferCents)],
-      ['Bill expenses allocated', money(activeAllocations)],
+      ['Household bills allocated', money(activeAllocations)],
       ['Household share outstanding', money(monthPosition.outstandingCents)],
       ['Available household receivable', money(creditPosition.availableCreditCents)]
     ].map(([label, value]) => `<div class="rounded-xl border border-gray-200 dark:border-gray-800 p-3"><div class="text-[10px] uppercase tracking-wide text-gray-500">${esc(label)}</div><div class="font-bold text-lg accounting-num mt-1">${esc(value)}</div></div>`).join('');
