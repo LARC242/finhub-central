@@ -14447,7 +14447,7 @@ No payment links or balance changes were retained.`);
       const transfersSentCents = jointTransfersLoggedForMonth(ym);
       const netBalanceCents = adjustedOwedCents - transfersSentCents;
       const remaining = Math.max(0, netBalanceCents) / 100;
-      const currentCredit = Math.max(0, -netBalanceCents) / 100;
+      const currentCredit = (Math.max(0, -netBalanceCents) + jointReconciliationCreditCentsForMonth(ym)) / 100;
 
       if (transfersInput) transfersInput.value = (transfersSentCents / 100).toFixed(2);
       renderJointPriorOutstanding(ym);
@@ -14502,7 +14502,7 @@ No payment links or balance changes were retained.`);
       const transfersLoggedCents = jointTransfersLoggedForMonth(ym);
       const netCents = adjustedOwedCents - transfersLoggedCents;
       const remainingDue = Math.max(0, netCents) / 100;
-      const currentCredit = Math.max(0, -netCents) / 100;
+      const currentCredit = (Math.max(0, -netCents) + jointReconciliationCreditCentsForMonth(ym)) / 100;
 
       let text = `E-Transfer Breakdown - ${monthLabel}\n`;
       text += `Fixed bills: ${formatFinancial(fixedShareCents / 100)}\n`;
@@ -14549,7 +14549,22 @@ No payment links or balance changes were retained.`);
       const legacy = Object.prototype.hasOwnProperty.call(meta, 'legacyTransfersSent')
         ? Math.max(0, transactionAmountToCents(meta.legacyTransfersSent))
         : Math.max(0, transactionAmountToCents(meta.transfersSent) - linked);
-      return linked + legacy;
+      const reconciledAllocated = (state.householdSettlements || []).filter(s => String(s.ym) === String(ym) && !s.reversedAt && s.status !== 'void')
+        .reduce((sum, settlement) => sum + (settlement.allocations || []).reduce((n, allocation) => n + Math.max(0, Number(allocation.amountCents) || 0), 0), 0);
+      return linked + legacy + reconciledAllocated;
+    }
+    function jointReconciliationCreditCentsForMonth(ym) {
+      const activeSettlements = (state.householdSettlements || []).filter(s => String(s.ym) === String(ym) && !s.reversedAt && s.status !== 'void');
+      const gross = activeSettlements.reduce((sum, settlement) => {
+        const bank = (state.transactions || []).find(t => String(t.id) === String(settlement.bankTransactionId));
+        const bankCents = bank ? transactionAmountToCents(Math.abs(Number(bank.amount) || 0)) : 0;
+        const allocated = (settlement.allocations || []).reduce((n, allocation) => n + Math.max(0, Number(allocation.amountCents) || 0), 0);
+        return sum + Math.max(0, bankCents - allocated);
+      }, 0);
+      const used = (state.householdSettlementCreditEvents || []).filter(e => !e.reversedAt && e.status !== 'void')
+        .filter(e => activeSettlements.some(s => String(s.bankTransactionId) === String((state.transactions || []).find(t => String(t.id) === String(e.transactionId))?.householdSettlementBankTransactionId || '')))
+        .reduce((sum, event) => sum + Math.max(0, Number(event.amountCents) || 0), 0);
+      return Math.max(0, gross - used);
     }
     function jointNetBalanceCentsForMonth(ym) {
       // Positive = still owed; negative = credit/overpayment.
