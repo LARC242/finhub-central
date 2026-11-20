@@ -46,8 +46,11 @@
     if (!bank) errors.push('Select an existing e-transfer withdrawal from the ledger.');
     else {
       const bankType = String(bank.type || '').toLowerCase();
-      if (bankType !== 'expense' && !(bankType === 'transfer' && bank.externalTransferDirection !== 'in' && !bank.transferToAccountId)) {
-        errors.push('The linked transaction must be an existing external e-transfer withdrawal.');
+      const bankDescription = [bank.vendor, bank.desc, bank.description, bank.notes].filter(Boolean).join(' ').toLowerCase();
+      const explicitETransferExpense = bankType === 'expense' && /\b(e[ -]?transfer|etransfer)\b/i.test(bankDescription);
+      const externalTransferOut = bankType === 'transfer' && bank.externalTransferDirection === 'out' && !bank.transferToAccountId;
+      if (!explicitETransferExpense && !externalTransferOut) {
+        errors.push('The linked transaction must be an existing external e-Transfer withdrawal, not an ordinary purchase or internal account transfer.');
       }
       if (bank.source === 'joint-household-settlement') errors.push('Legacy settlement-generated expenses cannot be reused as the underlying bank withdrawal.');
       if (!(Number(bank.amount) > 0)) errors.push('The linked e-Transfer must be a positive withdrawal, not a refund or credit.');
