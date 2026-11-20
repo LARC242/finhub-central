@@ -123,7 +123,7 @@
     // A refund/application is only live while the settlement that created the credit remains active.
     const appliedOrRefunded = (creditEvents || []).filter(e => active(e) && activeSettlementIds.has(String(e.settlementId)))
       .reduce((sum, e) => sum + Math.max(0, Number(e.amountCents) || 0), 0);
-    return { grossCreditCents: grossCredit, appliedOrRefundedCreditCents: appliedOrRefunded,
+    return { grossCreditCents: grossCredit, appliedOrRefundedCents: appliedOrRefunded,
       availableCreditCents: Math.max(0, grossCredit - appliedOrRefunded),
       overAppliedCents: Math.max(0, appliedOrRefunded - grossCredit) };
   }
@@ -168,7 +168,6 @@
       if (!bill) errors.push('Select the household bill that receives this credit application.');
       else if (tx && !linkedCalendarExpenseIsValid(bill, tx, context)) errors.push('The linked expense does not belong to the selected household bill.');
       else if (bill && tx) {
-        const already = (context?.creditEvents || []).filter(e => active(e) && e.type === 'application' && String(e.jointBillId) === String(bill.id) && String(e.id) !== String(event.id)).reduce((n,e)=>n+Math.max(0,Number(e.amountCents)||0),0);
         const balance = billBalances(bill, context?.settlements || [], context?.jointAdjustments || [], context?.creditEvents || []);
         if (Number.isSafeInteger(amount) && amount > balance.outstandingCents) errors.push('The credit application exceeds the remaining household bill share.');
       }
