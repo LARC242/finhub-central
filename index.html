@@ -4650,6 +4650,124 @@ body[data-finhub-theme] .fh-ledger-view-toggle:focus-visible {
   }
 }
 </style>
+
+<style id="finhub-v284-bulk-edit-dialog-layout">
+/* v284: give Bulk Edit a deliberate, compact dialog footprint instead of
+   allowing broad generic modal rules to stretch it across the viewport. */
+#bulk-edit-modal {
+  box-sizing:border-box !important;
+  padding:clamp(.75rem,2vw,1.5rem) !important;
+  overflow-x:hidden !important;
+  overflow-y:auto !important;
+  align-items:center !important;
+  justify-content:center !important;
+}
+#bulk-edit-modal > .fh-modal-surface {
+  box-sizing:border-box !important;
+  position:relative !important;
+  width:min(54rem, calc(100vw - 3rem)) !important;
+  min-width:0 !important;
+  max-width:min(54rem, calc(100vw - 3rem)) !important;
+  height:auto !important;
+  max-height:calc(100dvh - 3rem) !important;
+  margin:0 auto !important;
+  padding:clamp(1rem,2vw,1.5rem) !important;
+  border-radius:1.15rem !important;
+  overflow-x:hidden !important;
+  overflow-y:auto !important;
+  overscroll-behavior:contain !important;
+  -webkit-overflow-scrolling:touch !important;
+  display:flex !important;
+  flex-direction:column !important;
+  gap:1.1rem !important;
+}
+#bulk-edit-modal > .fh-modal-surface > div:first-child {
+  display:flex !important;
+  align-items:flex-start !important;
+  justify-content:space-between !important;
+  gap:1rem !important;
+}
+#bulk-edit-modal #bulk-edit-modal-accessible-title {
+  font-size:clamp(1.2rem,2vw,1.55rem) !important;
+  line-height:1.25 !important;
+  margin:0 !important;
+}
+#bulk-edit-modal #bulk-edit-count {
+  margin-top:.25rem !important;
+  font-size:.9rem !important;
+}
+#bulk-edit-modal > .fh-modal-surface > p {
+  margin:0 !important;
+  line-height:1.45 !important;
+}
+#bulk-edit-modal .grid.grid-cols-1.md\\:grid-cols-2 {
+  display:grid !important;
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  gap:1rem 1.25rem !important;
+}
+#bulk-edit-modal label {
+  display:block !important;
+  min-width:0 !important;
+  font-size:.9rem !important;
+  line-height:1.35 !important;
+}
+#bulk-edit-modal input,
+#bulk-edit-modal select {
+  box-sizing:border-box !important;
+  width:100% !important;
+  min-width:0 !important;
+  min-height:2.9rem !important;
+  padding:.65rem .85rem !important;
+  font-size:1rem !important;
+}
+#bulk-edit-modal > .fh-modal-surface > .flex.flex-row {
+  display:flex !important;
+  flex-direction:row !important;
+  gap:.75rem !important;
+  padding-top:.25rem !important;
+  margin-top:.1rem !important;
+}
+#bulk-edit-modal > .fh-modal-surface > .flex.flex-row button {
+  flex:1 1 0 !important;
+  min-width:0 !important;
+  min-height:3rem !important;
+  padding:.7rem 1rem !important;
+  font-size:1rem !important;
+  white-space:normal !important;
+}
+@media(max-width:640px) {
+  #bulk-edit-modal {
+    padding:.5rem !important;
+    align-items:center !important;
+  }
+  #bulk-edit-modal > .fh-modal-surface {
+    width:calc(100vw - 1rem) !important;
+    max-width:calc(100vw - 1rem) !important;
+    max-height:calc(100dvh - 1rem) !important;
+    padding:1rem !important;
+    gap:.9rem !important;
+  }
+  #bulk-edit-modal .grid.grid-cols-1.md\\:grid-cols-2 {
+    grid-template-columns:minmax(0,1fr) !important;
+    gap:.8rem !important;
+  }
+  #bulk-edit-modal > .fh-modal-surface > .flex.flex-row {
+    flex-direction:row !important;
+  }
+  #bulk-edit-modal > .fh-modal-surface > .flex.flex-row button {
+    min-height:2.85rem !important;
+    font-size:.92rem !important;
+  }
+}
+@media(max-width:360px) {
+  #bulk-edit-modal > .fh-modal-surface > .flex.flex-row {
+    flex-direction:column !important;
+  }
+}
+</style>
+
+<!-- FinHub v285: synchronize populated Calendar categories on transaction link -->
+<!-- FinHub v286: synchronize Calendar vendor on transaction link -->
 </head>
 <body class="bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 min-h-screen flex flex-col md:flex-row transition-colors duration-200 relative" id="app-body">
 <!-- UNDO TOAST NOTIFICATION -->
@@ -5562,7 +5680,7 @@ body[data-finhub-theme] .fh-ledger-view-toggle:focus-visible {
 <div class="space-y-3" id="settings-categories-list"></div>
 </div>
 <div class="fh-theme-surface fh-settings-category-panel">
-<div><h3 class="text-md font-bold">Debt Categories &amp; Subcategories</h3><p class="text-[10px] fh-theme-muted mt-1">Used only when Type is Debt. Principal reduces the liability; interest is included in expense reporting.</p></div>
+<div class="flex flex-wrap items-center justify-between gap-2"><div><h3 class="text-md font-bold">Debt Categories &amp; Subcategories</h3><p class="text-[10px] fh-theme-muted mt-1">Used only when Type is Debt. Principal reduces the liability; interest is included in expense reporting.</p></div><button class="fh-action-button fh-action-button-primary px-3 py-1.5 rounded-lg text-xs font-semibold" onclick="openDebtCategoryModal()" type="button"><i class="fa-solid fa-plus mr-1"></i>Add Debt Category</button></div>
 <div class="space-y-3" id="settings-debt-categories-list"></div>
 </div>
 </div>
@@ -5592,18 +5710,18 @@ body[data-finhub-theme] .fh-ledger-view-toggle:focus-visible {
 </div>
 <!-- MODAL: BULK EDIT TRANSACTIONS -->
 <div aria-labelledby="bulk-edit-modal-accessible-title" aria-modal="true" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50" id="bulk-edit-modal" role="dialog">
-<div class="dark:border-gray-800 w-full max-w-xl max-h-[90vh] overflow-y-auto space-y-4 fh-modal-surface">
+<div class="dark:border-gray-800 w-full max-w-2xl max-h-[90vh] overflow-y-auto space-y-4 fh-modal-surface">
 <div class="flex justify-between items-center"><div><h3 class="text-lg font-bold" id="bulk-edit-modal-accessible-title">Bulk Edit Transactions</h3><p class="text-xs text-gray-400" id="bulk-edit-count">Selected transactions</p></div><button aria-label="Close bulk edit dialog" class="text-gray-400" onclick="closeBulkEditModal()" title="Close bulk edit dialog"><i aria-hidden="true" class="fa-solid fa-xmark"></i></button></div>
 <p class="text-xs text-gray-500">Only fields you change will be applied. Leave a field set to “No change” to preserve each transaction's current value.</p>
-<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 <label class="text-xs font-semibold text-gray-500">Vendor<input class="mt-1 w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm" id="bulk-vendor" placeholder="No change" type="text"/></label>
 <label class="text-xs font-semibold text-gray-500">Type<select class="mt-1 w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm" id="bulk-type" onchange="updateBulkTypeOptions()"><option value="">No change</option></select></label>
 <label class="text-xs font-semibold text-gray-500 hidden" id="bulk-transfer-to-wrap">Transfer to account<select class="mt-1 w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm" id="bulk-transfer-to"><option value="">Choose destination account</option></select><span class="block mt-1 text-[10px] text-gray-400">The selected transactions' existing accounts will remain the source accounts.</span></label>
 <label class="text-xs font-semibold text-gray-500 hidden" id="bulk-transfer-mode-wrap">Transfer handling<select class="mt-1 w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm" id="bulk-transfer-mode"><option value="">Choose how to handle the destination…</option><option value="create">Create destination entries (only one side exists)</option><option value="match">Match existing destination transactions (both sides already exist)</option></select><span class="block mt-1 text-[10px] text-gray-400">Choose Match when the destination-side income transactions are already recorded. FinHub will pair them instead of adding the amount again.</span></label>
-<label class="text-xs font-semibold text-gray-500">Bucket<select class="mt-1 w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm" id="bulk-category" onchange="updateBulkSubcategoryOptions()"><option value="">No change</option></select></label>
-<label class="text-xs font-semibold text-gray-500">Subcategory<select class="mt-1 w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm" id="bulk-subcategory"><option value="">No change</option></select></label>
+<label class="text-xs font-semibold text-gray-500">Bucket<select class="mt-1 w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm" id="bulk-category" onchange="handleBulkCategoryChange()"><option value="">No change</option></select></label>
+<label class="text-xs font-semibold text-gray-500">Subcategory<select class="mt-1 w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm" id="bulk-subcategory" onchange="handleBulkSubcategoryChange()"><option value="">No change</option></select></label>
 </div>
-<div class="flex flex-wrap justify-end gap-2"><button class="px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg text-xs font-semibold fh-btn-cancel fh-modal-secondary-action" onclick="closeBulkEditModal()">Cancel</button><button class="px-4 py-2 text-white rounded-lg text-xs font-semibold theme-bg" onclick="applyBulkEdit()">Apply to selected</button></div>
+<div class="flex flex-row gap-2 pt-2"><button class="flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg text-sm font-semibold fh-btn-cancel fh-modal-secondary-action" onclick="closeBulkEditModal()" type="button">Cancel</button><button class="flex-1 px-4 py-2 text-white rounded-lg text-sm font-semibold theme-bg" onclick="applyBulkEdit()" type="button">Apply to selected</button></div>
 </div>
 </div>
 <!-- MODAL: ADD VENDOR CLEANUP RULE -->
@@ -5866,13 +5984,23 @@ body[data-finhub-theme] .fh-ledger-view-toggle:focus-visible {
 <textarea class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-2 text-xs font-mono" id="cat-subs-limits" placeholder="Groceries: 800:rollover
 Gas: 250" rows="4"></textarea>
 </div>
-<div class="flex space-x-3 pt-3">
+<div class="flex flex-row gap-2 pt-3">
 <button class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel fh-modal-secondary-action" onclick="closeCategoryModal()" type="button">Cancel</button>
 <button class="flex-1 py-2 text-white rounded-xl text-sm font-semibold theme-bg" type="submit">Save Bucket</button>
 </div>
 </form>
 </div>
 </div>
+<!-- MODAL: ADD/EDIT DEBT CATEGORY -->
+<div aria-labelledby="debt-category-modal-title" aria-modal="true" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50" id="debt-category-modal" role="dialog">
+<div class="fh-modal-surface w-full max-w-lg max-h-[90vh] overflow-y-auto">
+<h3 class="text-lg font-bold" id="debt-category-modal-title">Manage Debt Category &amp; Subcategories</h3>
+<form class="space-y-3" id="debt-category-form" onsubmit="saveDebtCategory(event)">
+<input id="debt-cat-edit-index" type="hidden" value="-1"/>
+<div><label class="block text-xs font-semibold text-gray-500 mb-1">Debt Category Name</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="debt-cat-name" required type="text" placeholder="e.g. Student Loan Payment"/></div>
+<div><label class="block text-xs font-semibold text-gray-500 mb-1">Subcategories (one per line)</label><textarea class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-2 text-sm font-mono" id="debt-cat-subs" rows="5" placeholder="Principal Payment&#10;Interest Expense"></textarea></div>
+<div class="flex flex-row gap-2 pt-2"><button class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel fh-modal-secondary-action" onclick="closeDebtCategoryModal()" type="button">Cancel</button><button class="flex-1 py-2 text-white rounded-xl text-sm font-semibold theme-bg" type="submit">Save Debt Category</button></div>
+</form></div></div>
 <!-- MODAL: ADD/EDIT INCOME BUCKET -->
 <div aria-labelledby="income-category-modal-accessible-title" aria-modal="true" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50" id="income-category-modal" role="dialog">
 <div class="fh-modal-surface">
@@ -5883,7 +6011,7 @@ Gas: 250" rows="4"></textarea>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Subcategories (optional, one per line)</label><textarea class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-2 text-xs font-mono" id="income-cat-subs" placeholder="Regular Pay
 Overtime
 Bonus" rows="4"></textarea></div>
-<div class="flex space-x-3 pt-3"><button class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel fh-modal-secondary-action" onclick="closeIncomeCategoryModal()" type="button">Cancel</button><button class="flex-1 py-2 text-white rounded-xl text-sm font-semibold" type="submit">Save Income Bucket</button></div>
+<div class="flex flex-row gap-2 pt-3"><button class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel fh-modal-secondary-action" onclick="closeIncomeCategoryModal()" type="button">Cancel</button><button class="flex-1 py-2 text-white rounded-xl text-sm font-semibold" type="submit">Save Income Bucket</button></div>
 </form>
 </div>
 </div>
@@ -6014,17 +6142,19 @@ Bonus" rows="4"></textarea></div>
 <button aria-pressed="false" class="tx-kind-card fh-calendar-type-option" data-calendar-type="debt" data-tx-kind="Debt" onclick="setCalendarType('debt')" type="button"><i aria-hidden="true" class="fa-solid fa-credit-card"></i><span>Debt</span></button>
 </div>
 </div>
-<div class="cal-paired-row cal-vendor-amount-row" id="cal-vendor-description-row"><div id="cal-vendor-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1"><span id="cal-vendor-label">Vendor</span> <span class="text-rose-500">*</span></label><input class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-vendor" placeholder="e.g. Employer, utility or service provider" required="" type="text"/></div><div class="cal-amount-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Amount ($)</label><input class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-amount" required="" step="0.01" type="number"/></div><div class="hidden" id="cal-principal-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Principal portion ($)</label><input class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-principal-amount" min="0" placeholder="Defaults to full payment" step="0.01" type="number"/></div></div>
+<div class="cal-paired-row cal-vendor-amount-row" id="cal-vendor-description-row"><div id="cal-vendor-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1"><span id="cal-vendor-label">Vendor</span> <span class="text-rose-500">*</span></label><input class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-vendor" list="cal-counterparty-options" placeholder="e.g. Employer, utility or service provider" required="" type="text"/><datalist id="cal-counterparty-options"></datalist></div><div class="cal-amount-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Amount ($)</label><input class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-amount" required="" step="0.01" type="number"/></div></div>
 <div class="cal-paired-row cal-category-row" id="cal-category-row"><div id="cal-category-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Category</label><select class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-category" onchange="handleCalendarCategoryChange()"><option value="">-- None --</option></select></div>
 <div id="cal-subcategory-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Subcategory</label><select class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-subcategory" onchange="handleCalendarSubcategoryChange()"><option value="">-- None --</option></select></div></div>
-<div class="cal-paired-row cal-funding-description-row" id="cal-funding-row"><div><label class="block text-xs font-semibold text-gray-500 mb-1">Description (optional)</label><input class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-desc" placeholder="Additional context (optional)" type="text"/></div><div class="cal-account-wrap">
+<div class="cal-paired-row cal-funding-description-row" id="cal-funding-row"><div class="hidden" id="cal-principal-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Principal portion ($)</label><input class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-principal-amount" min="0" placeholder="Defaults to full payment" step="0.01" type="number"/></div><div class="cal-account-wrap">
 <label class="block text-xs font-semibold text-gray-500 mb-1" id="cal-account-label">Funding Account</label>
 <select class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-account"></select>
 </div></div>
-<div class="hidden sm:col-span-2" id="cal-debt-account-wrap">
-<label class="block text-xs font-semibold text-gray-500 mb-1">Credit / Debt Account Being Paid</label>
+<div class="cal-paired-row hidden" id="cal-debt-account-wrap">
+<div><label class="block text-xs font-semibold text-gray-500 mb-1">Credit / Debt Account Being Paid</label>
 <select class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-debt-account"></select>
 <p class="text-[10px] text-gray-400 mt-1">Enter zero for an interest-only payment; only the principal portion reduces this balance.</p>
+</div>
+<div id="cal-description-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Description (optional)</label><input class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-desc" placeholder="Additional context (optional)" type="text"/></div>
 </div>
 <div class="hidden sm:col-span-2 rounded-xl border border-gray-200 dark:border-gray-800 p-3 space-y-3" id="cal-payment-panel">
 <div class="flex items-center justify-between gap-2"><strong class="text-xs" id="cal-payment-heading">Payment history</strong><span class="text-[10px] font-semibold" id="cal-payment-status"></span></div>
@@ -6209,8 +6339,8 @@ Bonus" rows="4"></textarea></div>
 </div>
 <select aria-hidden="true" class="hidden" id="tx-type" onchange="updateTransactionTypeFields()" tabindex="-1"></select>
 </div><div class="tx-two-column-row grid grid-cols-2 gap-3 items-start" id="tx-vendor-amount-row"><div>
-<div class="tx-field-header flex items-center justify-between gap-2 mb-1 min-w-0"><label class="block text-xs font-semibold text-gray-500 whitespace-nowrap shrink-0" id="tx-vendor-label">Vendor <span class="text-rose-500">*</span></label><div class="tx-vendor-actions flex items-center justify-end gap-2 min-w-0"><button aria-hidden="true" class="fh-inline-action text-[10px] font-semibold text-indigo-500 whitespace-nowrap shrink-0 leading-tight" disabled="" hidden="" onclick="applySavedVendorCleanupToForm()" type="button">Apply saved cleanup</button><button aria-hidden="true" class="fh-inline-action text-[10px] font-semibold text-indigo-500 whitespace-nowrap shrink-0 leading-tight" disabled="" hidden="" onclick="openVendorRuleModalFromTransaction()" type="button">Create cleanup rule</button></div></div>
-<input class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="tx-vendor" oninput="if(document.getElementById('tx-type')?.value==='Income') applySmartIncomeVendorRules(this.value); else applySmartMerchantRules(this.value)" placeholder="e.g. Costco" required="" type="text"/>
+<div class="tx-field-header flex items-center justify-between gap-2 mb-1 min-w-0"><label class="block text-xs font-semibold text-gray-500 whitespace-nowrap shrink-0" id="tx-vendor-label">Vendor / Payee <span class="text-rose-500">*</span></label><div class="tx-vendor-actions flex items-center justify-end gap-2 min-w-0"><button aria-hidden="true" class="fh-inline-action text-[10px] font-semibold text-indigo-500 whitespace-nowrap shrink-0 leading-tight" disabled="" hidden="" onclick="applySavedVendorCleanupToForm()" type="button">Apply saved cleanup</button><button aria-hidden="true" class="fh-inline-action text-[10px] font-semibold text-indigo-500 whitespace-nowrap shrink-0 leading-tight" disabled="" hidden="" onclick="openVendorRuleModalFromTransaction()" type="button">Create cleanup rule</button></div></div>
+<input class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="tx-vendor" list="tx-counterparty-options" oninput="if(document.getElementById('tx-type')?.value==='Income') applySmartIncomeVendorRules(this.value); else applySmartMerchantRules(this.value)" placeholder="e.g. Costco" required="" type="text"/><datalist id="tx-counterparty-options"></datalist>
 </div><div id="tx-amount-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Total Amount ($)</label><input 0.01"="" class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="tx-amount" min="0.01" oninput="updateInlineDebtSplit(false); if(document.getElementById('tx-is-split')?.value==='true') updateSplitRemainderPreview(); step=" step="0.01" type="number"/></div></div>
 <div aria-live="polite" class="hidden col-span-2 -mt-2 pl-1 text-[10px] leading-none whitespace-nowrap text-emerald-600 dark:text-emerald-400" id="tx-category-rule-match-indicator"><i aria-hidden="true" class="fa-solid fa-circle-check mr-1"></i><span id="tx-category-rule-match-text">Saved rule applied</span></div>
 </div>
@@ -6255,7 +6385,7 @@ Bonus" rows="4"></textarea></div>
 <select class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="tx-subcategory" onchange="handleTransactionSubcategoryChange()"><option value="">-- None --</option></select>
 </div>
 </div>
-<div><label class="block text-xs font-semibold text-gray-500 mb-1">Description (optional)</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="tx-desc" placeholder="e.g. Weekly groceries" type="text"/></div>
+<div><label class="block text-xs font-semibold text-gray-500 mb-1">Description (optional)</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="tx-desc" placeholder="Optional details about this transaction" type="text"/></div>
 <div class="border-t border-gray-200 dark:border-gray-800 pt-2">
 <label class="flex items-center gap-2 text-xs font-semibold"><input class="fh-theme-checkbox" id="tx-save-category-rule" onchange="toggleTransactionRuleOptions()" type="checkbox"/> Save category rule</label>
 <div class="pt-2 space-y-2">
@@ -6943,6 +7073,7 @@ Bonus" rows="4"></textarea></div>
       importRules: [],
       statementCsvMappings: {},
       vendorCleanupRules: [],
+      savedCounterparties: { vendors: [], payers: [], creditors: [] },
       transactionTypes: [...STANDARD_TRANSACTION_TYPES],
       // Editable expense buckets. Debt-specific classifications live separately below.
       categories: DEFAULT_EXPENSE_BUCKETS.map(bucket => ({ name: bucket.name, subcategories: bucket.subcategories.map(name => ({ name, limit: 0, rollover: false })) })),
@@ -6972,6 +7103,22 @@ Bonus" rows="4"></textarea></div>
       sinkingFundLedger: { version: 1, migrationVersion: 1, buckets: [] },
       lastBackupAt: null
     };
+
+    // Shared type-ahead directories for vendors, payers and creditors.
+    state.savedCounterparties = state.savedCounterparties || {};
+    ['vendors','payers','creditors'].forEach(key => {
+      if (!Array.isArray(state.savedCounterparties[key])) state.savedCounterparties[key] = [];
+    });
+    (state.transactions || []).forEach(tx => {
+      const key = tx.type === 'Income' ? 'payers' : tx.type === 'Debt' || tx.type === 'Debt Payment' ? 'creditors' : 'vendors';
+      const value = String(tx.vendor || '').trim();
+      if (value && !state.savedCounterparties[key].some(item => item.toLowerCase() === value.toLowerCase())) state.savedCounterparties[key].push(value);
+    });
+    (state.calendarBills || []).forEach(item => {
+      const key = item.type === 'income' ? 'payers' : item.type === 'debt' ? 'creditors' : 'vendors';
+      const value = String(item.vendor || '').trim();
+      if (value && !state.savedCounterparties[key].some(name => name.toLowerCase() === value.toLowerCase())) state.savedCounterparties[key].push(value);
+    });
 
     // Migrate optional UI preferences without changing existing financial data.
     state.collapsibles = state.collapsibles || {};
@@ -8250,7 +8397,7 @@ Bonus" rows="4"></textarea></div>
         const income = b.type === 'income';
         const label = income ? 'Payday / Income' : b.type === 'debt' ? 'Debt payment' : 'Bill';
         return `<div class="fh-dashboard-upcoming-item flex flex-wrap items-center justify-between gap-2 p-3 rounded-xl bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 text-xs">
-          <div class="fh-dashboard-upcoming-title min-w-0"><div class="font-semibold truncate">${escapeHtml(b.desc || b.vendor || label)}</div><div class="text-gray-400">${formatDateMDY(b.date)} · ${label}</div>${b.vendor && b.type !== 'debt' ? `<div class="text-gray-500 text-[10px] mt-0.5">Vendor: ${escapeHtml(b.vendor)}</div>` : ''}</div>
+          <div class="fh-dashboard-upcoming-title min-w-0"><div class="font-semibold truncate">${escapeHtml(b.type === 'debt' ? (b.vendor || b.desc || label) : (b.desc || b.vendor || label))}</div><div class="text-gray-400">${formatDateMDY(b.date)} · ${label}</div>${b.type === 'debt' && b.desc ? `<div class="text-gray-500 text-[10px] mt-0.5">${escapeHtml(b.desc)}</div>` : b.vendor && b.type !== 'debt' ? `<div class="text-gray-500 text-[10px] mt-0.5">Vendor: ${escapeHtml(b.vendor)}</div>` : ''}</div>
           <div class="fh-dashboard-upcoming-actions flex flex-wrap items-center justify-end gap-2"><div class="fh-dashboard-upcoming-amount text-right"><div class="font-bold accounting-num ${income ? 'finhub-money-in' : 'finhub-money-out'}">${formatFinancial(outstandingAmount(b), !income)}</div>${getCalendarBillSettlement(b).paidCents>0?`<div class="text-[10px] text-amber-600">${formatFinancial(getCalendarBillSettlement(b).paidCents/100)} paid so far</div>`:''}</div>
           <button type="button" onclick="markDashboardCalendarItemPaid(decodeURIComponent('${encodeURIComponent(String(b.id))}'))" class="px-2.5 py-1.5 rounded-lg ${income?' ':' '} text-white text-[11px] font-semibold whitespace-nowrap">${income?'Record Income':'Record Payment'}</button>
           <button type="button" onclick="openDashboardCalendarItem(decodeURIComponent('${encodeURIComponent(String(b.id))}'))" class="text-indigo-500  font-semibold whitespace-nowrap" title="Open this item in the Calendar"><i class="fa-solid fa-arrow-up-right-from-square"></i></button></div>
@@ -10653,8 +10800,9 @@ ${acc.name}`);
           if (!funding || funding.type!=='asset') add('error', `A linked payment for “${bill.desc || 'Unnamed bill'}” does not reference a valid asset funding account.`);
         });
         if (bill.paid && !linkedPayments.length) add('warning', `Scheduled item “${bill.desc || 'Unnamed bill'}” is marked paid but has no linked ledger transaction.`);
-        if (linkedPayments.length && settlement.paidCents < amountCents) add('warning', `Scheduled item “${bill.desc || 'Unnamed bill'}” is partially paid: ${formatFinancial(settlement.paidCents/100)} recorded of ${formatFinancial(amountCents/100)}; ${formatFinancial((amountCents-settlement.paidCents)/100)} remains.`);
-        if (settlement.paidCents > amountCents) add('warning', `Scheduled item “${bill.desc || 'Unnamed bill'}” is overpaid by ${formatFinancial((settlement.paidCents-amountCents)/100)}.`);
+        const withinTolerance = isCalendarPaymentWithinTolerance(settlement.paidCents, amountCents);
+        if (linkedPayments.length && settlement.paidCents < amountCents && !withinTolerance) add('warning', `Scheduled item “${bill.desc || 'Unnamed bill'}” is partially paid: ${formatFinancial(settlement.paidCents/100)} recorded of ${formatFinancial(amountCents/100)}; ${formatFinancial((amountCents-settlement.paidCents)/100)} remains.`);
+        if (settlement.paidCents > amountCents && !withinTolerance) add('warning', `Scheduled item “${bill.desc || 'Unnamed bill'}” is overpaid by ${formatFinancial((settlement.paidCents-amountCents)/100)}.`);
         if (bill.type==='debt') linkedPayments.forEach(tx=>{ if(String(tx.debtAccountId||'')!==String(resolveDebtAccountForBill(bill)?.id||'')) add('error', `A linked payment for debt item “${bill.desc||'Unnamed bill'}” is assigned to a different debt account.`); });
       });
       linkedIds.forEach((count, id) => { if (count > 1) add('error', `Ledger transaction “${id}” is linked to more than one scheduled item. One transaction must satisfy no more than one scheduled item.`); });
@@ -12082,7 +12230,7 @@ ${acc.name}`);
         const id = String(b.recurrenceRootId || b.id || '');
         if (!id || linkedElsewhere.has(id) && id !== String(selectedId)) return '';
         const debtId = b.debtAccountId || '';
-        const label = `${b.desc || b.vendor || 'Scheduled debt payment'} · ${formatFinancial(b.amount || 0)} ${b.recurring} · ${accountName(debtId)}`;
+        const label = `${b.vendor || b.desc || 'Scheduled debt payment'} · ${formatFinancial(b.amount || 0)} ${b.recurring} · ${accountName(debtId)}`;
         return `<option value="${escapeHtml(id)}">${escapeHtml(label)}</option>`;
       }).filter(Boolean);
       select.innerHTML = '<option value="">Manual debt budget item (not linked)</option>' + opts.join('');
@@ -12481,7 +12629,7 @@ ${acc.name}`);
       const filter=document.getElementById('upcoming-bills-filter'),host=document.getElementById('prepopulated-bills-list');if(!filter||!host)return;
       if(!filter.value){const n=new Date();filter.value=`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}`;}
       const ym=filter.value,items=(state.calendarBills||[]).filter(b=>!b.recurrenceOccurrenceDeleted&&!b.paid&&String(b.date||'').startsWith(ym)).sort((a,b)=>String(a.date||'').localeCompare(String(b.date||'')));
-      host.innerHTML=items.length?items.map(b=>{const inc=b.type==='income';return `<div class="flex flex-wrap justify-between items-center gap-2 p-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950 text-xs"><div><strong>${escapeHtml(b.desc||'Scheduled item')}</strong><span class="ml-2 text-gray-500">${formatDateMDY(b.date)} · ${inc?'Income':b.type==='debt'?'Debt payment':'Bill'}</span>${b.vendor && b.type !== 'debt' ? `<div class="text-[10px] text-gray-500 mt-0.5">${inc?'Source':'Vendor'}: ${escapeHtml(b.vendor)}</div>` : ''}</div><div class="flex items-center gap-3"><strong class="${inc?'fh-status-income':'text-rose-600'} accounting-num">${formatFinancial(b.amount,!inc)}</strong><button onclick="markBillPaid('${b.id}')" class="px-3 py-1.5   text-white rounded-lg font-semibold">${inc?'Mark Received':'Mark Paid'}</button></div></div>`;}).join(''):'<div class="text-xs text-gray-400 py-3">No unpaid scheduled items for this month.</div>';
+      host.innerHTML=items.length?items.map(b=>{const inc=b.type==='income';return `<div class="flex flex-wrap justify-between items-center gap-2 p-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950 text-xs"><div><strong>${escapeHtml(b.type === 'debt' ? (b.vendor || b.desc || 'Scheduled item') : (b.desc || b.vendor || 'Scheduled item'))}</strong><span class="ml-2 text-gray-500">${formatDateMDY(b.date)} · ${inc?'Income':b.type==='debt'?'Debt payment':'Bill'}</span>${b.type === 'debt' && b.desc ? `<div class="text-[10px] text-gray-500 mt-0.5">${escapeHtml(b.desc)}</div>` : b.vendor && b.type !== 'debt' ? `<div class="text-[10px] text-gray-500 mt-0.5">${inc?'Source':'Vendor'}: ${escapeHtml(b.vendor)}</div>` : ''}</div><div class="flex items-center gap-3"><strong class="${inc?'fh-status-income':'text-rose-600'} accounting-num">${formatFinancial(b.amount,!inc)}</strong><button onclick="markBillPaid('${b.id}')" class="px-3 py-1.5   text-white rounded-lg font-semibold">${inc?'Mark Received':'Mark Paid'}</button></div></div>`;}).join(''):'<div class="text-xs text-gray-400 py-3">No unpaid scheduled items for this month.</div>';
     }
     function renderCalendar() {
       ensureRecurringCalendarOccurrences();
@@ -12595,13 +12743,15 @@ ${acc.name}`);
       const paidDateLabel=actualDates.length===1
         ? (actualDates[0]!==scheduled ? `Paid date · ${formatDateMDY(actualDates[0])}` : '')
         : actualDates.length>1 ? 'Multiple payment dates' : '';
+      const withinTolerance=isCalendarPaymentWithinTolerance(actualCents, scheduledCents);
       const status=settlement.missingIds.length||transactions.length!==settlement.transactions.length
         ? 'Review needed'
         : actualCents<=0 ? 'Not paid'
+        : withinTolerance ? 'Matched · within tolerance'
         : actualCents<scheduledCents ? 'Partially paid'
         : actualCents>scheduledCents ? 'Overpaid'
         : 'Paid';
-      const statusClass=status==='Paid'?'fh-payment-status-paid':status==='Review needed'?'fh-payment-status-review':status==='Not paid'?'fh-payment-status-unpaid':'fh-payment-status-partial';
+      const statusClass=(status==='Paid'||status.startsWith('Matched'))?'fh-payment-status-paid':status==='Review needed'?'fh-payment-status-review':status==='Not paid'?'fh-payment-status-unpaid':'fh-payment-status-partial';
       const varianceText=varianceCents===0
         ? formatFinancial(0)
         : `${varianceCents>0?'+':''}${formatFinancial(varianceCents/100)}`;
@@ -12613,7 +12763,7 @@ ${acc.name}`);
         <div class="absolute inset-0 bg-black/50" data-fh-payment-close="true"></div>
         <section role="dialog" aria-modal="true" aria-labelledby="fh-calendar-payment-title" class="relative w-full max-w-sm rounded-2xl border shadow-2xl p-5 space-y-4 fh-theme-surface fh-theme-border">
           <header class="flex items-center justify-between gap-3">
-            <div class="min-w-0"><h2 id="fh-calendar-payment-title" class="text-base font-bold fh-theme-text">${escapeHtml(bill.desc||'Scheduled item')}</h2></div>
+            <div class="min-w-0"><h2 id="fh-calendar-payment-title" class="text-base font-bold fh-theme-text">${escapeHtml(bill.type === 'debt' ? (bill.vendor || bill.desc || 'Scheduled item') : (bill.desc || bill.vendor || 'Scheduled item'))}</h2></div>
             <span class="fh-payment-status ${statusClass}">${status}</span>
             <button type="button" data-fh-payment-close="true" class="w-7 h-7 shrink-0 rounded-md flex items-center justify-center fh-theme-muted hover:fh-theme-text" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
           </header>
@@ -12621,7 +12771,8 @@ ${acc.name}`);
             ${paidDateLabel?`<div class="flex items-center justify-between gap-3 text-sm"><span class="fh-theme-muted">${paidDateLabel.startsWith('Multiple')?'Paid':'Paid date'}</span><strong>${paidDateLabel.startsWith('Multiple')?'Multiple dates':escapeHtml(formatDateMDY(actualDates[0]))}</strong></div>`:''}
             <div class="flex items-center justify-between gap-3 text-sm"><span class="fh-theme-muted">Scheduled amount</span><strong class="accounting-num">${formatFinancial(scheduledCents/100)}</strong></div>
             <div class="flex items-center justify-between gap-3 text-sm"><span class="fh-theme-muted">${isIncome?'Actually received':'Actually paid'}</span><strong class="accounting-num">${formatFinancial(actualCents/100)}</strong></div>
-            <div class="flex items-center justify-between gap-3 text-sm font-semibold"><span class="fh-theme-muted">Variance</span><strong class="accounting-num">${varianceText}</strong></div>
+            <div class="flex items-center justify-between gap-3 text-sm font-semibold"><span class="fh-theme-muted">Actual variance</span><strong class="accounting-num">${varianceText}</strong></div>
+            ${withinTolerance?'<p class="text-[11px] fh-theme-muted">Within the $0.05 matching tolerance. The actual ledger amount is unchanged.</p>':''}
           </div>
           <footer class="flex justify-end"><button type="button" data-fh-payment-close="true" class="px-4 py-2 rounded-lg text-sm font-semibold theme-bg text-white">Close</button></footer>
         </section>`;
@@ -13028,9 +13179,10 @@ No payment links or balance changes were retained.`);
 
     function syncCalendarTerminology(type = document.getElementById('cal-type')?.value || 'expense') {
       const income = type === 'income';
+      const debt = type === 'debt';
       const setText = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
       setText('cal-date-label', income ? 'Expected Date' : 'Due Date');
-      setText('cal-vendor-label', income ? 'Payer / Source' : 'Vendor');
+      setText('cal-vendor-label', debt ? 'Creditor' : income ? 'Payer / Source' : 'Vendor');
       setText('cal-account-label', income ? 'Deposit Account' : 'Funding Account');
       setText('cal-payment-heading', income ? 'Receipt history' : 'Payment history');
       setText('cal-payment-amount-label', income ? 'Amount received ($)' : 'Payment amount ($)');
@@ -13042,7 +13194,7 @@ No payment links or balance changes were retained.`);
         ? 'Each receipt is recorded once in the ledger. FinHub links it to this scheduled item without duplicating its account-balance effect.'
         : 'Each payment is recorded once in the ledger. FinHub links it to this scheduled item without duplicating its account-balance effect.');
       const vendor = document.getElementById('cal-vendor');
-      if (vendor) vendor.placeholder = income ? 'e.g. Employer, client or benefit provider' : 'e.g. Employer, utility or service provider';
+      if (vendor) vendor.placeholder = debt ? 'e.g. MBNA Canada, RBC' : income ? 'e.g. Employer, client or benefit provider' : 'e.g. Costco, utility provider';
       const existing = document.getElementById('cal-payment-existing');
       if (existing) {
         const first = existing.querySelector('option[value=""]');
@@ -13064,14 +13216,28 @@ No payment links or balance changes were retained.`);
       if (wrap) wrap.classList.toggle('hidden', type !== 'debt');
       const principalWrap = document.getElementById('cal-principal-wrap');
       if (principalWrap) principalWrap.classList.toggle('hidden', type !== 'debt');
+      const descriptionWrap = document.getElementById('cal-description-wrap');
+      const fundingRow = document.getElementById('cal-funding-row');
+      const debtRow = document.getElementById('cal-debt-account-wrap');
+      const fundingAccountWrap = document.querySelector('#cal-funding-row .cal-account-wrap');
+      if (descriptionWrap && fundingRow && debtRow && fundingAccountWrap) {
+        if (type === 'debt') debtRow.appendChild(descriptionWrap);
+        else fundingRow.insertBefore(descriptionWrap, fundingAccountWrap);
+      }
       const vendorWrap = document.getElementById('cal-vendor-wrap');
-      if (vendorWrap) vendorWrap.classList.toggle('hidden', type === 'debt');
+      if (vendorWrap) vendorWrap.classList.toggle('hidden', false);
       const categoryWrap = document.getElementById('cal-category-wrap');
       const subcategoryWrap = document.getElementById('cal-subcategory-wrap');
       if (categoryWrap) categoryWrap.classList.toggle('hidden', type === 'debt');
       if (subcategoryWrap) subcategoryWrap.classList.toggle('hidden', type === 'debt');
       const vendor = document.getElementById('cal-vendor');
-      if (vendor) vendor.required = type !== 'debt';
+      if (vendor) {
+        vendor.required = true;
+        vendor.placeholder = type === 'debt' ? 'e.g. MBNA Canada, RBC' : type === 'income' ? 'e.g. Employer, CRA' : 'e.g. Costco, utility provider';
+      }
+      const vendorLabel = document.getElementById('cal-vendor-label');
+      if (vendorLabel) vendorLabel.textContent = type === 'debt' ? 'Creditor' : type === 'income' ? 'Payer / Source' : 'Vendor';
+      renderCounterpartyOptions('cal-vendor', 'cal-counterparty-options', type);
       refreshCalendarCategoryOptions(document.getElementById('cal-category')?.value || '', document.getElementById('cal-subcategory')?.value || '');
     }
 
@@ -13119,6 +13285,12 @@ No payment links or balance changes were retained.`);
       document.getElementById('cal-type').value = item.type;
       refreshCalendarCategoryOptions(item.category || '', item.subcategory || '');
       toggleCalendarDebtAccount();
+      // Explicitly apply the field terminology after loading the saved type.
+      // The type selector's visual buttons do not dispatch the select change
+      // event when editCalendarItem assigns its value programmatically.
+      const counterpartyLabel = document.getElementById('cal-vendor-label');
+      if (counterpartyLabel) counterpartyLabel.textContent =
+        item.type === 'debt' ? 'Creditor' : item.type === 'income' ? 'Payer / Source' : 'Vendor';
       document.getElementById('cal-amount').value = item.amount;
       document.getElementById('cal-principal-amount').value = item.principalAmount ?? item.amount;
       document.getElementById('cal-recurring').value = item.recurring || 'none';
@@ -13310,16 +13482,18 @@ No payment links or balance changes were retained.`);
       const needsReview = settlement.missingIds.length>0 || invalidLinkedPayments;
       const isIncome = bill.type === 'income';
       syncCalendarTerminology(bill.type);
+      const withinTolerance = isCalendarPaymentWithinTolerance(settlement.paidCents, amountCents);
       const status = needsReview ? (isIncome ? 'Needs review · receipt link mismatch' : 'Needs review · payment link mismatch')
         : legacyPaidWithoutLink ? (isIncome ? 'Received · ledger link needs review' : 'Paid · ledger link needs review')
+        : withinTolerance ? 'Matched · within $0.05 tolerance'
         : settlement.paidCents > amountCents ? (isIncome ? 'Excess received' : 'Overpaid')
         : remainingCents === 0 ? (isIncome ? 'Received' : 'Paid')
         : settlement.paidCents > 0 ? (isIncome ? 'Partially received' : 'Partially paid')
         : (isIncome ? 'Not received' : 'Unpaid');
       document.getElementById('cal-payment-status').textContent = status;
       document.getElementById('cal-payment-summary').innerHTML = isIncome
-        ? `Expected: <strong>${formatFinancial(amountCents/100)}</strong> · Received: <strong>${formatFinancial(settlement.paidCents/100)}</strong> · Outstanding: <strong>${formatFinancial((amountCents-settlement.paidCents)/100)}</strong>`
-        : `Scheduled: <strong>${formatFinancial(amountCents/100)}</strong> · Paid: <strong>${formatFinancial(settlement.paidCents/100)}</strong> · Remaining: <strong>${formatFinancial((amountCents-settlement.paidCents)/100)}</strong>`;
+        ? `Expected: <strong>${formatFinancial(amountCents/100)}</strong> · Received: <strong>${formatFinancial(settlement.paidCents/100)}</strong> · Outstanding: <strong>${formatFinancial(withinTolerance ? 0 : (amountCents-settlement.paidCents)/100)}</strong>${withinTolerance ? ' · <span class="fh-theme-muted">Matched within $0.05 tolerance</span>' : ''}`
+        : `Scheduled: <strong>${formatFinancial(amountCents/100)}</strong> · Paid: <strong>${formatFinancial(settlement.paidCents/100)}</strong> · Remaining: <strong>${formatFinancial(withinTolerance ? 0 : (amountCents-settlement.paidCents)/100)}</strong>${withinTolerance ? ' · <span class="fh-theme-muted">Matched within $0.05 tolerance</span>' : ''}`;
       const history = document.getElementById('cal-payment-history');
       history.innerHTML = (settlement.transactions.length ? settlement.transactions.map(tx => {
         const netCents = Math.max(0, transactionAmountToCents(Math.abs(Number(tx.amount)||0)) - getTransactionReversedAmountCents(tx.id));
@@ -13328,7 +13502,15 @@ No payment links or balance changes were retained.`);
         return `<div class="flex items-center justify-between gap-2 rounded-lg bg-gray-50 dark:bg-gray-950 px-2 py-1.5 text-[10px]"><div class="min-w-0"><div class="font-semibold">${escapeHtml(formatDateMDY(tx.date))} · ${escapeHtml(acc?.name || 'Unknown account')}</div><div class="text-gray-400 truncate">${escapeHtml(tx.vendor || tx.desc || (isIncome ? 'Receipt' : 'Payment'))} · ${!validPayment ? 'needs review · not counted' : netCents < transactionAmountToCents(Math.abs(Number(tx.amount)||0)) ? 'net of reversals' : 'posted'}</div></div><div class="flex items-center gap-2"><strong class="accounting-num">${formatFinancial(netCents/100)}</strong><button type="button" class="text-indigo-500" onclick="closeCalendarModal();openTransactionModal('${escapeHtml(tx.id)}')" title="Open ledger transaction"><i class="fa-solid fa-arrow-up-right-from-square"></i></button></div></div>`;
       }).join('') : `<p class="text-[10px] text-gray-400">${isIncome ? 'No receipts recorded yet.' : 'No payments recorded yet.'}</p>`) + settlement.missingIds.map(missingId=>`<div class="rounded-lg border border-amber-400/50 bg-amber-50 dark:bg-amber-950/30 px-2 py-2 text-[10px]"><div class="font-semibold text-amber-700 dark:text-amber-300">Missing ledger transaction: ${escapeHtml(missingId)}</div><p class="text-gray-500 mt-1">This reference is preserved. Confirm the transaction is genuinely missing before removing the broken link.</p><button type="button" class="mt-1 text-amber-700 dark:text-amber-300 font-semibold" onclick="resolveMissingCalendarBillPaymentLink('${escapeHtml(bill.id)}','${escapeHtml(missingId)}')">Review and resolve missing link</button></div>`).join('');
       const entry = document.getElementById('cal-payment-entry');
-      entry.classList.toggle('hidden', remainingCents <= 0 || needsReview);
+      const paymentEntryHidden = remainingCents <= 0 || needsReview;
+      entry.classList.toggle('hidden', paymentEntryHidden);
+      // Hidden payment-entry controls must not participate in the parent
+      // calendar form's native constraint validation. Otherwise a stale
+      // amount (for example 0.00) can block saving an unrelated scheduled item
+      // and Chrome reports that the invalid control is not focusable.
+      entry.querySelectorAll('input, select, textarea, button').forEach(control => {
+        control.disabled = paymentEntryHidden;
+      });
       const amountInput = document.getElementById('cal-payment-amount');
       if (amountInput && !amountInput.dataset.userEdited) amountInput.value = (Math.max(0, remainingCents)/100).toFixed(2);
       const dateInput = document.getElementById('cal-payment-date');
@@ -13424,6 +13606,13 @@ No payment links or balance changes were retained.`);
       );
     }
 
+    // Calendar payment matching tolerance: differences up to five cents are
+    // classified as matched, while actual ledger amounts remain unchanged.
+    const CALENDAR_PAYMENT_TOLERANCE_CENTS = 5;
+    function isCalendarPaymentWithinTolerance(actualCents, scheduledCents) {
+      return scheduledCents > 0 && Math.abs(actualCents - scheduledCents) <= CALENDAR_PAYMENT_TOLERANCE_CENTS;
+    }
+
     function getCalendarBillSettlement(bill) {
       const transactions = getCalendarBillPaymentTransactions(bill);
       const storedIds = [...new Set([...(Array.isArray(bill.paymentTransactionIds)?bill.paymentTransactionIds:[]),bill.linkedTransactionId].filter(Boolean).map(String))];
@@ -13455,10 +13644,11 @@ No payment links or balance changes were retained.`);
         bill.paymentTransactionIds = [...new Set([...settlement.storedIds,...settlement.transactions.map(tx=>String(tx.id))])];
         if (!bill.linkedTransactionId && bill.paymentTransactionIds.length) bill.linkedTransactionId = bill.paymentTransactionIds.find(id=>(state.transactions||[]).some(tx=>String(tx.id)===String(id))) || bill.paymentTransactionIds[0];
         bill.paidAmountCents = settlement.paidCents;
-        bill.remainingAmountCents = Math.max(0, amountCents-settlement.paidCents);
+        const withinTolerance = isCalendarPaymentWithinTolerance(settlement.paidCents, amountCents);
+        bill.remainingAmountCents = withinTolerance ? 0 : Math.max(0, amountCents-settlement.paidCents);
         bill.overpaidAmountCents = Math.max(0, settlement.paidCents-amountCents);
-        bill.paymentStatus = hasMissingLinks || hasInvalidLinks ? 'needs-review' : settlement.paidCents > amountCents ? 'overpaid' : settlement.paidCents >= amountCents ? 'paid' : settlement.paidCents > 0 ? 'partial' : 'unpaid';
-        bill.paid = !hasMissingLinks && !hasInvalidLinks && settlement.paidCents >= amountCents && amountCents > 0;
+        bill.paymentStatus = hasMissingLinks || hasInvalidLinks ? 'needs-review' : withinTolerance ? 'matched-within-tolerance' : settlement.paidCents > amountCents ? 'overpaid' : settlement.paidCents >= amountCents ? 'paid' : settlement.paidCents > 0 ? 'partial' : 'unpaid';
+        bill.paid = !hasMissingLinks && !hasInvalidLinks && (settlement.paidCents >= amountCents || withinTolerance) && amountCents > 0;
       } else if (bill.paymentHistoryManaged || bill.paymentTransactionIds?.length || bill.linkedTransactionId) {
         bill.paymentTransactionIds = [];
         delete bill.linkedTransactionId;
@@ -13475,7 +13665,8 @@ No payment links or balance changes were retained.`);
         bill.overpaidAmountCents = 0;
         bill.paymentStatus = bill.paid ? 'legacy-unlinked' : 'unpaid';
       }
-      return { ...settlement, amountCents, remainingCents: Math.max(0,amountCents-settlement.paidCents), overpaidCents: Math.max(0,settlement.paidCents-amountCents) };
+      const withinTolerance = isCalendarPaymentWithinTolerance(settlement.paidCents, amountCents);
+      return { ...settlement, amountCents, remainingCents: withinTolerance ? 0 : Math.max(0,amountCents-settlement.paidCents), overpaidCents: Math.max(0,settlement.paidCents-amountCents) };
     }
 
     function syncCalendarBillForTransactionAndReversals(transaction) {
@@ -13504,6 +13695,14 @@ No payment links or balance changes were retained.`);
       if (bill.type==='debt' && String(transaction.debtAccountId||'')!==String(resolveDebtAccountForBill(bill)?.id||'')) throw new Error('The transaction is linked to a different debt account.');
       transaction.calendarBillId = bill.id;
       transaction.scheduledMatchStatus = 'matched';
+      // Use the scheduled item's vendor/payee as the transaction-list vendor
+      // whenever it is populated, just like its category classification.
+      if (String(bill.vendor || '').trim()) transaction.vendor = String(bill.vendor).trim();
+      // The scheduled Calendar item is the classification source of truth when
+      // it contains a category/subcategory. Do not erase ledger classifications
+      // when the scheduled item has either field blank.
+      if (String(bill.category || '').trim()) transaction.category = String(bill.category).trim();
+      if (String(bill.subcategory || '').trim()) transaction.subcategory = String(bill.subcategory).trim();
       // Reuse the actual ledger details for any blank scheduled-item fields.
       // Never overwrite information the user has already entered on the schedule.
       if (bill.type !== 'debt') {
@@ -13719,13 +13918,112 @@ No payment links or balance changes were retained.`);
       e.preventDefault();
       const editId = document.getElementById('cal-edit-id').value;
       const recurring = document.getElementById('cal-recurring').value;
-      const existingBill = editId ? state.calendarBills.find(b => b.id === editId) : null;
+      const existingBill = editId ? state.calendarBills.find(b => String(b.id) === String(editId)) : null;
       // Settled items may still need non-financial maintenance (for example,
       // assigning a category). The linked-payment guard below protects amount,
       // transaction type and debt-account/principal details without blocking
       // safe metadata edits such as category, subcategory, vendor or due date.
       const existingPayments = existingBill ? getCalendarBillPaymentTransactions(existingBill) : [];
       const existingMissingPaymentLinks = existingBill ? getCalendarBillSettlement(existingBill).missingIds : [];
+
+      // Classification edits are metadata-only. Handle them before paid/payment
+      // detection so a stale or incomplete settlement link can never block them.
+      // The existing scheduled item and its financial fields remain untouched.
+      if (existingBill) {
+        const metadataType = document.getElementById('cal-type').value;
+        const metadataCategory = document.getElementById('cal-category').value || '';
+        const metadataSubcategory = document.getElementById('cal-subcategory').value || '';
+        const metadataChanged = metadataType !== 'debt' && (
+          metadataCategory !== (existingBill.category || '') ||
+          metadataSubcategory !== (existingBill.subcategory || '')
+        );
+        if (metadataChanged) {
+          if (metadataType !== existingBill.type) {
+            alert('The transaction type cannot be changed as part of a category edit. The existing transaction type has been kept.');
+            return;
+          }
+          const metadataCategories = metadataType === 'income' ? (state.incomeCategories || []) : (state.categories || []);
+          const metadataRecord = metadataCategories.find(category => category.name === metadataCategory);
+          if (metadataType !== 'debt' && metadataCategory && !metadataRecord) {
+            alert('The selected category is no longer available. Choose a current category from the list.');
+            return;
+          }
+          if (metadataType !== 'debt' && metadataSubcategory &&
+              (!metadataRecord || !(metadataRecord.subcategories || []).some(sub => (typeof sub === 'string' ? sub : sub.name) === metadataSubcategory))) {
+            alert('The selected subcategory does not belong to the selected category. Choose a valid subcategory.');
+            return;
+          }
+          captureUndo(`Update category for calendar item "${existingBill.desc || existingBill.vendor || 'scheduled item'}"`);
+          existingBill.category = metadataType === 'debt' ? 'Debt Payment' : metadataCategory;
+          existingBill.subcategory = metadataType === 'debt' ? '' : metadataSubcategory;
+          if (metadataType === 'expense' || metadataType === 'income') {
+            getCalendarBillPaymentTransactions(existingBill).forEach(tx => {
+              const expectedType = metadataType === 'income' ? 'Income' : 'Expense';
+              if (tx.type !== expectedType) return;
+              tx.category = existingBill.category || '';
+              tx.subcategory = existingBill.subcategory || '';
+            });
+          }
+          saveData();
+          closeCalendarModal();
+          renderCalendar();
+          renderLedger();
+          renderDashboard();
+          return;
+        }
+      }
+
+      // Paid/received items get a dedicated classification-only save path.
+      // This avoids unrelated form/payment validation preventing category edits
+      // and deliberately leaves every financial/scheduling field untouched.
+      if (existingBill && (existingPayments.length || existingMissingPaymentLinks.length || existingBill.paid)) {
+        const selectedType = document.getElementById('cal-type').value;
+        const categoryCollection = selectedType === 'income' ? (state.incomeCategories || []) : (state.categories || []);
+        const selectedCategory = document.getElementById('cal-category').value || '';
+        const selectedSubcategory = document.getElementById('cal-subcategory').value || '';
+        const categoryRecord = categoryCollection.find(category => category.name === selectedCategory);
+        if (selectedType !== 'debt' && selectedCategory && !categoryRecord) {
+          alert('The selected category is no longer available. Choose a current category from the list.');
+          return;
+        }
+        if (selectedType !== 'debt' && selectedSubcategory && (!categoryRecord || !(categoryRecord.subcategories || []).some(sub => (typeof sub === 'string' ? sub : sub.name) === selectedSubcategory))) {
+          alert('The selected subcategory does not belong to the selected category. Choose a valid subcategory.');
+          return;
+        }
+        // Debt items do not use the expense/income category controls. Their
+        // hidden category inputs must not trigger this classification-only
+        // early return, otherwise creditor/description edits never reach save.
+        const classificationChanged = selectedType !== existingBill.type ||
+          (selectedType !== 'debt' && (
+            selectedCategory !== (existingBill.category || '') ||
+            selectedSubcategory !== (existingBill.subcategory || '')
+          ));
+        if (classificationChanged) {
+          // Do not allow a paid item's transaction type to be changed here.
+          if (selectedType !== existingBill.type) {
+            alert('The transaction type of a paid/received item cannot be changed. You can still edit its category and subcategory.');
+            return;
+          }
+          captureUndo(`Update category for settled calendar item "${existingBill.desc || existingBill.vendor || 'scheduled item'}"`);
+          existingBill.category = selectedType === 'debt' ? 'Debt Payment' : selectedCategory;
+          existingBill.subcategory = selectedType === 'debt' ? '' : selectedSubcategory;
+          if (selectedType === 'expense' || selectedType === 'income') {
+            existingPayments.forEach(tx => {
+              const expectedType = selectedType === 'income' ? 'Income' : 'Expense';
+              if (tx.type !== expectedType) return;
+              tx.category = existingBill.category || '';
+              tx.subcategory = existingBill.subcategory || '';
+            });
+          }
+          saveData();
+          closeCalendarModal();
+          renderCalendar();
+          renderLedger();
+          renderDashboard();
+          return;
+        }
+      }
+
       if (existingBill && (existingPayments.length || existingMissingPaymentLinks.length)) {
         const newAmount = transactionAmountToCents(Number(document.getElementById('cal-amount').value));
         const newType = document.getElementById('cal-type').value;
@@ -13763,7 +14061,7 @@ No payment links or balance changes were retained.`);
         id: editId || Date.now().toString(),
         date: enteredScheduledDate,
         desc: document.getElementById('cal-desc').value.trim(),
-        vendor: document.getElementById('cal-type').value === 'debt' ? '' : document.getElementById('cal-vendor').value.trim(),
+        vendor: document.getElementById('cal-vendor').value.trim(),
         category: document.getElementById('cal-type').value === 'debt' ? 'Debt Payment' : (document.getElementById('cal-category').value || ''),
         subcategory: document.getElementById('cal-type').value === 'debt' ? '' : (document.getElementById('cal-subcategory').value || ''),
         type: document.getElementById('cal-type').value,
@@ -13798,9 +14096,10 @@ No payment links or balance changes were retained.`);
         return;
       }
 
+      rememberCounterparty(data.type, data.vendor);
       captureUndo(editId ? `Edit scheduled item "${existingBill?.desc || data.desc}"` : `Add scheduled item "${data.desc}"`);
       if (editId) {
-        const idx = state.calendarBills.findIndex(b => b.id === editId);
+        const idx = state.calendarBills.findIndex(b => String(b.id) === String(editId));
         if (idx >= 0) {
           const prior = state.calendarBills[idx];
           state.calendarBills[idx] = { ...prior, ...data };
@@ -14723,9 +15022,9 @@ No payment links or balance changes were retained.`);
         return;
       }
       select.disabled = false;
-      const buckets = type === 'Income' ? (state.incomeCategories || []) : (state.categories || []);
+      const buckets = type === 'Income' ? (state.incomeCategories || []) : type === 'Debt' ? (state.debtCategories || []) : (state.categories || []);
       select.innerHTML = '<option value="">No change</option><option value="__CLEAR__">Clear bucket</option>' +
-        buckets.filter(c => c.name !== 'Transfer').map(c => `<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`).join('');
+        buckets.filter(c => c.name !== 'Transfer').map(c => `<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`).join('') + (type && type !== 'Transfer' ? '<option value="__ADD_BUCKET__">＋ Add new category…</option>' : '');
       if ([...select.options].some(o => o.value === current)) select.value = current;
       updateBulkSubcategoryOptions();
     }
@@ -14735,7 +15034,7 @@ No payment links or balance changes were retained.`);
       if(!select)return;
       const categoryValue=document.getElementById('bulk-category').value;
       const typeValue=document.getElementById('bulk-type')?.value;
-      const buckets=typeValue === 'Income' ? (state.incomeCategories || []) : (state.categories || []);
+      const buckets=typeValue === 'Income' ? (state.incomeCategories || []) : typeValue === 'Debt' ? (state.debtCategories || []) : (state.categories || []);
       if (typeValue === 'Transfer' || categoryValue === 'Transfer') {
         select.innerHTML='<option value="">No subcategory</option>';
         select.value='';
@@ -14748,7 +15047,8 @@ No payment links or balance changes were retained.`);
         options += '<option value="" disabled>Select a bucket first</option>';
       } else if (categoryValue) {
         const bucket=buckets.find(c=>c.name===categoryValue);
-        (bucket?.subcategories || []).forEach(sub=>{ options += `<option value="${escapeHtml(sub.name)}">${escapeHtml(sub.name)}</option>`; });
+        (bucket?.subcategories || []).forEach(sub=>{ const subName=typeof sub === 'string' ? sub : sub.name; options += `<option value="${escapeHtml(subName)}">${escapeHtml(subName)}</option>`; });
+        options += '<option value="__ADD_SUBCATEGORY__">＋ Add new subcategory…</option>';
       } else {
         options += '<option value="" disabled>Choosing a subcategory will also set its bucket</option>';
         buckets.forEach(bucket=>{
@@ -14759,6 +15059,40 @@ No payment links or balance changes were retained.`);
         });
       }
       select.innerHTML=options;
+    }
+    async function handleBulkCategoryChange() {
+      const select=document.getElementById('bulk-category');
+      if (select?.value !== '__ADD_BUCKET__') { updateBulkSubcategoryOptions(); return; }
+      const type=document.getElementById('bulk-type')?.value;
+      const collection=type==='Income'?(state.incomeCategories||(state.incomeCategories=[])):type==='Debt'?(state.debtCategories||(state.debtCategories=[])):(state.categories||(state.categories=[]));
+      const raw=await openFinHubTextEntryDialog({title:`Add ${type==='Income'?'Income':type==='Debt'?'Debt':'Expense'} Category`,message:'Enter a new category name.',placeholder:'Category name'});
+      if(raw===null){select.value='';updateBulkSubcategoryOptions();return;}
+      const name=raw.trim();
+      if(!name || name.toLowerCase()==='transfer'){alert('Enter a valid category name.');select.value='';return;}
+      let bucket=collection.find(c=>String(c.name).toLowerCase()===name.toLowerCase());
+      if(!bucket){captureUndo(`Add ${type} category "${name}"`);bucket={name,subcategories:[]};collection.push(bucket);saveData();renderSettings();}
+      select.innerHTML='<option value="">No change</option><option value="__CLEAR__">Clear bucket</option>'+collection.map(c=>`<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`).join('')+'<option value="__ADD_BUCKET__">＋ Add new category…</option>';
+      select.value=bucket.name;updateBulkSubcategoryOptions();
+    }
+    async function handleBulkSubcategoryChange() {
+      const select=document.getElementById('bulk-subcategory');
+      if(select?.value!=='__ADD_SUBCATEGORY__') return;
+      const type=document.getElementById('bulk-type')?.value;
+      const categorySelect=document.getElementById('bulk-category');
+      let bucketName=categorySelect?.value || '';
+      let bucket=null;
+      const collection=type==='Income'?(state.incomeCategories||[]):type==='Debt'?(state.debtCategories||[]):(state.categories||[]);
+      if(bucketName.startsWith('__PAIR__')) bucketName=decodeURIComponent(bucketName.slice(8).split('::')[0]);
+      if(!bucketName || bucketName==='__CLEAR__') { alert('Choose a category before adding a subcategory.');updateBulkSubcategoryOptions();return; }
+      bucket=collection.find(c=>c.name===bucketName);if(!bucket)return;
+      const raw=await openFinHubTextEntryDialog({title:'Add Subcategory',message:`Enter a subcategory for “${bucketName}”.`,placeholder:'Subcategory name'});
+      if(raw===null){updateBulkSubcategoryOptions();return;}
+      const name=raw.trim();if(!name){alert('Enter a subcategory name.');updateBulkSubcategoryOptions();return;}
+      bucket.subcategories=Array.isArray(bucket.subcategories)?bucket.subcategories:[];
+      if(bucket.subcategories.some(sub=>(typeof sub==='string'?sub:sub.name).toLowerCase()===name.toLowerCase())){alert('That subcategory already exists.');}
+      else {captureUndo(`Add subcategory "${name}" to "${bucketName}"`);bucket.subcategories.push({name,limit:0,rollover:false});saveData();renderSettings();}
+      if(!categorySelect.value) categorySelect.value=bucketName;
+      updateBulkSubcategoryOptions();select.value=name;
     }
     function bulkFindExistingTransferCounterpart(sourceTx, destinationAccountId, reservedIds = new Set()) {
       const isOutgoingExpense=sourceTx?.type==='Expense'&&!sourceTx.transferToAccountId;
@@ -14857,12 +15191,20 @@ No payment links or balance changes were retained.`);
           return;
         }
       }
+      // A selected Type that already matches every selected transaction is not a
+      // type conversion. Treat it as unchanged so category/vendor corrections remain
+      // available on reconciled and scheduled-linked transactions.
+      const typeChangeRequested = !!typeValue && valid.some(t =>
+        typeValue === 'Transfer'
+          ? (t.type !== 'Transfer' || String(t.transferToAccountId || '') !== String(transferToAccountId || ''))
+          : t.type !== typeValue
+      );
       let bulkTypeRows = valid;
-      if (typeValue === 'Debt') {
+      if (typeChangeRequested && typeValue === 'Debt') {
         alert('Debt Payments must be processed one at a time through the Debt Payment form so the liability, funding account, and principal/interest split stay linked.');
         return;
       }
-      if (typeValue) {
+      if (typeChangeRequested) {
         const isExplicitTransferPairing = typeValue === 'Transfer' && transferMode === 'match';
         const protectedRows = valid.filter(t =>
           t.calendarBillId || t.debtPaymentId ||
@@ -14897,17 +15239,17 @@ No payment links or balance changes were retained.`);
           ? ` FinHub will pair ${transferPairs.length} existing destination Income transaction(s) in ${destinationName}. ${expensePairs} Expense/Income pair(s) will be combined without changing balances. ${alreadyTransferPairs} already-created Internal Transfer(s) will have their duplicate destination Income row removed and the destination balance reduced to eliminate the extra credit.`
           : ` The selected transactions will become Internal Transfers from their existing accounts to ${destinationName}. Their amounts will be removed from source balances and added to the destination balance.`)
         : clearBucket ? ' The bucket and subcategory will be cleared.' : (targetCategory ? ` The bucket will be set to “${targetCategory}”.` : '');
-      const typeDetail = typeValue ? (typeValue==='Transfer' && transferMode==='match' ? ' Type will be “Internal Transfer”; FinHub will preserve correct balances for ordinary Expense/Income pairs and remove duplicate destination credits from transfers already created.' : ` Type will become “${typeValue==='Transfer'?'Internal Transfer':typeValue}”; account balances will be adjusted to preserve the correct effect of each transaction.`) : '';
+      const typeDetail = typeChangeRequested ? (typeValue==='Transfer' && transferMode==='match' ? ' Type will be “Internal Transfer”; FinHub will preserve correct balances for ordinary Expense/Income pairs and remove duplicate destination credits from transfers already created.' : ` Type will become “${typeValue==='Transfer'?'Internal Transfer':typeValue}”; account balances will be adjusted to preserve the correct effect of each transaction.`) : '';
       const pairDetail = transferMode==='match' && transferPairs.length ? `\n\nPairs to be linked:\n${transferPairs.slice(0,8).map(pair=>`• ${formatDateMDY(pair.source.date)} ${pair.source.vendor||pair.source.desc||'Outgoing'} ${formatFinancial(pair.source.amount)} ↔ ${formatDateMDY(pair.destination.date)} ${pair.destination.vendor||pair.destination.desc||'Incoming'}`).join('\n')}${transferPairs.length>8?`\n…and ${transferPairs.length-8} more.`:''}` : '';
       if (!confirm(`Apply the selected changes to ${valid.length} transaction${valid.length===1?'':'s'}?${typeDetail}${confirmationDetail}${pairDetail}`))return;
       if (typeValue === 'Transfer' && transferMode === 'match') captureStatementUndo('Bulk match existing transactions as internal transfers');
       else captureUndo('Bulk edit transaction types and details');
 
-      const eligibleTypeIds = new Set((typeValue ? bulkTypeRows : valid).map(t => String(t.id)));
+      const eligibleTypeIds = new Set((typeChangeRequested ? bulkTypeRows : []).map(t => String(t.id)));
       let updatedCount=0;
       valid.forEach(t=>{
         if(vendorValue!=='')t.vendor=vendorValue;
-        const canChangeType = !!typeValue && eligibleTypeIds.has(String(t.id));
+        const canChangeType = typeChangeRequested && eligibleTypeIds.has(String(t.id));
         if (canChangeType && typeValue === 'Transfer') {
           const amount=Math.abs(Number(t.amount)||0);
           const oldIsCredit=t.type==='Income' || (t.type==='Transfer' && t.externalTransferDirection==='in');
@@ -14962,7 +15304,7 @@ No payment links or balance changes were retained.`);
           t.category=targetCategory;
           if(targetSubcategory) t.subcategory=targetSubcategory;
           else {
-            const targetBuckets = t.type === 'Income' ? (state.incomeCategories || []) : (state.categories || []);
+            const targetBuckets = t.type === 'Income' ? (state.incomeCategories || []) : t.type === 'Debt' ? (state.debtCategories || []) : (state.categories || []);
             const targetBucket=targetBuckets.find(c=>c.name===targetCategory);
             const stillValid=(targetBucket?.subcategories || []).some(sub=>sub.name===t.subcategory);
             if(!stillValid)t.subcategory='';
@@ -14970,7 +15312,7 @@ No payment links or balance changes were retained.`);
         } else if(targetSubcategory) {
           t.subcategory=targetSubcategory;
         } else if (canChangeType && typeValue) {
-          const targetBuckets = t.type === 'Income' ? (state.incomeCategories || []) : (state.categories || []);
+          const targetBuckets = t.type === 'Income' ? (state.incomeCategories || []) : t.type === 'Debt' ? (state.debtCategories || []) : (state.categories || []);
           if (!targetBuckets.some(c => c.name === t.category)) { t.category = ''; t.subcategory = ''; }
         }
         updatedCount++;
@@ -18059,6 +18401,7 @@ No payment links or balance changes were retained.`);
         (state.debtCategories || []).forEach(cat => {
           const subs = cat.subcategories || [];
           const subsHtml = subs.map(sub => `<span class="fh-category-chip">${escapeHtml(sub.name)}</span>`).join('');
+          const debtIdx = (state.debtCategories || []).indexOf(cat);
           debtCatList.insertAdjacentHTML('beforeend', `
             <div class="fh-category-row">
               <details class="fh-category-disclosure">
@@ -18067,7 +18410,9 @@ No payment links or balance changes were retained.`);
                   <span class="fh-category-count">${subs.length} ${subs.length === 1 ? 'subcategory' : 'subcategories'}</span>
                   <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
                 </summary>
-                <div class="fh-category-subcategory-list">${subsHtml || '<span class="fh-category-empty">No subcategories defined</span>'}</div>
+                <div class="fh-category-subcategory-list">${subsHtml || '<span class="fh-category-empty">No subcategories defined</span>'}
+                  <div class="flex gap-3 mt-2"><button type="button" class="fh-inline-action" onclick="openDebtCategoryModal(${debtIdx})" title="Edit debt category"><i class="fa-solid fa-pen"></i> Edit</button><button type="button" class="fh-inline-action text-rose-500" onclick="deleteDebtCategory(${debtIdx})" title="Delete debt category"><i class="fa-solid fa-trash"></i> Delete</button></div>
+                </div>
               </details>
             </div>
           `);
@@ -18104,6 +18449,47 @@ No payment links or balance changes were retained.`);
       syncAppearanceControls();
       applyCustomAppearance();
       renderArchivedAccountsSettings();
+    }
+
+    function openDebtCategoryModal(editIdx = -1) {
+      const bucket = editIdx >= 0 ? (state.debtCategories || [])[editIdx] : null;
+      document.getElementById('debt-cat-edit-index').value = editIdx;
+      document.getElementById('debt-cat-name').value = bucket?.name || '';
+      document.getElementById('debt-cat-subs').value = (bucket?.subcategories || []).map(sub => typeof sub === 'string' ? sub : sub.name).join('\n');
+      document.getElementById('debt-category-modal').classList.remove('hidden');
+    }
+    function closeDebtCategoryModal() { document.getElementById('debt-category-modal').classList.add('hidden'); }
+    function saveDebtCategory(e) {
+      e.preventDefault();
+      state.debtCategories = Array.isArray(state.debtCategories) ? state.debtCategories : [];
+      const idx = Number(document.getElementById('debt-cat-edit-index').value);
+      const name = document.getElementById('debt-cat-name').value.trim();
+      const names = document.getElementById('debt-cat-subs').value.split('\n').map(v => v.trim()).filter(Boolean);
+      if (!name) { alert('Enter a debt category name.'); return; }
+      if (state.debtCategories.some((c,i) => i !== idx && String(c.name).toLowerCase() === name.toLowerCase())) { alert('A debt category with that name already exists.'); return; }
+      const prior = idx >= 0 ? state.debtCategories[idx] : null;
+      const priorSubs = Array.isArray(prior?.subcategories) ? prior.subcategories : [];
+      const byName = new Map(priorSubs.map(sub => [String(typeof sub === 'string' ? sub : sub.name).toLowerCase(), typeof sub === 'string' ? {name:sub} : sub]));
+      const seen = new Set();
+      const subcategories = names.filter(n => { const k=n.toLowerCase(); if(seen.has(k)) return false; seen.add(k); return true; }).map(n => ({...(byName.get(n.toLowerCase()) || {}),name:n,limit:0,rollover:false}));
+      captureUndo(idx >= 0 ? `Edit debt category "${prior.name}"` : `Add debt category "${name}"`);
+      const oldName = prior?.name || '';
+      const updated = {name,subcategories};
+      if (idx >= 0) state.debtCategories[idx] = updated; else state.debtCategories.push(updated);
+      if (oldName && oldName !== name) {
+        (state.transactions || []).forEach(t => { if (t.type === 'Debt' && t.category === oldName) t.category = name; });
+        (state.debtPayments || []).forEach(t => { if (t.category === oldName) t.category = name; });
+      }
+      saveData(); closeDebtCategoryModal(); renderSettings();
+      if (document.getElementById('tx-modal') && !document.getElementById('tx-modal').classList.contains('hidden')) { const selected=document.getElementById('tx-category')?.value; refreshTransactionBucketOptions(selected === oldName ? name : selected); }
+    }
+    function deleteDebtCategory(idx) {
+      const bucket = (state.debtCategories || [])[idx];
+      if (!bucket) return;
+      const used = (state.transactions || []).some(t => t.type === 'Debt' && t.category === bucket.name) || (state.debtPayments || []).some(t => t.category === bucket.name);
+      if (used) { alert('This debt category is used by existing debt records. Rename or edit it instead; FinHub will not remove classifications from history.'); return; }
+      if (!confirm(`Delete debt category "${bucket.name}"?`)) return;
+      captureUndo(`Delete debt category "${bucket.name}"`); state.debtCategories.splice(idx,1); saveData(); renderSettings();
     }
 
     function openIncomeCategoryModal(editIdx = -1) {
@@ -20041,6 +20427,29 @@ No payment links or balance changes were retained.`);
       }
     }
 
+    function counterpartyListKey(type) {
+      if (type === 'Income' || type === 'income') return 'payers';
+      if (type === 'Debt' || type === 'Debt Payment' || type === 'debt') return 'creditors';
+      return 'vendors';
+    }
+    function renderCounterpartyOptions(inputId, listId, type) {
+      const list = document.getElementById(listId);
+      if (!list) return;
+      const key = counterpartyListKey(type);
+      const values = [...new Set((state.savedCounterparties?.[key] || []).map(v => String(v || '').trim()).filter(Boolean))].sort((a,b) => a.localeCompare(b, undefined, { sensitivity:'base' }));
+      list.innerHTML = values.map(value => `<option value="${escapeHtml(value)}"></option>`).join('');
+    }
+    function rememberCounterparty(type, value) {
+      const name = String(value || '').trim();
+      if (!name) return;
+      state.savedCounterparties = state.savedCounterparties || { vendors:[], payers:[], creditors:[] };
+      const key = counterpartyListKey(type);
+      state.savedCounterparties[key] = Array.isArray(state.savedCounterparties[key]) ? state.savedCounterparties[key] : [];
+      if (!state.savedCounterparties[key].some(item => String(item).trim().toLowerCase() === name.toLowerCase())) {
+        state.savedCounterparties[key].push(name);
+      }
+    }
+
     function updateTransactionTypeFields() {
       const typeSelect = document.getElementById('tx-type');
       const categorySelect = document.getElementById('tx-category');
@@ -20057,6 +20466,7 @@ No payment links or balance changes were retained.`);
       const isIncome = selectedType === 'Income';
       if (vendorLabel) vendorLabel.innerHTML = isDebt ? 'Creditor <span class="text-rose-500">*</span>' : isIncome ? 'Payer <span class="text-rose-500">*</span>' : 'Vendor <span class="text-rose-500">*</span>';
       if (vendorInput) vendorInput.placeholder = isDebt ? 'e.g. RBC, TD, MBNA' : isIncome ? 'e.g. Employer, client, insurer' : 'e.g. Costco';
+      renderCounterpartyOptions('tx-vendor', 'tx-counterparty-options', selectedType);
       if (amountLabel) amountLabel.textContent = isDebt ? 'Payment Amount ($)' : 'Total Amount ($)';
       if (isDebt && !['Debt Payment','Interest Charge'].includes(selectedCategory)) selectedCategory = 'Debt Payment';
       if (!isDebt && selectedCategory === 'Debt Payment' || !isDebt && selectedCategory === 'Interest Charge') selectedCategory = '';
@@ -20915,6 +21325,7 @@ function openTransactionModal(requestedEditId = null) {
       const desc = (document.getElementById('tx-desc').value || '').trim();
       const enteredVendor = (document.getElementById('tx-vendor')?.value || '').trim();
       const vendor = type === 'Transfer' ? (enteredVendor || 'Account transfer') : applyVendorCleanupRules(enteredVendor);
+      if (type !== 'Transfer') rememberCounterparty(type, vendor);
       const saveCategoryRule = document.getElementById('tx-save-category-rule').checked;
       const categoryRuleScope = document.getElementById('tx-category-rule-scope').value;
       if (!vendor) {
@@ -32311,6 +32722,78 @@ button[aria-describedby="acc-opening-balance-tooltip"]:focus-visible,
 </style>
 
 <!-- FinHub v263: corrected variable variance color target; consolidated duplicate paycheque BvA panel into monthly financial review. -->
+
+<style id="finhub-v280-modal-sizing-audit-and-recurring-delete-dialog">
+/* v280: compact, content-led recurring-delete confirmation.
+   Keep the overlay viewport-sized; constrain only the dialog surface. */
+#recurrence-delete-choice-modal {
+  box-sizing:border-box !important;
+  padding:1rem !important;
+  overflow-x:hidden !important;
+  overflow-y:auto !important;
+  overscroll-behavior:contain;
+}
+#recurrence-delete-choice-modal > .fh-modal-surface {
+  box-sizing:border-box !important;
+  width:min(34rem, calc(100vw - 2rem)) !important;
+  min-width:0 !important;
+  max-width:min(34rem, calc(100vw - 2rem)) !important;
+  max-height:calc(100dvh - 2rem) !important;
+  height:auto !important;
+  margin:0 !important;
+  padding:1.35rem !important;
+  overflow-x:hidden !important;
+  overflow-y:auto !important;
+  border-radius:1.25rem !important;
+  display:flex !important;
+  flex-direction:column !important;
+  gap:1rem !important;
+}
+#recurrence-delete-choice-modal #recurrence-delete-choice-modal-accessible-title {
+  font-size:clamp(1.2rem, 2.4vw, 1.55rem) !important;
+  line-height:1.2 !important;
+  padding-right:2.4rem !important;
+}
+#recurrence-delete-choice-modal > .fh-modal-surface > p {
+  margin:0 !important;
+  line-height:1.45 !important;
+  overflow-wrap:anywhere;
+}
+#recurrence-delete-choice-modal > .fh-modal-surface > .flex.justify-end {
+  display:grid !important;
+  grid-template-columns:repeat(3, minmax(0, 1fr)) !important;
+  gap:.65rem !important;
+  padding:0 !important;
+  width:100% !important;
+}
+#recurrence-delete-choice-modal > .fh-modal-surface > .flex.justify-end > button {
+  box-sizing:border-box !important;
+  min-width:0 !important;
+  width:100% !important;
+  min-height:2.8rem !important;
+  padding:.65rem .75rem !important;
+  white-space:nowrap !important;
+}
+#recurrence-delete-choice-modal > .fh-modal-surface > p:last-child {
+  font-size:.78rem !important;
+  line-height:1.45 !important;
+  color:var(--text-secondary, #b9c9dc) !important;
+}
+@media(max-width:480px) {
+  #recurrence-delete-choice-modal { padding:.65rem !important; }
+  #recurrence-delete-choice-modal > .fh-modal-surface {
+    width:calc(100vw - 1.3rem) !important;
+    max-width:calc(100vw - 1.3rem) !important;
+    max-height:calc(100dvh - 1.3rem) !important;
+    padding:1rem !important;
+    gap:.85rem !important;
+  }
+  #recurrence-delete-choice-modal > .fh-modal-surface > .flex.justify-end {
+    grid-template-columns:1fr !important;
+    gap:.5rem !important;
+  }
+}
+</style>
 </body>
 </html>
 
@@ -32703,5 +33186,30 @@ button[aria-describedby="acc-opening-balance-tooltip"]:focus-visible,
   #joint-bill-modal > .fh-modal-surface { max-height: calc(100dvh - 16px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); padding: 16px; border-radius: 18px; }
   #joint-bill-modal #joint-bill-form { min-width: 0; }
   #joint-bill-modal textarea { resize: vertical; }
+}
+</style>
+
+
+<style id="finhub-v281-scheduled-summary-colour-convention">
+/* Dashboard scheduled summary follows FinHub's standard money-direction colours. */
+body[data-finhub-theme] .fh-scheduled-summary .fh-scheduled-income .fh-scheduled-value {
+  color: var(--fh-status-income, #15803d) !important;
+}
+body[data-finhub-theme] .fh-scheduled-summary .fh-scheduled-outflow .fh-scheduled-value {
+  color: var(--fh-status-expense, #dc2626) !important;
+}
+body[data-finhub-theme] .fh-scheduled-summary .fh-scheduled-net-positive .fh-scheduled-value {
+  color: var(--fh-status-income, #15803d) !important;
+}
+body[data-finhub-theme] .fh-scheduled-summary .fh-scheduled-net-negative .fh-scheduled-value {
+  color: var(--fh-status-expense, #dc2626) !important;
+}
+html.dark body[data-finhub-theme] .fh-scheduled-summary .fh-scheduled-income .fh-scheduled-value,
+html.dark body[data-finhub-theme] .fh-scheduled-summary .fh-scheduled-net-positive .fh-scheduled-value {
+  color: var(--fh-status-income-dark, #4ade80) !important;
+}
+html.dark body[data-finhub-theme] .fh-scheduled-summary .fh-scheduled-outflow .fh-scheduled-value,
+html.dark body[data-finhub-theme] .fh-scheduled-summary .fh-scheduled-net-negative .fh-scheduled-value {
+  color: var(--fh-status-expense-dark, #f87171) !important;
 }
 </style>
