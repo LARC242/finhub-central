@@ -4768,6 +4768,54 @@ body[data-finhub-theme] .fh-ledger-view-toggle:focus-visible {
 
 <!-- FinHub v285: synchronize populated Calendar categories on transaction link -->
 <!-- FinHub v286: synchronize Calendar vendor on transaction link -->
+
+<style id="finhub-v300-settings-header-strip-fix">
+/* Settings sections are reorderable details elements. The shared drag-handle
+   rule reserves top padding on the parent, creating the white strip. Remove
+   that reserved space and place the grip within the filled header, as on Debt. */
+#tab-settings details.fh-settings-section.fh-reorderable-section {
+  padding-top:0 !important;
+  background:var(--fh-raised) !important;
+  background-image:none !important;
+  overflow:hidden !important;
+}
+#tab-settings details.fh-settings-section.fh-reorderable-section > summary {
+  display:flex !important;
+  box-sizing:border-box !important;
+  width:100% !important;
+  min-height:3.5rem !important;
+  margin:0 !important;
+  padding:.9rem 1.15rem .9rem 3.1rem !important;
+  background:var(--fh-raised) !important;
+  background-image:none !important;
+  border:0 !important;
+  box-shadow:none !important;
+  position:relative !important;
+}
+#tab-settings details.fh-settings-section.fh-reorderable-section > .fh-section-drag-handle {
+  position:absolute !important;
+  top:.42rem !important;
+  left:.62rem !important;
+  right:auto !important;
+  width:1.8rem !important;
+  height:1.8rem !important;
+  padding:0 !important;
+  border:0 !important;
+  border-radius:.35rem !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  z-index:3 !important;
+}
+#tab-settings details.fh-settings-section.fh-reorderable-section > summary:hover {
+  background:var(--fh-hover,var(--fh-raised)) !important;
+  background-image:none !important;
+}
+#tab-settings details.fh-settings-section.fh-reorderable-section > .fh-section-drag-handle:hover,
+#tab-settings details.fh-settings-section.fh-reorderable-section > .fh-section-drag-handle:focus-visible {
+  background:var(--fh-hover,var(--fh-raised)) !important;
+  opacity:1 !important;
+}
+</style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 min-h-screen flex flex-col md:flex-row transition-colors duration-200 relative" id="app-body">
 <!-- UNDO TOAST NOTIFICATION -->
@@ -8397,7 +8445,7 @@ Bonus" rows="4"></textarea></div>
         const income = b.type === 'income';
         const label = income ? 'Payday / Income' : b.type === 'debt' ? 'Debt payment' : 'Bill';
         return `<div class="fh-dashboard-upcoming-item flex flex-wrap items-center justify-between gap-2 p-3 rounded-xl bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 text-xs">
-          <div class="fh-dashboard-upcoming-title min-w-0"><div class="font-semibold truncate">${escapeHtml(b.type === 'debt' ? (b.vendor || b.desc || label) : (b.desc || b.vendor || label))}</div><div class="text-gray-400">${formatDateMDY(b.date)} · ${label}</div>${b.type === 'debt' && b.desc ? `<div class="text-gray-500 text-[10px] mt-0.5">${escapeHtml(b.desc)}</div>` : b.vendor && b.type !== 'debt' ? `<div class="text-gray-500 text-[10px] mt-0.5">Vendor: ${escapeHtml(b.vendor)}</div>` : ''}</div>
+          <div class="fh-dashboard-upcoming-title min-w-0"><div class="font-semibold truncate">${escapeHtml(b.vendor || b.desc || label)}</div><div class="text-gray-400">${formatDateMDY(b.date)} · ${label}</div>${b.desc && b.vendor ? `<div class="text-gray-500 text-[10px] mt-0.5">${escapeHtml(b.desc)}</div>` : ''}</div>
           <div class="fh-dashboard-upcoming-actions flex flex-wrap items-center justify-end gap-2"><div class="fh-dashboard-upcoming-amount text-right"><div class="font-bold accounting-num ${income ? 'finhub-money-in' : 'finhub-money-out'}">${formatFinancial(outstandingAmount(b), !income)}</div>${getCalendarBillSettlement(b).paidCents>0?`<div class="text-[10px] text-amber-600">${formatFinancial(getCalendarBillSettlement(b).paidCents/100)} paid so far</div>`:''}</div>
           <button type="button" onclick="markDashboardCalendarItemPaid(decodeURIComponent('${encodeURIComponent(String(b.id))}'))" class="px-2.5 py-1.5 rounded-lg ${income?' ':' '} text-white text-[11px] font-semibold whitespace-nowrap">${income?'Record Income':'Record Payment'}</button>
           <button type="button" onclick="openDashboardCalendarItem(decodeURIComponent('${encodeURIComponent(String(b.id))}'))" class="text-indigo-500  font-semibold whitespace-nowrap" title="Open this item in the Calendar"><i class="fa-solid fa-arrow-up-right-from-square"></i></button></div>
