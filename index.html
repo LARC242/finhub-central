@@ -3223,7 +3223,7 @@ body[data-finhub-theme] #tab-debt > details.fh-reorderable-section > summary.fh-
   max-width:100% !important;
 }
 .fh-calendar-notification-name {
-  flex:1 1 100%;
+  flex:1 1 calc(100% - 12px);
   min-width:0;
   white-space:normal !important;
   overflow-wrap:anywhere;
@@ -4816,6 +4816,17 @@ body[data-finhub-theme] .fh-ledger-view-toggle:focus-visible {
   opacity:1 !important;
 }
 </style>
+
+<style id="finhub-dashboard-upcoming-status-v304">
+.fh-calendar-status-dot{display:inline-block;width:5px;height:5px;flex:0 0 5px;border-radius:50%;background:var(--fh-muted,#94a3b8);align-self:center;margin-right:.12rem}
+.fh-calendar-notification-chip{position:relative}
+.fh-calendar-notification-chip:has(.fh-calendar-status-dot){column-gap:.3rem}
+.fh-calendar-notification-row[data-attention-status="overdue"] .fh-calendar-status-dot,.fh-calendar-notification-row[data-attention-status="partial-overdue"] .fh-calendar-status-dot{background:#ef4444}
+.fh-calendar-notification-row[data-attention-status="due-soon"] .fh-calendar-status-dot,.fh-calendar-notification-row[data-attention-status="partial"] .fh-calendar-status-dot{background:#d99a25}
+.fh-calendar-notification-row[data-attention-status="paid"] .fh-calendar-status-dot,.fh-calendar-notification-row[data-attention-status="received"] .fh-calendar-status-dot{background:#239b68}
+.fh-calendar-notification-row[data-attention-status="needs-review"] .fh-calendar-status-dot{background:#8b5cf6}
+.fh-calendar-notification-row[data-attention-status="upcoming"] .fh-calendar-status-dot{background:#94a3b8}
+</style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 min-h-screen flex flex-col md:flex-row transition-colors duration-200 relative" id="app-body">
 <!-- UNDO TOAST NOTIFICATION -->
@@ -4987,7 +4998,7 @@ body[data-finhub-theme] .fh-ledger-view-toggle:focus-visible {
 </button>
 </div>
 <div class="p-4 space-y-2" id="sec-dashboard-upcoming-content">
-<div class="flex flex-wrap items-center justify-between gap-2 mb-3"><span class="text-xs text-gray-500">Show scheduled income and bills for:</span><input class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-1.5 text-xs font-semibold" id="dashboard-upcoming-month" onchange="renderDashboardUpcoming()" type="month"/></div>
+<div class="flex flex-wrap items-center justify-between gap-2 mb-3"><span class="text-xs text-gray-500">Show scheduled income and bills for:</span><div class="flex flex-wrap items-center gap-2"><div class="inline-flex rounded-lg border border-gray-200 dark:border-gray-700 p-0.5" role="group" aria-label="Upcoming item filter"><button type="button" id="dashboard-upcoming-outstanding" class="px-3 py-1.5 rounded-md text-xs font-semibold" aria-pressed="true" onclick="setDashboardUpcomingFilter('outstanding')">Outstanding</button><button type="button" id="dashboard-upcoming-all" class="px-3 py-1.5 rounded-md text-xs font-semibold" aria-pressed="false" onclick="setDashboardUpcomingFilter('all')">All</button></div><input class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-1.5 text-xs font-semibold" id="dashboard-upcoming-month" onchange="renderDashboardUpcoming()" type="month"/></div></div>
 <div id="dashboard-upcoming-list"></div>
 </div>
 </div>
@@ -5026,15 +5037,15 @@ body[data-finhub-theme] .fh-ledger-view-toggle:focus-visible {
 </details>
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
 <details class="monthly-panel accounts-group-panel space-y-3" id="accounts-assets-panel" open="">
-<summary class="mb-3">
-<h3 class="font-bold fh-status-income">Assets &amp; cash</h3>
+<summary class="mb-3 flex items-center justify-between gap-3">
+<div class="flex flex-wrap items-center gap-x-3 gap-y-1 min-w-0"><h3 class="font-bold fh-status-income">Assets &amp; cash</h3><span class="text-[10px] text-gray-500 font-medium">Overall variance <strong class="ml-1 accounting-num" id="accounts-assets-overall-variance">—</strong></span></div>
 <i aria-hidden="true" class="fa-solid fa-chevron-down accounts-group-chevron text-xs"></i>
 </summary>
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" id="accounts-page-assets-list"></div>
 </details>
 <details class="monthly-panel accounts-group-panel space-y-3" id="accounts-debt-panel" open="">
-<summary class="mb-3">
-<h3 class="font-bold text-rose-600">Liabilities &amp; debt</h3>
+<summary class="mb-3 flex items-center justify-between gap-3">
+<div class="flex flex-wrap items-center gap-x-3 gap-y-1 min-w-0"><h3 class="font-bold text-rose-600">Liabilities &amp; debt</h3><span class="text-[10px] text-gray-500 font-medium">Overall variance <strong class="ml-1 accounting-num" id="accounts-debt-overall-variance">—</strong></span></div>
 <i aria-hidden="true" class="fa-solid fa-chevron-down accounts-group-chevron text-xs"></i>
 </summary>
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" id="accounts-page-debt-list"></div>
@@ -5939,7 +5950,28 @@ body[data-finhub-theme] .fh-ledger-view-toggle:focus-visible {
 <h3 class="text-lg font-bold" id="joint-modal-title">Add Household Bill</h3>
 <form class="space-y-3" id="joint-bill-form" onsubmit="saveJointBill(event)">
 <input id="jb-edit-id" type="hidden" value=""/>
-<div><label class="block text-xs font-semibold text-gray-500 mb-1">Link an existing recurring calendar bill</label><select class="w-full min-w-0 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-3 text-sm" id="jb-calendar-link" onchange="onJointCalendarBillLinkChange(this.value)"><option value="">Manual household bill (not linked)</option></select><p class="text-[11px] text-gray-500 mt-1">Linked Calendar amounts represent your share. FinHub uses your split percentage to calculate the implied household total; notes and classification remain managed here.</p></div>
+<div class="space-y-2">
+<label class="block text-xs font-semibold text-gray-500 mb-1">Link a recurring calendar bill</label>
+<input class="w-full min-w-0 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="jb-calendar-search" oninput="filterJointCalendarBillLinks(this.value)" placeholder="Search by vendor or bill name..." type="search"/>
+<select class="w-full min-w-0 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-3 text-sm" id="jb-calendar-link" onchange="onJointCalendarBillLinkChange(this.value)"><option value="">Manual household bill (not linked)</option></select>
+<div class="flex flex-wrap items-center justify-between gap-2">
+<p class="text-[11px] text-gray-500">Calendar amounts represent your share; the split percentage is used to infer the household total.</p>
+<button class="text-xs font-semibold underline" onclick="toggleJointScheduleCreator()" type="button" style="color:var(--fh-primary)">+ Create recurring bill</button>
+</div>
+<div class="hidden rounded-xl border p-3 space-y-2" id="jb-create-calendar-panel" style="border-color:var(--fh-surface-border);background:var(--fh-surface-raised)">
+<div class="font-semibold text-sm">Create a recurring calendar bill</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+<div><label class="block text-xs font-semibold mb-1">Vendor</label><input class="w-full rounded-lg border px-3 py-2 text-sm" id="jb-new-vendor" placeholder="e.g. Hydro Ottawa" type="text" style="background:var(--fh-surface);border-color:var(--fh-surface-border);color:var(--fh-surface-text)"/></div>
+<div><label class="block text-xs font-semibold mb-1">Your share ($)</label><input class="w-full rounded-lg border px-3 py-2 text-sm" id="jb-new-amount" min="0.01" step="0.01" type="number" style="background:var(--fh-surface);border-color:var(--fh-surface-border);color:var(--fh-surface-text)"/></div>
+<div><label class="block text-xs font-semibold mb-1">First due date</label><input class="w-full rounded-lg border px-3 py-2 text-sm" id="jb-new-date" type="date" style="background:var(--fh-surface);border-color:var(--fh-surface-border);color:var(--fh-surface-text)"/></div>
+<div><label class="block text-xs font-semibold mb-1">Frequency</label><select class="w-full rounded-lg border px-3 py-2 text-sm" id="jb-new-frequency" style="background:var(--fh-surface);border-color:var(--fh-surface-border);color:var(--fh-surface-text)"><option value="monthly">Monthly</option><option value="weekly">Weekly</option><option value="biweekly">Biweekly</option><option value="yearly">Yearly</option></select></div>
+<div><label class="block text-xs font-semibold mb-1">Funding account</label><select class="w-full rounded-lg border px-3 py-2 text-sm" id="jb-new-account" style="background:var(--fh-surface);border-color:var(--fh-surface-border);color:var(--fh-surface-text)"></select></div>
+<div><label class="block text-xs font-semibold mb-1">Amount behavior</label><select class="w-full rounded-lg border px-3 py-2 text-sm" id="jb-new-amount-mode" style="background:var(--fh-surface);border-color:var(--fh-surface-border);color:var(--fh-surface-text)"><option value="fixed">Fixed amount</option><option value="variable">Variable amount</option></select></div>
+</div>
+<p class="text-[11px] text-gray-500">The new calendar item is created for your share only. It does not create a transaction or change any account balance.</p>
+<div class="flex justify-end gap-2"><button class="rounded-lg border px-3 py-2 text-xs font-semibold" onclick="toggleJointScheduleCreator(false)" type="button">Cancel</button><button class="rounded-lg px-3 py-2 text-xs font-semibold text-white theme-bg" onclick="createJointLinkedCalendarBill()" type="button">Create &amp; link</button></div>
+</div>
+</div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Bill Name / Description</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="jb-name" required="" type="text"/></div>
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
 <div>
@@ -6169,7 +6201,7 @@ Bonus" rows="4"></textarea></div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1" id="cal-date-label">Due Date</label><input class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-date" required="" lang="en-US" type="date"/></div>
 <div class="fh-calendar-recurrence-row">
 <label class="block text-xs font-semibold text-gray-500 mb-1">Recurrence Schedule</label>
-<select class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-recurring">
+<select class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-recurring" onchange="updateCalendarAmountModeHelp()">
 <option value="none">One-time</option>
 <option value="weekly">Weekly</option>
 <option value="biweekly">Biweekly</option>
@@ -6191,6 +6223,7 @@ Bonus" rows="4"></textarea></div>
 </div>
 </div>
 <div class="cal-paired-row cal-vendor-amount-row" id="cal-vendor-description-row"><div id="cal-vendor-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1"><span id="cal-vendor-label">Vendor</span> <span class="text-rose-500">*</span></label><input class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-vendor" list="cal-counterparty-options" placeholder="e.g. Employer, utility or service provider" required="" type="text"/><datalist id="cal-counterparty-options"></datalist></div><div class="cal-amount-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Amount ($)</label><input class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-amount" required="" step="0.01" type="number"/></div></div>
+<div class="cal-paired-row" id="cal-amount-mode-row"><div><label class="block text-xs font-semibold text-gray-500 mb-1" for="cal-amount-mode">Amount behavior</label><select class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-amount-mode" onchange="updateCalendarAmountModeHelp()"><option value="fixed">Fixed amount</option><option value="variable">Variable amount</option></select><p id="cal-amount-mode-help" class="text-xs mt-1" style="color:var(--fh-muted)">The scheduled amount carries forward unchanged.</p></div><div id="cal-previous-amount-wrap" class="hidden"><label class="block text-xs font-semibold text-gray-500 mb-1">Previous occurrence</label><div id="cal-previous-amount" class="fh-standard-control w-full px-3 py-2 text-sm" style="min-height:2.5rem;display:flex;align-items:center;color:var(--fh-muted)">No previous amount</div></div></div>
 <div class="cal-paired-row cal-category-row" id="cal-category-row"><div id="cal-category-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Category</label><select class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-category" onchange="handleCalendarCategoryChange()"><option value="">-- None --</option></select></div>
 <div id="cal-subcategory-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Subcategory</label><select class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-subcategory" onchange="handleCalendarSubcategoryChange()"><option value="">-- None --</option></select></div></div>
 <div class="cal-paired-row cal-funding-description-row" id="cal-funding-row"><div class="hidden" id="cal-principal-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Principal portion ($)</label><input class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-principal-amount" min="0" placeholder="Defaults to full payment" step="0.01" type="number"/></div><div class="cal-account-wrap">
@@ -6212,7 +6245,11 @@ Bonus" rows="4"></textarea></div>
 <div class="grid grid-cols-2 gap-2"><div><label class="block text-[10px] font-semibold text-gray-500 mb-1" id="cal-payment-amount-label">Payment amount ($)</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-2 text-xs" id="cal-payment-amount" min="0.01" step="0.01" type="number"/></div><div><label class="block text-[10px] font-semibold text-gray-500 mb-1" id="cal-payment-date-label">Payment date</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-2 text-xs" id="cal-payment-date" lang="en-US" type="date"/></div></div>
 <div><label class="block text-[10px] font-semibold text-gray-500 mb-1" id="cal-payment-account-label">Funding account</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-2 text-xs" id="cal-payment-account"></select></div>
 <div class="hidden" id="cal-payment-principal-wrap"><label class="block text-[10px] font-semibold text-gray-500 mb-1">Principal portion ($)</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-2 text-xs" id="cal-payment-principal" min="0" step="0.01" type="number"/></div>
-<div class="space-y-2" id="cal-payment-match-workspace">
+<details class="rounded-lg border p-2.5" id="cal-payment-match-details" style="border-color:var(--fh-surface-border)">
+<summary class="cursor-pointer text-xs font-semibold flex items-center justify-between gap-2" style="color:var(--fh-surface-text)">
+<span>Link an existing transaction (optional)</span><span class="text-[10px] font-normal" style="color:var(--fh-muted)">Search receipt / payment matches</span>
+</summary>
+<div class="pt-2" id="cal-payment-match-details-body"><div class="space-y-2" id="cal-payment-match-workspace">
 <label class="block text-[10px] font-semibold text-gray-500 mb-1" id="cal-payment-existing-label">Find an existing ledger transaction</label>
 <div class="relative"><i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-xs" style="color:var(--fh-muted)"></i><input aria-label="Search existing transactions" autocomplete="off" class="w-full rounded-lg border px-3 py-2 pl-9 text-xs" id="cal-payment-match-search" oninput="renderCalendarTransactionMatches()" placeholder="Search vendor, description, amount, date or account..." style="background:var(--fh-surface-raised);border-color:var(--fh-surface-border);color:var(--fh-surface-text)" type="search"></div>
 <div class="flex flex-wrap gap-1.5" id="cal-payment-match-filters">
@@ -6224,7 +6261,8 @@ Bonus" rows="4"></textarea></div>
 <div aria-live="polite" class="space-y-1.5" id="cal-payment-match-results"></div>
 <div class="hidden rounded-lg border p-2.5 text-xs" id="cal-payment-match-selected" style="border-color:var(--fh-primary);background:var(--fh-surface-selected,var(--fh-surface-raised));color:var(--fh-surface-text)"></div>
 <select aria-hidden="true" class="hidden" id="cal-payment-existing" tabindex="-1"><option value="">Create a new payment transaction</option></select>
-</div>
+</div></div>
+</details>
 <button class="w-full rounded-lg px-3 py-2 text-xs font-semibold text-white theme-bg" onclick="recordCalendarBillPayment()" type="button"><span id="cal-payment-submit-label">Record / Link Payment</span></button>
 <p class="text-[10px] text-gray-400" id="cal-payment-help">Each payment is recorded once in the ledger. FinHub links it to this scheduled item without duplicating its account-balance effect.</p>
 </div>
@@ -8421,34 +8459,86 @@ Bonus" rows="4"></textarea></div>
       return state.transactions.filter(t => t.type === type && t.category !== 'Transfer' && !(t.desc || '').toLowerCase().startsWith('transfer ') && t.date >= range.start && t.date <= range.end);
     }
 
+    let dashboardUpcomingFilter = 'outstanding';
+    function setDashboardUpcomingFilter(filter) {
+      dashboardUpcomingFilter = filter === 'all' ? 'all' : 'outstanding';
+      renderDashboardUpcoming();
+    }
+
+    function getDashboardCalendarStatus(bill, settlement, todayKey) {
+      const isIncome = bill.type === 'income';
+      const amountCents = Math.max(0, transactionAmountToCents(Number(bill.amount) || 0));
+      const withinTolerance = isCalendarPaymentWithinTolerance(settlement.paidCents, amountCents);
+      const needsReview = settlement.missingIds.length > 0 || settlement.validTransactions.length !== settlement.transactions.length;
+      const completed = !!bill.paid || (!needsReview && amountCents > 0 && withinTolerance);
+      if (needsReview) return { key:'needs-review', label:'Needs review', completed:false, outstandingCents:Math.max(0,amountCents-settlement.paidCents) };
+      if (completed) return { key:isIncome?'received':'paid', label:isIncome?'Received':'Paid', completed:true, outstandingCents:0 };
+      const outstandingCents = Math.max(0, amountCents-settlement.paidCents);
+      const partial = settlement.paidCents > 0 && outstandingCents > 0;
+      const overdue = String(bill.date || '') < todayKey && outstandingCents > 0;
+      if (overdue && partial) return { key:'partial-overdue', label:isIncome?'Partially received · overdue':'Partially paid · overdue', completed:false, outstandingCents };
+      if (overdue) return { key:'overdue', label:'Overdue', completed:false, outstandingCents };
+      if (partial) return { key:'partial', label:isIncome?'Partially received':'Partially paid', completed:false, outstandingCents };
+      const today = new Date(todayKey+'T00:00:00');
+      const due = new Date(String(bill.date)+'T00:00:00');
+      const daysUntilDue = Math.round((due-today)/86400000);
+      if (daysUntilDue >= 0 && daysUntilDue <= 7) return { key:'due-soon', label:'Due soon', completed:false, outstandingCents };
+      return { key:'upcoming', label:'Upcoming', completed:false, outstandingCents };
+    }
+
     function renderDashboardUpcoming() {
       const host = document.getElementById('dashboard-upcoming-list');
       if (!host) return;
       const monthInput = document.getElementById('dashboard-upcoming-month');
       const now = new Date();
+      const todayKey = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
       if (monthInput && !monthInput.value) monthInput.value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
       const selectedMonth = monthInput?.value || `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-      // Calendar remains the single source of truth; this filter only changes display.
-      const items = (Array.isArray(state.calendarBills) ? state.calendarBills : [])
-        .filter(b => b && !b.recurrenceOccurrenceDeleted && !b.paid &&
-          typeof b.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(b.date) && b.date.startsWith(selectedMonth) &&
-          ['expense', 'income', 'debt'].includes(b.type))
-        .sort((a, b) => String(a.date).localeCompare(String(b.date)));
+      const allItems = (Array.isArray(state.calendarBills) ? state.calendarBills : [])
+        .filter(b => b && !b.recurrenceOccurrenceDeleted && typeof b.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(b.date) && b.date.startsWith(selectedMonth) && ['expense','income','debt'].includes(b.type))
+        .map(b => {
+          const settlement = syncCalendarBillPaymentState(b);
+          return { bill:b, settlement, status:getDashboardCalendarStatus(b,settlement,todayKey) };
+        })
+        .sort((a,b) => String(a.bill.date).localeCompare(String(b.bill.date)));
+      const items = dashboardUpcomingFilter === 'all' ? allItems : allItems.filter(item => !item.status.completed);
+      const outstandingItems = allItems.filter(item => !item.status.completed);
+      const outstandingAmount = item => Math.max(0,item.status.outstandingCents)/100;
+      const incomeTotal = outstandingItems.filter(x=>x.bill.type==='income').reduce((sum,x)=>sum+outstandingAmount(x),0);
+      const billTotal = outstandingItems.filter(x=>x.bill.type!=='income').reduce((sum,x)=>sum+outstandingAmount(x),0);
+      const outstandingCount = outstandingItems.length;
+      const outstandingTotal = outstandingItems.reduce((sum,x)=>sum+outstandingAmount(x),0);
+      const outstandingButton=document.getElementById('dashboard-upcoming-outstanding');
+      const allButton=document.getElementById('dashboard-upcoming-all');
+      [ [outstandingButton,'outstanding'],[allButton,'all'] ].forEach(([button,value])=>{
+        if(!button)return;
+        const active=dashboardUpcomingFilter===value;
+        button.setAttribute('aria-pressed',String(active));
+        button.classList.toggle('bg-sky-600',active); button.classList.toggle('text-white',active);
+        button.classList.toggle('text-gray-600',!active); button.classList.toggle('dark:text-gray-300',!active);
+      });
+      const filterButtons = `<div class="flex items-center justify-between gap-2 mb-2 text-[11px]"><span class="text-gray-500">${dashboardUpcomingFilter==='all'?'Showing all scheduled items':'Showing items that still need attention'}</span><span class="font-semibold accounting-num">${outstandingCount} outstanding · ${formatFinancial(outstandingTotal)}</span></div>`;
+      const summary = `<div class="grid grid-cols-3 gap-2 mb-3 text-xs fh-scheduled-summary"><div class="rounded-lg fh-scheduled-card fh-scheduled-income p-2"><div class="fh-scheduled-label">Expected income outstanding</div><strong class="fh-scheduled-value accounting-num text-lg font-bold block mt-1">${formatFinancial(incomeTotal)}</strong></div><div class="rounded-lg fh-scheduled-card fh-scheduled-outflow p-2"><div class="fh-scheduled-label">Bills & debt outstanding</div><strong class="fh-scheduled-value accounting-num text-lg font-bold block mt-1">${formatFinancial(billTotal,true)}</strong></div><div class="rounded-lg fh-scheduled-card fh-scheduled-net ${incomeTotal-billTotal>=0?'fh-scheduled-net-positive':'fh-scheduled-net-negative'} p-2"><div class="fh-scheduled-label">Net outstanding</div><strong class="fh-scheduled-value accounting-num text-lg font-bold block mt-1">${formatFinancial(incomeTotal-billTotal)}</strong></div></div>`;
+      const outstandingBadge = `<span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold ${outstandingCount?'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300':'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300'}">${outstandingCount} outstanding</span>`;
+      const header = `<div class="flex items-center justify-between gap-2 mb-2">${outstandingBadge}<span class="text-[10px] text-gray-500">Completed items remain in Calendar and history</span></div>`;
       if (!items.length) {
-        host.innerHTML = `<p class="text-xs text-gray-400">No unpaid bills or income scheduled for ${escapeHtml(selectedMonth)}. Change the month to view another period.</p>`;
+        host.innerHTML = header + summary + `<p class="text-xs text-gray-400">${dashboardUpcomingFilter==='all'?'No scheduled bills or income for':'No outstanding bills or income for'} ${escapeHtml(selectedMonth)}. Change the month or switch to All to review completed items.</p>`;
         return;
       }
-      const outstandingAmount = bill => { const settlement=getCalendarBillSettlement(bill); return Math.max(0,Number(bill.amount||0)-settlement.paidCents/100); };
-      const incomeTotal = items.filter(b=>b.type==='income').reduce((sum,b)=>sum+outstandingAmount(b),0);
-      const billTotal = items.filter(b=>b.type!=='income').reduce((sum,b)=>sum+outstandingAmount(b),0);
-      host.innerHTML = `<div class="grid grid-cols-3 gap-2 mb-3 text-xs fh-scheduled-summary"><div class="rounded-lg fh-scheduled-card fh-scheduled-income p-2"><div class="fh-scheduled-label">Expected income</div><strong class="fh-scheduled-value accounting-num text-lg font-bold block mt-1">${formatFinancial(incomeTotal)}</strong></div><div class="rounded-lg fh-scheduled-card fh-scheduled-outflow p-2"><div class="fh-scheduled-label">Bills & debt</div><strong class="fh-scheduled-value accounting-num text-lg font-bold block mt-1">${formatFinancial(billTotal,true)}</strong></div><div class="rounded-lg fh-scheduled-card fh-scheduled-net ${incomeTotal-billTotal>=0?'fh-scheduled-net-positive':'fh-scheduled-net-negative'} p-2"><div class="fh-scheduled-label">Net scheduled</div><strong class="fh-scheduled-value accounting-num text-lg font-bold block mt-1">${formatFinancial(incomeTotal-billTotal)}</strong></div></div>` + items.map(b => {
+      host.innerHTML = header + summary + filterButtons + items.map(({bill:b,settlement,status}) => {
         const income = b.type === 'income';
         const label = income ? 'Payday / Income' : b.type === 'debt' ? 'Debt payment' : 'Bill';
-        return `<div class="fh-dashboard-upcoming-item flex flex-wrap items-center justify-between gap-2 p-3 rounded-xl bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 text-xs">
-          <div class="fh-dashboard-upcoming-title min-w-0"><div class="font-semibold truncate">${escapeHtml(b.vendor || b.desc || label)}</div><div class="text-gray-400">${formatDateMDY(b.date)} · ${label}</div>${b.desc && b.vendor ? `<div class="text-gray-500 text-[10px] mt-0.5">${escapeHtml(b.desc)}</div>` : ''}</div>
-          <div class="fh-dashboard-upcoming-actions flex flex-wrap items-center justify-end gap-2"><div class="fh-dashboard-upcoming-amount text-right"><div class="font-bold accounting-num ${income ? 'finhub-money-in' : 'finhub-money-out'}">${formatFinancial(outstandingAmount(b), !income)}</div>${getCalendarBillSettlement(b).paidCents>0?`<div class="text-[10px] text-amber-600">${formatFinancial(getCalendarBillSettlement(b).paidCents/100)} paid so far</div>`:''}</div>
-          <button type="button" onclick="markDashboardCalendarItemPaid(decodeURIComponent('${encodeURIComponent(String(b.id))}'))" class="px-2.5 py-1.5 rounded-lg ${income?' ':' '} text-white text-[11px] font-semibold whitespace-nowrap">${income?'Record Income':'Record Payment'}</button>
-          <button type="button" onclick="openDashboardCalendarItem(decodeURIComponent('${encodeURIComponent(String(b.id))}'))" class="text-indigo-500  font-semibold whitespace-nowrap" title="Open this item in the Calendar"><i class="fa-solid fa-arrow-up-right-from-square"></i></button></div>
+        const isCompleted = status.completed;
+        const amount = isCompleted ? 0 : Math.max(0,status.outstandingCents)/100;
+        const statusColor = status.key==='overdue' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300' :
+          status.key==='partial-overdue'||status.key==='partial'||status.key==='due-soon' ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300' :
+          status.key==='paid'||status.key==='received' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300' :
+          status.key==='needs-review' ? 'bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-300' : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300';
+        return `<div class="fh-dashboard-upcoming-item flex flex-wrap items-center justify-between gap-2 p-3 rounded-xl bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 text-xs" data-upcoming-status="${status.key}">
+          <div class="fh-dashboard-upcoming-title min-w-0"><div class="flex flex-wrap items-center gap-2"><span class="font-semibold truncate">${escapeHtml(b.vendor || b.desc || label)}</span><span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold ${statusColor}">${status.label}</span></div><div class="text-gray-400">${formatDateMDY(b.date)} · ${label}</div>${b.desc && b.vendor ? `<div class="text-gray-500 text-[10px] mt-0.5">${escapeHtml(b.desc)}</div>` : ''}</div>
+          <div class="fh-dashboard-upcoming-actions flex flex-wrap items-center justify-end gap-2"><div class="fh-dashboard-upcoming-amount text-right"><div class="font-bold accounting-num ${income ? 'finhub-money-in' : 'finhub-money-out'}">${isCompleted?formatFinancial(0):formatFinancial(amount,!income)}</div>${settlement.paidCents>0&&!isCompleted?`<div class="text-[10px] text-amber-600">${formatFinancial(settlement.paidCents/100)} paid so far</div>`:''}</div>
+          ${isCompleted?'':`<button type="button" onclick="markDashboardCalendarItemPaid(decodeURIComponent('${encodeURIComponent(String(b.id))}'))" class="px-2.5 py-1.5 rounded-lg text-white text-[11px] font-semibold whitespace-nowrap">${income?'Record Income':'Record Payment'}</button>`}
+          <button type="button" onclick="openDashboardCalendarItem(decodeURIComponent('${encodeURIComponent(String(b.id))}'))" class="text-indigo-500 font-semibold whitespace-nowrap" title="Open this item in the Calendar"><i class="fa-solid fa-arrow-up-right-from-square"></i></button></div>
         </div>`;
       }).join('');
     }
@@ -9079,6 +9169,28 @@ Bonus" rows="4"></textarea></div>
         });
       };
       renderGroup(assetHost,'assets');renderGroup(debtHost,'debts');
+      // Aggregate signed statement-to-book variances for accounts shown in each group.
+      // Accounts without a statement balance are excluded rather than treated as zero.
+      const setGroupVariance=(id,groupType)=>{
+        const el=document.getElementById(id); if(!el)return;
+        const groupAccounts=accounts.filter(a=>a.type===groupType && a.actualBalance!==undefined && a.actualBalance!==null && a.actualBalance!=='');
+        const darkMode=document.documentElement.classList.contains('dark');
+        if(!groupAccounts.length){
+          el.textContent='—';el.className='ml-1 accounting-num';
+          el.style.setProperty('color',darkMode?'#9ca3af':'#6b7280','important');
+          el.title='Enter statement balances to calculate an overall variance';return;
+        }
+        const cents=groupAccounts.reduce((sum,a)=>sum+Math.round((Number(a.actualBalance)-(Number(a.balance)||0))*100),0);
+        const value=cents/100;
+        el.textContent=formatFinancial(value,value<0);
+        el.className='ml-1 accounting-num';
+        // Apply the color directly so broad theme/header rules cannot override the variance status.
+        const varianceColor=cents===0?(darkMode?'#9ca3af':'#6b7280'):(cents>0?(darkMode?'#4ade80':'#15803d'):(darkMode?'#fb7185':'#dc2626'));
+        el.style.setProperty('color',varianceColor,'important');
+        el.title=`Net signed variance across ${groupAccounts.length} account${groupAccounts.length===1?'':'s'} with a statement balance entered. Green indicates actual balances are higher than book balances; red indicates actual balances are lower. For liabilities and debt, a green variance means the amount owed is higher than recorded. Individual variances remain shown on each account.`;
+      };
+      setGroupVariance('accounts-assets-overall-variance','asset');
+      setGroupVariance('accounts-debt-overall-variance','debt');
       const rec=document.getElementById('accounts-page-reconciliation');
       if(rec)rec.innerHTML=accounts.map(a=>`<div class="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 dark:border-gray-800 py-2"><div><strong class="text-sm">${escapeHtml(a.name||'Account')}</strong><div class="text-xs text-gray-500">${a.lastReconciledAt?`Last reconciled ${escapeHtml(a.lastReconciledAt)}`:'No reconciliation date recorded'}</div></div><button type="button" onclick="openAccountDetail('${String(a.id).replace(/'/g,"&#39;")}')" class="fh-open-details-icon" aria-label="Open account details for ${escapeHtml(a.name||'account')}" title="Open account details"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></button></div>`).join('');
     }
@@ -12643,7 +12755,10 @@ ${acc.name}`);
               recurrenceRootId: root.id,
               recurrenceAnchorDate: root.recurrenceAnchorDate,
               recurrenceSlotDate: date,
-              recurrenceGenerated: true
+              recurrenceGenerated: true,
+              amountMode: root.amountMode || 'fixed',
+              amountConfirmed: (root.amountMode || 'fixed') !== 'variable',
+              amountNeedsReview: (root.amountMode || 'fixed') === 'variable'
             };
             // A generated occurrence must never inherit a paid/linked state from
             // the series anchor.
@@ -12714,15 +12829,24 @@ ${acc.name}`);
           const paymentDateInfo = settlement.validTransactions.length
             ? `<button type="button" class="fh-calendar-paid-date-info fh-info-trigger" onclick="event.stopPropagation();showCalendarPaymentDates('${String(b.id).replace(/'/g, "\\'")}')" aria-label="View actual ${isInc ? 'receipt' : 'payment'} dates for ${escapeHtml(b.desc || 'scheduled item')}" title="View actual ${isInc ? 'receipt' : 'payment'} dates"><i class="fa-solid fa-circle-info" aria-hidden="true"></i></button>`
             : '';
-          const statusTitle = settlementStatus === 'partial'
-            ? `${isInc ? 'Partially received' : 'Partially paid'} · ${outstandingText} outstanding`
-            : settlementStatus === 'needs-review' ? 'Payment history needs review'
-            : b.paid ? (isInc ? 'Received' : 'Paid') : (isInc ? 'Not received' : 'Unpaid');
+          const todayForCalendar = new Date();
+          const todayCalendarKey = `${todayForCalendar.getFullYear()}-${String(todayForCalendar.getMonth()+1).padStart(2,'0')}-${String(todayForCalendar.getDate()).padStart(2,'0')}`;
+          const dashboardStatus = getDashboardCalendarStatus(b, settlement, todayCalendarKey);
+          const statusTitle = dashboardStatus.label + (dashboardStatus.outstandingCents > 0 ? ` · ${formatFinancial(dashboardStatus.outstandingCents/100)} outstanding` : '');
+          // For an unconfirmed variable occurrence, the amount shown on the
+          // calendar must match the amount prefilled when the occurrence is opened.
+          // This is a preview only: do not mutate the saved occurrence or template.
+          const isVariableAmountPreview = b.amountMode === 'variable' && b.recurrenceGenerated && b.amountNeedsReview;
+          const previousOccurrenceAmount = isVariableAmountPreview ? getPreviousCalendarOccurrenceAmount(b) : null;
+          const displayedCalendarAmount = previousOccurrenceAmount !== null ? previousOccurrenceAmount : Number(b.amount) || 0;
+          const calendarAmountTitle = isVariableAmountPreview && previousOccurrenceAmount !== null
+            ? `Suggested from previous occurrence (${formatFinancial(previousOccurrenceAmount)}); confirm or update when opened`
+            : '';
           badges += `
-            <div draggable="${!b.paid}" ondragstart="startCalendarBillDrag(event, '${b.id}')" onclick="editCalendarItem('${b.id}', event)" title="${escapeHtml((b.vendor || '').trim() || (b.desc || '').trim() || 'Scheduled item')} · ${escapeHtml(statusTitle)}" class="fh-calendar-notification-row" data-notification-kind="${notificationKind}" data-completed="${b.paid ? 'true' : 'false'}" data-settlement-status="${settlementStatus}">
+            <div draggable="${!b.paid}" ondragstart="startCalendarBillDrag(event, '${b.id}')" onclick="editCalendarItem('${b.id}', event)" title="${escapeHtml((b.vendor || '').trim() || (b.desc || '').trim() || 'Scheduled item')} · ${escapeHtml(statusTitle)}${calendarAmountTitle ? ' · ' + escapeHtml(calendarAmountTitle) : ''}" class="fh-calendar-notification-row" data-notification-kind="${notificationKind}" data-completed="${b.paid ? 'true' : 'false'}" data-settlement-status="${settlementStatus}" data-attention-status="${dashboardStatus.key}" data-variable-amount-preview="${isVariableAmountPreview && previousOccurrenceAmount !== null ? 'true' : 'false'}">
               <span class="fh-calendar-notification-chip" data-notification-kind="${notificationKind}">
-                <span class="fh-calendar-notification-name">${escapeHtml((b.vendor || '').trim() || (b.desc || '').trim() || 'Scheduled item')}</span>
-                <span class="accounting-num fh-calendar-notification-amount">${formatFinancial(b.amount, !isInc)}</span>
+                <span class="fh-calendar-status-dot" aria-hidden="true"></span><span class="fh-calendar-notification-name">${escapeHtml((b.vendor || '').trim() || (b.desc || '').trim() || 'Scheduled item')}</span>
+                <span class="accounting-num fh-calendar-notification-amount" title="${escapeHtml(calendarAmountTitle)}">${formatFinancial(displayedCalendarAmount, !isInc)}</span>
               </span>
               ${paymentDateInfo}
               <input type="checkbox" class="fh-calendar-notification-checkbox" ${b.paid ? 'checked' : ''} data-settlement-status="${settlementStatus}" onclick="event.stopPropagation()" onchange="toggleCalendarItemPaid('${b.id}', event)" aria-label="${b.paid ? (isInc ? 'Income received' : 'Payment paid') : isPartiallySettled ? (isInc ? 'Income partially received' : 'Payment partially paid') : (isInc ? 'Mark income as received' : 'Mark payment as paid')}" title="${escapeHtml(statusTitle)}" />
@@ -13289,12 +13413,46 @@ No payment links or balance changes were retained.`);
       refreshCalendarCategoryOptions(document.getElementById('cal-category')?.value || '', document.getElementById('cal-subcategory')?.value || '');
     }
 
+    function getPreviousCalendarOccurrenceAmount(item) {
+      if (!item) return null;
+      const rootId = String(item.recurrenceRootId || item.id);
+      const itemDate = String(item.date || '');
+      const prior = (state.calendarBills || []).filter(candidate => candidate &&
+        String(candidate.recurrenceRootId || candidate.id) === rootId &&
+        String(candidate.date || '') < itemDate && Number.isFinite(Number(candidate.amount))
+      ).sort((a,b) => String(b.date).localeCompare(String(a.date)))[0];
+      return prior ? Number(prior.amount) : null;
+    }
+
+    function updateCalendarAmountModeHelp(item = null) {
+      const mode = document.getElementById('cal-amount-mode')?.value || 'fixed';
+      const recurrence = document.getElementById('cal-recurring')?.value || 'none';
+      const help = document.getElementById('cal-amount-mode-help');
+      const previousWrap = document.getElementById('cal-previous-amount-wrap');
+      const previousValue = document.getElementById('cal-previous-amount');
+      const isVariableRecurring = mode === 'variable' && recurrence !== 'none';
+      if (help) help.textContent = mode === 'variable'
+        ? (item && item.recurrenceGenerated && item.amountNeedsReview
+          ? 'Variable bill: confirm or update this occurrence’s amount before saving. Saving confirms only this occurrence; other months and prior payments are unchanged.'
+          : 'Each occurrence keeps its own amount. Update the amount for each new bill; prior occurrences and payments remain unchanged.')
+        : 'The scheduled amount carries forward unchanged to future occurrences.';
+      if (previousWrap) previousWrap.classList.toggle('hidden', !isVariableRecurring || !item || !item.recurrenceGenerated);
+      if (previousValue && item) {
+        const previous = getPreviousCalendarOccurrenceAmount(item);
+        previousValue.textContent = previous === null ? 'No previous occurrence' : `${formatFinancial(previous)} · reference only`;
+      }
+      const row = document.getElementById('cal-amount-mode-row');
+      if (row) row.classList.toggle('hidden', recurrence === 'none' && !(item && item.recurrenceGenerated));
+    }
+
     function openCalendarModal(dateStr = '') {
       document.getElementById('cal-modal-title').innerText = "Schedule Recurring Item";
       document.getElementById('cal-edit-id').value = "";
       document.getElementById('cal-desc').value = '';
       document.getElementById('cal-vendor').value = '';
       document.getElementById('cal-type').value = 'expense';
+      const amountModeSelect = document.getElementById('cal-amount-mode'); if (amountModeSelect) amountModeSelect.value = 'fixed';
+      updateCalendarAmountModeHelp();
       refreshCalendarCategoryOptions();
       toggleCalendarDebtAccount();
       document.getElementById('cal-modal-delete-btn').classList.add('hidden');
@@ -13342,12 +13500,21 @@ No payment links or balance changes were retained.`);
       document.getElementById('cal-amount').value = item.amount;
       document.getElementById('cal-principal-amount').value = item.principalAmount ?? item.amount;
       document.getElementById('cal-recurring').value = item.recurring || 'none';
+      const amountModeSelect = document.getElementById('cal-amount-mode'); if (amountModeSelect) amountModeSelect.value = item.amountMode || (item.recurrenceGenerated && item.recurrenceRootId ? (state.calendarBills.find(root => String(root.id) === String(item.recurrenceRootId))?.amountMode || 'fixed') : 'fixed');
+      // For an untouched variable occurrence, carry forward the most recent prior
+      // occurrence as a suggestion in the editor only. It is not persisted until Save.
+      if (amountModeSelect?.value === 'variable' && item.recurrenceGenerated && item.amountNeedsReview) {
+        const previousAmount = getPreviousCalendarOccurrenceAmount(item);
+        if (previousAmount !== null) document.getElementById('cal-amount').value = previousAmount.toFixed(2);
+      }
+      updateCalendarAmountModeHelp(item);
       const accSelect = document.getElementById('cal-account');
       accSelect.innerHTML = '';
       state.accounts.filter(a => a.type === 'asset' && !a.archived).forEach(a => accSelect.innerHTML += `<option value="${a.id}" ${a.id === item.accountId ? 'selected' : ''}>${a.name}</option>`);
       const linkedDebt = resolveDebtAccountForBill(item);
       populateCalendarDebtAccount(item.debtAccountId || linkedDebt?.id || '');
       renderCalendarBillPaymentPanel(item);
+      const matchDetails = document.getElementById('cal-payment-match-details'); if (matchDetails) matchDetails.open = false;
       document.getElementById('calendar-modal').classList.remove('hidden');
     }
 
@@ -13978,6 +14145,7 @@ No payment links or balance changes were retained.`);
       e.preventDefault();
       const editId = document.getElementById('cal-edit-id').value;
       const recurring = document.getElementById('cal-recurring').value;
+      const amountMode = document.getElementById('cal-amount-mode')?.value === 'variable' ? 'variable' : 'fixed';
       const existingBill = editId ? state.calendarBills.find(b => String(b.id) === String(editId)) : null;
       // Settled items may still need non-financial maintenance (for example,
       // assigning a category). The linked-payment guard below protects amount,
@@ -14126,6 +14294,8 @@ No payment links or balance changes were retained.`);
         subcategory: document.getElementById('cal-type').value === 'debt' ? '' : (document.getElementById('cal-subcategory').value || ''),
         type: document.getElementById('cal-type').value,
         amount: parseFloat(document.getElementById('cal-amount').value) || 0,
+        amountMode: recurring !== 'none' || existingBill?.recurrenceGenerated ? amountMode : (existingBill?.amountMode || 'fixed'),
+        amountConfirmed: true,
         accountId: document.getElementById('cal-account').value,
         recurring,
         // Editing descriptive/classification metadata must never silently unpay a
@@ -14149,6 +14319,9 @@ No payment links or balance changes were retained.`);
         data.recurrenceSlotDate = existingBill.recurrenceSlotDate;
         data.recurrenceGenerated = true;
         data.recurring = 'none';
+        data.amountMode = existingBill.amountMode || (state.calendarBills.find(root => String(root.id) === String(existingBill.recurrenceRootId))?.amountMode || 'fixed');
+        data.amountConfirmed = true;
+        data.amountNeedsReview = false;
       }
 
       if (data.type === 'debt' && !data.debtAccountId && state.accounts.some(a => a.type === 'debt')) {
@@ -14659,6 +14832,67 @@ No payment links or balance changes were retained.`);
       renderTransactionAnalytics();
     }
 
+
+    function filterJointCalendarBillLinks(query = '') {
+      const select = document.getElementById('jb-calendar-link');
+      if (!select) return;
+      const q = String(query || '').trim().toLocaleLowerCase();
+      [...select.options].forEach((option, index) => {
+        if (index === 0) { option.hidden = false; return; }
+        option.hidden = !!q && !String(option.textContent || '').toLocaleLowerCase().includes(q);
+      });
+      if (select.selectedOptions[0]?.hidden) select.value = '';
+    }
+    function toggleJointScheduleCreator(force) {
+      const panel = document.getElementById('jb-create-calendar-panel');
+      if (!panel) return;
+      const show = typeof force === 'boolean' ? force : panel.classList.contains('hidden');
+      panel.classList.toggle('hidden', !show);
+      if (show) {
+        const vendor = document.getElementById('jb-new-vendor');
+        const amount = document.getElementById('jb-new-amount');
+        const date = document.getElementById('jb-new-date');
+        if (vendor && !vendor.value) vendor.value = document.getElementById('jb-name')?.value || '';
+        if (amount && !amount.value) amount.value = document.getElementById('jb-amount')?.value || '';
+        if (date && !date.value) date.value = document.getElementById('jb-date')?.value || `${state.selectedJointYM || '2026-11'}-01`;
+        const account = document.getElementById('jb-new-account');
+        if (account && !account.options.length) {
+          account.innerHTML = (state.accounts || []).filter(a => a.type === 'asset' && !a.archived)
+            .map(a => `<option value="${String(a.id).replace(/"/g,'&quot;')}">${escapeHtml(a.name)}</option>`).join('');
+        }
+      }
+    }
+    function createJointLinkedCalendarBill() {
+      const vendor = String(document.getElementById('jb-new-vendor')?.value || '').trim();
+      const amount = Number(document.getElementById('jb-new-amount')?.value);
+      const date = document.getElementById('jb-new-date')?.value || '';
+      const recurring = document.getElementById('jb-new-frequency')?.value || 'monthly';
+      const accountId = document.getElementById('jb-new-account')?.value || '';
+      const amountMode = document.getElementById('jb-new-amount-mode')?.value === 'variable' ? 'variable' : 'fixed';
+      if (!vendor) { alert('Enter a vendor name for the recurring bill.'); return; }
+      if (!Number.isFinite(amount) || amount <= 0) { alert('Enter your scheduled share greater than zero.'); return; }
+      if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) { alert('Choose a valid first due date.'); return; }
+      if (!accountId || !(state.accounts || []).some(a => String(a.id) === String(accountId) && a.type === 'asset' && !a.archived)) { alert('Choose an active funding account.'); return; }
+      const id = Date.now().toString();
+      const data = {
+        id, date, vendor, desc: '', type: 'expense', amount: Math.round(amount * 100) / 100,
+        amountMode, amountConfirmed: true, accountId, recurring, category: '', subcategory: '',
+        paid: false, recurrenceRootId: id, recurrenceAnchorDate: date, recurrenceGenerated: false
+      };
+      captureUndo(`Create recurring household bill "${vendor}"`);
+      state.calendarBills = state.calendarBills || [];
+      state.calendarBills.push(data);
+      saveData();
+      ensureRecurringCalendarOccurrences();
+      populateJointCalendarBillLinks(id);
+      const search = document.getElementById('jb-calendar-search');
+      if (search) search.value = '';
+      onJointCalendarBillLinkChange(id);
+      toggleJointScheduleCreator(false);
+      renderCalendar();
+      renderZbbFundingTracker();
+    }
+
     function populateJointCalendarBillLinks(selectedId = '') {
       const select = document.getElementById('jb-calendar-link');
       if (!select) return;
@@ -14676,6 +14910,7 @@ No payment links or balance changes were retained.`);
       }).join('');
       select.innerHTML = '<option value="">Manual household bill (not linked)</option>' + options;
       select.value = selectedId || '';
+      filterJointCalendarBillLinks(document.getElementById('jb-calendar-search')?.value || '');
     }
     function onJointCalendarBillLinkChange(id) {
       if (!id) return;
@@ -14751,6 +14986,8 @@ No payment links or balance changes were retained.`);
       document.getElementById('joint-bill-form').reset();
       document.getElementById('jb-date').value = (state.selectedJointYM || '2026-11') + '-01';
       populateJointCalendarBillLinks('');
+      const search = document.getElementById('jb-calendar-search'); if (search) search.value = '';
+      toggleJointScheduleCreator(false);
       const amountHelp = document.getElementById('jb-amount-help'); if (amountHelp) amountHelp.textContent = 'Enter the amount you are responsible for.';
       updateJointBillAmountPreview();
       document.getElementById('joint-bill-modal').classList.remove('hidden');
