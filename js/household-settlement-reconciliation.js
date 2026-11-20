@@ -78,31 +78,6 @@
         return;
       }
       allocationTotalCents += amount;
-      const expense = getTransaction(transactions, allocation.expenseTransactionId);
-      if (String(allocation.expenseTransactionId) === String(input?.bankTransactionId)) errors.push('The e-Transfer withdrawal cannot also be used as the household bill expense.');
-      if (!expense) errors.push(`Link "${bill.name}" to its existing expense transaction.`);
-      else {
-        if (String(expense.type || '').toLowerCase() !== 'expense') errors.push(`The linked transaction for "${bill.name}" is not an expense.`);
-        if (!(Number(expense.amount) > 0)) errors.push(`The linked transaction for "${bill.name}" must be a positive bill expense, not a refund or credit.`);
-        const expenseId = String(expense.id);
-        const priorExpenseAllocation = (settlements || []).filter(item => active(item) && String(item.id) !== String(input?.id))
-          .reduce((sum, item) => sum + (item.allocations || []).filter(a => String(a.expenseTransactionId) === expenseId)
-            .reduce((n, a) => n + Math.max(0, Number(a.amountCents) || 0), 0), 0);
-        const currentExpenseAllocation = expenseAllocationInInput.get(expenseId) || 0;
-        const expenseCents = Math.max(0, toCents(Math.abs(Number(expense.amount) || 0)));
-        if (amount > Math.max(0, expenseCents - priorExpenseAllocation - currentExpenseAllocation)) {
-          errors.push(`Allocations linked to the expense for "${bill.name}" exceed the remaining amount of that expense transaction.`);
-        }
-        expenseAllocationInInput.set(expenseId, currentExpenseAllocation + amount);
-        if (expense.refundOfTransactionId || expense.isReversal || expense.reversalOfTransactionId || expense.reconciledDuplicate) errors.push(`The linked transaction for "${bill.name}" is a refund, reversal or duplicate.`);
-        // A Calendar-linked bill may still be reconciled when the original expense
-      // was recorded manually and was never linked back to the Calendar item.
-      // In that case, require the expense to fall within the household bill month.
-      if (!linkedCalendarExpenseIsValid(bill, expense, context) &&
-          (!expense.date || String(expense.date).slice(0, 7) !== String(bill.ym))) {
-        errors.push(`The linked transaction for "${bill.name}" must be a payment recorded against its Calendar bill or an expense dated in the same household month.`);
-      }
-      }
       const shareCents = Math.max(0, Math.round(toCents(Number(bill.amount) || 0) * (Number(bill.splitPct) || 0) / 100));
       const adjustmentCents = (context?.jointAdjustments || []).filter(a => active(a) && String(a.billId) === String(bill.id) && String(a.ym) === String(bill.ym))
         .reduce((sum, a) => sum + (a.type === 'additional' ? 1 : -1) * Math.abs(Number(a.amountCents) || 0), 0);
@@ -220,7 +195,6 @@
       accountId: String(input.accountId || getTransaction(context.transactions, input.bankTransactionId)?.accountId || ''),
       allocations: input.allocations.map(a => ({
         jointBillId: String(a.jointBillId),
-        expenseTransactionId: String(a.expenseTransactionId),
         amountCents: Number(a.amountCents)
       })),
       createdAt: now,
