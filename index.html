@@ -12876,6 +12876,8 @@ ${acc.name}`);
       }
     }
 
+    window.renderCalendar = renderCalendar;
+
     let draggedCalendarBillId = null;
     function startCalendarBillDrag(event, billId) {
       const bill = state.calendarBills.find(b => b.id === billId);
