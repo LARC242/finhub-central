@@ -251,3 +251,26 @@ test('does not allocate more than the remaining amount of a linked expense trans
   assert.equal(result.valid, false);
   assert.ok(result.errors.some(e => e.includes('exceed the remaining amount of that expense transaction')));
 });
+
+
+test('saving a settlement links existing records without creating ledger transactions or changing balances', () => {
+  const state = {
+    transactions: [...transactions],
+    accounts: [{ id: 'chequing', type: 'asset', balance: 900 }],
+    jointBills: [...jointBills], jointAdjustments: [],
+    householdSettlements: [], householdSettlementCreditEvents: []
+  };
+  const beforeTransactions = state.transactions.length;
+  const beforeBalance = state.accounts[0].balance;
+  const result = core.createSettlement(state, {
+    ym: '2026-11', bankTransactionId: 'bank-1', accountId: 'chequing',
+    allocations: [
+      { jointBillId: 'rent', expenseTransactionId: 'rent-expense', amountCents: 50000 },
+      { jointBillId: 'hydro', expenseTransactionId: 'hydro-expense', amountCents: 9000 }
+    ]
+  }, '2026-11-20T12:00:00.000Z');
+  assert.equal(result.saved, true);
+  assert.equal(state.transactions.length, beforeTransactions);
+  assert.equal(state.accounts[0].balance, beforeBalance);
+  assert.equal(state.householdSettlements.length, 1);
+});
