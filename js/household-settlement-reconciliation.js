@@ -92,7 +92,13 @@
         }
         expenseAllocationInInput.set(expenseId, currentExpenseAllocation + amount);
         if (expense.refundOfTransactionId || expense.isReversal || expense.reversalOfTransactionId || expense.reconciledDuplicate) errors.push(`The linked transaction for "${bill.name}" is a refund, reversal or duplicate.`);
-        if (!linkedCalendarExpenseIsValid(bill, expense, context)) errors.push(`The linked transaction for "${bill.name}" is not a payment recorded against its linked Calendar bill.`);
+        // A Calendar-linked bill may still be reconciled when the original expense
+      // was recorded manually and was never linked back to the Calendar item.
+      // In that case, require the expense to fall within the household bill month.
+      if (!linkedCalendarExpenseIsValid(bill, expense, context) &&
+          (!expense.date || String(expense.date).slice(0, 7) !== String(bill.ym))) {
+        errors.push(`The linked transaction for "${bill.name}" must be a payment recorded against its Calendar bill or an expense dated in the same household month.`);
+      }
       }
       const shareCents = Math.max(0, Math.round(toCents(Number(bill.amount) || 0) * (Number(bill.splitPct) || 0) / 100));
       const adjustmentCents = (context?.jointAdjustments || []).filter(a => active(a) && String(a.billId) === String(bill.id) && String(a.ym) === String(bill.ym))
