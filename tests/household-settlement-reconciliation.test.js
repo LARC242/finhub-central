@@ -124,3 +124,37 @@ test('reversed settlements release their allocations and credit', () => {
   assert.equal(core.allocatedToBillCents([reversed], 'rent'), 0);
   assert.equal(core.creditPositionCents([reversed], transactions).availableCreditCents, 0);
 });
+
+
+test('monthly position separates allocated bills from transfer credit', () => {
+  const settlements = [{
+    id: 's-month', ym: '2026-11', bankTransactionId: 'bank-1',
+    allocations: [
+      { jointBillId: 'rent', expenseTransactionId: 'rent-expense', amountCents: 50000 },
+      { jointBillId: 'hydro', expenseTransactionId: 'hydro-expense', amountCents: 9000 }
+    ]
+  }];
+  assert.deepEqual(core.settlementMonthPosition('2026-11', jointBills, settlements, transactions), {
+    obligationsCents: 127000,
+    settledCents: 59000,
+    outstandingCents: 68000,
+    overAllocatedCents: 0,
+    transferCents: 60000,
+    grossCreditCents: 1000,
+    appliedOrRefundedCreditCents: 0,
+    availableCreditCents: 1000
+  });
+});
+
+test('month position ignores reversed settlements and their credit', () => {
+  const settlements = [{
+    id: 's-month', ym: '2026-11', bankTransactionId: 'bank-1', status: 'reversed',
+    reversedAt: '2026-11-20T00:00:00Z',
+    allocations: [{ jointBillId: 'rent', amountCents: 50000 }]
+  }];
+  const position = core.settlementMonthPosition('2026-11', jointBills, settlements, transactions);
+  assert.equal(position.settledCents, 0);
+  assert.equal(position.transferCents, 0);
+  assert.equal(position.availableCreditCents, 0);
+  assert.equal(position.outstandingCents, 127000);
+});
