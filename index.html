@@ -14562,7 +14562,7 @@ No payment links or balance changes were retained.`);
         return sum + Math.max(0, bankCents - allocated);
       }, 0);
       const used = (state.householdSettlementCreditEvents || []).filter(e => !e.reversedAt && e.status !== 'void')
-        .filter(e => activeSettlements.some(s => String(s.bankTransactionId) === String((state.transactions || []).find(t => String(t.id) === String(e.transactionId))?.householdSettlementBankTransactionId || '')))
+        .filter(e => activeSettlements.some(s => String(s.id) === String(e.settlementId)))
         .reduce((sum, event) => sum + Math.max(0, Number(event.amountCents) || 0), 0);
       return Math.max(0, gross - used);
     }
