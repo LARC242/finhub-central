@@ -371,6 +371,7 @@
     closeHouseholdSettlementModal();
     renderHouseholdSettlementPanel();
     if (typeof root.renderJointAppView === 'function') root.renderJointAppView();
+    if (typeof root.renderCalendar === 'function') root.renderCalendar();
     if (typeof root.updateSidebarNetWorth === 'function') root.updateSidebarNetWorth();
     if (typeof root.renderAccountsPage === 'function') root.renderAccountsPage();
   }
@@ -452,6 +453,7 @@
     root.saveData();
     renderHouseholdSettlementPanel();
     root.renderJointAppView();
+    if (typeof root.renderCalendar === 'function') root.renderCalendar();
     root.updateSidebarNetWorth();
     root.renderAccountsPage();
   }
