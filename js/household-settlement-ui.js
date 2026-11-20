@@ -384,6 +384,7 @@
   }
 
   function renderHouseholdSettlementPanel() {
+    settlements().filter(active).forEach(linkSettlementAllocationsToCalendar);
     const host = byId('household-settlement-panel');
     if (!host || !core || !state) return;
     const ym = currentMonth();
