@@ -50,6 +50,7 @@
         errors.push('The linked transaction must be an existing external e-transfer withdrawal.');
       }
       if (bank.source === 'joint-household-settlement') errors.push('Legacy settlement-generated expenses cannot be reused as the underlying bank withdrawal.');
+      if (!(Number(bank.amount) > 0)) errors.push('The linked e-Transfer must be a positive withdrawal, not a refund or credit.');
       if (input.accountId && String(bank.accountId) !== String(input.accountId)) errors.push('The selected withdrawal does not belong to the selected funding account.');
       if (bank.refundOfTransactionId || bank.isReversal || bank.reversalOfTransactionId || bank.reconciledDuplicate) errors.push('Refunds, reversals and duplicate transactions cannot be used as the original e-transfer.');
     }
@@ -79,6 +80,7 @@
       if (!expense) errors.push(`Link "${bill.name}" to its existing expense transaction.`);
       else {
         if (String(expense.type || '').toLowerCase() !== 'expense') errors.push(`The linked transaction for "${bill.name}" is not an expense.`);
+        if (!(Number(expense.amount) > 0)) errors.push(`The linked transaction for "${bill.name}" must be a positive bill expense, not a refund or credit.`);
         const expenseId = String(expense.id);
         const priorExpenseAllocation = (settlements || []).filter(item => active(item) && String(item.id) !== String(input?.id))
           .reduce((sum, item) => sum + (item.allocations || []).filter(a => String(a.expenseTransactionId) === expenseId)
