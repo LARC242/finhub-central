@@ -101,19 +101,29 @@
       differenceCents: bankAmountCents - allocationTotalCents, reversed };
   }
 
-  function billBalances(jointBill, settlements, adjustments = []) {
+  function appliedCreditToBillCents(creditEvents, billId, excludeCreditEventId = '') {
+    return (creditEvents || []).filter(event => active(event) && event.type === 'application' &&
+      String(event.jointBillId) === String(billId) && String(event.id) !== String(excludeCreditEventId))
+      .reduce((sum, event) => sum + Math.max(0, Number(event.amountCents) || 0), 0);
+  }
+
+  function billBalances(jointBill, settlements, adjustments = [], creditEvents = []) {
     const shareCents = Math.max(0, Math.round(toCents(Number(jointBill.amount) || 0) * (Number(jointBill.splitPct) || 0) / 100));
     const adjustmentCents = (adjustments || []).filter(a => active(a) && String(a.billId) === String(jointBill.id) && String(a.ym) === String(jointBill.ym))
       .reduce((sum, a) => sum + (a.type === 'additional' ? 1 : -1) * Math.abs(Number(a.amountCents) || 0), 0);
     const obligationCents = Math.max(0, shareCents + adjustmentCents);
-    const settledCents = allocatedToBillCents(settlements, jointBill.id);
+    const settledCents = allocatedToBillCents(settlements, jointBill.id) + appliedCreditToBillCents(creditEvents, jointBill.id);
     return { obligationCents, settledCents, outstandingCents: Math.max(0, obligationCents - settledCents), overAllocatedCents: Math.max(0, settledCents - obligationCents) };
   }
 
   function creditPositionCents(settlements, transactions, creditEvents = []) {
-    const grossCredit = (settlements || []).filter(active).reduce((sum, s) => sum + summarizeSettlement(s, transactions).creditCents, 0);
-    const appliedOrRefunded = (creditEvents || []).filter(active).reduce((sum, e) => sum + Math.max(0, Number(e.amountCents) || 0), 0);
-    return { grossCreditCents: grossCredit, appliedOrRefundedCents: appliedOrRefunded,
+    const activeSettlements = (settlements || []).filter(active);
+    const activeSettlementIds = new Set(activeSettlements.map(s => String(s.id)));
+    const grossCredit = activeSettlements.reduce((sum, s) => sum + summarizeSettlement(s, transactions).creditCents, 0);
+    // A refund/application is only live while the settlement that created the credit remains active.
+    const appliedOrRefunded = (creditEvents || []).filter(e => active(e) && activeSettlementIds.has(String(e.settlementId)))
+      .reduce((sum, e) => sum + Math.max(0, Number(e.amountCents) || 0), 0);
+    return { grossCreditCents: grossCredit, appliedOrRefundedCreditCents: appliedOrRefunded,
       availableCreditCents: Math.max(0, grossCredit - appliedOrRefunded),
       overAppliedCents: Math.max(0, appliedOrRefunded - grossCredit) };
   }
@@ -121,10 +131,10 @@
 
   function settlementMonthPosition(ym, jointBills, settlements, transactions, adjustments = [], creditEvents = []) {
     const bills = (jointBills || []).filter(b => String(b.ym) === String(ym));
-    const obligationsCents = bills.reduce((sum, bill) => sum + billBalances(bill, settlements, adjustments).obligationCents, 0);
-    const settledCents = bills.reduce((sum, bill) => sum + billBalances(bill, settlements, adjustments).settledCents, 0);
-    const outstandingCents = bills.reduce((sum, bill) => sum + billBalances(bill, settlements, adjustments).outstandingCents, 0);
-    const overAllocatedCents = bills.reduce((sum, bill) => sum + billBalances(bill, settlements, adjustments).overAllocatedCents, 0);
+    const obligationsCents = bills.reduce((sum, bill) => sum + billBalances(bill, settlements, adjustments, creditEvents).obligationCents, 0);
+    const settledCents = bills.reduce((sum, bill) => sum + billBalances(bill, settlements, adjustments, creditEvents).settledCents, 0);
+    const outstandingCents = bills.reduce((sum, bill) => sum + billBalances(bill, settlements, adjustments, creditEvents).outstandingCents, 0);
+    const overAllocatedCents = bills.reduce((sum, bill) => sum + billBalances(bill, settlements, adjustments, creditEvents).overAllocatedCents, 0);
     const monthSettlements = (settlements || []).filter(s => active(s) && String(s.ym) === String(ym));
     const transferCents = monthSettlements.reduce((sum, settlement) => sum + summarizeSettlement(settlement, transactions).bankAmountCents, 0);
     const monthSettlementIds = new Set(monthSettlements.map(s => String(s.id)));
@@ -159,8 +169,8 @@
       else if (tx && !linkedCalendarExpenseIsValid(bill, tx, context)) errors.push('The linked expense does not belong to the selected household bill.');
       else if (bill && tx) {
         const already = (context?.creditEvents || []).filter(e => active(e) && e.type === 'application' && String(e.jointBillId) === String(bill.id) && String(e.id) !== String(event.id)).reduce((n,e)=>n+Math.max(0,Number(e.amountCents)||0),0);
-        const balance = billBalances(bill, context?.settlements || [], context?.jointAdjustments || []);
-        if (already + (Number.isSafeInteger(amount) ? amount : 0) > balance.outstandingCents) errors.push('The credit application exceeds the remaining household bill share.');
+        const balance = billBalances(bill, context?.settlements || [], context?.jointAdjustments || [], context?.creditEvents || []);
+        if (Number.isSafeInteger(amount) && amount > balance.outstandingCents) errors.push('The credit application exceeds the remaining household bill share.');
       }
     }
     return { valid: errors.length === 0, errors, availableCreditCents: available };
@@ -172,7 +182,8 @@
     const context = {
       transactions: state.transactions || [], jointBills: state.jointBills || [],
       calendarBills: state.calendarBills || [], jointAdjustments: state.jointAdjustments || [],
-      settlements: state.householdSettlements
+      settlements: state.householdSettlements,
+      creditEvents: state.householdSettlementCreditEvents || []
     };
     const validation = validateSettlement(input, context);
     if (!validation.valid) return { saved: false, validation };
@@ -226,9 +237,18 @@
     return { saved: true, record, validation };
   }
 
+  function reverseCreditEvent(state, creditEventId, reason, now = new Date().toISOString()) {
+    const record = (state.householdSettlementCreditEvents || []).find(event => String(event.id) === String(creditEventId));
+    if (!record || !active(record)) return { reversed: false, error: 'Active credit event not found.' };
+    record.reversedAt = now;
+    record.reversalReason = String(reason || '').trim();
+    record.status = 'reversed';
+    return { reversed: true, record };
+  }
+
   root.FinHubHouseholdSettlement = Object.freeze({
-    toCents, validateSettlement, summarizeSettlement, allocatedToBillCents,
+    toCents, validateSettlement, summarizeSettlement, allocatedToBillCents, appliedCreditToBillCents,
     billBalances, creditPositionCents, settlementMonthPosition, validateCreditEvent,
-    createSettlement, reverseSettlement, createCreditEvent
+    createSettlement, reverseSettlement, createCreditEvent, reverseCreditEvent
   });
 })(typeof globalThis !== 'undefined' ? globalThis : this);
