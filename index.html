@@ -13767,6 +13767,18 @@ No payment links or balance changes were retained.`);
       {
         if (bill.type !== 'income' && Number(funding.balance)<amount && !confirm(`The selected funding account currently has ${formatFinancial(funding.balance)}. Record this payment anyway?`)) return;
         const expectedType = bill.type==='income'?'Income':bill.type==='debt'?'Debt Payment':'Expense';
+        // Resolve classification from the saved schedule first. If the editor is
+        // still open and its selections are populated, use those as a safe
+        // fallback so the newly-created ledger transaction cannot lose them.
+        const editorIsForThisBill = String(document.getElementById('cal-edit-id')?.value || '') === String(bill.id);
+        const editorCategory = editorIsForThisBill ? String(document.getElementById('cal-category')?.value || '').trim() : '';
+        const editorSubcategory = editorIsForThisBill ? String(document.getElementById('cal-subcategory')?.value || '').trim() : '';
+        const scheduledCategory = String(bill.category || '').trim() || editorCategory;
+        const scheduledSubcategory = String(bill.subcategory || '').trim() || editorSubcategory;
+        if (bill.type !== 'debt') {
+          if (!String(bill.category || '').trim() && scheduledCategory) bill.category = scheduledCategory;
+          if (!String(bill.subcategory || '').trim() && scheduledSubcategory) bill.subcategory = scheduledSubcategory;
+        }
         let debt = null, principalCents = 0, paymentType = '';
         if (bill.type==='debt') {
           debt = resolveDebtAccountForBill(bill);
@@ -13784,8 +13796,8 @@ No payment links or balance changes were retained.`);
           // Promote that legacy value to Vendor and use a neutral description default.
           desc:(String(bill.vendor||'').trim() ? (String(bill.desc||'').trim() || 'Scheduled item') : 'Scheduled item'),
           vendor:(String(bill.vendor||'').trim() || (String(bill.desc||'').trim() || 'Scheduled item')),
-          type:expectedType, category:bill.category||(bill.type==='debt'?'Debt Payment':''),
-          subcategory:bill.type==='debt'?paymentType:(bill.subcategory||''), amount, accountId:funding.id,
+          type:expectedType, category:bill.type==='debt'?'Debt Payment':scheduledCategory,
+          subcategory:bill.type==='debt'?paymentType:scheduledSubcategory, amount, accountId:funding.id,
           calendarBillId:bill.id, scheduledMatchStatus:'matched', source:'calendar-bill-payment'
         };
         if (bill.type==='debt') {
