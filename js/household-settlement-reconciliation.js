@@ -189,8 +189,11 @@
     if (event?.type === 'application') {
       const bill = getBill(context?.jointBills, event.jointBillId);
       if (!bill) errors.push('Select the household bill that receives this credit application.');
-      else if (tx && !linkedCalendarExpenseIsValid(bill, tx, context)) errors.push('The linked expense does not belong to the selected household bill.');
-      else if (bill && tx) {
+      else if (tx && !linkedCalendarExpenseIsValid(bill, tx, context) &&
+        (!tx.date || String(tx.date).slice(0, 7) !== String(bill.ym))) {
+        errors.push('The linked expense must belong to the selected Calendar bill or be dated in the same household month.');
+      }
+      if (bill && tx) {
         const balance = billBalances(bill, context?.settlements || [], context?.jointAdjustments || [], context?.creditEvents || []);
         if (Number.isSafeInteger(amount) && amount > balance.outstandingCents) errors.push('The credit application exceeds the remaining household bill share.');
       }
