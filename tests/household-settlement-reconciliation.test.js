@@ -158,3 +158,65 @@ test('month position ignores reversed settlements and their credit', () => {
   assert.equal(position.availableCreditCents, 0);
   assert.equal(position.outstandingCents, 127000);
 });
+
+
+test('credit applications reduce the household bill balance and available receivable', () => {
+  const settlement = {
+    id: 'credit-source', ym: '2026-11', bankTransactionId: 'bank-1',
+    allocations: [{ jointBillId: 'rent', amountCents: 50000 }]
+  };
+  const state = {
+    transactions, jointBills, jointAdjustments: [],
+    householdSettlements: [settlement], householdSettlementCreditEvents: []
+  };
+  const result = core.createCreditEvent(state, {
+    type: 'application', settlementId: 'credit-source', transactionId: 'rent-expense',
+    jointBillId: 'rent', amountCents: 5000
+  }, '2026-11-20T12:00:00.000Z');
+  assert.equal(result.saved, true);
+  assert.deepEqual(core.billBalances(jointBills[0], [settlement], [], state.householdSettlementCreditEvents), {
+    obligationCents: 118000, settledCents: 55000, outstandingCents: 63000, overAllocatedCents: 0
+  });
+  assert.equal(core.creditPositionCents([settlement], transactions, state.householdSettlementCreditEvents).availableCreditCents, 5000);
+});
+
+test('credit application against a future-month bill reduces that month obligation', () => {
+  const futureBill = { id: 'rent-dec', ym: '2026-12', name: 'Rent', amount: 2360, splitPct: 50 };
+  const futureExpense = { id: 'rent-dec-expense', type: 'Expense', amount: 1180, date: '2026-12-01' };
+  const settlement = { id: 'nov-credit', ym: '2026-11', bankTransactionId: 'bank-1', allocations: [{ jointBillId: 'rent', amountCents: 50000 }] };
+  const allTransactions = [...transactions, futureExpense];
+  const state = {
+    transactions: allTransactions, jointBills: [...jointBills, futureBill], jointAdjustments: [],
+    householdSettlements: [settlement], householdSettlementCreditEvents: []
+  };
+  const result = core.createCreditEvent(state, {
+    type: 'application', settlementId: 'nov-credit', transactionId: 'rent-dec-expense',
+    jointBillId: 'rent-dec', amountCents: 5000
+  }, '2026-12-01T12:00:00.000Z');
+  assert.equal(result.saved, true);
+  const december = core.settlementMonthPosition('2026-12', [futureBill], [settlement], allTransactions, [], state.householdSettlementCreditEvents);
+  assert.equal(december.obligationsCents, 118000);
+  assert.equal(december.settledCents, 5000);
+  assert.equal(december.outstandingCents, 113000);
+});
+
+test('reversing a credit event restores the receivable and bill balance', () => {
+  const settlement = { id: 'credit-source', ym: '2026-11', bankTransactionId: 'bank-1', allocations: [{ jointBillId: 'rent', amountCents: 50000 }] };
+  const state = {
+    transactions, jointBills, jointAdjustments: [], householdSettlements: [settlement],
+    householdSettlementCreditEvents: [{ id: 'application-1', type: 'application', settlementId: 'credit-source', transactionId: 'rent-expense', jointBillId: 'rent', amountCents: 5000, status: 'active' }]
+  };
+  assert.equal(core.reverseCreditEvent(state, 'application-1', 'Entered in error', '2026-11-21T12:00:00.000Z').reversed, true);
+  assert.equal(core.billBalances(jointBills[0], [settlement], [], state.householdSettlementCreditEvents).outstandingCents, 68000);
+  assert.equal(core.creditPositionCents([settlement], transactions, state.householdSettlementCreditEvents).availableCreditCents, 10000);
+});
+
+test('reversing a source settlement also releases its linked credit events', () => {
+  const settlement = { id: 'credit-source', ym: '2026-11', bankTransactionId: 'bank-1', allocations: [{ jointBillId: 'rent', amountCents: 50000 }] };
+  const event = { id: 'refund-1', type: 'refund', settlementId: 'credit-source', transactionId: 'refund-1', amountCents: 5000, status: 'active' };
+  const state = { transactions, householdSettlements: [settlement], householdSettlementCreditEvents: [event] };
+  assert.equal(core.reverseSettlement(state, 'credit-source', 'Reverse settlement', '2026-11-22T12:00:00.000Z').reversed, true);
+  assert.deepEqual(core.creditPositionCents(state.householdSettlements, transactions, state.householdSettlementCreditEvents), {
+    grossCreditCents: 0, appliedOrRefundedCents: 0, availableCreditCents: 0, overAppliedCents: 0
+  });
+});
