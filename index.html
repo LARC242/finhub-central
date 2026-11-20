@@ -5026,6 +5026,7 @@ body[data-finhub-theme] .fh-ledger-view-toggle:focus-visible {
 <div class="monthly-kpi"><div>Credit &amp; debt</div><strong class="text-rose-600 accounting-num" id="accounts-page-debt">$ –</strong></div>
 <div class="monthly-kpi"><div>Net worth</div><strong class="accounting-num" id="accounts-page-networth">$ –</strong></div>
 </div>
+<div id="accounts-household-receivable-note" class="hidden text-[11px] text-emerald-700 dark:text-emerald-400 mt-2"></div>
 </details>
 <details class="monthly-panel space-y-3" id="account-integrity-panel">
 <summary class="flex flex-wrap items-center justify-between gap-3 cursor-pointer list-none">
@@ -5354,11 +5355,32 @@ body[data-finhub-theme] .fh-ledger-view-toggle:focus-visible {
 <button class="px-3 py-2 rounded-xl text-xs font-semibold flex items-center space-x-1 fh-semantic-button fh-btn-primary" onclick="copyETransferSummary()">
 <i class="fa-solid fa-copy"></i><span>Copy E-Transfer Breakdown</span>
 </button>
-<button class="px-3 py-2 rounded-xl text-xs font-semibold flex items-center space-x-1 fh-semantic-button fh-btn-primary" onclick="openJointETransferModal()">
-<i class="fa-solid fa-arrow-up-right-from-square"></i><span>Record E-Transfer</span>
+<button class="px-3 py-2 rounded-xl text-xs font-semibold flex items-center space-x-1 fh-semantic-button fh-btn-primary" onclick="openHouseholdSettlementModal()">
+<i class="fa-solid fa-link"></i><span>Reconcile E-Transfer</span>
 </button>
 <button class="px-4 py-2 rounded-xl text-xs font-semibold text-white shadow-md theme-bg" onclick="openJointBillModal()"><i class="fa-solid fa-plus mr-1"></i> Add Joint Bill Item</button>
 </div>
+</div>
+<div id="household-settlement-panel" class="space-y-4">
+  <div class="flex flex-wrap items-start justify-between gap-3">
+    <div><h3 class="text-lg font-bold">Household Settlement Reconciliation</h3><p class="text-xs text-gray-500 dark:text-gray-400">Link an existing e-Transfer withdrawal to the existing household bill expenses. This workflow does not create or change ledger transactions.</p></div>
+    <button type="button" class="px-3 py-2 rounded-xl text-xs font-semibold fh-semantic-button fh-btn-primary" onclick="openHouseholdCreditEventModal()"><i class="fa-solid fa-receipt mr-1"></i> Record refund / apply credit</button>
+  </div>
+  <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3" id="household-settlement-summary"></div>
+  <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+    <section class="bg-white dark:bg-gray-900 p-4 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-3">
+      <h4 class="font-bold text-sm">Reconciled withdrawals</h4>
+      <div id="household-settlement-history" class="space-y-2"><p class="text-xs text-gray-500">No reconciled withdrawals yet.</p></div>
+    </section>
+    <section class="bg-white dark:bg-gray-900 p-4 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-3">
+      <h4 class="font-bold text-sm">Household overpayment receivable</h4>
+      <div id="household-settlement-credit-summary" class="space-y-2"></div>
+      <div class="border-t border-gray-200 dark:border-gray-800 pt-2">
+        <h5 class="text-xs font-semibold mb-1">Refunds and credit applications</h5>
+        <div id="household-settlement-credit-events"><p class="text-xs text-gray-500">No credit events recorded.</p></div>
+      </div>
+    </section>
+  </div>
 </div>
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-4 shadow-sm">
@@ -5995,62 +6017,36 @@ body[data-finhub-theme] .fh-ledger-view-toggle:focus-visible {
 </form>
 </div>
 </div>
-<!-- MODAL: RECORD JOINT HOUSEHOLD E-TRANSFER AS A SPLIT EXPENSE -->
-<div aria-labelledby="joint-etransfer-modal-accessible-title" aria-modal="true" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50" id="joint-etransfer-modal" role="dialog">
-<div class="dark:border-gray-800 w-full max-w-3xl max-h-[90vh] overflow-y-auto md:p-6 space-y-4 fh-modal-surface">
-<div class="flex items-start justify-between gap-3">
-<div>
-<h3 class="text-lg font-bold" id="joint-etransfer-modal-accessible-title">Record Joint Household E-Transfer</h3>
-<p class="text-xs text-gray-500 dark:text-gray-400">Create one ledger expense with itemized category allocations from this month's settlement.</p>
+<!-- MODAL: LINK AN EXISTING HOUSEHOLD E-TRANSFER TO EXISTING BILL EXPENSES -->
+<div aria-labelledby="household-settlement-modal-title" aria-modal="true" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50" id="household-settlement-modal" role="dialog">
+  <div class="w-full max-w-4xl max-h-[92vh] overflow-y-auto p-4 md:p-6 space-y-4 fh-modal-surface">
+    <div class="flex items-start justify-between gap-3"><div><h3 class="text-lg font-bold" id="household-settlement-modal-title">Reconcile Existing E-Transfer</h3><p class="text-xs text-gray-500 dark:text-gray-400">Choose the withdrawal already in your ledger, then link it to the expenses already recorded for the household bills. No new bank or expense transaction will be created.</p></div><button aria-label="Close" class="text-gray-400 hover:text-gray-700 px-2" onclick="closeHouseholdSettlementModal()" type="button">✕</button></div>
+    <div class="grid grid-cols-1 sm:grid-cols-[10rem_minmax(0,1fr)] gap-3">
+      <div><label class="block text-xs font-semibold text-gray-500 mb-1" for="hhs-settlement-month">Household month</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="hhs-settlement-month" readonly type="month"/></div>
+      <div><label class="block text-xs font-semibold text-gray-500 mb-1" for="hhs-bank-transaction">Existing e-Transfer withdrawal</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="hhs-bank-transaction" required><option value="">Choose an existing withdrawal</option></select></div>
+    </div>
+    <div class="rounded-xl border border-gray-200 dark:border-gray-800 p-3 space-y-2">
+      <div class="flex flex-wrap justify-between gap-2 text-xs"><span>Selected withdrawal: <strong id="hhs-bank-total" class="accounting-num">$0.00</strong></span><span>Allocated to bills: <strong id="hhs-allocation-total" class="accounting-num">$0.00</strong></span></div>
+      <div id="hhs-credit-preview" class="text-xs text-emerald-600 dark:text-emerald-400">Potential household credit: $0.00</div>
+    </div>
+    <div class="space-y-2"><div><h4 class="font-bold text-sm">Allocate to existing household bill expenses</h4><p class="text-[11px] text-gray-500">For each bill, select the matching expense transaction from your ledger and enter the amount of this withdrawal applied to your share. Leave unused rows at $0.00. Any withdrawal amount not allocated becomes a household receivable.</p></div><div id="hhs-allocation-rows" class="space-y-2"></div></div>
+    <div id="household-settlement-errors" class="hidden rounded-xl border border-rose-300 bg-rose-50 dark:bg-rose-950/30 dark:border-rose-900 p-3 text-xs text-rose-700 dark:text-rose-300"></div>
+    <div class="flex flex-col-reverse sm:flex-row gap-2 pt-2"><button class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel fh-modal-secondary-action" onclick="closeHouseholdSettlementModal()" type="button">Cancel</button><button class="flex-1 py-2 text-white rounded-xl text-sm font-semibold theme-bg" onclick="saveHouseholdSettlement()" type="button">Save Settlement Link</button></div>
+  </div>
 </div>
-<button aria-label="Close" class="text-gray-400 hover:text-gray-700 px-2" onclick="closeJointETransferModal()" type="button">✕</button>
-</div>
-<div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-<div>
-<label class="block text-xs font-semibold text-gray-500 mb-1" for="joint-et-month">Settlement month</label>
-<input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="joint-et-month" readonly="" type="month"/>
-</div>
-<div>
-<label class="block text-xs font-semibold text-gray-500 mb-1" for="joint-et-date">E-Transfer date</label>
-<input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="joint-et-date" required="" lang="en-US" type="date"/>
-</div>
-<div>
-<label class="block text-xs font-semibold text-gray-500 mb-1" for="joint-et-account">Funding account</label>
-<select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="joint-et-account" required=""></select>
-</div>
-</div>
-<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-<div>
-<label class="block text-xs font-semibold text-gray-500 mb-1" for="joint-et-amount">E-Transfer amount ($)</label>
-<input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm font-bold accounting-num" id="joint-et-amount" min="0.01" required="" step="0.01" type="number"/>
-</div>
-<div class="rounded-xl border border-gray-200 dark:border-gray-800 p-3 text-xs">
-<div class="text-gray-500">Settlement amount</div>
-<div class="font-bold text-base accounting-num" id="joint-et-settlement-total">$0.00</div>
-<div class="text-gray-500 mt-1" id="joint-et-amount-note">Defaults to the full amount due. For a partial transfer, adjust the allocations below to match.</div>
-</div>
-</div>
-<div class="border-t border-gray-200 dark:border-gray-800 pt-3 space-y-2">
-<div class="flex items-center justify-between gap-2">
-<h4 class="font-bold text-sm">Expense allocations</h4>
-<span class="text-xs text-gray-500">Map each household item to a spending category</span>
-</div>
-<div class="grid grid-cols-1 sm:grid-cols-[minmax(7rem,1fr)_minmax(8rem,1fr)_minmax(7rem,.7fr)] gap-2 text-[10px] uppercase tracking-wide text-gray-500 px-1">
-<span>Household item</span><span>Category / subcategory</span><span>My share ($)</span>
-</div>
-<div class="space-y-2" id="joint-et-allocation-rows"></div>
-<div class="flex flex-wrap justify-between gap-2 rounded-xl bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 p-3 text-xs">
-<span>Allocated: <strong id="joint-et-allocated">$0.00</strong></span>
-<span>Transfer amount: <strong id="joint-et-transfer-total">$0.00</strong></span>
-<span class="font-bold" id="joint-et-remainder">Difference: $0.00</span>
-</div>
-<p class="text-[11px] text-gray-500">The allocation rows are reporting splits attached to one parent ledger transaction. They do not create additional bank movements.</p>
-</div>
-<div class="flex flex-col-reverse sm:flex-row gap-2 pt-2">
-<button class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel fh-modal-secondary-action" onclick="closeJointETransferModal()" type="button">Cancel</button>
-<button class="flex-1 py-2 text-white rounded-xl text-sm font-semibold theme-bg" onclick="saveJointETransfer()" type="button">Save E-Transfer &amp; Allocations</button>
-</div>
-</div>
+<!-- MODAL: RECORD PARTNER REFUND OR APPLY HOUSEHOLD CREDIT -->
+<div aria-labelledby="household-credit-event-modal-title" aria-modal="true" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50" id="household-credit-event-modal" role="dialog">
+  <div class="w-full max-w-xl max-h-[90vh] overflow-y-auto p-4 md:p-6 space-y-4 fh-modal-surface">
+    <div class="flex items-start justify-between gap-3"><div><h3 class="text-lg font-bold" id="household-credit-event-modal-title">Record Household Credit Activity</h3><p class="text-xs text-gray-500 dark:text-gray-400">Link a partner refund or a credit applied to a future household bill to its existing ledger transaction.</p></div><button aria-label="Close" class="text-gray-400 hover:text-gray-700 px-2" onclick="closeHouseholdCreditEventModal()" type="button">✕</button></div>
+    <div><label class="block text-xs font-semibold text-gray-500 mb-1" for="hhc-event-type">Credit activity</label><select id="hhc-event-type" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"><option value="refund">Partner refunded money to me</option><option value="application">Apply credit to a household bill</option></select></div>
+    <div><label class="block text-xs font-semibold text-gray-500 mb-1" for="hhc-source-settlement">Original settlement credit</label><select id="hhc-source-settlement" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"></select></div>
+    <div><label class="block text-xs font-semibold text-gray-500 mb-1" for="hhc-transaction">Existing ledger transaction</label><select id="hhc-transaction" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"><option value="">Choose existing transaction</option></select></div>
+    <div id="hhc-bill-wrap" class="hidden"><label class="block text-xs font-semibold text-gray-500 mb-1" for="hhc-bill">Household bill receiving the credit</label><select id="hhc-bill" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"><option value="">Choose household bill</option></select></div>
+    <div><label class="block text-xs font-semibold text-gray-500 mb-1" for="hhc-amount">Amount ($)</label><input id="hhc-amount" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm accounting-num" type="number" min="0.01" step="0.01" required/></div>
+    <div class="text-[11px] text-gray-500">The linked ledger transaction is not created or edited by this form. Reversing the credit event restores the receivable without changing that transaction.</div>
+    <div id="household-credit-event-errors" class="hidden rounded-xl border border-rose-300 bg-rose-50 dark:bg-rose-950/30 dark:border-rose-900 p-3 text-xs text-rose-700 dark:text-rose-300"></div>
+    <div class="flex flex-col-reverse sm:flex-row gap-2 pt-2"><button class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel fh-modal-secondary-action" onclick="closeHouseholdCreditEventModal()" type="button">Cancel</button><button class="flex-1 py-2 text-white rounded-xl text-sm font-semibold theme-bg" onclick="saveHouseholdCreditEvent()" type="button">Save Credit Activity</button></div>
+  </div>
 </div>
 <!-- MODAL: ADD/EDIT SPENDING BUCKET -->
 <div aria-labelledby="category-modal-accessible-title" aria-modal="true" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50" id="category-modal" role="dialog" style="z-index:90;">
@@ -6548,6 +6544,7 @@ Bonus" rows="4"></textarea></div>
 </div>
 </div>
 <script src="js/household-settlement-reconciliation.js"></script>
+<script src="js/household-settlement-ui.js"></script>
 <!-- SCRIPT -->
 <script>
     function formatFinancial(val, isExpense = false) {
@@ -9112,6 +9109,12 @@ Bonus" rows="4"></textarea></div>
       const debtTotal=accountTotals.liabilities;
       const put=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value;};
       put('accounts-page-assets',formatFinancial(assetTotal));
+      const receivableNote=document.getElementById('accounts-household-receivable-note');
+      if(receivableNote){
+        const receivable=Number(accountTotals.householdReceivable)||0;
+        receivableNote.textContent=receivable>0?('Included in assets: household settlement receivable '+formatFinancial(receivable)+' (overpayment owed back or available to apply to a future bill).'):'';
+        receivableNote.classList.toggle('hidden',receivable<=0);
+      }
       const assetsSummaryEl=document.getElementById('accounts-page-assets');
       assetsSummaryEl?.classList.add('accounts-financial-value');
       assetsSummaryEl?.classList.toggle('fh-money-in',assetTotal>=0);
@@ -9709,9 +9712,14 @@ Bonus" rows="4"></textarea></div>
           const balance = Number(account.balance);
           return sum + (Number.isFinite(balance) ? balance : 0);
         }, 0);
-      const assets = sumType('asset');
+      const accountAssets = sumType('asset');
+      const householdReceivableCents = window.FinHubHouseholdSettlement
+        ? window.FinHubHouseholdSettlement.creditPositionCents(state.householdSettlements || [], state.transactions || [], state.householdSettlementCreditEvents || []).availableCreditCents
+        : 0;
+      const householdReceivable = householdReceivableCents / 100;
+      const assets = accountAssets + householdReceivable;
       const liabilities = sumType('debt');
-      return { assets, liabilities, netWorth: assets - liabilities };
+      return { assets, accountAssets, householdReceivable, liabilities, netWorth: assets - liabilities };
     }
 
     function updateSidebarNetWorth() {
@@ -14467,6 +14475,7 @@ No payment links or balance changes were retained.`);
       const creditValue = document.getElementById('joint-current-credit');
       if (creditRow) creditRow.classList.toggle('hidden', currentCredit <= 0);
       if (creditValue) creditValue.innerText = formatFinancial(currentCredit);
+      if (typeof renderHouseholdSettlementPanel === 'function') renderHouseholdSettlementPanel();
     }
 
     function editJointBill(id) {
@@ -14551,7 +14560,10 @@ No payment links or balance changes were retained.`);
         : Math.max(0, transactionAmountToCents(meta.transfersSent) - linked);
       const reconciledAllocated = (state.householdSettlements || []).filter(s => String(s.ym) === String(ym) && !s.reversedAt && s.status !== 'void')
         .reduce((sum, settlement) => sum + (settlement.allocations || []).reduce((n, allocation) => n + Math.max(0, Number(allocation.amountCents) || 0), 0), 0);
-      return linked + legacy + reconciledAllocated;
+      const monthBillIds = new Set((state.jointBills || []).filter(b => String(b.ym) === String(ym)).map(b => String(b.id)));
+      const appliedCredits = (state.householdSettlementCreditEvents || []).filter(event => !event.reversedAt && event.status !== 'void' && event.type === 'application' && monthBillIds.has(String(event.jointBillId)))
+        .reduce((sum, event) => sum + Math.max(0, Number(event.amountCents) || 0), 0);
+      return linked + legacy + reconciledAllocated + appliedCredits;
     }
     function jointReconciliationCreditCentsForMonth(ym) {
       const activeSettlements = (state.householdSettlements || []).filter(s => String(s.ym) === String(ym) && !s.reversedAt && s.status !== 'void');
@@ -15069,7 +15081,12 @@ No payment links or balance changes were retained.`);
       if (Number(state.jointMetaData[ym].transfersSent) === nextValue) return;
       captureUndo('Update joint transfers sent');
       const linkedTotal = (state.transactions || []).filter(t => t.source === 'joint-household-settlement' && String(t.jointSettlementMonth || '') === ym).reduce((sum,t) => sum + (Number(t.amount) || 0), 0);
-      state.jointMetaData[ym].legacyTransfersSent = Math.max(0, Math.round((nextValue - linkedTotal) * 100) / 100);
+      const monthBillIds = new Set((state.jointBills || []).filter(b => String(b.ym) === String(ym)).map(b => String(b.id)));
+      const reconciledAllocated = (state.householdSettlements || []).filter(s => String(s.ym) === String(ym) && !s.reversedAt && s.status !== 'void')
+        .reduce((sum, settlement) => sum + (settlement.allocations || []).reduce((n, allocation) => n + Math.max(0, Number(allocation.amountCents) || 0), 0), 0);
+      const appliedCredits = (state.householdSettlementCreditEvents || []).filter(event => !event.reversedAt && event.status !== 'void' && event.type === 'application' && monthBillIds.has(String(event.jointBillId)))
+        .reduce((sum, event) => sum + Math.max(0, Number(event.amountCents) || 0), 0);
+      state.jointMetaData[ym].legacyTransfersSent = Math.max(0, Math.round((nextValue - linkedTotal - reconciledAllocated - appliedCredits) * 100) / 100);
       state.jointMetaData[ym].transfersSent = nextValue;
       saveData(); renderJointAppView();
     }
