@@ -243,7 +243,7 @@
         const eventIsActive = active(event) && active(settlement);
         return `<div class="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 dark:border-gray-800 py-2 text-xs">
           <div class="min-w-0"><strong>${event.type === 'refund' ? 'Partner refund' : 'Credit applied'}</strong><div class="text-[10px] text-gray-500">${esc(tx?.vendor || tx?.desc || 'Missing linked transaction')} · Source transfer ${esc(settlement?.date || 'Unknown date')} · ${eventIsActive ? 'Active' : 'Reversed / source reversed'}</div></div>
-          <div class="flex items-center gap-2"><strong class="accounting-num">${esc(money(event.amountCents))}</strong>${eventIsActive ? '<button type="button" class="text-rose-600 underline" onclick="reverseHouseholdCreditEvent(\\'' + esc(event.id) + '\\')">Reverse</button>' : ''}</div>
+          <div class="flex items-center gap-2"><strong class="accounting-num">${esc(money(event.amountCents))}</strong>${eventIsActive ? `<button type="button" class="text-rose-600 underline" onclick="reverseHouseholdCreditEvent('${esc(event.id)}')">Reverse</button>` : ''}</div>
         </div>`;
       }).join('') : '<p class="text-xs text-gray-500">No partner refunds or credit applications recorded.</p>';
     }
