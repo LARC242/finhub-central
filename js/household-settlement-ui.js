@@ -220,7 +220,10 @@
       render(input.value);
     });
     input.addEventListener('keydown', event => {
-      if (event.key === 'Escape') results.classList.add('hidden');
+      if (event.key === 'Escape') {
+        results.classList.add('hidden');
+        event.stopPropagation();
+      }
       if (event.key === 'Enter') {
         const first = results.querySelector('button');
         if (first) { event.preventDefault(); first.click(); }
@@ -529,6 +532,17 @@
     root.updateSidebarNetWorth();
     root.renderAccountsPage();
   }
+
+  document.addEventListener('keydown', event => {
+    if (event.key !== 'Escape') return;
+    const settlementModal = byId('household-settlement-modal');
+    const creditModal = byId('household-credit-event-modal');
+    const settlementOpen = settlementModal && !settlementModal.classList.contains('hidden');
+    const creditOpen = creditModal && !creditModal.classList.contains('hidden');
+    if (!settlementOpen && !creditOpen) return;
+    if (settlementOpen) closeHouseholdSettlementModal();
+    if (creditOpen) closeHouseholdCreditEventModal();
+  });
 
   root.openHouseholdSettlementModal = openHouseholdSettlementModal;
   root.closeHouseholdSettlementModal = closeHouseholdSettlementModal;
