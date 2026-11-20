@@ -383,8 +383,7 @@
         const totals = core.summarizeSettlement(item, transactions());
         const lines = (item.allocations || []).map(allocation => {
           const bill = (state.jointBills || []).find(b => String(b.id) === String(allocation.jointBillId));
-          const expense = transactions().find(tx => String(tx.id) === String(allocation.expenseTransactionId));
-          return `<div class="flex justify-between gap-3 text-[11px] py-1"><span class="min-w-0 truncate">${esc(bill?.name || 'Deleted household bill')} · ${esc(expense?.vendor || expense?.desc || 'Linked expense')}</span><strong class="accounting-num whitespace-nowrap">${esc(money(allocation.amountCents))}</strong></div>`;
+          return `<div class="flex justify-between gap-3 text-[11px] py-1"><span class="min-w-0 truncate">${esc(bill?.name || 'Deleted household bill')} · Household obligation</span><strong class="accounting-num whitespace-nowrap">${esc(money(allocation.amountCents))}</strong></div>`;
         }).join('');
         const status = active(item) ? '<span class="text-emerald-600 dark:text-emerald-400">Active</span>' : '<span class="text-gray-500">Reversed</span>';
         return `<article class="rounded-xl border border-gray-200 dark:border-gray-800 p-3 space-y-2">
