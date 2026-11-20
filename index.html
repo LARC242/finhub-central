@@ -13899,23 +13899,25 @@ No payment links or balance changes were retained.`);
           .map(item => String(item.id)));
         const activeAllocations = (bill.householdSettlementAllocations || []).filter(item =>
           activeSettlementIds.has(String(item.settlementId)));
-        const householdPaidCents = activeAllocations.reduce((sum, item) => sum + Math.max(0, Number(item.amountCents) || 0), 0);
-        const jointBillIds = new Set(activeAllocations.map(item => String(item.jointBillId)));
-        const householdObligationCents = (state.jointBills || []).filter(item =>
-          jointBillIds.has(String(item.id)) && String(item.ym) === String(bill.date || '').slice(0, 7))
-          .reduce((sum, item) => {
-            const share = Math.round(transactionAmountToCents(Number(item.amount) || 0) * (Number(item.splitPct) || 0) / 100);
-            const adjustments = (state.jointAdjustments || []).filter(adj => !adj.reversedAt && adj.status !== 'void' &&
-              String(adj.billId) === String(item.id) && String(adj.ym) === String(item.ym))
-              .reduce((n, adj) => n + (adj.type === 'additional' ? 1 : -1) * Math.abs(Number(adj.amountCents) || 0), 0);
-            return sum + Math.max(0, share + adjustments);
-          }, 0);
-        bill.paidAmountCents = householdPaidCents;
-        bill.remainingAmountCents = Math.max(0, householdObligationCents - householdPaidCents);
-        bill.overpaidAmountCents = Math.max(0, householdPaidCents - householdObligationCents);
-        bill.paymentStatus = householdObligationCents > 0 && householdPaidCents >= householdObligationCents
-          ? 'paid' : householdPaidCents > 0 ? 'partial' : 'unpaid';
-        bill.paid = householdObligationCents > 0 && householdPaidCents >= householdObligationCents;
+        if (activeAllocations.length) {
+          const householdPaidCents = activeAllocations.reduce((sum, item) => sum + Math.max(0, Number(item.amountCents) || 0), 0);
+          const jointBillIds = new Set(activeAllocations.map(item => String(item.jointBillId)));
+          const householdObligationCents = (state.jointBills || []).filter(item =>
+            jointBillIds.has(String(item.id)) && String(item.ym) === String(bill.date || '').slice(0, 7))
+            .reduce((sum, item) => {
+              const share = Math.round(transactionAmountToCents(Number(item.amount) || 0) * (Number(item.splitPct) || 0) / 100);
+              const adjustments = (state.jointAdjustments || []).filter(adj => !adj.reversedAt && adj.status !== 'void' &&
+                String(adj.billId) === String(item.id) && String(adj.ym) === String(item.ym))
+                .reduce((n, adj) => n + (adj.type === 'additional' ? 1 : -1) * Math.abs(Number(adj.amountCents) || 0), 0);
+              return sum + Math.max(0, share + adjustments);
+            }, 0);
+          bill.paidAmountCents = householdPaidCents;
+          bill.remainingAmountCents = Math.max(0, householdObligationCents - householdPaidCents);
+          bill.overpaidAmountCents = Math.max(0, householdPaidCents - householdObligationCents);
+          bill.paymentStatus = householdObligationCents > 0 && householdPaidCents >= householdObligationCents
+            ? 'paid' : householdPaidCents > 0 ? 'partial' : 'unpaid';
+          bill.paid = householdObligationCents > 0 && householdPaidCents >= householdObligationCents;
+        }
       }
       const withinTolerance = isCalendarPaymentWithinTolerance(settlement.paidCents, amountCents);
       return { ...settlement, amountCents, remainingCents: withinTolerance ? 0 : Math.max(0,amountCents-settlement.paidCents), overpaidCents: Math.max(0,settlement.paidCents-amountCents) };
