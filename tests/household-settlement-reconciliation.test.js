@@ -274,3 +274,24 @@ test('saving a settlement links existing records without creating ledger transac
   assert.equal(state.accounts[0].balance, beforeBalance);
   assert.equal(state.householdSettlements.length, 1);
 });
+
+
+test('rejects a refund transaction as the settlement withdrawal', () => {
+  const negativeBank = { id: 'bank-refund', type: 'Expense', amount: -600, accountId: 'chequing' };
+  const result = core.validateSettlement({
+    ym: '2026-11', bankTransactionId: 'bank-refund',
+    allocations: [{ jointBillId: 'rent', expenseTransactionId: 'rent-expense', amountCents: 50000 }]
+  }, { ...context, transactions: [...transactions, negativeBank] });
+  assert.equal(result.valid, false);
+  assert.ok(result.errors.some(e => e.includes('positive withdrawal')));
+});
+
+test('rejects a refund transaction as the linked household bill expense', () => {
+  const negativeExpense = { id: 'rent-refund', type: 'Expense', amount: -1180, accountId: 'chequing' };
+  const result = core.validateSettlement({
+    ym: '2026-11', bankTransactionId: 'bank-1',
+    allocations: [{ jointBillId: 'rent', expenseTransactionId: 'rent-refund', amountCents: 50000 }]
+  }, { ...context, transactions: [...transactions, negativeExpense] });
+  assert.equal(result.valid, false);
+  assert.ok(result.errors.some(e => e.includes('positive bill expense')));
+});
