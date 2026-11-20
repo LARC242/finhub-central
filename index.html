@@ -14555,9 +14555,10 @@ No payment links or balance changes were retained.`);
             .reduce((reversed, reversal) => reversed + transactionAmountToCents(Math.abs(Number(reversal.amount) || 0)), 0);
           return sum + Math.max(0, originalCents - reversedCents);
         }, 0);
+      const manualTotalCents = Number.isFinite(transactionAmountToCents(meta.transfersSent)) ? transactionAmountToCents(meta.transfersSent) : 0;
       const legacy = Object.prototype.hasOwnProperty.call(meta, 'legacyTransfersSent')
         ? Math.max(0, transactionAmountToCents(meta.legacyTransfersSent))
-        : Math.max(0, transactionAmountToCents(meta.transfersSent) - linked);
+        : Math.max(0, manualTotalCents - linked);
       const reconciledAllocated = (state.householdSettlements || []).filter(s => String(s.ym) === String(ym) && !s.reversedAt && s.status !== 'void')
         .reduce((sum, settlement) => sum + (settlement.allocations || []).reduce((n, allocation) => n + Math.max(0, Number(allocation.amountCents) || 0), 0), 0);
       const monthBillIds = new Set((state.jointBills || []).filter(b => String(b.ym) === String(ym)).map(b => String(b.id)));
