@@ -71,7 +71,7 @@ test('calculates excess transfer as a receivable credit', () => {
 
 test('reduces available receivable for linked application or refund events', () => {
   const settlement = { id: 's1', bankTransactionId: 'bank-1', allocations: [{ amountCents: 50000 }] };
-  const events = [{ id: 'credit-refund', type: 'refund', transactionId: 'refund-1', amountCents: 2500 }];
+  const events = [{ id: 'credit-refund', type: 'refund', settlementId: 's1', transactionId: 'refund-1', amountCents: 2500 }];
   const result = core.validateCreditEvent(events[0], { ...context, settlements: [settlement] });
   assert.equal(result.valid, true);
   assert.equal(core.creditPositionCents([settlement], transactions, events).availableCreditCents, 7500);
@@ -80,7 +80,7 @@ test('reduces available receivable for linked application or refund events', () 
 test('rejects a credit event that exceeds the available credit', () => {
   const settlement = { id: 's1', bankTransactionId: 'bank-1', allocations: [{ amountCents: 50000 }] };
   const result = core.validateCreditEvent({
-    type: 'refund', transactionId: 'refund-1', amountCents: 15000
+    type: 'refund', settlementId: 's1', transactionId: 'refund-1', amountCents: 15000
   }, { ...context, settlements: [settlement] });
   assert.equal(result.valid, false);
   assert.ok(result.errors.some(e => e.includes('exceeds the available')));
