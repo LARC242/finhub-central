@@ -118,6 +118,21 @@
       overAppliedCents: Math.max(0, appliedOrRefunded - grossCredit) };
   }
 
+
+  function settlementMonthPosition(ym, jointBills, settlements, transactions, adjustments = [], creditEvents = []) {
+    const bills = (jointBills || []).filter(b => String(b.ym) === String(ym));
+    const obligationsCents = bills.reduce((sum, bill) => sum + billBalances(bill, settlements, adjustments).obligationCents, 0);
+    const settledCents = bills.reduce((sum, bill) => sum + billBalances(bill, settlements, adjustments).settledCents, 0);
+    const outstandingCents = bills.reduce((sum, bill) => sum + billBalances(bill, settlements, adjustments).outstandingCents, 0);
+    const overAllocatedCents = bills.reduce((sum, bill) => sum + billBalances(bill, settlements, adjustments).overAllocatedCents, 0);
+    const monthSettlements = (settlements || []).filter(s => active(s) && String(s.ym) === String(ym));
+    const transferCents = monthSettlements.reduce((sum, settlement) => sum + summarizeSettlement(settlement, transactions).bankAmountCents, 0);
+    const monthCredits = creditPositionCents(monthSettlements, transactions, creditEvents);
+    return { obligationsCents, settledCents, outstandingCents, overAllocatedCents, transferCents,
+      grossCreditCents: monthCredits.grossCreditCents, appliedOrRefundedCreditCents: monthCredits.appliedOrRefundedCents,
+      availableCreditCents: monthCredits.availableCreditCents };
+  }
+
   function validateCreditEvent(event, context) {
     const errors = [];
     const available = creditPositionCents(context?.settlements, context?.transactions, context?.creditEvents).availableCreditCents;
@@ -203,7 +218,7 @@
 
   root.FinHubHouseholdSettlement = Object.freeze({
     toCents, validateSettlement, summarizeSettlement, allocatedToBillCents,
-    billBalances, creditPositionCents, validateCreditEvent,
+    billBalances, creditPositionCents, settlementMonthPosition, validateCreditEvent,
     createSettlement, reverseSettlement, createCreditEvent
   });
 })(typeof globalThis !== 'undefined' ? globalThis : this);
