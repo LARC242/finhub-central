@@ -127,7 +127,9 @@
     const overAllocatedCents = bills.reduce((sum, bill) => sum + billBalances(bill, settlements, adjustments).overAllocatedCents, 0);
     const monthSettlements = (settlements || []).filter(s => active(s) && String(s.ym) === String(ym));
     const transferCents = monthSettlements.reduce((sum, settlement) => sum + summarizeSettlement(settlement, transactions).bankAmountCents, 0);
-    const monthCredits = creditPositionCents(monthSettlements, transactions, creditEvents);
+    const monthSettlementIds = new Set(monthSettlements.map(s => String(s.id)));
+    const monthEvents = (creditEvents || []).filter(event => monthSettlementIds.has(String(event.settlementId)));
+    const monthCredits = creditPositionCents(monthSettlements, transactions, monthEvents);
     return { obligationsCents, settledCents, outstandingCents, overAllocatedCents, transferCents,
       grossCreditCents: monthCredits.grossCreditCents, appliedOrRefundedCreditCents: monthCredits.appliedOrRefundedCents,
       availableCreditCents: monthCredits.availableCreditCents };
