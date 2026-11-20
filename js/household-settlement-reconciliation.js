@@ -210,6 +210,13 @@
     record.reversedAt = now;
     record.reversalReason = String(reason || '').trim();
     record.status = 'reversed';
+    // Credit events cannot outlive the settlement that created their receivable.
+    (state.householdSettlementCreditEvents || []).forEach(event => {
+      if (String(event.settlementId) !== String(record.id) || !active(event)) return;
+      event.reversedAt = now;
+      event.reversalReason = 'Source settlement reversed' + (record.reversalReason ? ': ' + record.reversalReason : '');
+      event.status = 'reversed';
+    });
     return { reversed: true, record };
   }
 
