@@ -62,6 +62,7 @@
     if (!Array.isArray(input?.allocations) || !input.allocations.length) errors.push('Allocate the transfer to at least one household bill.');
     let allocationTotalCents = 0;
     const seen = new Set();
+    const expenseAllocationInInput = new Map();
     (input?.allocations || []).forEach((allocation, index) => {
       const bill = getBill(bills, allocation.jointBillId, input.ym);
       if (!bill) { errors.push(`Allocation ${index + 1} refers to a missing household bill.`); return; }
@@ -78,6 +79,16 @@
       if (!expense) errors.push(`Link "${bill.name}" to its existing expense transaction.`);
       else {
         if (String(expense.type || '').toLowerCase() !== 'expense') errors.push(`The linked transaction for "${bill.name}" is not an expense.`);
+        const expenseId = String(expense.id);
+        const priorExpenseAllocation = (settlements || []).filter(item => active(item) && String(item.id) !== String(input?.id))
+          .reduce((sum, item) => sum + (item.allocations || []).filter(a => String(a.expenseTransactionId) === expenseId)
+            .reduce((n, a) => n + Math.max(0, Number(a.amountCents) || 0), 0), 0);
+        const currentExpenseAllocation = expenseAllocationInInput.get(expenseId) || 0;
+        const expenseCents = Math.max(0, toCents(Math.abs(Number(expense.amount) || 0)));
+        if (amount > Math.max(0, expenseCents - priorExpenseAllocation - currentExpenseAllocation)) {
+          errors.push(`Allocations linked to the expense for "${bill.name}" exceed the remaining amount of that expense transaction.`);
+        }
+        expenseAllocationInInput.set(expenseId, currentExpenseAllocation + amount);
         if (expense.refundOfTransactionId || expense.isReversal || expense.reversalOfTransactionId || expense.reconciledDuplicate) errors.push(`The linked transaction for "${bill.name}" is a refund, reversal or duplicate.`);
         if (!linkedCalendarExpenseIsValid(bill, expense, context)) errors.push(`The linked transaction for "${bill.name}" is not a payment recorded against its linked Calendar bill.`);
       }
@@ -188,7 +199,7 @@
     const validation = validateSettlement(input, context);
     if (!validation.valid) return { saved: false, validation };
     const record = {
-      id: input.id || `hhs_${Date.now().toString(36)}`,
+      id: input.id || `hhs_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`,
       ym: String(input.ym),
       date: String(input.date || ''),
       bankTransactionId: String(input.bankTransactionId),
@@ -231,7 +242,7 @@
     const validation = validateCreditEvent(input, context);
     if (!validation.valid) return { saved: false, validation };
     const record = {
-      id: input.id || `hhc_${Date.now().toString(36)}`,
+      id: input.id || `hhc_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`,
       type: input.type,
       transactionId: String(input.transactionId),
       settlementId: String(input.settlementId),
