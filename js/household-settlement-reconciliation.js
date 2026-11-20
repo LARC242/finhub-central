@@ -137,9 +137,16 @@
     const errors = [];
     const available = creditPositionCents(context?.settlements, context?.transactions, context?.creditEvents).availableCreditCents;
     const amount = Number(event?.amountCents);
+    const sourceSettlement = (context?.settlements || []).find(item => String(item.id) === String(event?.settlementId) && active(item));
+    if (!sourceSettlement) errors.push('Select the active settlement that created this credit.');
     if (!['refund', 'application'].includes(String(event?.type || ''))) errors.push('Credit event type must be refund or application.');
     if (!Number.isSafeInteger(amount) || amount <= 0) errors.push('Enter a positive credit amount in whole cents.');
     else if (amount > available) errors.push('The credit event exceeds the available household settlement credit.');
+    if (sourceSettlement && Number.isSafeInteger(amount)) {
+      const sourceCredit = summarizeSettlement(sourceSettlement, context?.transactions || []).creditCents;
+      const alreadyUsed = (context?.creditEvents || []).filter(e => active(e) && String(e.settlementId) === String(sourceSettlement.id) && String(e.id) !== String(event?.id)).reduce((sum,e)=>sum+Math.max(0,Number(e.amountCents)||0),0);
+      if (alreadyUsed + amount > sourceCredit) errors.push('The credit event exceeds the unused credit from the selected settlement.');
+    }
     const tx = getTransaction(context?.transactions, event?.transactionId);
     if (!tx) errors.push('Link the credit event to its existing ledger transaction.');
     else if (event.type === 'refund' && String(tx.type).toLowerCase() !== 'income') errors.push('A partner refund must link to an existing income/deposit transaction.');
@@ -207,6 +214,7 @@
       id: input.id || `hhc_${Date.now().toString(36)}`,
       type: input.type,
       transactionId: String(input.transactionId),
+      settlementId: String(input.settlementId),
       amountCents: Number(input.amountCents),
       jointBillId: input.jointBillId ? String(input.jointBillId) : '',
       createdAt: now,
