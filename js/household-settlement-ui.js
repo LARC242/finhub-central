@@ -37,8 +37,15 @@
   function eligibleBankWithdrawals(ym) {
     return transactions().filter(tx => {
       const type = String(tx.type || '').toLowerCase();
-      const validType = type === 'expense' || (type === 'transfer' && tx.externalTransferDirection !== 'in' && !tx.transferToAccountId);
-      return validType && monthOf(tx.date) === String(ym) && Number(tx.amount) > 0 &&
+      const description = [tx.vendor, tx.desc, tx.description, tx.notes].filter(Boolean).join(' ').toLowerCase();
+      const isExternalTransfer = type === 'transfer' &&
+        tx.externalTransferDirection === 'out' && !tx.transferToAccountId;
+      // Expense-type e-Transfers are supported for legacy imports, but ordinary
+      // purchases must never appear in the withdrawal picker.
+      const isClearlyETransferExpense = type === 'expense' &&
+        /\\b(e[ -]?transfer|etransfer)\\b/i.test(description);
+      return (isExternalTransfer || isClearlyETransferExpense) &&
+        monthOf(tx.date) === String(ym) && Number(tx.amount) > 0 &&
         !tx.refundOfTransactionId && !tx.isReversal && !tx.reversalOfTransactionId && !tx.reconciledDuplicate &&
         tx.source !== 'joint-household-settlement';
     }).sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
@@ -48,6 +55,7 @@
     const allExpenses = transactions().filter(tx => String(tx.type || '').toLowerCase() === 'expense' &&
       Number(tx.amount) > 0 && !tx.refundOfTransactionId && !tx.isReversal && !tx.reversalOfTransactionId &&
       !tx.reconciledDuplicate && tx.source !== 'joint-household-settlement');
+    const monthExpenses = allExpenses.filter(tx => monthOf(tx.date) === String(ym));
     if (bill?.linkedCalendarBillId) {
       const rootId = String(bill.linkedCalendarBillId);
       const calendarBills = (state.calendarBills || []).filter(item => item && item.type === 'expense' &&
@@ -58,9 +66,69 @@
         if (item.linkedTransactionId) ids.add(String(item.linkedTransactionId));
         allExpenses.filter(tx => String(tx.calendarBillId || '') === String(item.id)).forEach(tx => ids.add(String(tx.id)));
       });
-      return allExpenses.filter(tx => ids.has(String(tx.id)));
+      // Show exact Calendar-linked payments first, then allow manual matching to
+      // any existing expense in the same month when the Calendar link is absent.
+      const linked = monthExpenses.filter(tx => ids.has(String(tx.id)));
+      const otherMonthExpenses = monthExpenses.filter(tx => !ids.has(String(tx.id)));
+      return [...linked, ...otherMonthExpenses];
     }
-    return allExpenses.filter(tx => monthOf(tx.date) === String(ym));
+    return monthExpenses;
+  }
+
+  if (!document.getElementById('hhs-picker-styles')) {
+    const style = document.createElement('style');
+    style.id = 'hhs-picker-styles';
+    style.textContent = '.hhs-picker-native{position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important;overflow:hidden!important;} .hhs-picker-trigger:focus-visible{outline:2px solid var(--theme-primary,#0891b2);outline-offset:2px;}';
+    document.head.appendChild(style);
+  }
+  function enhanceHouseholdPicker(select, placeholder) {
+    if (!select) return;
+    let wrapper = select.closest('.hhs-picker');
+    if (!wrapper) {
+      wrapper = document.createElement('div');
+      wrapper.className = 'hhs-picker relative min-w-0';
+      select.parentNode.insertBefore(wrapper, select);
+      wrapper.appendChild(select);
+      select.classList.add('hhs-picker-native');
+      const trigger = document.createElement('button');
+      trigger.type = 'button';
+      trigger.className = 'hhs-picker-trigger w-full flex items-center justify-between gap-3 text-left bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 text-sm';
+      trigger.innerHTML = '<span class="hhs-picker-label min-w-0 truncate"></span><span aria-hidden="true" class="shrink-0 text-gray-500">⌄</span>';
+      const list = document.createElement('div');
+      list.className = 'hhs-picker-list hidden absolute left-0 right-0 top-full mt-1 z-[90] max-h-52 overflow-y-auto rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-xl p-1';
+      wrapper.append(trigger, list);
+      trigger.addEventListener('click', () => {
+        const wasOpen = !list.classList.contains('hidden');
+        document.querySelectorAll('.hhs-picker-list').forEach(node => node.classList.add('hidden'));
+        if (!wasOpen) list.classList.remove('hidden');
+      });
+      document.addEventListener('click', event => {
+        if (!wrapper.contains(event.target)) list.classList.add('hidden');
+      });
+    }
+    const trigger = wrapper.querySelector('.hhs-picker-trigger');
+    const label = wrapper.querySelector('.hhs-picker-label');
+    const list = wrapper.querySelector('.hhs-picker-list');
+    const selected = [...select.options].find(option => option.value === select.value);
+    label.textContent = selected?.textContent || placeholder || 'Choose an option';
+    list.innerHTML = '';
+    [...select.options].forEach(option => {
+      if (!option.value) return;
+      const item = document.createElement('button');
+      item.type = 'button';
+      item.className = 'block w-full text-left rounded-lg px-3 py-2 text-xs text-gray-700 dark:text-gray-200 hover:bg-sky-50 dark:hover:bg-gray-800';
+      item.textContent = option.textContent;
+      item.title = option.textContent;
+      item.addEventListener('click', () => {
+        select.value = option.value;
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+        label.textContent = option.textContent;
+        list.classList.add('hidden');
+      });
+      list.appendChild(item);
+    });
+    trigger.disabled = select.options.length <= 1;
+    trigger.classList.toggle('opacity-60', trigger.disabled);
   }
 
   function updateSettlementAllocationTotals() {
@@ -107,6 +175,7 @@
         <input class="hhs-allocation-amount w-full min-w-0 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-2 text-xs text-right accounting-num" type="number" min="0" step="0.01" value="0.00" aria-label="Amount allocated to ${esc(bill.name)}"/>
       `;
       host.appendChild(row);
+      enhanceHouseholdPicker(row.querySelector('.hhs-expense-transaction'), 'Choose existing bill expense');
       row.querySelector('.hhs-allocation-amount').addEventListener('input', updateSettlementAllocationTotals);
       row.querySelector('.hhs-expense-transaction').addEventListener('change', updateSettlementAllocationTotals);
     });
@@ -125,6 +194,7 @@
     bankSelect.innerHTML = '<option value="">Choose an existing e-Transfer withdrawal</option>' +
       bankOptions.map(tx => '<option value="' + esc(tx.id) + '">' + esc(transactionLabel(tx)) + '</option>').join('');
     bankSelect.onchange = updateSettlementAllocationTotals;
+    enhanceHouseholdPicker(bankSelect, 'Choose an existing e-Transfer withdrawal');
     renderAllocationRows(ym);
     byId('household-settlement-errors')?.classList.add('hidden');
     byId('household-settlement-modal')?.classList.remove('hidden');
@@ -275,6 +345,7 @@
       const bank = transactions().find(tx => String(tx.id) === String(item.bankTransactionId));
       return '<option value="' + esc(item.id) + '">' + esc((item.date || 'Undated') + ' · ' + (bank?.vendor || bank?.desc || 'E-Transfer') + ' · Available ' + money(settlementAvailableCredit(item))) + '</option>';
     }).join('');
+    enhanceHouseholdPicker(source, 'Choose original settlement credit');
     const type = byId('hhc-event-type');
     type.value = 'refund';
     type.onchange = updateHouseholdCreditEventFields;
@@ -291,12 +362,14 @@
       Number(tx.amount) > 0 && !tx.refundOfTransactionId && !tx.isReversal && !tx.reversalOfTransactionId && !tx.reconciledDuplicate);
     txSelect.innerHTML = '<option value="">Choose existing ' + (type === 'refund' ? 'income / deposit' : 'household expense') + '</option>' +
       candidates.sort((a,b) => String(b.date || '').localeCompare(String(a.date || ''))).map(tx => '<option value="' + esc(tx.id) + '">' + esc(transactionLabel(tx)) + '</option>').join('');
+    enhanceHouseholdPicker(txSelect, type === 'refund' ? 'Choose existing income / deposit' : 'Choose existing household expense');
     const billWrap = byId('hhc-bill-wrap');
     if (billWrap) billWrap.classList.toggle('hidden', type !== 'application');
     if (type === 'application') {
       const ym = currentMonth();
       byId('hhc-bill').innerHTML = '<option value="">Choose household bill</option>' +
         billsForMonth(ym).map(bill => '<option value="' + esc(bill.id) + '">' + esc(bill.name) + '</option>').join('');
+      enhanceHouseholdPicker(byId('hhc-bill'), 'Choose household bill');
     }
   }
 
