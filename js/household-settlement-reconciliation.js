@@ -84,7 +84,7 @@
       const adjustmentCents = (context?.jointAdjustments || []).filter(a => active(a) && String(a.billId) === String(bill.id) && String(a.ym) === String(bill.ym))
         .reduce((sum, a) => sum + (a.type === 'additional' ? 1 : -1) * Math.abs(Number(a.amountCents) || 0), 0);
       const obligationCents = Math.max(0, shareCents + adjustmentCents);
-      const remaining = Math.max(0, obligationCents - allocatedToBillCents(settlements, bill.id, input.id));
+      const remaining = Math.max(0, obligationCents - allocatedToBillCents(settlements, bill.id, input.id) - appliedCreditToBillCents(context?.creditEvents, bill.id));
       if (amount > remaining) errors.push(`Allocation for "${bill.name}" exceeds its remaining share by ${((amount - remaining) / 100).toFixed(2)}.`);
     });
     if (Number.isSafeInteger(bankCents) && allocationTotalCents > bankCents) errors.push('Bill allocations cannot exceed the linked e-transfer withdrawal.');
