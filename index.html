@@ -1,15 +1,15 @@
-<!-- FinHub v244: Mobile Calendar Info Compact + Centered Calendar Header Actions -->
+<!-- FinHub v254: Paycheque Planner recurring Calendar income links -->
 <!DOCTYPE html>
 
 <html class="dark" lang="en-US">
 <head>
 <!-- FinHub v235: Calendar-Linked Debt Payment Conversion Fix -->
-<meta name="finhub-version" content="v228">
+<meta name="finhub-version" content="v254">
 <!-- v231: exception register render resilience; based on v230. -->
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>FinHub Central - Financial Command Center</title>
-<meta content="stage3b-buttons-actions-number-typography-reporting-engine-v1" name="finhub-build-stage"/><meta content="v224-debt-principal-reconstruction-integrity-fix" name="finhub-revision"/>
+<meta content="stage3b-buttons-actions-number-typography-reporting-engine-v1" name="finhub-build-stage"/><meta content="v251-payday-inclusive-spending-window-and-responsive-zbb-item-modal" name="finhub-revision"/>
 <meta content="2" name="finhub-schema-version"/>
 <link href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23132A44'/%3E%3Cpath d='M18 45V19h28v7H26v5h17v7H26v7z' fill='%2300FBEA'/%3E%3Ccircle cx='47' cy='16' r='7' fill='%23FF2687'/%3E%3Ccircle cx='15' cy='49' r='5' fill='%23D8FF76'/%3E%3C/svg%3E" rel="icon" type="image/svg+xml"/>
 <script src="https://cdn.tailwindcss.com"></script>
@@ -4540,6 +4540,27 @@ body[data-finhub-theme] .fh-ledger-view-toggle:focus-visible {
   }
 }
 </style>
+<style id="finhub-v255-calendar-category-dropdown-affordance">
+/* v255: restore an unmistakable native dropdown affordance for Calendar category controls.
+   The Calendar-wide select reset removed the browser arrow, making these look like read-only text fields. */
+#calendar-modal select#cal-category,
+#calendar-modal select#cal-subcategory {
+  appearance:auto !important;
+  -webkit-appearance:menulist !important;
+  cursor:pointer !important;
+  pointer-events:auto !important;
+  padding-right:2.35rem !important;
+}
+#calendar-modal select#cal-category:disabled,
+#calendar-modal select#cal-subcategory:disabled {
+  cursor:not-allowed !important;
+}
+#calendar-modal select#cal-category:focus-visible,
+#calendar-modal select#cal-subcategory:focus-visible {
+  outline:2px solid var(--theme-color,#269fca) !important;
+  outline-offset:2px !important;
+}
+</style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 min-h-screen flex flex-col md:flex-row transition-colors duration-200 relative" id="app-body">
 <!-- UNDO TOAST NOTIFICATION -->
@@ -5007,11 +5028,8 @@ body[data-finhub-theme] .fh-ledger-view-toggle:focus-visible {
 </div>
 </details>
 </div><div class="fh-planner-paired-sections fh-planner-pair-reporting">
-<details class="fh-planner-section" data-planner-section="budget-vs-actual" open="">
-<summary class="fh-planner-summary"><div><h3 class="text-md font-bold"><i class="fa-solid fa-scale-balanced mr-2 theme-text"></i>Budget vs. Actual</h3><p class="text-xs text-gray-400 mt-0.5">Compare planned variable spending with posted transactions for this paycheque.</p></div><span class="text-xs text-gray-400">Paycheque <span id="zbb-bva-cycle-label">1</span></span></summary>
-<div class="px-5 pb-5 space-y-4" id="zbb-budget-vs-actual"></div>
-</details><details class="fh-planner-section" data-planner-section="monthly-overview" open="">
-<summary class="fh-planner-summary">Monthly Budget <span class="text-xs font-normal text-gray-400 ml-2">Compare both regular paycheques and any third cheque.</span></summary>
+<details class="fh-planner-section" data-planner-section="monthly-overview" open="">
+<summary class="fh-planner-summary"><div><h3 class="text-md font-bold"><i class="fa-solid fa-chart-column mr-2 theme-text"></i>Monthly Budget &amp; Financial Review</h3><p class="text-xs text-gray-400 mt-0.5">Review the monthly budget rollup, funding integrity and ledger reconciliation. Day-to-day variable bucket actuals are shown above in the Paycheque Planner.</p></div></summary>
 <div class="px-5 pb-5 space-y-3">
 <div id="zbb-monthly-rollup"></div>
 <div class="grid grid-cols-1 xl:grid-cols-2 gap-3" id="zbb-integrity-review-group">
@@ -5827,8 +5845,16 @@ Bonus" rows="4"></textarea></div>
 <form class="space-y-3" id="zbb-item-form" onsubmit="saveZbbItem(event)">
 <input id="zbb-item-type" type="hidden" value=""/>
 <input id="zbb-item-edit-id" type="hidden" value=""/>
+<div class="hidden" id="zbb-calendar-link-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Link an existing recurring calendar bill</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="zbb-calendar-link" onchange="handleZbbCalendarBillLink(this.value)"><option value="">Manual budget item (not linked)</option></select><p class="text-[10px] text-gray-400 mt-1">Linked bill details are sourced from the Calendar. Paycheque splits remain editable here. Linking does not create a payment or transaction.</p></div>
+<div class="hidden" id="zbb-calendar-income-link-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Link an existing recurring calendar income</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="zbb-calendar-income-link" onchange="handleZbbCalendarIncomeLink(this.value)"><option value="">Manual income item (not linked)</option></select><p class="text-[10px] text-gray-400 mt-1">The monthly budget amount is calculated from the Calendar recurrence (weekly, biweekly, monthly or yearly). Paycheque splits remain editable. Linking does not create a received income transaction.</p></div>
+<div class="hidden" id="zbb-calendar-debt-link-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Link an existing scheduled Calendar debt payment</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="zbb-calendar-debt-link" onchange="handleZbbCalendarDebtLink(this.value)"><option value="">Manual debt budget item (not linked)</option></select><p class="text-[10px] text-gray-400 mt-1">Links the recurring scheduled payment and its debt account. This does not record a payment or change either account balance.</p></div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Description / Name</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="zbb-item-name" required="" type="text"/></div>
 <div class="hidden rounded-lg bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-900 p-3 text-xs text-gray-600 dark:text-gray-300" id="zbb-variable-edit-note">Edit the category name and the amount assigned to the currently selected paycheque. This redistributes the existing pool; it does not change the overall pool amount.</div>
+<div class="hidden space-y-2" id="zbb-variable-taxonomy-wrap">
+<div><label class="block text-xs font-semibold text-gray-500 mb-1" for="zbb-variable-category">Expense Category</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="zbb-variable-category" onchange="populateZbbVariableSubcategories()"><option value="">Choose a category</option></select></div>
+<div><label class="block text-xs font-semibold text-gray-500 mb-1" for="zbb-variable-subcategory">Expense Subcategory</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="zbb-variable-subcategory"><option value="">Choose a subcategory</option></select></div>
+<p class="text-[10px] text-gray-400">Transactions matching this category and subcategory count toward this budget line. Leave unlinked if this is a manual bucket.</p>
+</div>
 <div class="hidden" id="zbb-variable-current-allocation-wrap">
 <label class="block text-xs font-semibold text-gray-500 mb-1" id="zbb-variable-current-allocation-label">Paycheque allocation ($)</label>
 <input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="zbb-variable-current-allocation" min="0" step="0.01" type="number"/>
@@ -10325,6 +10351,25 @@ ${acc.name}`);
     }
     function zbbCentsMoney(cents) { return Number(cents || 0) / 100; }
     function getZbbItemCycleCents(item, cycle) {
+      // Linked weekly/biweekly Calendar income represents real deposits per
+      // 14-day paycheque period, not a percentage of its annualized monthly average.
+      // Keep the monthly average for reporting, but use the scheduled deposit
+      // amount for each actual Planner cycle (including a third-paycheque cycle).
+      if (item?.linkedCalendarDebtId) {
+        const source = getZbbCalendarDebtSource(item.linkedCalendarDebtId);
+        const frequency = source?.recurring || 'none';
+        const paymentCents = zbbMoneyCents(source?.amount);
+        if (source && frequency === 'biweekly') return paymentCents;
+        if (source && frequency === 'weekly') return paymentCents * 2;
+      }
+      if (item?.linkedCalendarIncomeId) {
+        const source = getZbbCalendarIncomeSource(item.linkedCalendarIncomeId);
+        const frequency = source?.recurring || 'none';
+        const depositCents = zbbMoneyCents(source?.amount);
+        if (source && frequency === 'biweekly') return depositCents;
+        if (source && frequency === 'weekly') return depositCents * 2;
+      }
+
       const split = Array.isArray(item?.split) ? item.split : [50, 50, 0];
       const raw = Number(split[cycle - 1]) || 0;
       if (item?.splitMode === 'dollar') return zbbMoneyCents(raw);
@@ -10509,7 +10554,7 @@ ${acc.name}`);
       (zbb.variable || []).forEach(item => {
         const key = norm(item.name);
         if (!key || budgetCategoryCounts.get(key) > 1) return;
-        const matching = monthlyExpenseComponents.filter(component => norm(component.subcategory) === key && norm(component.subcategory) !== 'uncategorized');
+        const matching = monthlyExpenseComponents.filter(component => item.expenseCategory && item.expenseSubcategory ? (norm(component.category) === norm(item.expenseCategory) && norm(component.subcategory) === norm(item.expenseSubcategory)) : (norm(component.subcategory) === key && norm(component.subcategory) !== 'uncategorized'));
         const actualCents = matching.reduce((sum,component) => sum + zbbMoneyCents(component.amount), 0);
         const budgetCents = zbbMoneyCents(item.monthly);
         if (actualCents > budgetCents + 1) add('warning', `Variable category “${item.name}” is over its monthly plan by ${formatFinancial((actualCents-budgetCents)/100)} (${formatFinancial(actualCents/100)} net actual vs ${formatFinancial(budgetCents/100)} planned).`);
@@ -10626,7 +10671,9 @@ ${acc.name}`);
           // Spending buckets are intentionally matched to expense SUBCATEGORIES,
           // never to their parent category. Income continues to match by category.
           let matches = components.filter(c => c.section === ledgerSection && (ledgerSection === 'expense'
-            ? normalize(c.subcategory) === key && normalize(c.subcategory) !== 'uncategorized'
+            ? ((item.expenseCategory && item.expenseSubcategory)
+                ? normalize(c.category) === normalize(item.expenseCategory) && normalize(c.subcategory) === normalize(item.expenseSubcategory)
+                : normalize(c.subcategory) === key && normalize(c.subcategory) !== 'uncategorized')
             : normalize(c.category) === key));
           if (ledgerSection === 'income' && !matches.length && (zbb.incomes || []).length === 1) {
             const scheduledIncomeIds = new Set((state.calendarBills || []).filter(b => b && b.type === 'income' && String(b.date || '').slice(0,7) === period).map(b => String(b.id)));
@@ -10946,26 +10993,39 @@ ${acc.name}`);
         const sub = norm(component.subcategory);
         return sub && sub !== 'uncategorized' ? sub : norm(component.category);
       };
+      // Explicit category + subcategory mapping is authoritative. Legacy lines
+      // without a mapping retain their prior unique-name/subcategory matching.
+      const mappingKey = item => item.expenseCategory && item.expenseSubcategory
+        ? `map:${norm(item.expenseCategory)}:${norm(item.expenseSubcategory)}`
+        : `legacy:${norm(item.name)}`;
       const budgetNames = new Map();
       (zbb.variable || []).forEach(item => {
-        const key = norm(item.name);
+        const key = mappingKey(item);
         if (key) budgetNames.set(key, (budgetNames.get(key) || 0) + 1);
       });
       const rows = (zbb.variable || []).map(item => {
-        const key = norm(item.name);
+        const key = mappingKey(item);
         const budget = Number(pool.allocations[item.id]) || 0;
-        const matches = key && budgetNames.get(key) === 1 ? components.filter(component => componentBudgetKey(component) === key) : [];
+        const matches = key && budgetNames.get(key) === 1 ? components.filter(component => {
+          if (item.expenseCategory && item.expenseSubcategory) {
+            return norm(component.category) === norm(item.expenseCategory)
+              && norm(component.subcategory) === norm(item.expenseSubcategory);
+          }
+          return componentBudgetKey(component) === norm(item.name);
+        }) : [];
         const actual = matches.reduce((sum, component) => sum + (Number(component.amount) || 0), 0);
         const remaining = budget - actual;
         const uniqueTransactions = [...new Map(matches.map(component => [String(component.transaction?.id), component.transaction])).values()];
         const parents = [...new Set(matches.map(component => String(component.category || 'Uncategorized')).filter(Boolean))];
-        return { name: item.name, parentCategories: parents, budget, actual, remaining, matches, transactions: uniqueTransactions, duplicate: !!key && budgetNames.get(key) > 1 };
+        return { name: item.name, parentCategories: parents, budget, actual, remaining, matches, transactions: uniqueTransactions, duplicate: !!key && budgetNames.get(key) > 1, mappingLabel: item.expenseCategory && item.expenseSubcategory ? `${item.expenseCategory} · ${item.expenseSubcategory}` : '' };
       });
-      const mappedKeys = new Set(rows.filter(row => !row.duplicate).map(row => norm(row.name)));
+      const mappedKeys = new Set(rows.filter(row => !row.duplicate).map(row => row.mappingLabel ? `map:${norm(row.mappingLabel.split(' · ')[0])}:${norm(row.mappingLabel.split(' · ')[1])}` : `legacy:${norm(row.name)}`));
       const unbudgetedGroups = new Map();
       components.forEach(component => {
+        const matchingMapKey = `map:${norm(component.category)}:${norm(component.subcategory)}`;
+        const legacyKey = `legacy:${componentBudgetKey(component)}`;
+        if (mappedKeys.has(matchingMapKey) || mappedKeys.has(legacyKey)) return;
         const key = componentBudgetKey(component) || 'uncategorized';
-        if (mappedKeys.has(key)) return;
         if (!unbudgetedGroups.has(key)) unbudgetedGroups.set(key, []);
         unbudgetedGroups.get(key).push(component);
       });
@@ -10984,7 +11044,7 @@ ${acc.name}`);
         const valueClass = row.duplicate ? 'text-amber-600 dark:text-amber-400' : row.unbudgeted || over ? 'text-rose-600 dark:text-rose-400' : 'fh-status-income';
         const varianceLabel = row.unbudgeted ? 'Unbudgeted' : row.duplicate ? 'Duplicate budget name' : row.remaining < -0.005 ? `${money(Math.abs(row.remaining))} over` : `${money(row.remaining)} left`;
         const detail = row.transactions.length ? `<details class="fh-bva-transaction-disclosure mt-2"><summary class="inline-flex items-center gap-2 cursor-pointer list-none text-[10px] font-semibold text-gray-500 hover:text-current"><i class="fa-solid fa-chevron-right text-[9px] transition-transform" aria-hidden="true"></i><span>Show transactions (${row.transactions.length})</span></summary><div class="fh-bva-transactions mt-2 overflow-x-auto"><table class="w-full text-[11px]"><thead><tr class="text-[9px] uppercase tracking-wide text-gray-400"><th class="text-left py-1.5 pr-2 font-semibold">Date</th><th class="text-left py-1.5 pr-2 font-semibold">Vendor</th><th class="text-right py-1.5 font-semibold">Amount</th></tr></thead><tbody>${row.transactions.map(tx => `<tr class="border-t border-gray-100 dark:border-gray-800"><td class="py-1.5 pr-2 whitespace-nowrap text-gray-400 accounting-num">${escapeHtml(formatDateMDY(tx.date))}</td><td class="py-1.5 pr-2 min-w-0"><button type="button" class="font-semibold fh-theme-link hover:underline text-left truncate max-w-full" onclick="openLedgerTransaction('${escapeHtml(tx.id || '')}')" title="Open ${escapeHtml(tx.vendor || tx.payee || 'transaction')} for editing">${escapeHtml(tx.vendor || tx.payee || 'Unnamed vendor')} <i class="fa-solid fa-arrow-up-right-from-square text-[9px] ml-1" aria-hidden="true"></i></button></td><td class="py-1.5 text-right accounting-num whitespace-nowrap">${formatFinancial(Number(tx.amount)||0)}</td></tr>`).join('')}</tbody></table></div></details>` : '';
-        return `<div class="fh-bva-row rounded-lg border border-gray-200 dark:border-gray-800 px-3 py-2"><div class="grid grid-cols-[minmax(0,1fr)_repeat(3,minmax(68px,auto))] gap-2 items-center text-xs"><div class="min-w-0"><div class="flex flex-wrap items-center gap-x-2 gap-y-0.5"><span class="font-semibold truncate">${escapeHtml(row.name)}</span>${row.parentCategories?.length ? `<span class="text-[10px] text-gray-400">${row.parentCategories.map(escapeHtml).join(' · ')}</span>` : ''}</div>${row.duplicate ? '<div class="text-[10px] text-amber-600">Rename or consolidate duplicate budget categories</div>' : row.unbudgeted ? '<div class="text-[10px] text-gray-400">No matching budget subcategory exists for this spending</div>' : ''}</div><div class="text-right"><div class="text-[9px] text-gray-400">BUDGET</div><strong class="accounting-num">${money(row.budget)}</strong></div><div class="text-right"><div class="text-[9px] text-gray-400">ACTUAL</div><strong class="accounting-num">${money(row.actual)}</strong></div><div class="text-right"><div class="text-[9px] text-gray-400">VARIANCE</div><strong class="accounting-num ${valueClass}">${varianceLabel}</strong></div></div>${detail}</div>`;
+        return `<div class="fh-bva-row rounded-lg border border-gray-200 dark:border-gray-800 px-3 py-2"><div class="grid grid-cols-[minmax(0,1fr)_repeat(3,minmax(68px,auto))] gap-2 items-center text-xs"><div class="min-w-0"><div class="flex flex-wrap items-center gap-x-2 gap-y-0.5"><span class="font-semibold truncate">${escapeHtml(row.name)}</span>${row.mappingLabel ? `<span class="text-[10px] text-gray-400">${escapeHtml(row.mappingLabel)}</span>` : row.parentCategories?.length ? `<span class="text-[10px] text-gray-400">${row.parentCategories.map(escapeHtml).join(' · ')}</span>` : ''}</div>${row.duplicate ? '<div class="text-[10px] text-amber-600">Rename or consolidate duplicate budget categories</div>' : row.unbudgeted ? '<div class="text-[10px] text-gray-400">No matching budget subcategory exists for this spending</div>' : ''}</div><div class="text-right"><div class="text-[9px] text-gray-400">BUDGET</div><strong class="accounting-num">${money(row.budget)}</strong></div><div class="text-right"><div class="text-[9px] text-gray-400">ACTUAL</div><strong class="accounting-num">${money(row.actual)}</strong></div><div class="text-right"><div class="text-[9px] text-gray-400">VARIANCE</div><strong class="accounting-num ${valueClass}">${varianceLabel}</strong></div></div>${detail}</div>`;
       };
       host.innerHTML = `<div class="flex flex-wrap items-center justify-between gap-2"><div><div class="text-sm font-semibold">Paycheque ${cycle} spending comparison</div><div class="text-[11px] text-gray-400">${escapeHtml(start)} to ${escapeHtml(end)}</div></div><span class="text-[10px] rounded-full px-2.5 py-1 border ${remainingTotal >= -0.005 ? 'fh-status-income-border fh-status-income-bg fh-status-income' : 'border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-900 dark:bg-rose-950/30 dark:text-rose-300'}">${remainingTotal >= -0.005 ? 'Within variable budget' : 'Over variable budget'}</span></div>
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 text-xs"><div class="rounded-xl bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 p-3"><div class="text-gray-400">Budgeted variable pool</div><strong class="block text-base mt-1 accounting-num">${money(budgetTotal)}</strong></div><div class="rounded-xl bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 p-3"><div class="text-gray-400">Actual net spending</div><strong class="block text-base mt-1 accounting-num">${money(actualTotal)}</strong></div><div class="rounded-xl bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 p-3"><div class="text-gray-400">Remaining / (over)</div><strong class="block text-base mt-1 accounting-num ${remainingTotal < -0.005 ? 'text-rose-600 dark:text-rose-400' : 'fh-status-income'}">${money(remainingTotal)}</strong></div><div class="rounded-xl bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 p-3"><div class="text-gray-400">Budget used</div><strong class="block text-base mt-1 accounting-num">${budgetTotal > 0 ? `${usedPct.toFixed(1)}%` : '—'}</strong></div></div>
@@ -11314,12 +11374,37 @@ ${acc.name}`);
         <p class="text-[10px] text-gray-500">Variable categories are edited individually within their paycheque pool. Debt and savings changes here are planning estimates only; they do not update debt balances, savings goals or account records.</p>`;
     }
 
+    function refreshLinkedZbbCalendarBills(zbb) {
+      (zbb?.bills || []).forEach(item => {
+        if (!item.linkedCalendarBillId) return;
+        const source = getZbbCalendarBillSource(item.linkedCalendarBillId);
+        if (!source) { item.linkStatus = 'source-missing'; return; }
+        item.name = source.vendor || source.desc || item.name;
+        item.monthly = Number(source.amount) || 0;
+        item.linkStatus = 'linked';
+      });
+    }
+
+    function refreshLinkedZbbCalendarIncomes(zbb) {
+      (zbb?.incomes || []).forEach(item => {
+        if (!item.linkedCalendarIncomeId) return;
+        const source = getZbbCalendarIncomeSource(item.linkedCalendarIncomeId);
+        if (!source) { item.linkStatus = 'source-missing'; return; }
+        item.name = source.vendor || source.desc || item.name;
+        item.monthly = getZbbCalendarIncomeMonthlyAmount(source);
+        item.linkStatus = 'linked';
+      });
+    }
+
     function renderZbbPlanner() {
       const period = state.selectedZbbPeriod || '2026-11';
       const picker = document.getElementById('zbb-period-picker');
       if (picker) picker.value = period;
 
       const zbb = getActiveZbbTemplate();
+      refreshLinkedZbbCalendarBills(zbb);
+      refreshLinkedZbbCalendarIncomes(zbb);
+      refreshLinkedZbbCalendarDebts(zbb);
       refreshPaydaySelector(period);
       const cycle = state.selectedPayCycle || 1;
       const variablePoolState = getVariablePoolAllocationState(zbb, cycle, period);
@@ -11396,29 +11481,91 @@ ${acc.name}`);
       const renderSection = (containerId, itemsList, sectionKey, colorClass) => {
         const container = document.getElementById(containerId);
         container.innerHTML = '';
+        if (sectionKey === 'debt') {
+          const money = n => formatFinancial(Number(n) || 0);
+          const rows = (itemsList || []).map(item => {
+            const split = item.split || [50,50,0];
+            const alloc = [0,1,2].map(i => item.linkedCalendarDebtId ? getZbbItemCycleCents(item, i+1)/100 : (item.splitMode === 'dollar' ? (Number(split[i])||0) : (Number(item.monthly)||0) * ((Number(split[i])||0)/100)));
+            const link = item.linkedCalendarDebtId ? (item.linkStatus === 'source-missing' ? '<span class="text-[10px] text-rose-500">Scheduled payment unavailable</span>' : item.linkStatus === 'account-unmatched' ? '<span class="text-[10px] text-amber-500">Debt account unmatched</span>' : `<button type="button" class="fh-open-details-icon ml-1 align-middle" onclick="event.stopPropagation();openDashboardCalendarItem(decodeURIComponent('${encodeURIComponent(String(item.linkedCalendarDebtId))}'))" title="Open linked scheduled debt payment in Calendar" aria-label="Open linked scheduled debt payment"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></button>`) : '<span>Manual item</span>';
+            return `<div class="grid grid-cols-[minmax(0,1.5fr)_repeat(3,minmax(62px,0.7fr))_auto] gap-2 items-center bg-gray-50 dark:bg-gray-950 p-3 rounded-xl border border-gray-200 dark:border-gray-800 text-xs"><div class="min-w-0"><div class="font-semibold truncate">${escapeHtml(item.name)}</div><div class="text-[10px] text-gray-400">Debt budget · ${money(item.monthly)} monthly · ${link}</div></div><div class="text-right"><div class="text-[9px] text-gray-400">P1</div><strong class="accounting-num">${money(alloc[0])}</strong></div><div class="text-right"><div class="text-[9px] text-gray-400">P2</div><strong class="accounting-num">${money(alloc[1])}</strong></div><div class="text-right"><div class="text-[9px] text-gray-400">P3</div><strong class="accounting-num">${money(alloc[2])}</strong></div><div class="flex gap-2"><button onclick="openZbbItemModal('debt','${item.id}')" class="text-indigo-400" title="Edit debt allocation"><i class="fa-solid fa-pen"></i></button><button onclick="deleteZbbItem('debt','${item.id}')" class="fh-zbb-delete-button text-rose-500" title="Delete debt line"><i class="fa-solid fa-trash"></i></button></div></div>`;
+          }).join('');
+          container.innerHTML = `<div class="grid grid-cols-[minmax(0,1.5fr)_repeat(3,minmax(62px,0.7fr))_auto] gap-2 px-3 text-[10px] uppercase tracking-wide text-gray-400"><div>Debt payment</div><div class="text-right">Paycheque 1</div><div class="text-right">Paycheque 2</div><div class="text-right">Third cheque</div><div></div></div>${rows || '<p class="text-xs text-gray-400 py-3">No debt payments added yet.</p>'}<p class="text-[10px] text-gray-400">Linked scheduled payments are budget references only. Recording the actual payment remains a separate Calendar/ledger action.</p>`;
+          return;
+        }
         if (sectionKey === 'bill') {
           const money = n => formatFinancial(Number(n) || 0);
           const rows = (itemsList || []).map(item => {
             const split = item.split || [50,50,0];
             const alloc = [0,1,2].map(i => item.splitMode === 'dollar' ? (Number(split[i])||0) : (Number(item.monthly)||0) * ((Number(split[i])||0)/100));
-            return `<div class="grid grid-cols-[minmax(0,1.5fr)_repeat(3,minmax(62px,0.7fr))_auto] gap-2 items-center bg-gray-50 dark:bg-gray-950 p-3 rounded-xl border border-gray-200 dark:border-gray-800 text-xs"><div class="min-w-0"><div class="font-semibold truncate">${escapeHtml(item.name)}</div><div class="text-[10px] text-gray-400">Monthly bill · ${money(item.monthly)}</div></div><div class="text-right"><div class="text-[9px] text-gray-400">P1</div><strong class="accounting-num">${money(alloc[0])}</strong></div><div class="text-right"><div class="text-[9px] text-gray-400">P2</div><strong class="accounting-num">${money(alloc[1])}</strong></div><div class="text-right"><div class="text-[9px] text-gray-400">P3</div><strong class="accounting-num">${money(alloc[2])}</strong></div><div class="flex gap-2"><button onclick="openZbbItemModal('bill','${item.id}')" class="text-indigo-400" title="Edit allocations"><i class="fa-solid fa-pen"></i></button><button onclick="deleteZbbItem('bill','${item.id}')" class="fh-zbb-delete-button text-rose-500" title="Delete bill" aria-label="Delete bill ${escapeHtml(item.name)}"><i class="fa-solid fa-trash"></i></button></div></div>`;
+            const calendarLink = item.linkedCalendarBillId
+              ? (item.linkStatus === 'source-missing'
+                ? '<span class="text-[10px] text-rose-500" title="The linked scheduled bill is no longer available">Linked bill unavailable</span>'
+                : `<button type="button" class="fh-open-details-icon ml-1 align-middle" onclick="event.stopPropagation();openDashboardCalendarItem(decodeURIComponent('${encodeURIComponent(String(item.linkedCalendarBillId))}'))" title="Open linked scheduled bill in Calendar" aria-label="Open linked scheduled bill for ${escapeHtml(item.name)}"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></button>`)
+              : '<span>Manual item</span>';
+            return `<div class="grid grid-cols-[minmax(0,1.5fr)_repeat(3,minmax(62px,0.7fr))_auto] gap-2 items-center bg-gray-50 dark:bg-gray-950 p-3 rounded-xl border border-gray-200 dark:border-gray-800 text-xs"><div class="min-w-0"><div class="font-semibold truncate">${escapeHtml(item.name)}</div><div class="text-[10px] text-gray-400">Monthly bill · ${money(item.monthly)} · ${calendarLink}</div></div><div class="text-right"><div class="text-[9px] text-gray-400">P1</div><strong class="accounting-num">${money(alloc[0])}</strong></div><div class="text-right"><div class="text-[9px] text-gray-400">P2</div><strong class="accounting-num">${money(alloc[1])}</strong></div><div class="text-right"><div class="text-[9px] text-gray-400">P3</div><strong class="accounting-num">${money(alloc[2])}</strong></div><div class="flex gap-2"><button onclick="openZbbItemModal('bill','${item.id}')" class="text-indigo-400" title="Edit allocations"><i class="fa-solid fa-pen"></i></button><button onclick="deleteZbbItem('bill','${item.id}')" class="fh-zbb-delete-button text-rose-500" title="Delete bill" aria-label="Delete bill ${escapeHtml(item.name)}"><i class="fa-solid fa-trash"></i></button></div></div>`;
           }).join('');
           container.innerHTML = `<div class="grid grid-cols-[minmax(0,1.5fr)_repeat(3,minmax(62px,0.7fr))_auto] gap-2 px-3 text-[10px] uppercase tracking-wide text-gray-400"><div>Monthly bill</div><div class="text-right">Paycheque 1</div><div class="text-right">Paycheque 2</div><div class="text-right">Third cheque</div><div></div></div>${rows || '<p class="text-xs text-gray-400 py-3">No monthly bills added yet.</p>'}<p class="text-[10px] text-gray-400">Edit any bill to adjust its custom dollar or percentage allocation. Allocations are budget funding, not recorded bill payments.</p>`;
           return;
         }
         if (sectionKey === 'variable') {
           const variableOverage = Math.max(0, variablePoolState.allocated - variablePoolState.poolBudget);
-          container.innerHTML = `<div class="mb-3 rounded-xl border border-indigo-200 dark:border-indigo-900 bg-indigo-50/60 dark:bg-indigo-950/20 p-3"><div class="flex flex-wrap items-center justify-end gap-2 mb-3"><button type="button" onclick="resetVariablePoolAllocations(${cycle})" class="inline-flex items-center gap-1.5 rounded-lg border border-indigo-300 dark:border-indigo-700 px-3 py-1.5 text-[11px] font-semibold text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/40"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i> Reset to Original Plan</button><button type="button" onclick="saveVariablePoolPlan(${cycle})" class="inline-flex items-center gap-1.5 rounded-lg border border-emerald-300 dark:border-emerald-700 px-3 py-1.5 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/30"><i class="fa-solid fa-check" aria-hidden="true"></i> Save as New Plan</button></div><div class="flex flex-wrap items-end justify-between gap-3"><div><div class="flex items-center gap-2 mb-1"><label class="block text-[10px] font-semibold uppercase tracking-wide text-gray-500" for="variable-pool-budget-${cycle}">Total variable pool for Paycheque ${cycle}</label><button type="button" data-fh-info="variable-pool" aria-label="About the variable pool" aria-expanded="false" class="fh-info-trigger"><i class="fa-solid fa-circle-info" aria-hidden="true"></i></button></div><div class="flex flex-wrap items-center gap-2"><input id="variable-pool-budget-${cycle}" type="number" min="0" step="0.01" value="${variablePoolState.poolBudget.toFixed(2)}" onchange="updateVariablePoolBudget(${cycle},this.value)" class="w-40 max-w-full text-right bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm font-bold accounting-num">${variableOverage > 0.005 ? `<span role="status" aria-live="polite" class="inline-flex items-center gap-1 rounded-full border border-rose-300 bg-rose-100 dark:bg-rose-950/40 dark:border-rose-800 px-2 py-1 text-[10px] font-bold text-rose-700 dark:text-rose-300"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> Over by ${formatFinancial(variableOverage)}</span>` : `<span class="inline-flex items-center gap-1 text-[10px] font-semibold fh-status-income"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Within pool</span>`}</div></div><div class="text-right text-xs"><div class="text-gray-500">Allocated to buckets</div><strong class="accounting-num">${formatFinancial(variablePoolState.allocated)}</strong><div class="text-gray-500 mt-1">Unallocated: <strong class="${variablePoolState.unallocated < -0.0001 ? 'text-rose-600' : 'fh-status-income'}">${formatFinancial(variablePoolState.unallocated)}</strong></div></div></div></div><div class="grid grid-cols-[minmax(0,1fr)_125px_70px_auto] gap-2 px-3 text-[10px] uppercase tracking-wide text-gray-400"><div>Variable bucket</div><div class="text-right">Paycheque ${cycle} allocation</div><div class="text-right">Pool share</div><div></div></div>`;
+          const poolPeriodRec = getZbbPoolRecord(period, cycle);
+          const poolHasSpendDates = !!(poolPeriodRec.startDate && poolPeriodRec.endDate && poolPeriodRec.endDate >= poolPeriodRec.startDate);
+          const poolExpenseComponents = poolHasSpendDates ? getFinancialReportingComponents((state.transactions || []).filter(tx => tx && tx.type === 'Expense' && tx.date >= poolPeriodRec.startDate && tx.date <= poolPeriodRec.endDate && !tx.reconciledDuplicate)).filter(component => {
+            if (component.section !== 'expense') return false;
+            const tx = component.transaction || {};
+            const category = String(component.category || tx.category || '').trim().toLowerCase();
+            const vendor = String(tx.vendor || tx.payee || '').trim().toLowerCase();
+            const description = String(tx.desc || tx.description || tx.bankDescription || '').trim().toLowerCase();
+            if (tx.type === 'Transfer' || category === 'transfer' || tx.transferToAccountId || (category === 'uncategorized' && (/^transfer/.test(vendor) || /^transfer/.test(description) || /^cardload/.test(vendor) || /^loadfrom/.test(vendor)))) return false;
+            return (itemsList || []).some(bucket => {
+              const mappedCategory = String(bucket.expenseCategory || '').trim().toLowerCase();
+              const mappedSubcategory = String(bucket.expenseSubcategory || '').trim().toLowerCase();
+              if (mappedCategory && mappedSubcategory) return String(component.category || '').trim().toLowerCase() === mappedCategory && String(component.subcategory || '').trim().toLowerCase() === mappedSubcategory;
+              const sub = String(component.subcategory || '').trim().toLowerCase();
+              return (sub && sub !== 'uncategorized' ? sub : String(component.category || '').trim().toLowerCase()) === String(bucket.name || '').trim().toLowerCase();
+            });
+          }) : [];
+          const poolActualComponents = [...new Map(poolExpenseComponents.map((component, index) => [`${component.transaction?.id || 'row-'+index}|${component.category || ''}|${component.subcategory || ''}|${component.amount}`, component])).values()];
+          const poolActualCents = poolActualComponents.reduce((sum, component) => sum + zbbMoneyCents(component.amount), 0);
+          const poolActual = zbbCentsMoney(poolActualCents);
+          const poolRemaining = zbbCentsMoney(zbbMoneyCents(variablePoolState.poolBudget) - poolActualCents);
+          const poolSpendOver = poolHasSpendDates && poolRemaining < -0.005;
+          const poolSpendStatus = !poolHasSpendDates ? '<span class="text-[10px] text-gray-500">Set paycheque spending dates to calculate pool spending</span>' : poolSpendOver ? `<span role="status" aria-live="polite" class="inline-flex items-center gap-1 rounded-full border border-rose-300 bg-rose-100 dark:bg-rose-950/40 dark:border-rose-800 px-2 py-1 text-[10px] font-bold text-rose-700 dark:text-rose-300"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> Pool over by ${formatFinancial(Math.abs(poolRemaining))}</span>` : `<span role="status" aria-live="polite" class="inline-flex items-center gap-1 rounded-full border border-emerald-300 bg-emerald-100 dark:bg-emerald-950/40 dark:border-emerald-800 px-2 py-1 text-[10px] font-bold text-emerald-700 dark:text-emerald-300"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Pool within budget · ${formatFinancial(Math.max(0, poolRemaining))} left</span>`;
+          container.innerHTML = `<div class="mb-3 rounded-xl border border-indigo-200 dark:border-indigo-900 bg-indigo-50/60 dark:bg-indigo-950/20 p-3"><div class="flex flex-wrap items-center justify-end gap-2 mb-2"><button type="button" onclick="resetVariablePoolAllocations(${cycle})" class="inline-flex items-center gap-1.5 rounded-lg border border-indigo-300 dark:border-indigo-700 px-3 py-1.5 text-[11px] font-semibold text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/40"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i> Reset to Original Plan</button><button type="button" onclick="saveVariablePoolPlan(${cycle})" class="inline-flex items-center gap-1.5 rounded-lg border border-emerald-300 dark:border-emerald-700 px-3 py-1.5 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/30"><i class="fa-solid fa-check" aria-hidden="true"></i> Save as New Plan</button></div><div class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end"><div><div class="flex items-center gap-1 mb-1"><label class="block text-[10px] font-semibold uppercase tracking-wide text-gray-500" for="variable-pool-budget-${cycle}">Pool budget · Paycheque ${cycle}</label><button type="button" data-fh-info="variable-pool" aria-label="About the variable pool" aria-expanded="false" class="fh-info-trigger"><i class="fa-solid fa-circle-info" aria-hidden="true"></i></button></div><input id="variable-pool-budget-${cycle}" type="number" min="0" step="0.01" value="${variablePoolState.poolBudget.toFixed(2)}" onchange="updateVariablePoolBudget(${cycle},this.value)" class="w-full max-w-full text-right bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm font-bold accounting-num"></div><div><div class="text-[10px] font-semibold uppercase tracking-wide text-gray-500 mb-1">Actual spent</div><div class="text-base font-bold accounting-num">${poolHasSpendDates ? formatFinancial(poolActual) : '—'}</div></div><div><div class="text-[10px] font-semibold uppercase tracking-wide text-gray-500 mb-1">Pool remaining</div><div class="text-base font-bold accounting-num ${!poolHasSpendDates ? 'text-gray-500' : poolSpendOver ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}">${poolHasSpendDates ? (poolRemaining < -0.005 ? `${formatFinancial(Math.abs(poolRemaining))} over` : `${formatFinancial(Math.max(0,poolRemaining))} left`) : '—'}</div></div></div><div class="mt-3 h-2 rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden" role="progressbar" aria-label="Variable pool spending" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${poolHasSpendDates && variablePoolState.poolBudget > 0 ? Math.min(100,Math.max(0,poolActual / variablePoolState.poolBudget * 100)).toFixed(1) : 0}"><div class="h-full rounded-full ${poolSpendOver ? 'bg-rose-500' : 'bg-emerald-500'}" style="width:${poolHasSpendDates && variablePoolState.poolBudget > 0 ? Math.min(100,Math.max(0,poolActual / variablePoolState.poolBudget * 100)) : 0}%"></div></div><div class="mt-1 flex flex-wrap items-center justify-between gap-2 text-[10px]"><span class="text-gray-500">${(itemsList || []).length} buckets · ${formatFinancial(variablePoolState.allocated)} allocated${Math.abs(variablePoolState.unallocated) > 0.005 ? ` · ${formatFinancial(variablePoolState.unallocated)} unallocated` : ' · Fully allocated'}</span>${variableOverage > 0.005 ? `<span role="status" aria-live="polite" class="font-semibold text-rose-600 dark:text-rose-400">Planned allocations exceed pool by ${formatFinancial(variableOverage)}</span>` : poolHasSpendDates ? `<span role="status" aria-live="polite" class="font-semibold ${poolSpendOver ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}">${poolSpendOver ? 'Overall pool exceeded' : 'Overall pool within budget'}</span>` : `<span class="text-gray-500">Set paycheque dates to calculate actuals</span>`}</div></div><div class="grid grid-cols-[minmax(0,1fr)_125px_70px_auto] gap-2 px-3 text-[10px] uppercase tracking-wide text-gray-400"><div>Variable bucket</div><div class="text-right">Paycheque ${cycle} allocation</div><div class="text-right">Pool share</div><div></div></div>`;
         }
         (itemsList || []).forEach(item => {
           const amt = calcAmt(item, sectionKey);
           const pctOfIncome = incomeSum > 0 ? ((amt / incomeSum) * 100).toFixed(1) : '0.0';
           const splitArr = item.split || [50, 50, 0];
-          const splitDesc = item.splitMode === 'dollar' ? `$${splitArr[cycle-1]}` : `${splitArr[cycle-1]}%`;
+          const linkedIncomeSource = sectionKey === 'income' && item.linkedCalendarIncomeId ? getZbbCalendarIncomeSource(item.linkedCalendarIncomeId) : null;
+          const usesActualDeposit = linkedIncomeSource && ['weekly', 'biweekly'].includes(linkedIncomeSource.recurring);
+          const splitDesc = usesActualDeposit ? 'actual scheduled deposit' : item.splitMode === 'dollar' ? `$${splitArr[cycle-1]}` : `${splitArr[cycle-1]}%`;
           if (sectionKey === 'variable') {
             const share = variablePoolState.poolBudget > 0 ? (amt / variablePoolState.poolBudget * 100) : 0;
             const itemIdArg = encodeURIComponent(String(item.id)).replace(/'/g, '%27');
-            container.insertAdjacentHTML('beforeend', `<div class="grid grid-cols-[minmax(0,1fr)_125px_70px_auto] gap-2 items-center bg-gray-50 dark:bg-gray-950 p-3 rounded-xl border border-gray-200 dark:border-gray-800 text-xs"><div class="min-w-0"><div class="font-semibold truncate">${escapeHtml(item.name)}</div><div class="text-[10px] text-gray-400">Assigned from the shared pool</div></div><input type="number" min="0" step="0.01" value="${amt.toFixed(2)}" data-zbb-allocation-input="1" data-zbb-id="${escapeHtml(String(item.id))}" aria-label="${escapeHtml(item.name)} paycheque allocation" class="w-full text-right bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1.5 text-xs accounting-num"><div class="text-right text-gray-500 accounting-num" data-zbb-share="${escapeHtml(String(item.id))}">${share.toFixed(1)}%</div><div class="flex gap-2 justify-end"><button type="button" data-zbb-action="edit-variable" data-zbb-id="${escapeHtml(String(item.id))}" class="text-indigo-400" title="Edit variable bucket"><i class="fa-solid fa-pen"></i></button><button type="button" data-zbb-action="delete-variable" data-zbb-id="${escapeHtml(String(item.id))}" class="fh-zbb-delete-button text-rose-500" title="Delete variable bucket" aria-label="Delete variable bucket ${escapeHtml(item.name)}"><i class="fa-solid fa-trash"></i></button></div></div>`);
+            const periodRec = getZbbPoolRecord(period, cycle);
+            const hasSpendDates = !!(periodRec.startDate && periodRec.endDate && periodRec.endDate >= periodRec.startDate);
+            const bucketComponents = hasSpendDates ? getFinancialReportingComponents((state.transactions || []).filter(tx => tx && tx.type === 'Expense' && tx.date >= periodRec.startDate && tx.date <= periodRec.endDate && !tx.reconciledDuplicate)).filter(component => {
+              if (component.section !== 'expense') return false;
+              const tx = component.transaction || {};
+              const category = String(component.category || tx.category || '').trim().toLowerCase();
+              const vendor = String(tx.vendor || tx.payee || '').trim().toLowerCase();
+              const description = String(tx.desc || tx.description || tx.bankDescription || '').trim().toLowerCase();
+              if (tx.type === 'Transfer' || category === 'transfer' || tx.transferToAccountId || (category === 'uncategorized' && (/^transfer/.test(vendor) || /^transfer/.test(description) || /^cardload/.test(vendor) || /^loadfrom/.test(vendor)))) return false;
+              if (item.expenseCategory && item.expenseSubcategory) return String(component.category || '').trim().toLowerCase() === String(item.expenseCategory).trim().toLowerCase() && String(component.subcategory || '').trim().toLowerCase() === String(item.expenseSubcategory).trim().toLowerCase();
+              const sub = String(component.subcategory || '').trim().toLowerCase();
+              return (sub && sub !== 'uncategorized' ? sub : String(component.category || '').trim().toLowerCase()) === String(item.name || '').trim().toLowerCase();
+            }) : [];
+            const actualCents = bucketComponents.reduce((sum, component) => sum + zbbMoneyCents(component.amount), 0);
+            const actual = zbbCentsMoney(actualCents);
+            const remaining = zbbCentsMoney(zbbMoneyCents(amt) - actualCents);
+            const duplicateMapping = (itemsList || []).filter(other => item.expenseCategory && item.expenseSubcategory && String(other.expenseCategory).trim().toLowerCase() === String(item.expenseCategory).trim().toLowerCase() && String(other.expenseSubcategory).trim().toLowerCase() === String(item.expenseSubcategory).trim().toLowerCase()).length > 1;
+            const actualLabel = hasSpendDates ? formatFinancial(actual) : 'Set dates';
+            const remainingLabel = hasSpendDates ? (duplicateMapping ? 'Check duplicate link' : `${formatFinancial(Math.abs(remaining))} ${remaining < -0.005 ? 'over' : 'left'}`) : '—';
+            const detailRows = [...new Map(bucketComponents.map(component => [String(component.transaction?.id), component.transaction])).values()];
+            const detailMarkup = detailRows.length ? `<details class="mt-2"><summary class="cursor-pointer text-[10px] text-gray-500 font-semibold">Show transactions (${detailRows.length})</summary><div class="mt-1 space-y-1">${detailRows.map(tx => `<div class="flex justify-between gap-2 text-[10px] text-gray-500"><span class="truncate">${escapeHtml(formatDateMDY(tx.date))} · ${escapeHtml(tx.vendor || tx.payee || 'Unnamed transaction')}</span><strong class="accounting-num">${formatFinancial(Number(tx.amount) || 0)}</strong></div>`).join('')}</div></details>` : '';
+            container.insertAdjacentHTML('beforeend', `<div class="bg-gray-50 dark:bg-gray-950 p-3 rounded-xl border border-gray-200 dark:border-gray-800 text-xs"><div class="grid grid-cols-[minmax(0,1fr)_125px_70px_auto] gap-2 items-center"><div class="min-w-0"><div class="font-semibold truncate">${escapeHtml(item.name)}</div><div class="text-[10px] text-gray-400">${item.expenseCategory && item.expenseSubcategory ? `${escapeHtml(item.expenseCategory)} · ${escapeHtml(item.expenseSubcategory)}` : 'Not linked to a category/subcategory'} · Assigned from shared pool</div></div><input type="number" min="0" step="0.01" value="${amt.toFixed(2)}" data-zbb-allocation-input="1" data-zbb-id="${escapeHtml(String(item.id))}" aria-label="${escapeHtml(item.name)} paycheque allocation" class="w-full text-right bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1.5 text-xs accounting-num"><div class="text-right text-gray-500 accounting-num" data-zbb-share="${escapeHtml(String(item.id))}">${share.toFixed(1)}%</div><div class="flex gap-2 justify-end"><button type="button" data-zbb-action="edit-variable" data-zbb-id="${escapeHtml(String(item.id))}" class="text-indigo-400" title="Edit variable bucket"><i class="fa-solid fa-pen"></i></button><button type="button" data-zbb-action="delete-variable" data-zbb-id="${escapeHtml(String(item.id))}" class="fh-zbb-delete-button text-rose-500" title="Delete variable bucket" aria-label="Delete variable bucket ${escapeHtml(item.name)}"><i class="fa-solid fa-trash"></i></button></div></div><div class="grid grid-cols-3 gap-2 mt-3 pt-2 border-t border-gray-200 dark:border-gray-800"><div><div class="text-[9px] text-gray-400 uppercase">Budgeted</div><strong class="accounting-num">${formatFinancial(amt)}</strong></div><div><div class="text-[9px] text-gray-400 uppercase">Spent</div><strong class="accounting-num">${actualLabel}</strong></div><div><div class="text-[9px] text-gray-400 uppercase">Remaining</div><strong class="accounting-num" style="color:${duplicateMapping ? '#d97706' : remaining < -0.005 ? '#dc2626' : remaining > 0.005 ? '#16a34a' : 'var(--fh-muted,#9ca3af)'} !important;">${duplicateMapping ? 'Duplicate mapping' : remainingLabel}</strong></div></div>${detailMarkup}${!hasSpendDates ? '<div class="mt-1 text-[10px] text-gray-400">Set this paycheque’s spending dates to calculate actual spending.</div>' : duplicateMapping ? '<div class="mt-1 text-[10px] text-amber-600">Another bucket uses this same category and subcategory. Actuals are shown for review and may be duplicated.</div>' : ''}</div>`);
             return;
           }
           const itemIdArg = encodeURIComponent(String(item.id)).replace(/'/g, '%27');
@@ -11426,6 +11573,7 @@ ${acc.name}`);
             <div class="flex justify-between items-center bg-gray-50 dark:bg-gray-950 p-3 rounded-xl border border-gray-200 dark:border-gray-800 text-xs">
               <div>
                 <span class="font-semibold">${escapeHtml(item.name)}</span>
+                ${sectionKey === 'income' && item.linkedCalendarIncomeId ? (item.linkStatus === 'source-missing' ? '<span class="text-[10px] text-rose-500 ml-1" title="The linked scheduled income is no longer available">Linked income unavailable</span>' : `<button type="button" class="fh-open-details-icon ml-1 align-middle" onclick="event.stopPropagation();openDashboardCalendarItem(decodeURIComponent('${encodeURIComponent(String(item.linkedCalendarIncomeId))}'))" title="Open linked scheduled income in Calendar" aria-label="Open linked scheduled income for ${escapeHtml(item.name)}"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></button>`) : ''}
                 <span class="text-gray-400 ml-2">(Monthly: ${formatFinancial(item.monthly || 0)} | P${cycle} Split: ${splitDesc})</span>
               </div>
               <div class="flex items-center space-x-3">
@@ -11549,15 +11697,46 @@ ${acc.name}`);
       renderZbbFundingTracker();
     }
 
+    function formatFinHubLocalISODate(date) {
+      if (!(date instanceof Date) || Number.isNaN(date.getTime())) return '';
+      return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+    }
+
+    // A paycheque funds the spending window beginning on payday itself and
+    // ending the day before the next scheduled biweekly payday. The window may
+    // cross a calendar-month boundary (for example, Nov 27–Dec 10).
+    function getDefaultZbbPaychequeSpendingWindow(period, cycle) {
+      const paydays = getScheduledPaydaysForMonth(period);
+      const payday = paydays[Number(cycle)-1];
+      if (!payday) return null;
+      const start = new Date(payday.getFullYear(), payday.getMonth(), payday.getDate());
+      const nextPayday = new Date(payday.getFullYear(), payday.getMonth(), payday.getDate()+14);
+      const end = new Date(nextPayday.getFullYear(), nextPayday.getMonth(), nextPayday.getDate()-1);
+      return { startDate: formatFinHubLocalISODate(start), endDate: formatFinHubLocalISODate(end) };
+    }
+
     function getZbbPoolRecord(period, cycle) {
       state.zbbPoolTracking = state.zbbPoolTracking || {};
       state.zbbPoolTracking[period] = state.zbbPoolTracking[period] || {};
       state.zbbPoolTracking[period][cycle] = state.zbbPoolTracking[period][cycle] || {};
       const rec = state.zbbPoolTracking[period][cycle];
-      if (!rec.startDate || !rec.endDate) {
-        const [y,m] = period.split('-').map(Number);
-        if (cycle === 1) { rec.startDate = `${period}-01`; rec.endDate = `${period}-14`; }
-        else if (cycle === 2) { rec.startDate = `${period}-15`; rec.endDate = new Date(y,m,0).toISOString().slice(0,10); }
+      const [y,m] = String(period || '').split('-').map(Number);
+      const monthEnd = y && m ? new Date(y,m,0).getDate() : 0;
+      const legacyStart = cycle === 1 ? `${period}-01` : cycle === 2 ? `${period}-15` : '';
+      const legacyEnd = cycle === 1 ? `${period}-14` : cycle === 2 && monthEnd ? `${period}-${String(monthEnd).padStart(2,'0')}` : '';
+      const isLegacyCalendarDefault = !!legacyStart && rec.startDate === legacyStart && rec.endDate === legacyEnd;
+      const hasIncompleteWindow = !rec.startDate || !rec.endDate;
+      const window = getDefaultZbbPaychequeSpendingWindow(period, cycle);
+      // Migrate only the exact automatic v250 payday window (payday + 1 through
+      // next payday - 1). If the user changed either date, retain that custom range.
+      const payday = getScheduledPaydaysForMonth(period)[Number(cycle)-1];
+      const previousAutoStart = payday ? formatFinHubLocalISODate(new Date(payday.getFullYear(), payday.getMonth(), payday.getDate()+1)) : '';
+      const isPreviousAutomaticPaydayWindow = !!window && rec.spendingWindowBasis === 'biweekly-payday'
+        && rec.startDate === previousAutoStart && rec.endDate === window.endDate;
+      if ((isLegacyCalendarDefault || hasIncompleteWindow || isPreviousAutomaticPaydayWindow) && window) {
+        rec.startDate = window.startDate;
+        rec.endDate = window.endDate;
+        rec.spendingWindowBasis = 'biweekly-payday';
       }
       return rec;
     }
@@ -11577,6 +11756,7 @@ ${acc.name}`);
       if (String(rec[field] || '') === String(value || '')) return;
       captureUndo(`Change paycheque ${cycle} variable pool ${field === 'startDate' ? 'start' : 'end'} date`);
       rec[field] = value;
+      rec.spendingWindowBasis = 'custom';
       saveData(); renderZbbFundingTracker();
     }
 
@@ -11660,14 +11840,179 @@ ${acc.name}`);
       updateVariablePoolAllocation(cycle, decodeZbbItemId(encodedId), rawValue);
     }
 
+    function getZbbCalendarBillLinkId(bill) {
+      return String(bill?.recurrenceRootId || bill?.id || '');
+    }
+    function getZbbCalendarBillSource(linkId) {
+      if (!linkId) return null;
+      const candidates = (state.calendarBills || []).filter(b => b && b.type === 'expense' && !b.recurrenceGenerated);
+      return candidates.find(b => String(b.id) === String(linkId) || String(b.recurrenceRootId || '') === String(linkId)) || null;
+    }
+    function getZbbCalendarIncomeSource(linkId) {
+      if (!linkId) return null;
+      return (state.calendarBills || []).find(b => b && b.type === 'income' && !b.recurrenceGenerated &&
+        (String(b.id) === String(linkId) || String(b.recurrenceRootId || '') === String(linkId)) &&
+        b.recurring && b.recurring !== 'none') || null;
+    }
+    function getZbbCalendarIncomeMonthlyAmount(source) {
+      const amount = Math.max(0, Number(source?.amount) || 0);
+      const frequency = source?.recurring || 'none';
+      if (frequency === 'weekly') return Math.round(amount * 52 / 12 * 100) / 100;
+      if (frequency === 'biweekly') return Math.round(amount * 26 / 12 * 100) / 100;
+      if (frequency === 'yearly') return Math.round(amount / 12 * 100) / 100;
+      return Math.round(amount * 100) / 100;
+    }
+    function populateZbbCalendarIncomeLink(selectedId = '') {
+      const select = document.getElementById('zbb-calendar-income-link');
+      if (!select) return;
+      const zbb = getActiveZbbTemplate();
+      const currentEditId = document.getElementById('zbb-item-edit-id')?.value || '';
+      const linkedElsewhere = new Set((zbb.incomes || []).filter(x => String(x.id) !== String(currentEditId) && x.linkedCalendarIncomeId).map(x => String(x.linkedCalendarIncomeId)));
+      const incomes = (state.calendarBills || []).filter(b => b && b.type === 'income' && !b.recurrenceGenerated && b.recurring && b.recurring !== 'none');
+      const seenExactSchedules = new Set();
+      const accountName = id => (state.accounts || []).find(a => String(a.id) === String(id || ''))?.name || '';
+      const options = incomes.map(b => {
+        const id = getZbbCalendarBillLinkId(b);
+        if (!id || (linkedElsewhere.has(id) && id !== String(selectedId))) return '';
+        // Collapse only records that match on all schedule-identifying fields. Similar
+        // names/amounts with different dates, accounts, categories, or frequencies remain distinct.
+        const exactKey = JSON.stringify([
+          String(b.vendor || '').trim().toLowerCase(), String(b.desc || '').trim().toLowerCase(),
+          Number(b.amount || 0).toFixed(2), String(b.recurring || ''), String(b.date || ''),
+          String(b.accountId || b.depositAccountId || ''), String(b.category || ''), String(b.subcategory || '')
+        ]);
+        if (seenExactSchedules.has(exactKey)) return '';
+        seenExactSchedules.add(exactKey);
+        const monthly = getZbbCalendarIncomeMonthlyAmount(b);
+        const sourceName = String(b.vendor || b.desc || '').trim();
+        const fallbackParts = [b.category, b.subcategory, accountName(b.accountId || b.depositAccountId)].filter(Boolean);
+        const displayName = sourceName || (fallbackParts.length ? fallbackParts.join(' / ') : 'Unnamed scheduled income');
+        const details = [b.date ? `starts ${formatDateMDY(b.date)}` : '', accountName(b.accountId || b.depositAccountId)].filter(Boolean);
+        const suffix = details.length ? ` · ${details.join(' · ')}` : '';
+        const label = `${displayName} · ${formatFinancial(b.amount || 0)} ${b.recurring} · ${formatFinancial(monthly)} monthly${suffix}`;
+        return `<option value="${escapeHtml(id)}">${escapeHtml(label)}</option>`;
+      }).filter(Boolean);
+      select.innerHTML = '<option value="">Manual income item (not linked)</option>' + options.join('');
+      select.value = selectedId || '';
+    }
+    function handleZbbCalendarIncomeLink(linkId) {
+      const source = getZbbCalendarIncomeSource(linkId);
+      if (!source) return;
+      document.getElementById('zbb-item-name').value = source.vendor || source.desc || '';
+      document.getElementById('zbb-item-monthly').value = getZbbCalendarIncomeMonthlyAmount(source).toFixed(2);
+      document.getElementById('zbb-split-mode-type').value = 'pct';
+      toggleZbbSplitModeType();
+    }
+
+    function populateZbbCalendarBillLink(selectedId = '') {
+      const select = document.getElementById('zbb-calendar-link');
+      if (!select) return;
+      const zbb = getActiveZbbTemplate();
+      const currentEditId = document.getElementById('zbb-item-edit-id')?.value || '';
+      const linkedElsewhere = new Set((zbb.bills || []).filter(x => String(x.id) !== String(currentEditId) && x.linkedCalendarBillId).map(x => String(x.linkedCalendarBillId)));
+      const bills = (state.calendarBills || []).filter(b => b && b.type === 'expense' && !b.recurrenceGenerated && (b.recurring && b.recurring !== 'none' || b.recurrenceRootId));
+      select.innerHTML = '<option value="">Manual budget item (not linked)</option>' + bills.map(b => {
+        const id = getZbbCalendarBillLinkId(b);
+        if (linkedElsewhere.has(id) && id !== String(selectedId)) return '';
+        const label = `${b.vendor || b.desc || 'Unnamed bill'} · ${formatFinancial(b.amount || 0)} · ${b.recurring || 'scheduled'}`;
+        return `<option value="${escapeHtml(id)}">${escapeHtml(label)}</option>`;
+      }).join('');
+      select.value = selectedId || '';
+    }
+    function handleZbbCalendarBillLink(linkId) {
+      const source = getZbbCalendarBillSource(linkId);
+      if (!source) return;
+      document.getElementById('zbb-item-name').value = source.vendor || source.desc || '';
+      document.getElementById('zbb-item-monthly').value = (Number(source.amount) || 0).toFixed(2);
+      document.getElementById('zbb-split-mode-type').value = 'pct';
+      toggleZbbSplitModeType();
+    }
+
+    function getZbbCalendarDebtSource(linkId) {
+      if (!linkId) return null;
+      return (state.calendarBills || []).find(b => b && b.type === 'debt' && !b.recurrenceGenerated &&
+        (String(b.id) === String(linkId) || String(b.recurrenceRootId || '') === String(linkId)) &&
+        b.recurring && b.recurring !== 'none') || null;
+    }
+    function getZbbCalendarDebtMonthlyAmount(source) {
+      const amount = Math.max(0, Number(source?.amount) || 0);
+      const frequency = source?.recurring || 'none';
+      if (frequency === 'weekly') return Math.round(amount * 52 / 12 * 100) / 100;
+      if (frequency === 'biweekly') return Math.round(amount * 26 / 12 * 100) / 100;
+      if (frequency === 'yearly') return Math.round(amount / 12 * 100) / 100;
+      return Math.round(amount * 100) / 100;
+    }
+    function populateZbbCalendarDebtLink(selectedId = '') {
+      const select = document.getElementById('zbb-calendar-debt-link');
+      if (!select) return;
+      const zbb = getActiveZbbTemplate();
+      const currentEditId = document.getElementById('zbb-item-edit-id')?.value || '';
+      const linkedElsewhere = new Set((zbb.debts || []).filter(x => String(x.id) !== String(currentEditId) && x.linkedCalendarDebtId).map(x => String(x.linkedCalendarDebtId)));
+      const items = (state.calendarBills || []).filter(b => b && b.type === 'debt' && !b.recurrenceGenerated && b.recurring && b.recurring !== 'none');
+      const accountName = id => (state.accounts || []).find(a => String(a.id) === String(id || '') && a.type === 'debt')?.name || 'Unmatched debt account';
+      const opts = items.map(b => {
+        const id = String(b.recurrenceRootId || b.id || '');
+        if (!id || linkedElsewhere.has(id) && id !== String(selectedId)) return '';
+        const debtId = b.debtAccountId || '';
+        const label = `${b.desc || b.vendor || 'Scheduled debt payment'} · ${formatFinancial(b.amount || 0)} ${b.recurring} · ${accountName(debtId)}`;
+        return `<option value="${escapeHtml(id)}">${escapeHtml(label)}</option>`;
+      }).filter(Boolean);
+      select.innerHTML = '<option value="">Manual debt budget item (not linked)</option>' + opts.join('');
+      select.value = selectedId || '';
+    }
+    function handleZbbCalendarDebtLink(linkId) {
+      const source = getZbbCalendarDebtSource(linkId);
+      if (!source) return;
+      const debt = resolveDebtAccountForBill(source);
+      document.getElementById('zbb-item-name').value = source.desc || source.vendor || (debt?.name ? `${debt.name} Payment` : 'Scheduled debt payment');
+      document.getElementById('zbb-item-monthly').value = getZbbCalendarDebtMonthlyAmount(source).toFixed(2);
+    }
+    function refreshLinkedZbbCalendarDebts(zbb) {
+      (zbb?.debts || []).forEach(item => {
+        if (!item.linkedCalendarDebtId) return;
+        const source = getZbbCalendarDebtSource(item.linkedCalendarDebtId);
+        if (!source) { item.linkStatus = 'source-missing'; return; }
+        item.name = source.desc || source.vendor || item.name;
+        item.monthly = getZbbCalendarDebtMonthlyAmount(source);
+        const debt = resolveDebtAccountForBill(source);
+        if (debt) item.linkedAccountId = debt.id;
+        item.linkStatus = debt ? 'linked' : 'account-unmatched';
+      });
+    }
+
+    function populateZbbVariableCategories(selectedCategory = '') {
+      const select = document.getElementById('zbb-variable-category');
+      if (!select) return;
+      const categories = (state.categories || []).filter(c => c && c.name).slice().sort((a,b)=>String(a.name).localeCompare(String(b.name)));
+      select.innerHTML = '<option value="">Choose a category</option>' + categories.map(c => `<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`).join('');
+      select.value = selectedCategory || '';
+      populateZbbVariableSubcategories();
+    }
+    function populateZbbVariableSubcategories(selectedSubcategory = '') {
+      const categoryName = document.getElementById('zbb-variable-category')?.value || '';
+      const select = document.getElementById('zbb-variable-subcategory');
+      if (!select) return;
+      const category = (state.categories || []).find(c => String(c.name) === String(categoryName));
+      const subs = Array.isArray(category?.subcategories) ? category.subcategories : [];
+      select.innerHTML = '<option value="">Choose a subcategory</option>' + subs.map(sub => {
+        const name = typeof sub === 'string' ? sub : sub?.name;
+        return name ? `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>` : '';
+      }).join('');
+      select.value = selectedSubcategory || '';
+    }
+
     function openZbbItemModal(type, editId = null) {
       const modal = document.getElementById('zbb-item-modal');
       const isVariable = type === 'variable';
       const isEdit = editId !== null && editId !== undefined && String(editId) !== '';
       document.getElementById('zbb-item-type').value = type;
+      document.getElementById('zbb-calendar-link-wrap').classList.toggle('hidden', type !== 'bill');
+      document.getElementById('zbb-calendar-income-link-wrap').classList.toggle('hidden', type !== 'income');
+      document.getElementById('zbb-calendar-debt-link-wrap').classList.toggle('hidden', type !== 'debt');
       document.getElementById('zbb-modal-title').innerText = isEdit ? (isVariable ? 'Edit Variable Bucket' : 'Edit Budget Item') : 'Add Budget Item';
       document.getElementById('zbb-sinking-fund-opts').classList.toggle('hidden', type !== 'savings');
       document.getElementById('zbb-variable-edit-note').classList.toggle('hidden', !isVariable);
+      document.getElementById('zbb-variable-taxonomy-wrap').classList.toggle('hidden', !isVariable);
       document.getElementById('zbb-item-monthly-wrap').classList.toggle('hidden', isVariable);
       document.getElementById('zbb-item-split-wrap').classList.toggle('hidden', isVariable);
       document.getElementById('zbb-item-split-details').classList.toggle('hidden', isVariable);
@@ -11681,7 +12026,12 @@ ${acc.name}`);
         if (!item) { alert('This budget item could not be found in the selected paycheque template. Please refresh the planner and try again.'); return; }
         document.getElementById('zbb-item-edit-id').value = String(item.id);
         document.getElementById('zbb-item-name').value = item.name || '';
+        if (type === 'bill') populateZbbCalendarBillLink(item.linkedCalendarBillId || '');
+        if (type === 'income') populateZbbCalendarIncomeLink(item.linkedCalendarIncomeId || '');
+        if (type === 'debt') populateZbbCalendarDebtLink(item.linkedCalendarDebtId || '');
         if (isVariable) {
+          populateZbbVariableCategories(item.expenseCategory || '');
+          populateZbbVariableSubcategories(item.expenseSubcategory || '');
           const allocationState = getVariablePoolAllocationState(zbb, Number(state.selectedPayCycle || 1), state.selectedZbbPeriod || '2026-11');
           document.getElementById('zbb-variable-current-allocation').value = (Number(allocationState.allocations[String(item.id)]) || 0).toFixed(2);
           document.getElementById('zbb-item-monthly').required = false;
@@ -11702,12 +12052,17 @@ ${acc.name}`);
         }
       } else {
         document.getElementById('zbb-item-edit-id').value = '';
+        if (type === 'bill') populateZbbCalendarBillLink('');
+        if (type === 'income') populateZbbCalendarIncomeLink('');
         document.getElementById('zbb-item-form').reset();
         document.getElementById('zbb-item-type').value = type;
+        if (type === 'income') populateZbbCalendarIncomeLink('');
+        if (type === 'bill') populateZbbCalendarBillLink('');
+        if (type === 'debt') populateZbbCalendarDebtLink('');
         document.getElementById('zbb-split-mode-type').value = 'pct';
         toggleZbbSplitModeType();
         document.getElementById('zbb-item-monthly').required = !isVariable;
-        if (isVariable) document.getElementById('zbb-variable-current-allocation').value = '0.00';
+        if (isVariable) { populateZbbVariableCategories(''); document.getElementById('zbb-variable-current-allocation').value = '0.00'; }
       }
       modal.classList.remove('hidden');
     }
@@ -11726,6 +12081,17 @@ ${acc.name}`);
       if (!name) { alert('Enter a name for this budget item.'); return; }
       const zbb = getActiveZbbTemplate();
       const list = type === 'income' ? zbb.incomes : type === 'bill' ? zbb.bills : type === 'variable' ? zbb.variable : type === 'debt' ? zbb.debts : zbb.savings;
+      const linkedCalendarBillId = type === 'bill' ? (document.getElementById('zbb-calendar-link')?.value || '') : '';
+      const linkedCalendarBill = linkedCalendarBillId ? getZbbCalendarBillSource(linkedCalendarBillId) : null;
+      if (linkedCalendarBillId && !linkedCalendarBill) { alert('The linked calendar bill is no longer available. Refresh the planner and select it again.'); return; }
+      const linkedCalendarIncomeId = type === 'income' ? (document.getElementById('zbb-calendar-income-link')?.value || '') : '';
+      const linkedCalendarIncome = linkedCalendarIncomeId ? getZbbCalendarIncomeSource(linkedCalendarIncomeId) : null;
+      if (linkedCalendarIncomeId && !linkedCalendarIncome) { alert('The linked calendar income is no longer available. Refresh the planner and select it again.'); return; }
+      const linkedCalendarDebtId = type === 'debt' ? (document.getElementById('zbb-calendar-debt-link')?.value || '') : '';
+      const linkedCalendarDebt = linkedCalendarDebtId ? getZbbCalendarDebtSource(linkedCalendarDebtId) : null;
+      if (linkedCalendarDebtId && !linkedCalendarDebt) { alert('The linked Calendar debt payment is no longer available. Refresh the planner and select it again.'); return; }
+      const linkedCalendarDebtAccount = linkedCalendarDebt ? resolveDebtAccountForBill(linkedCalendarDebt) : null;
+      if (linkedCalendarDebt && !linkedCalendarDebtAccount) { alert('This scheduled payment is not matched to an active debt account. Edit the Calendar item and select its debt account before linking it.'); return; }
 
       if (type === 'variable') {
         const cycle = Number(state.selectedPayCycle || 1);
@@ -11734,6 +12100,9 @@ ${acc.name}`);
         const rawAllocation = Number(document.getElementById('zbb-variable-current-allocation').value);
         if (!Number.isFinite(rawAllocation) || rawAllocation < 0) { alert('Enter a valid allocation amount of zero or more.'); return; }
         const allocation = Math.round(rawAllocation * 100) / 100;
+        const expenseCategory = document.getElementById('zbb-variable-category')?.value || '';
+        const expenseSubcategory = document.getElementById('zbb-variable-subcategory')?.value || '';
+        if ((expenseCategory && !expenseSubcategory) || (!expenseCategory && expenseSubcategory)) { alert('Choose both an expense category and subcategory, or leave both unlinked.'); return; }
         const existingId = String(editId || '');
         const currentItem = existingId ? list.find(item => String(item.id) === existingId) : null;
         if (existingId && !currentItem) { alert('This variable category could not be found. Please close the editor and try again.'); return; }
@@ -11746,10 +12115,12 @@ ${acc.name}`);
         let itemId;
         if (currentItem) {
           currentItem.name = name;
+          currentItem.expenseCategory = expenseCategory;
+          currentItem.expenseSubcategory = expenseSubcategory;
           itemId = String(currentItem.id);
         } else {
           itemId = `zv_${Date.now()}_${Math.random().toString(36).slice(2,7)}`;
-          list.push({ id: itemId, name, monthly: 0, splitMode: 'dollar', split: [0,0,0] });
+          list.push({ id: itemId, name, monthly: 0, splitMode: 'dollar', split: [0,0,0], expenseCategory, expenseSubcategory });
         }
         allocationState.rec.variableAllocations[String(itemId)] = allocation;
         saveData(); closeZbbItemModal(); renderZbbPlanner();
@@ -11766,6 +12137,7 @@ ${acc.name}`);
       ];
       const split = splitRaw.map(value => Number(value));
       if (!Number.isFinite(monthly) || monthly < 0) { alert('Enter a valid monthly amount of zero or more.'); return; }
+      if (linkedCalendarBill) { document.getElementById('zbb-item-name').value = linkedCalendarBill.vendor || linkedCalendarBill.desc || name; }
       if (split.some(value => !Number.isFinite(value) || value < 0)) { alert('Paycheque allocations must be valid amounts of zero or more.'); return; }
       if (splitMode === 'pct' && split[0] + split[1] > 100.0001) { alert('The combined regular Paycheque 1 and 2 percentage cannot exceed 100% of the monthly amount. The third-cheque allocation remains separate.'); return; }
       if (splitMode === 'dollar' && zbbMoneyCents(split[0]) + zbbMoneyCents(split[1]) > zbbMoneyCents(monthly)) { alert('The combined regular Paycheque 1 and 2 dollar allocations cannot exceed the monthly amount. The third-cheque allocation remains separate.'); return; }
@@ -11784,13 +12156,13 @@ ${acc.name}`);
       if (editId) {
         const item = list.find(i => String(i.id) === String(editId));
         if (!item) { alert('This budget item could not be found. Please close the editor and try again.'); return; }
-        item.name = name; item.monthly = monthly; item.splitMode = splitMode; item.split = split; Object.assign(item, extraSavingsData);
+        item.name = linkedCalendarBill ? (linkedCalendarBill.vendor || linkedCalendarBill.desc || name) : linkedCalendarIncome ? (linkedCalendarIncome.vendor || linkedCalendarIncome.desc || name) : name; item.monthly = linkedCalendarBill ? (Number(linkedCalendarBill.amount) || 0) : linkedCalendarIncome ? getZbbCalendarIncomeMonthlyAmount(linkedCalendarIncome) : linkedCalendarDebt ? getZbbCalendarDebtMonthlyAmount(linkedCalendarDebt) : monthly; item.splitMode = splitMode; item.split = split; if (type === 'bill') { if (linkedCalendarBillId) item.linkedCalendarBillId = linkedCalendarBillId; else delete item.linkedCalendarBillId; } if (type === 'income') { if (linkedCalendarIncomeId) item.linkedCalendarIncomeId = linkedCalendarIncomeId; else delete item.linkedCalendarIncomeId; } if (type === 'debt') { if (linkedCalendarDebtId) { item.linkedCalendarDebtId = linkedCalendarDebtId; item.linkedAccountId = linkedCalendarDebtAccount.id; } else delete item.linkedCalendarDebtId; } Object.assign(item, extraSavingsData);
         if (type === 'savings') {
           const linkedBucket = item.linkedBucketId ? getSinkingBucketById(item.linkedBucketId) : sinkingBucketLedger().buckets.find(bucket => String(bucket.linkedZbbItemId || '') === String(item.id));
           if (linkedBucket) { linkedBucket.targetBal = Number(extraSavingsData.targetBal) || 0; linkedBucket.targetDate = extraSavingsData.targetDate || ''; }
         }
       } else {
-        list.push({ id: `zbb_${Date.now()}_${Math.random().toString(36).slice(2,7)}`, name, monthly, splitMode, split, ...extraSavingsData });
+        list.push({ id: `zbb_${Date.now()}_${Math.random().toString(36).slice(2,7)}`, name: linkedCalendarBill ? (linkedCalendarBill.vendor || linkedCalendarBill.desc || name) : linkedCalendarIncome ? (linkedCalendarIncome.vendor || linkedCalendarIncome.desc || name) : linkedCalendarDebt ? (linkedCalendarDebt.desc || linkedCalendarDebt.vendor || name) : name, monthly: linkedCalendarBill ? (Number(linkedCalendarBill.amount) || 0) : linkedCalendarIncome ? getZbbCalendarIncomeMonthlyAmount(linkedCalendarIncome) : linkedCalendarDebt ? getZbbCalendarDebtMonthlyAmount(linkedCalendarDebt) : monthly, splitMode, split, ...(type === 'bill' && linkedCalendarBillId ? { linkedCalendarBillId } : {}), ...(type === 'income' && linkedCalendarIncomeId ? { linkedCalendarIncomeId } : {}), ...(type === 'debt' && linkedCalendarDebtId ? { linkedCalendarDebtId, linkedAccountId: linkedCalendarDebtAccount.id } : {}), ...extraSavingsData });
       }
       saveData(); closeZbbItemModal(); renderZbbPlanner();
     }
@@ -31610,6 +31982,69 @@ button[aria-describedby="acc-opening-balance-tooltip"]:focus-visible,
 }
 </style>
 
+<style id="finhub-v251-responsive-edit-budget-item-modal">
+/* The Edit Budget Item dialog gets a deliberate, scroll-safe layout on all screens. */
+#zbb-item-modal { padding: 14px !important; }
+#zbb-item-modal > div {
+  box-sizing: border-box !important;
+  width: min(100%, 620px) !important;
+  max-width: 620px !important;
+  max-height: min(90dvh, 900px) !important;
+  padding: 22px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  border-radius: 20px !important;
+}
+#zbb-item-modal #zbb-item-form {
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  overscroll-behavior: contain !important;
+  -webkit-overflow-scrolling: touch !important;
+  padding: 1px 2px 3px 1px !important;
+}
+#zbb-item-modal #zbb-item-form > div { min-width: 0 !important; }
+#zbb-item-modal input,
+#zbb-item-modal select { box-sizing: border-box !important; min-width: 0 !important; max-width: 100% !important; }
+#zbb-item-modal #zbb-item-form > div:last-child {
+  position: sticky !important;
+  bottom: -3px !important;
+  z-index: 2 !important;
+  padding: 12px 0 3px !important;
+  margin-top: 4px !important;
+  background: var(--fh-modal, var(--fh-ui-card, #172f49)) !important;
+}
+@media (max-width: 700px) {
+  #zbb-item-modal { padding: 10px !important; align-items: center !important; }
+  #zbb-item-modal > div {
+    width: min(100%, 560px) !important;
+    max-width: calc(100vw - 20px) !important;
+    max-height: calc(100dvh - 20px) !important;
+    padding: 16px !important;
+    gap: 12px !important;
+    border-radius: 17px !important;
+  }
+  #zbb-item-modal #zbb-modal-title { font-size: 1.2rem !important; line-height: 1.25 !important; }
+  #zbb-item-modal #zbb-item-form { display: flex !important; flex-direction: column !important; gap: 12px !important; }
+  #zbb-item-modal #zbb-item-form > div { margin: 0 !important; }
+  #zbb-item-modal #zbb-item-split-wrap { grid-template-columns: minmax(0, 1fr) !important; gap: 6px !important; }
+  #zbb-item-modal #zbb-item-split-wrap > div:last-child { padding: 0 !important; align-self: auto !important; font-size: .72rem !important; line-height: 1.35 !important; }
+  #zbb-item-modal #zbb-sinking-fund-opts > .grid { grid-template-columns: minmax(0, 1fr) !important; gap: 10px !important; }
+  #zbb-item-modal #zbb-item-form > div:last-child { gap: 9px !important; }
+  #zbb-item-modal #zbb-item-form > div:last-child button { min-height: 46px !important; padding: .7rem .8rem !important; font-size: .9rem !important; }
+  #zbb-item-modal #zbb-item-split-details .grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; gap: 8px !important; }
+  #zbb-item-modal #zbb-item-split-details input { width: 100% !important; min-width: 0 !important; padding: .55rem .5rem !important; font-size: .9rem !important; }
+}
+@media (max-width: 380px) {
+  #zbb-item-modal { padding: 7px !important; }
+  #zbb-item-modal > div { max-width: calc(100vw - 14px) !important; padding: 13px !important; }
+  #zbb-item-modal #zbb-item-form > div:last-child { flex-direction: column !important; }
+  #zbb-item-modal #zbb-item-form > div:last-child button { width: 100% !important; }
+}
+</style>
+
+<!-- FinHub v263: corrected variable variance color target; consolidated duplicate paycheque BvA panel into monthly financial review. -->
 </body>
 </html>
 
