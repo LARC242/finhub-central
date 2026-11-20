@@ -74,6 +74,7 @@
       }
       allocationTotalCents += amount;
       const expense = getTransaction(transactions, allocation.expenseTransactionId);
+      if (String(allocation.expenseTransactionId) === String(input?.bankTransactionId)) errors.push('The e-Transfer withdrawal cannot also be used as the household bill expense.');
       if (!expense) errors.push(`Link "${bill.name}" to its existing expense transaction.`);
       else {
         if (String(expense.type || '').toLowerCase() !== 'expense') errors.push(`The linked transaction for "${bill.name}" is not an expense.`);
