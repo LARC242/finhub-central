@@ -43,7 +43,7 @@
       // Expense-type e-Transfers are supported for legacy imports, but ordinary
       // purchases must never appear in the withdrawal picker.
       const isClearlyETransferExpense = type === 'expense' &&
-        /\\b(e[ -]?transfer|etransfer)\\b/i.test(description);
+        /\b(e[ -]?transfer|etransfer)\b/i.test(description);
       return (isExternalTransfer || isClearlyETransferExpense) &&
         monthOf(tx.date) === String(ym) && Number(tx.amount) > 0 &&
         !tx.refundOfTransactionId && !tx.isReversal && !tx.reversalOfTransactionId && !tx.reconciledDuplicate &&
@@ -337,7 +337,7 @@
   function openHouseholdCreditEventModal() {
     const activeSettlements = settlements().filter(item => active(item) && settlementAvailableCredit(item) > 0);
     if (!activeSettlements.length) {
-      alert('There is no available household settlement credit to refund or apply.');
+      alert('There is no available household settlement credit yet. First reconcile the existing e-Transfer and leave the amount not applied to household bills unallocated. That saved difference becomes the household receivable you can later record as a refund or apply to a future bill.');
       return;
     }
     const source = byId('hhc-source-settlement');
