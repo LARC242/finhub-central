@@ -258,24 +258,39 @@
     monthBills.forEach(bill => {
       const balance = core.billBalances(bill, settlements(), state.jointAdjustments || [], creditEvents());
       const row = document.createElement('div');
-      row.className = 'grid grid-cols-1 lg:grid-cols-[minmax(10rem,1fr)_8rem_8rem] gap-2 items-center rounded-xl border border-gray-200 dark:border-gray-800 p-3';
+      row.className = 'grid grid-cols-1 lg:grid-cols-[minmax(12rem,1fr)_8rem_8rem] gap-2 items-center rounded-xl border border-gray-200 dark:border-gray-800 p-3';
       row.dataset.hhsBillId = String(bill.id);
-      row.innerHTML = '<div class="min-w-0"><div class="font-semibold text-xs">' + esc(bill.name) + '</div><div class="text-[10px] text-gray-500">Your share: ' + esc(Number(bill.splitPct) || 0) + '% · Outstanding: ' + esc(money(balance.outstandingCents)) + '</div></div><div class="text-xs text-gray-500">Household obligation</div><input class="hhs-allocation-amount w-full min-w-0 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-2 text-xs text-right accounting-num" type="number" min="0" max="' + (balance.outstandingCents/100).toFixed(2) + '" step="0.01" value="0.00" aria-label="Amount allocated to ' + esc(bill.name) + '"/>';
+      row.dataset.outstandingCents = String(Math.max(0, balance.outstandingCents));
+      row.innerHTML = '<label class="flex items-start gap-3 min-w-0 cursor-pointer"><input class="hhs-allocation-select mt-0.5 shrink-0" type="checkbox" aria-label="Select ' + esc(bill.name) + ' for this e-Transfer"/><span class="min-w-0"><span class="block font-semibold text-xs">' + esc(bill.name) + '</span><span class="block text-[10px] text-gray-500">Your share: ' + esc(Number(bill.splitPct) || 0) + '% · Outstanding: ' + esc(money(balance.outstandingCents)) + '</span></span></label><div class="text-xs text-gray-500">Allocate to bill</div><input class="hhs-allocation-amount w-full min-w-0 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-2 text-xs text-right accounting-num opacity-50" type="number" min="0" max="' + (balance.outstandingCents/100).toFixed(2) + '" step="0.01" value="0.00" disabled aria-label="Amount allocated to ' + esc(bill.name) + '"/>';
       host.appendChild(row);
-      row.querySelector('.hhs-allocation-amount').addEventListener('input', updateSettlementAllocationTotals);
+      const checkbox = row.querySelector('.hhs-allocation-select');
+      const amountInput = row.querySelector('.hhs-allocation-amount');
+      checkbox.addEventListener('change', () => {
+        amountInput.disabled = !checkbox.checked;
+        amountInput.classList.toggle('opacity-50', !checkbox.checked);
+        if (!checkbox.checked) amountInput.value = '0.00';
+        else amountInput.value = (Math.min(balance.outstandingCents, availableAllocationCents(row)) / 100).toFixed(2);
+        updateSettlementAllocationTotals();
+      });
+      amountInput.addEventListener('input', updateSettlementAllocationTotals);
     });
   }
-  function suggestBillAllocations() {
+  function availableAllocationCents(exceptRow) {
     const bank = transactions().find(tx => String(tx.id) === String(byId('hhs-bank-transaction')?.value));
-    let remaining = bank ? cents(Math.abs(Number(bank.amount) || 0)) : 0;
-    const ym = byId('hhs-settlement-month')?.value || currentMonth();
+    const bankCents = bank ? cents(Math.abs(Number(bank.amount) || 0)) : 0;
+    const alreadyAllocated = [...document.querySelectorAll('#hhs-allocation-rows [data-hhs-bill-id]')]
+      .filter(row => row !== exceptRow)
+      .reduce((sum, row) => sum + Math.max(0, cents(row.querySelector('.hhs-allocation-amount')?.value) || 0), 0);
+    return Math.max(0, bankCents - alreadyAllocated);
+  }
+  function suggestBillAllocations() {
+    // Changing the bank withdrawal must not silently choose bills. Clear prior
+    // selections so the user explicitly decides which obligations this transfer covers.
     [...document.querySelectorAll('#hhs-allocation-rows [data-hhs-bill-id]')].forEach(row => {
-      const bill = billsForMonth(ym).find(item => String(item.id) === String(row.dataset.hhsBillId));
-      const balance = bill ? core.billBalances(bill, settlements(), state.jointAdjustments || [], creditEvents()) : {outstandingCents:0};
-      const amount = Math.max(0, Math.min(balance.outstandingCents, remaining));
+      const checkbox = row.querySelector('.hhs-allocation-select');
       const input = row.querySelector('.hhs-allocation-amount');
-      if (input) input.value = (amount / 100).toFixed(2);
-      remaining -= amount;
+      if (checkbox) checkbox.checked = false;
+      if (input) { input.value = '0.00'; input.disabled = true; input.classList.add('opacity-50'); }
     });
     updateSettlementAllocationTotals();
   }
@@ -335,7 +350,7 @@
     const allocations = rows.map(row => ({
       jointBillId: String(row.dataset.hhsBillId),
       amountCents: cents(row.querySelector('.hhs-allocation-amount')?.value)
-    })).filter(item => Number.isSafeInteger(item.amountCents) && item.amountCents > 0);
+    })).filter((item, index) => rows[index]?.querySelector('.hhs-allocation-select')?.checked && Number.isSafeInteger(item.amountCents) && item.amountCents > 0);
     const input = {
       ym,
       date: bank?.date || '',
