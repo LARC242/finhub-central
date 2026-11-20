@@ -4561,6 +4561,95 @@ body[data-finhub-theme] .fh-ledger-view-toggle:focus-visible {
   outline-offset:2px !important;
 }
 </style>
+
+<style id="finhub-v268-sinking-bucket-activity-mobile-fix">
+/* v268: keep the bucket activity dialog fully inside narrow viewports. */
+#sinking-bucket-activity-modal {
+  box-sizing: border-box !important;
+  padding: 12px !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+}
+#sinking-bucket-activity-modal > div {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  max-width: 28rem !important;
+  max-height: calc(100dvh - 24px) !important;
+  overflow-y: auto !important;
+  min-width: 0 !important;
+  padding: 18px !important;
+  border-radius: 18px !important;
+}
+#sinking-bucket-activity-form,
+#sinking-bucket-activity-form > div {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+#sinking-bucket-activity-form input:not([type="hidden"]),
+#sinking-bucket-activity-form select {
+  display: block;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+}
+#sinking-bucket-activity-context {
+  overflow-wrap: anywhere;
+  line-height: 1.45;
+}
+#sinking-bucket-activity-form > .flex {
+  display: flex !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  gap: 10px !important;
+}
+#sinking-bucket-activity-form > .flex button {
+  min-width: 0 !important;
+  flex: 1 1 0% !important;
+  white-space: normal !important;
+  padding: 12px 8px !important;
+}
+@media (max-width: 640px) {
+  #sinking-bucket-activity-modal {
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 10px !important;
+  }
+  #sinking-bucket-activity-modal > div {
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: calc(100dvh - 20px) !important;
+    padding: 16px !important;
+    gap: 12px !important;
+    border-radius: 16px !important;
+  }
+  #sinking-bucket-activity-title {
+    font-size: 1.2rem !important;
+    line-height: 1.25 !important;
+    overflow-wrap: anywhere;
+  }
+  #sinking-bucket-activity-form {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+  #sinking-bucket-activity-form label {
+    display: block;
+    margin-bottom: 5px !important;
+  }
+  #sinking-bucket-activity-form input:not([type="hidden"]),
+  #sinking-bucket-activity-form select {
+    min-height: 46px !important;
+    font-size: 16px !important;
+    padding: 10px 12px !important;
+  }
+  #sinking-bucket-activity-form > .flex button {
+    min-height: 48px !important;
+    font-size: 15px !important;
+  }
+}
+</style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 min-h-screen flex flex-col md:flex-row transition-colors duration-200 relative" id="app-body">
 <!-- UNDO TOAST NOTIFICATION -->
@@ -5671,21 +5760,22 @@ body[data-finhub-theme] .fh-ledger-view-toggle:focus-visible {
 <div class="text-[11px] text-gray-500 self-end pb-2">The due day stays fixed. FinHub can adjust the expected date when it falls on a weekend.</div>
 </div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Notes / Strategy</label><textarea class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-2 text-xs" id="ed-notes" placeholder="Add debt notes..." rows="2"></textarea></div>
-<div class="flex space-x-3 pt-3">
-<button class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel fh-modal-secondary-action" onclick="closeDebtDetailModal()" type="button">Cancel</button>
+<div class="flex flex-col-reverse sm:flex-row gap-3 pt-3">
+<button class="flex-1 min-w-0 py-3 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel fh-modal-secondary-action" onclick="closeDebtDetailModal()" type="button">Cancel</button>
 <button class="flex-1 py-2 text-white rounded-xl text-sm font-semibold theme-bg" type="submit">Save Debt</button>
 </div>
 </form>
 </div>
 </div>
 <!-- MODAL: ADD / EDIT JOINT HOUSEHOLD BILL -->
-<div aria-labelledby="joint-modal-title" aria-modal="true" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50" id="joint-bill-modal" role="dialog">
-<div class="dark:border-gray-800 w-full max-w-md space-y-4 fh-modal-surface">
+<div aria-labelledby="joint-modal-title" aria-modal="true" class="fixed inset-0 bg-black/70 flex items-start sm:items-center justify-center p-2 sm:p-4 hidden z-50 overflow-y-auto" id="joint-bill-modal" role="dialog">
+<div class="dark:border-gray-800 w-full max-w-2xl max-h-[calc(100dvh-1rem)] sm:max-h-[calc(100dvh-2rem)] overflow-y-auto space-y-4 fh-modal-surface p-4 sm:p-6 rounded-2xl">
 <h3 class="text-lg font-bold" id="joint-modal-title">Add Household Bill</h3>
 <form class="space-y-3" id="joint-bill-form" onsubmit="saveJointBill(event)">
 <input id="jb-edit-id" type="hidden" value=""/>
+<div><label class="block text-xs font-semibold text-gray-500 mb-1">Link an existing recurring calendar bill</label><select class="w-full min-w-0 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-3 text-sm" id="jb-calendar-link" onchange="onJointCalendarBillLinkChange(this.value)"><option value="">Manual household bill (not linked)</option></select><p class="text-[11px] text-gray-500 mt-1">Linked Calendar amounts represent your share. FinHub uses your split percentage to calculate the implied household total; notes and classification remain managed here.</p></div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Bill Name / Description</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="jb-name" required="" type="text"/></div>
-<div class="grid grid-cols-2 gap-3">
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
 <div>
 <label class="block text-xs font-semibold text-gray-500 mb-1">Classification</label>
 <select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="jb-classification">
@@ -5693,16 +5783,16 @@ body[data-finhub-theme] .fh-ledger-view-toggle:focus-visible {
 <option value="variable">Variable Utility</option>
 </select>
 </div>
-<div><label class="block text-xs font-semibold text-gray-500 mb-1" id="tx-amount-label">Total Amount ($)</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="jb-amount" required="" step="0.01" type="number"/></div>
+<div><label class="block text-xs font-semibold text-gray-500 mb-1" id="tx-amount-label">Your Share ($)</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="jb-amount" min="0" required="" step="0.01" type="number" oninput="updateJointBillAmountPreview()"/><p class="text-[11px] text-gray-500 mt-1" id="jb-amount-help">Enter the amount you are responsible for.</p><div class="text-xs text-gray-500 mt-1" id="jb-household-total-preview">Calculated household total: <strong>$0.00</strong></div></div>
 </div>
-<div class="grid grid-cols-2 gap-3">
-<div><label class="block text-xs font-semibold text-gray-500 mb-1">My Split Percentage (%)</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="jb-split" required="" step="1" type="number" value="50"/></div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+<div><label class="block text-xs font-semibold text-gray-500 mb-1">Your Split Percentage (%)</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="jb-split" max="100" min="0.01" required="" step="0.01" type="number" value="50" oninput="onJointBillSplitChange()"/></div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Due Date</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="jb-date" required="" lang="en-US" type="date"/></div>
 </div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Notes / Comments</label><textarea class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-2 text-xs" id="jb-notes" placeholder="Add optional notes..." rows="2"></textarea></div>
 <div class="flex space-x-3 pt-3">
 <button class="flex-1 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel fh-modal-secondary-action" onclick="closeJointBillModal()" type="button">Cancel</button>
-<button class="flex-1 py-2 text-white rounded-xl text-sm font-semibold theme-bg" type="submit">Save Bill</button>
+<button class="flex-1 min-w-0 py-3 text-white rounded-xl text-sm font-semibold theme-bg" type="submit">Save Bill</button>
 </div>
 </form>
 </div>
@@ -6077,6 +6167,7 @@ Bonus" rows="4"></textarea></div>
 <form class="space-y-3" id="sinking-bucket-activity-form" onsubmit="saveSinkingBucketActivity(event)">
 <input id="sinking-bucket-activity-id" type="hidden" value=""/>
 <input id="sinking-bucket-activity-type" type="hidden" value="allocate"/>
+<input id="sinking-bucket-activity-entry-id" type="hidden" value=""/>
 <div class="rounded-lg bg-gray-50 dark:bg-gray-950 p-3 text-xs text-gray-500" id="sinking-bucket-activity-context"></div>
 <div class="hidden" id="sinking-bucket-transfer-destination-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Move To Bucket</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="sinking-bucket-transfer-destination"></select></div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1" id="sinking-bucket-activity-amount-label">Amount ($)</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="sinking-bucket-activity-amount" min="0.01" required="" step="0.01" type="number"/></div>
@@ -10210,6 +10301,7 @@ ${acc.name}`);
       };
       document.getElementById('sinking-bucket-activity-id').value = bucket.id;
       document.getElementById('sinking-bucket-activity-type').value = action;
+      document.getElementById('sinking-bucket-activity-entry-id').value = '';
       document.getElementById('sinking-bucket-activity-title').textContent = labels[action];
       document.getElementById('sinking-bucket-activity-context').textContent = instructions[action];
       document.getElementById('sinking-bucket-activity-amount-label').textContent = action === 'allocate' ? 'Amount to allocate ($)' : action === 'release' ? 'Amount to release ($)' : 'Amount to move ($)';
@@ -10218,6 +10310,24 @@ ${acc.name}`);
       document.getElementById('sinking-bucket-activity-type').value = action;
       document.getElementById('sinking-bucket-activity-date').value = new Date().toISOString().slice(0,10);
       destinationWrap.classList.toggle('hidden', action !== 'transfer');
+      document.getElementById('sinking-bucket-activity-modal').classList.remove('hidden');
+    }
+    function openSinkingBucketActivityEdit(bucketId, entryId) {
+      const bucket = getSinkingBucketById(bucketId);
+      const entry = (bucket?.history || []).find(item => String(item.id) === String(entryId));
+      if (!bucket || !entry || !['allocation','release'].includes(entry.type)) return;
+      if (!getSinkingBucketAccount(bucket)) { alert('Assign this bucket to an active savings account before editing activity.'); return; }
+      document.getElementById('sinking-bucket-activity-form').reset();
+      document.getElementById('sinking-bucket-activity-id').value = bucket.id;
+      document.getElementById('sinking-bucket-activity-type').value = entry.type === 'allocation' ? 'edit-allocation' : 'edit-release';
+      document.getElementById('sinking-bucket-activity-entry-id').value = entry.id;
+      document.getElementById('sinking-bucket-activity-title').textContent = entry.type === 'allocation' ? 'Edit Allocation' : 'Edit Release';
+      document.getElementById('sinking-bucket-activity-context').textContent = `Editing the historical ${entry.type === 'allocation' ? 'allocation' : 'release'} for ${bucket.name}. This adjusts the bucket's virtual balance only; the real bank account and posted transactions are unchanged.`;
+      document.getElementById('sinking-bucket-activity-amount-label').textContent = 'Correct amount ($)';
+      document.getElementById('sinking-bucket-activity-amount').value = Number(entry.amount || 0).toFixed(2);
+      document.getElementById('sinking-bucket-activity-date').value = entry.date || new Date().toISOString().slice(0,10);
+      document.getElementById('sinking-bucket-activity-note').value = entry.note || '';
+      document.getElementById('sinking-bucket-transfer-destination-wrap').classList.add('hidden');
       document.getElementById('sinking-bucket-activity-modal').classList.remove('hidden');
     }
     function closeSinkingBucketActivityModal() { document.getElementById('sinking-bucket-activity-modal').classList.add('hidden'); }
@@ -10232,6 +10342,23 @@ ${acc.name}`);
       const account = getSinkingBucketAccount(bucket);
       if (!account) { alert('The selected bucket is not linked to an active asset account.'); return; }
       const cents = value => Math.round((Number(value) || 0) * 100);
+      if (action === 'edit-allocation' || action === 'edit-release') {
+        const entryId = document.getElementById('sinking-bucket-activity-entry-id').value;
+        const entry = (bucket.history || []).find(item => String(item.id) === String(entryId));
+        const expectedType = action === 'edit-allocation' ? 'allocation' : 'release';
+        if (!entry || entry.type !== expectedType) { alert('This activity entry can no longer be found. Refresh the bucket and try again.'); return; }
+        const oldCents = cents(entry.amount), newCents = cents(amount), currentCents = cents(bucket.balance);
+        const delta = newCents - oldCents;
+        const resultingBalance = expectedType === 'allocation' ? currentCents + delta : currentCents - delta;
+        if (resultingBalance < 0) { alert('That correction would make the bucket balance negative. Check later allocations or releases before changing this entry.'); return; }
+        if (expectedType === 'allocation' && delta > cents(getSinkingBucketUnallocated(bucket.accountId))) { alert(`Only ${formatFinancial(Math.max(0, getSinkingBucketUnallocated(bucket.accountId)))} is currently unallocated in ${account.name}. The increased allocation cannot exceed available cash.`); return; }
+        captureUndo('Edit sinking-fund activity');
+        bucket.balance = Math.round((resultingBalance / 100) * 100) / 100;
+        entry.amount = Math.round(newCents) / 100;
+        entry.date = date;
+        entry.note = note || (expectedType === 'allocation' ? 'Allocated existing unassigned cash' : 'Released to account unallocated cash');
+        saveData(); closeSinkingBucketActivityModal(); renderZbbPlanner(); return;
+      }
       const amountCents = cents(amount);
       const balanceCents = cents(bucket.balance);
       const availableCents = cents(getSinkingBucketUnallocated(bucket.accountId));
@@ -10308,7 +10435,8 @@ ${acc.name}`);
           const pct = target > 0 ? Math.min(100, Math.max(0, balance / target * 100)) : 0;
           const history = (bucket.history || []).slice(0,3).map(item => {
             const label = item.type === 'opening' ? 'Opening allocation' : item.type === 'allocation' ? 'Allocated' : item.type === 'release' ? 'Released' : item.type === 'transfer-in' ? `Moved in${item.otherBucketName ? ` · ${escapeHtml(item.otherBucketName)}` : ''}` : item.type === 'transfer-out' ? `Moved out${item.otherBucketName ? ` · ${escapeHtml(item.otherBucketName)}` : ''}` : 'Activity';
-            return `<div class="flex justify-between gap-2 text-[10px] text-gray-400"><span class="truncate">${escapeHtml(formatDateMDY(item.date))} · ${label}${item.note ? ` · ${escapeHtml(item.note)}` : ''}</span><span class="shrink-0 accounting-num">${formatFinancial(item.amount)}</span></div>`;
+            const editable = ['allocation','release'].includes(item.type);
+            return `<div class="flex justify-between items-center gap-2 text-[10px] text-gray-400"><span class="min-w-0 truncate">${escapeHtml(formatDateMDY(item.date))} · ${label}${item.note ? ` · ${escapeHtml(item.note)}` : ''}</span><span class="flex items-center gap-2 shrink-0"><span class="accounting-num">${formatFinancial(item.amount)}</span>${editable ? `<button type="button" class="text-indigo-500 dark:text-indigo-400 font-semibold underline" onclick="openSinkingBucketActivityEdit('${escapeHtml(String(bucket.id))}','${escapeHtml(String(item.id))}')" aria-label="Edit ${label.toLowerCase()}">Edit</button>` : ''}</span></div>`;
           }).join('');
           return `<div class="fh-sinking-bucket-row grid grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-1 items-center border-b border-gray-200 dark:border-gray-800 py-2">
             <div class="min-w-0"><div class="font-semibold text-xs">${escapeHtml(bucket.name)}</div><div class="text-[10px] text-gray-400">${target > 0 ? `${pct.toFixed(0)}% of ${formatFinancial(target)} target` : 'No target set'}${bucket.targetDate ? ` · Due ${escapeHtml(bucket.targetDate)}` : ''}</div>${target > 0 ? `<div class="mt-1 h-1 rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden max-w-sm"><div class="h-full bg-indigo-600 theme-bg" style="width:${pct}%"></div></div>` : ''}</div>
@@ -13704,39 +13832,53 @@ No payment links or balance changes were retained.`);
 
       const [y, m] = ym.split('-');
       const monthLabel = monthNames[parseInt(m, 10) - 1] + ' ' + y;
-      document.getElementById('joint-breakdown-title').innerText = `E-Transfer Breakdown - ${monthLabel}`;
+      const titleEl = document.getElementById('joint-breakdown-title');
+      if (titleEl) titleEl.innerText = `E-Transfer Breakdown - ${monthLabel}`;
 
       const meta = state.jointMetaData[ym] || { transfersSent: 0, notes: '' };
-      document.getElementById('joint-transfers-sent-input').value = meta.transfersSent || 0;
-      document.getElementById('joint-month-notes').value = meta.notes || '';
+      const transfersInput = document.getElementById('joint-transfers-sent-input');
+      const notesInput = document.getElementById('joint-month-notes');
+      if (transfersInput) transfersInput.value = meta.transfersSent || 0;
+      if (notesInput) notesInput.value = meta.notes || '';
 
       const billsForMonth = (state.jointBills || []).filter(b => b.ym === ym);
       const fixedList = document.getElementById('joint-fixed-list');
       const varList = document.getElementById('joint-variable-list');
+      if (!fixedList || !varList) return;
       fixedList.innerHTML = ''; varList.innerHTML = '';
 
-      let fixedTot = 0, varTot = 0, fixedShare = 0, varShare = 0, adjustedFixedShare = 0, adjustedVarShare = 0;
+      // All totals are accumulated as integer cents to avoid floating-point drift.
+      let fixedHouseholdCents = 0, variableHouseholdCents = 0;
+      let fixedShareCents = 0, variableShareCents = 0;
+      let adjustedFixedShareCents = 0, adjustedVariableShareCents = 0;
 
       billsForMonth.forEach(b => {
-        const myShare = jointOriginalBillShareCents(b) / 100;
-        const adjustedShare = jointAdjustedBillCents(b) / 100;
-        if (b.classification === 'fixed') { fixedTot += b.amount; fixedShare += myShare; adjustedFixedShare += adjustedShare; }
-        else { varTot += b.amount; varShare += myShare; adjustedVarShare += adjustedShare; }
+        const householdCents = Math.round((Number(b.amount) || 0) * 100);
+        const myShareCents = jointOriginalBillShareCents(b);
+        const adjustedShareCents = jointAdjustedBillCents(b);
+        if (b.classification === 'fixed') {
+          fixedHouseholdCents += householdCents;
+          fixedShareCents += myShareCents;
+          adjustedFixedShareCents += adjustedShareCents;
+        } else {
+          variableHouseholdCents += householdCents;
+          variableShareCents += myShareCents;
+          adjustedVariableShareCents += adjustedShareCents;
+        }
 
         const html = `
           <div class="flex justify-between items-center bg-gray-50 dark:bg-gray-950 p-3 rounded-xl border border-gray-200 dark:border-gray-800 text-xs">
             <div>
-              <div class="font-semibold">${b.name} <span class="text-[10px] text-gray-400 ml-2">(Due: ${b.dueDate || 'N/A'})</span></div>
-              <div class="text-[11px] text-gray-500">Your share: <span class="joint-household-primary-share">${formatFinancial(jointAdjustedBillCents(b) / 100)}</span> · Household: ${formatFinancial(b.amount)} · Split: ${b.splitPct}%</div>
+              <div class="font-semibold">${b.name} ${b.linkedCalendarBillId ? `<button type="button" class="fh-open-details-icon ml-1 align-middle" title="Open linked bill in Calendar" aria-label="Open ${String(b.name || 'household bill').replace(/"/g, '&quot;')} in Calendar" onclick="event.stopPropagation();openDashboardCalendarItem(decodeURIComponent('${encodeURIComponent(String(b.linkedCalendarBillId))}'))"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></button>` : ''} <span class="text-[10px] text-gray-400 ml-2">(Due: ${b.dueDate || 'N/A'})</span></div>
+              <div class="text-[11px] text-gray-500">Household total: ${formatFinancial(householdCents / 100)} · Your split: ${b.splitPct}%</div>
             </div>
             <div class="flex items-center space-x-3">
-              <span class="font-bold accounting-num">${formatFinancial(b.amount)}</span>
+              <span class="font-bold accounting-num joint-household-primary-share">${formatFinancial(adjustedShareCents / 100)}</span>
               <button onclick="recordJointAdjustment('${b.id}')" class="text-amber-600 dark:text-amber-400" title="Adjust my share"><i class="fa-solid fa-sliders"></i></button>
-              <button onclick="editJointBill('${b.id}')" class="text-indigo-400  theme-text"><i class="fa-solid fa-pen"></i></button>
-              <button onclick="deleteJointBill('${b.id}')" class="text-rose-500 "><i class="fa-solid fa-trash"></i></button>
+              <button onclick="editJointBill('${b.id}')" class="text-indigo-400 theme-text"><i class="fa-solid fa-pen"></i></button>
+              <button onclick="deleteJointBill('${b.id}')" class="text-rose-500"><i class="fa-solid fa-trash"></i></button>
             </div>
-          </div>
-        `;
+          </div>`;
         if (b.classification === 'fixed') fixedList.innerHTML += html;
         else varList.innerHTML += html;
       });
@@ -13744,28 +13886,27 @@ No payment links or balance changes were retained.`);
       if (fixedList.innerHTML === '') fixedList.innerHTML = '<div class="text-xs text-gray-400">No fixed commitments for this month.</div>';
       if (varList.innerHTML === '') varList.innerHTML = '<div class="text-xs text-gray-400">No variable utilities for this month.</div>';
 
-      const totalSent = fixedShare + varShare; // Original calculated share; adjustments must not rewrite this figure.
-      const adjustedAmountOwed = adjustedFixedShare + adjustedVarShare;
+      const originalTotalCents = fixedShareCents + variableShareCents;
+      const adjustedOwedCents = adjustedFixedShareCents + adjustedVariableShareCents;
       const transfersSentCents = jointTransfersLoggedForMonth(ym);
-      const adjustedAmountOwedCents = Math.round(adjustedAmountOwed * 100);
-      const netBalanceCents = adjustedAmountOwedCents - transfersSentCents;
+      const netBalanceCents = adjustedOwedCents - transfersSentCents;
       const remaining = Math.max(0, netBalanceCents) / 100;
       const currentCredit = Math.max(0, -netBalanceCents) / 100;
-      const manualTransfersInput = document.getElementById('joint-transfers-sent-input');
-      if (manualTransfersInput) manualTransfersInput.value = (transfersSentCents / 100).toFixed(2);
+
+      if (transfersInput) transfersInput.value = (transfersSentCents / 100).toFixed(2);
       renderJointPriorOutstanding(ym);
       renderJointAdjustments(ym);
 
-      document.getElementById('joint-fixed-sum').innerText = formatFinancial(fixedTot);
-      document.getElementById('joint-variable-sum').innerText = formatFinancial(varTot);
-      const fixedShareHeader = document.getElementById('joint-fixed-share-header'); if (fixedShareHeader) fixedShareHeader.innerText = formatFinancial(adjustedFixedShare);
-      const variableShareHeader = document.getElementById('joint-variable-share-header'); if (variableShareHeader) variableShareHeader.innerText = formatFinancial(adjustedVarShare);
-      document.getElementById('joint-fixed-share').innerText = formatFinancial(fixedShare);
-      document.getElementById('joint-variable-share').innerText = formatFinancial(varShare);
-      document.getElementById('joint-total-sent-disp').innerText = formatFinancial(totalSent);
-      const adjustedOwedEl = document.getElementById('joint-adjusted-owed-disp');
-      if (adjustedOwedEl) adjustedOwedEl.innerText = formatFinancial(adjustedAmountOwedCents / 100);
-      document.getElementById('joint-remaining-due').innerText = formatFinancial(remaining);
+      const setAll = (selector, value) => document.querySelectorAll(selector).forEach(el => { el.innerText = value; });
+      setAll('#joint-fixed-sum', formatFinancial(fixedHouseholdCents / 100));
+      setAll('#joint-variable-sum', formatFinancial(variableHouseholdCents / 100));
+      setAll('#joint-fixed-share-header', formatFinancial(adjustedFixedShareCents / 100));
+      setAll('#joint-variable-share-header', formatFinancial(adjustedVariableShareCents / 100));
+      setAll('#joint-fixed-share', formatFinancial(fixedShareCents / 100));
+      setAll('#joint-variable-share', formatFinancial(variableShareCents / 100));
+      setAll('#joint-total-sent-disp', formatFinancial(originalTotalCents / 100));
+      setAll('#joint-adjusted-owed-disp', formatFinancial(adjustedOwedCents / 100));
+      setAll('#joint-remaining-due', formatFinancial(remaining));
       const creditRow = document.getElementById('joint-current-credit-row');
       const creditValue = document.getElementById('joint-current-credit');
       if (creditRow) creditRow.classList.toggle('hidden', currentCredit <= 0);
@@ -13779,10 +13920,12 @@ No payment links or balance changes were retained.`);
       document.getElementById('jb-edit-id').value = b.id;
       document.getElementById('jb-name').value = b.name;
       document.getElementById('jb-classification').value = b.classification;
-      document.getElementById('jb-amount').value = b.amount;
+      document.getElementById('jb-amount').value = (jointOriginalBillShareCents(b) / 100).toFixed(2);
       document.getElementById('jb-split').value = b.splitPct;
       document.getElementById('jb-date').value = b.dueDate;
       document.getElementById('jb-notes').value = b.notes || '';
+      populateJointCalendarBillLinks(b.linkedCalendarBillId || '');
+      updateJointBillAmountPreview();
       document.getElementById('joint-bill-modal').classList.remove('hidden');
     }
 
@@ -13792,26 +13935,25 @@ No payment links or balance changes were retained.`);
       const monthLabel = monthNames[parseInt(m, 10) - 1] + ' ' + y;
       const bills = (state.jointBills || []).filter(b => b.ym === ym);
 
-      let fixedShareCents = 0, varShareCents = 0;
+      let fixedShareCents = 0, variableShareCents = 0;
       bills.forEach(b => {
         const shareCents = jointOriginalBillShareCents(b);
         if (b.classification === 'fixed') fixedShareCents += shareCents;
-        else varShareCents += shareCents;
+        else variableShareCents += shareCents;
       });
-      const fixedShare = fixedShareCents / 100;
-      const varShare = varShareCents / 100;
-      const totalSent = (fixedShareCents + varShareCents) / 100;
-      const adjustedOwed = jointSettlementCentsForMonth(ym) / 100;
-      const transfersLogged = jointTransfersLoggedForMonth(ym) / 100;
-      const remainingDue = Math.max(0, adjustedOwed - transfersLogged);
-      const currentCredit = Math.max(0, transfersLogged - adjustedOwed);
+      const originalTotalCents = fixedShareCents + variableShareCents;
+      const adjustedOwedCents = jointSettlementCentsForMonth(ym);
+      const transfersLoggedCents = jointTransfersLoggedForMonth(ym);
+      const netCents = adjustedOwedCents - transfersLoggedCents;
+      const remainingDue = Math.max(0, netCents) / 100;
+      const currentCredit = Math.max(0, -netCents) / 100;
 
       let text = `E-Transfer Breakdown - ${monthLabel}\n`;
-      text += `Fixed bills ${formatFinancial(fixedShare)}\n`;
-      text += `Variable bills ${formatFinancial(varShare)}\n`;
-      text += `Original Share Total: ${formatFinancial(totalSent)}\n`;
-      text += `Adjusted Amount Owed: ${formatFinancial(adjustedOwed)}\n`;
-      text += `Transfers Sent Logged: ${formatFinancial(transfersLogged)}\n`;
+      text += `Fixed bills: ${formatFinancial(fixedShareCents / 100)}\n`;
+      text += `Variable bills: ${formatFinancial(variableShareCents / 100)}\n`;
+      text += `Original Share Total: ${formatFinancial(originalTotalCents / 100)}\n`;
+      text += `Adjusted Amount Owed: ${formatFinancial(adjustedOwedCents / 100)}\n`;
+      text += `Transfers Sent Logged: ${formatFinancial(transfersLoggedCents / 100)}\n`;
       text += currentCredit > 0 ? `Credit / Overpayment: ${formatFinancial(currentCredit)}` : `Remaining Due: ${formatFinancial(remainingDue)}`;
       navigator.clipboard.writeText(text).then(() => alert("E-Transfer Breakdown copied to clipboard!"));
     }
@@ -14139,11 +14281,100 @@ No payment links or balance changes were retained.`);
       renderTransactionAnalytics();
     }
 
+    function populateJointCalendarBillLinks(selectedId = '') {
+      const select = document.getElementById('jb-calendar-link');
+      if (!select) return;
+      const bills = (state.calendarBills || []).filter(b => b && b.type === 'expense' && !b.recurrenceGenerated && b.recurring && b.recurring !== 'none');
+      const seen = new Set();
+      const options = bills.map(b => {
+        const id = getZbbCalendarBillLinkId(b);
+        if (!id || seen.has(id)) return '';
+        seen.add(id);
+        const frequency = String(b.recurring || 'monthly');
+        const amount = Number(b.amount) || 0;
+        const monthly = frequency === 'weekly' ? amount * 52 / 12 : frequency === 'biweekly' ? amount * 26 / 12 : frequency === 'yearly' ? amount / 12 : amount;
+        const label = `${b.vendor || b.desc || 'Scheduled bill'} · Your share $${amount.toFixed(2)} ${frequency} · $${monthly.toFixed(2)} monthly`;
+        return `<option value="${String(id).replace(/&/g,'&amp;').replace(/"/g,'&quot;')}" ${String(id) === String(selectedId) ? 'selected' : ''}>${label.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</option>`;
+      }).join('');
+      select.innerHTML = '<option value="">Manual household bill (not linked)</option>' + options;
+      select.value = selectedId || '';
+    }
+    function onJointCalendarBillLinkChange(id) {
+      if (!id) return;
+      const source = getZbbCalendarBillSource(id);
+      if (!source) return;
+      const name = document.getElementById('jb-name');
+      const amount = document.getElementById('jb-amount');
+      const due = document.getElementById('jb-date');
+      if (name) name.value = source.vendor || source.desc || name.value;
+      if (amount) {
+        const raw = Math.max(0, Number(source.amount) || 0);
+        const f = source.recurring || 'monthly';
+        const householdMonthly = f === 'weekly' ? raw * 52 / 12 : f === 'biweekly' ? raw * 26 / 12 : f === 'yearly' ? raw / 12 : raw;
+        // Calendar stores the amount this user is responsible for, not the full household bill.
+        // Keep that personal share unchanged; the split percentage is used only to infer household total.
+        amount.value = householdMonthly.toFixed(2);
+      }
+      const help = document.getElementById('jb-amount-help');
+      if (help) help.textContent = 'Calendar supplies your share; the household total is inferred from your split percentage.';
+      updateJointBillAmountPreview();
+      if (due && source.date) {
+        const day = String(source.date).slice(8,10) || '01';
+        const ym = state.selectedJointYM || '2026-11';
+        const last = new Date(Number(ym.slice(0,4)), Number(ym.slice(5,7)), 0).getDate();
+        due.value = `${ym}-${String(Math.min(Number(day), last)).padStart(2,'0')}`;
+      }
+    }
+    function onJointBillSplitChange() {
+      const linkedId = document.getElementById('jb-calendar-link')?.value || '';
+      if (linkedId) {
+        const source = getZbbCalendarBillSource(linkedId);
+        if (source) {
+          const raw = Math.max(0, Number(source.amount) || 0);
+          const f = source.recurring || 'monthly';
+          const monthly = f === 'weekly' ? raw * 52 / 12 : f === 'biweekly' ? raw * 26 / 12 : f === 'yearly' ? raw / 12 : raw;
+          const amount = document.getElementById('jb-amount');
+          // The linked Calendar amount is already the user's share; changing the split
+          // changes the implied household total, not the amount owed by the user.
+          if (amount) amount.value = monthly.toFixed(2);
+        }
+      }
+      updateJointBillAmountPreview();
+    }
+
+    function updateJointBillAmountPreview() {
+      const amount = Math.max(0, Number(document.getElementById('jb-amount')?.value) || 0);
+      const split = Number(document.getElementById('jb-split')?.value);
+      const preview = document.getElementById('jb-household-total-preview');
+      if (!preview) return;
+      if (!Number.isFinite(split) || split <= 0 || split > 100) {
+        preview.innerHTML = 'Enter a split percentage greater than 0 and no more than 100.';
+        return;
+      }
+      const linkedId = document.getElementById('jb-calendar-link')?.value || '';
+      if (linkedId) {
+        const source = getZbbCalendarBillSource(linkedId);
+        if (source) {
+          const raw = Math.max(0, Number(source.amount) || 0);
+          const f = source.recurring || 'monthly';
+          const monthly = f === 'weekly' ? raw * 52 / 12 : f === 'biweekly' ? raw * 26 / 12 : f === 'yearly' ? raw / 12 : raw;
+          const impliedHouseholdTotal = monthly / (split / 100);
+          preview.innerHTML = `Implied household total: <strong>${formatFinancial(impliedHouseholdTotal)}</strong>`;
+          return;
+        }
+      }
+      const household = amount / (split / 100);
+      preview.innerHTML = `Calculated household total: <strong>${formatFinancial(household)}</strong>`;
+    }
+
     function openJointBillModal() {
       document.getElementById('joint-modal-title').innerText = "Add Household Bill";
       document.getElementById('jb-edit-id').value = '';
       document.getElementById('joint-bill-form').reset();
       document.getElementById('jb-date').value = (state.selectedJointYM || '2026-11') + '-01';
+      populateJointCalendarBillLinks('');
+      const amountHelp = document.getElementById('jb-amount-help'); if (amountHelp) amountHelp.textContent = 'Enter the amount you are responsible for.';
+      updateJointBillAmountPreview();
       document.getElementById('joint-bill-modal').classList.remove('hidden');
     }
     function closeJointBillModal() { document.getElementById('joint-bill-modal').classList.add('hidden'); }
@@ -14153,12 +14384,28 @@ No payment links or balance changes were retained.`);
       const editId = document.getElementById('jb-edit-id').value;
       const dueDate = document.getElementById('jb-date').value;
       const ym = dueDate ? dueDate.substring(0, 7) : (state.selectedJointYM || '2026-11');
+      const enteredShare = Math.max(0, parseFloat(document.getElementById('jb-amount').value) || 0);
+      const splitPct = parseFloat(document.getElementById('jb-split').value);
+      if (!Number.isFinite(splitPct) || splitPct <= 0 || splitPct > 100) { alert('Your split percentage must be greater than 0 and no more than 100.'); return; }
+      const linkedCalendarBillId = document.getElementById('jb-calendar-link')?.value || '';
+      let householdAmount = enteredShare / (splitPct / 100);
+      if (linkedCalendarBillId) {
+        const source = getZbbCalendarBillSource(linkedCalendarBillId);
+        if (!source) { alert('The linked Calendar bill could not be found. Please choose it again or unlink it.'); return; }
+        const raw = Math.max(0, Number(source.amount) || 0);
+        const f = source.recurring || 'monthly';
+        const calendarYourShareMonthly = f === 'weekly' ? raw * 52 / 12 : f === 'biweekly' ? raw * 26 / 12 : f === 'yearly' ? raw / 12 : raw;
+        // Joint bill records retain the implied household amount internally; the UI and
+        // settlement calculations apply splitPct to derive the user's share.
+        householdAmount = calendarYourShareMonthly / (splitPct / 100);
+      }
       const billData = {
         name: document.getElementById('jb-name').value,
         classification: document.getElementById('jb-classification').value,
-        amount: parseFloat(document.getElementById('jb-amount').value) || 0,
-        splitPct: parseFloat(document.getElementById('jb-split').value) || 50,
-        dueDate, notes: document.getElementById('jb-notes').value
+        amount: Math.round(householdAmount * 100) / 100,
+        splitPct,
+        dueDate, notes: document.getElementById('jb-notes').value,
+        linkedCalendarBillId
       };
 
       captureUndo(editId ? 'Edit joint household bill' : 'Add joint household bill');
@@ -32377,6 +32624,65 @@ button[aria-describedby="acc-opening-balance-tooltip"]:focus-visible,
     font-size: .8rem !important;
   }
 }
+/* FinHub v267: prevent native date controls from clipping on narrow screens */
+@media (max-width: 640px) {
+  input[type="date"],
+  input.date-input,
+  .date-input input {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    flex: 1 1 100% !important;
+    display: block;
+    font-size: 16px !important;
+    padding-left: .65rem !important;
+    padding-right: .45rem !important;
+  }
+  label:has(> input[type="date"]),
+  label:has(input[type="date"]) {
+    box-sizing: border-box;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    width: 100%;
+    flex-wrap: wrap !important;
+    align-items: flex-start !important;
+    gap: .3rem .45rem !important;
+  }
+  #ledger-custom-date-range,
+  #acc-activity-from,
+  #acc-activity-to {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+  #ledger-custom-date-range {
+    display: grid !important;
+    grid-template-columns: auto minmax(0, 1fr) !important;
+    align-items: center !important;
+    gap: .4rem .5rem !important;
+  }
+  #ledger-custom-date-range input[type="date"] {
+    grid-column: 2;
+  }
+  /* Date controls inside two-column modal/forms must be allowed to shrink. */
+  .grid > *, .flex > * { min-width: 0; }
+}
 </style>
 
 <!-- FinHub v246: Transaction Log account filter matches all associated accounts (transfer source/destination and debt account); based on v244. -->
+
+<style id="finhub-v269-edit-sinking-bucket-history">
+#sinking-bucket-manager details button{min-height:24px;padding:2px 4px;border-radius:4px}
+#sinking-bucket-manager details button:focus-visible{outline:2px solid var(--theme-primary,#38bdf8);outline-offset:2px}
+
+/* Household bill modal: fit narrow screens and keep actions reachable. */
+#joint-bill-modal { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+#joint-bill-modal > .fh-modal-surface { box-sizing: border-box; width: min(100%, 42rem); min-width: 0; }
+#joint-bill-modal input, #joint-bill-modal select, #joint-bill-modal textarea { box-sizing: border-box; width: 100%; min-width: 0; max-width: 100%; }
+@media (max-width: 639px) {
+  #joint-bill-modal { align-items: flex-start; padding: max(8px, env(safe-area-inset-top)) 8px max(8px, env(safe-area-inset-bottom)); }
+  #joint-bill-modal > .fh-modal-surface { max-height: calc(100dvh - 16px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); padding: 16px; border-radius: 18px; }
+  #joint-bill-modal #joint-bill-form { min-width: 0; }
+  #joint-bill-modal textarea { resize: vertical; }
+}
+</style>
