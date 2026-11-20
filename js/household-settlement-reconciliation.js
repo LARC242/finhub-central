@@ -128,8 +128,67 @@
     return { valid: errors.length === 0, errors, availableCreditCents: available };
   }
 
+
+  function createSettlement(state, input, now = new Date().toISOString()) {
+    state.householdSettlements = Array.isArray(state.householdSettlements) ? state.householdSettlements : [];
+    const context = {
+      transactions: state.transactions || [], jointBills: state.jointBills || [],
+      calendarBills: state.calendarBills || [], jointAdjustments: state.jointAdjustments || [],
+      settlements: state.householdSettlements
+    };
+    const validation = validateSettlement(input, context);
+    if (!validation.valid) return { saved: false, validation };
+    const record = {
+      id: input.id || `hhs_${Date.now().toString(36)}`,
+      ym: String(input.ym),
+      date: String(input.date || ''),
+      bankTransactionId: String(input.bankTransactionId),
+      accountId: String(input.accountId || getTransaction(context.transactions, input.bankTransactionId)?.accountId || ''),
+      allocations: input.allocations.map(a => ({
+        jointBillId: String(a.jointBillId),
+        expenseTransactionId: String(a.expenseTransactionId),
+        amountCents: Number(a.amountCents)
+      })),
+      createdAt: now,
+      status: 'active'
+    };
+    state.householdSettlements.push(record);
+    return { saved: true, record, validation };
+  }
+
+  function reverseSettlement(state, settlementId, reason, now = new Date().toISOString()) {
+    const record = (state.householdSettlements || []).find(s => String(s.id) === String(settlementId));
+    if (!record || !active(record)) return { reversed: false, error: 'Active settlement not found.' };
+    record.reversedAt = now;
+    record.reversalReason = String(reason || '').trim();
+    record.status = 'reversed';
+    return { reversed: true, record };
+  }
+
+  function createCreditEvent(state, input, now = new Date().toISOString()) {
+    state.householdSettlementCreditEvents = Array.isArray(state.householdSettlementCreditEvents) ? state.householdSettlementCreditEvents : [];
+    const context = {
+      settlements: state.householdSettlements || [], transactions: state.transactions || [],
+      creditEvents: state.householdSettlementCreditEvents
+    };
+    const validation = validateCreditEvent(input, context);
+    if (!validation.valid) return { saved: false, validation };
+    const record = {
+      id: input.id || `hhc_${Date.now().toString(36)}`,
+      type: input.type,
+      transactionId: String(input.transactionId),
+      amountCents: Number(input.amountCents),
+      jointBillId: input.jointBillId ? String(input.jointBillId) : '',
+      createdAt: now,
+      status: 'active'
+    };
+    state.householdSettlementCreditEvents.push(record);
+    return { saved: true, record, validation };
+  }
+
   root.FinHubHouseholdSettlement = Object.freeze({
     toCents, validateSettlement, summarizeSettlement, allocatedToBillCents,
-    billBalances, creditPositionCents, validateCreditEvent
+    billBalances, creditPositionCents, validateCreditEvent,
+    createSettlement, reverseSettlement, createCreditEvent
   });
 })(typeof globalThis !== 'undefined' ? globalThis : this);
