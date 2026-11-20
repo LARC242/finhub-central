@@ -13770,7 +13770,10 @@ No payment links or balance changes were retained.`);
         amount: parseFloat(document.getElementById('cal-amount').value) || 0,
         accountId: document.getElementById('cal-account').value,
         recurring,
-        paid: false,
+        // Editing descriptive/classification metadata must never silently unpay a
+        // settled item. Payment state is recalculated from its existing linked
+        // transactions below; legacy unlinked paid flags are preserved as-is.
+        paid: existingBill ? !!existingBill.paid : false,
         ...(document.getElementById('cal-type').value === 'debt' ? { debtAccountId: document.getElementById('cal-debt-account').value || '', principalAmount: document.getElementById('cal-principal-amount').value === '' ? ((state.accounts.find(a => a.id === document.getElementById('cal-debt-account').value)?.paymentMethod === 'interest-only') ? 0 : (parseFloat(document.getElementById('cal-amount').value) || 0)) : Math.max(0, parseFloat(document.getElementById('cal-principal-amount').value) || 0) } : {})
       };
       if (!editId && recurring !== 'none') {
@@ -13798,7 +13801,23 @@ No payment links or balance changes were retained.`);
       captureUndo(editId ? `Edit scheduled item "${existingBill?.desc || data.desc}"` : `Add scheduled item "${data.desc}"`);
       if (editId) {
         const idx = state.calendarBills.findIndex(b => b.id === editId);
-        if (idx >= 0) state.calendarBills[idx] = { ...state.calendarBills[idx], ...data };
+        if (idx >= 0) {
+          const prior = state.calendarBills[idx];
+          state.calendarBills[idx] = { ...prior, ...data };
+          const savedItem = state.calendarBills[idx];
+          // Keep the calendar classification and the linked ledger classification
+          // in sync. This changes metadata only; transaction amounts, dates,
+          // accounts, IDs, reconciliation and payment links remain untouched.
+          if (savedItem.type === 'expense' || savedItem.type === 'income') {
+            getCalendarBillPaymentTransactions(savedItem).forEach(tx => {
+              const expectedType = savedItem.type === 'income' ? 'Income' : 'Expense';
+              if (tx.type !== expectedType) return;
+              tx.category = savedItem.category || '';
+              tx.subcategory = savedItem.subcategory || '';
+            });
+          }
+          syncCalendarBillPaymentState(savedItem);
+        }
       } else {
         state.calendarBills.push(data);
       }
