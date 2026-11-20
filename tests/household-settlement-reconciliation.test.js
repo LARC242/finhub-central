@@ -32,7 +32,7 @@ test('links existing withdrawal and bill expenses without creating transactions'
 test('rejects missing or non-expense bill transaction links', () => {
   const result = core.validateSettlement({
     ym: '2026-11', bankTransactionId: 'bank-1', accountId: 'chequing',
-    allocations: [{ jointBillId: 'rent', expenseTransactionId: 'bank-1', amountCents: 50000 }]
+    allocations: [{ jointBillId: 'rent', expenseTransactionId: 'refund-1', amountCents: 50000 }]
   }, context);
   assert.equal(result.valid, false);
   assert.ok(result.errors.some(e => e.includes('not an expense')));
@@ -41,7 +41,7 @@ test('rejects missing or non-expense bill transaction links', () => {
 test('prevents allocating more than remaining share across settlements', () => {
   const result = core.validateSettlement({
     id: 'settlement-2', ym: '2026-11', bankTransactionId: 'bank-1', accountId: 'chequing',
-    allocations: [{ jointBillId: 'rent', expenseTransactionId: 'rent-expense', amountCents: 60000 }]
+    allocations: [{ jointBillId: 'rent', expenseTransactionId: 'rent-expense', amountCents: 70000 }]
   }, { ...context, settlements: [{ id: 'settlement-1', allocations: [{ jointBillId: 'rent', amountCents: 50000 }] }] });
   assert.equal(result.valid, false);
   assert.ok(result.errors.some(e => e.includes('exceeds its remaining share')));
@@ -219,4 +219,24 @@ test('reversing a source settlement also releases its linked credit events', () 
   assert.deepEqual(core.creditPositionCents(state.householdSettlements, transactions, state.householdSettlementCreditEvents), {
     grossCreditCents: 0, appliedOrRefundedCents: 0, availableCreditCents: 0, overAppliedCents: 0
   });
+});
+
+
+test('rejects using the e-transfer withdrawal as its own bill expense', () => {
+  const result = core.validateSettlement({
+    ym: '2026-11', bankTransactionId: 'bank-1',
+    allocations: [{ jointBillId: 'rent', expenseTransactionId: 'bank-1', amountCents: 50000 }]
+  }, context);
+  assert.equal(result.valid, false);
+  assert.ok(result.errors.some(e => e.includes('cannot also be used')));
+});
+
+test('reversing a settlement reverses its linked credit application', () => {
+  const settlement = { id: 'source', ym: '2026-11', bankTransactionId: 'bank-1', allocations: [{ jointBillId: 'rent', amountCents: 50000 }] };
+  const event = { id: 'application-1', type: 'application', settlementId: 'source', transactionId: 'rent-expense', jointBillId: 'rent', amountCents: 5000, status: 'active' };
+  const state = { transactions, jointBills, householdSettlements: [settlement], householdSettlementCreditEvents: [event] };
+  assert.equal(core.billBalances(jointBills[0], [settlement], [], [event]).outstandingCents, 63000);
+  core.reverseSettlement(state, 'source', 'Incorrect source withdrawal', '2026-11-23T12:00:00.000Z');
+  assert.equal(state.householdSettlementCreditEvents[0].status, 'reversed');
+  assert.equal(core.billBalances(jointBills[0], [settlement], [], state.householdSettlementCreditEvents).outstandingCents, 118000);
 });
