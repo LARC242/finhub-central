@@ -303,6 +303,30 @@
     byId('household-settlement-modal')?.classList.add('hidden');
   }
 
+  function linkSettlementAllocationsToCalendar(settlement) {
+    (settlement.allocations || []).forEach(allocation => {
+      const jointBill = (state.jointBills || []).find(item => String(item.id) === String(allocation.jointBillId));
+      if (!jointBill?.linkedCalendarBillId) return;
+      const candidates = (state.calendarBills || []).filter(item => item && item.type === 'expense' &&
+        (String(item.id) === String(jointBill.linkedCalendarBillId) ||
+         String(item.recurrenceRootId || '') === String(jointBill.linkedCalendarBillId)) &&
+        String(item.date || '').slice(0, 7) === String(settlement.ym));
+      const calendarBill = candidates.find(item => !item.recurrenceOccurrenceDeleted) || null;
+      if (!calendarBill) return;
+      calendarBill.householdSettlementManaged = true;
+      calendarBill.householdSettlementAllocations = Array.isArray(calendarBill.householdSettlementAllocations)
+        ? calendarBill.householdSettlementAllocations : [];
+      calendarBill.householdSettlementAllocations = calendarBill.householdSettlementAllocations.filter(item =>
+        !(String(item.settlementId) === String(settlement.id) && String(item.jointBillId) === String(allocation.jointBillId)));
+      calendarBill.householdSettlementAllocations.push({
+        settlementId: String(settlement.id),
+        jointBillId: String(allocation.jointBillId),
+        amountCents: Number(allocation.amountCents) || 0
+      });
+      if (typeof root.syncCalendarBillPaymentState === 'function') root.syncCalendarBillPaymentState(calendarBill);
+    });
+  }
+
   function saveHouseholdSettlement() {
     const ym = byId('hhs-settlement-month')?.value || currentMonth();
     const bankTransactionId = String(byId('hhs-bank-transaction')?.value || '');
@@ -342,6 +366,7 @@
       }
       return;
     }
+    linkSettlementAllocationsToCalendar(result.record);
     if (typeof root.saveData === 'function') root.saveData();
     closeHouseholdSettlementModal();
     renderHouseholdSettlementPanel();
@@ -423,6 +448,7 @@
     if (typeof root.captureUndo === 'function') root.captureUndo('Reverse household settlement link');
     const result = core.reverseSettlement(state, id, reason);
     if (!result.reversed) { alert(result.error || 'The settlement could not be reversed.'); return; }
+    (state.calendarBills || []).forEach(item => { if (item?.householdSettlementManaged && typeof root.syncCalendarBillPaymentState === 'function') root.syncCalendarBillPaymentState(item); });
     root.saveData();
     renderHouseholdSettlementPanel();
     root.renderJointAppView();
