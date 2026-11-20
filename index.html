@@ -33212,4 +33212,12 @@ html.dark body[data-finhub-theme] .fh-scheduled-summary .fh-scheduled-outflow .f
 html.dark body[data-finhub-theme] .fh-scheduled-summary .fh-scheduled-net-negative .fh-scheduled-value {
   color: var(--fh-status-expense-dark, #f87171) !important;
 }
+
+/* v296: calendar modal grid rows must respect the hidden state.
+   The modal's .cal-paired-row display:grid rule otherwise overrides .hidden. */
+#calendar-modal .cal-paired-row.hidden,
+#calendar-modal #cal-debt-account-wrap.hidden,
+#calendar-modal #cal-principal-wrap.hidden {
+  display: none !important;
+}
 </style>
