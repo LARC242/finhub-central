@@ -19,19 +19,22 @@
 
   function linkedCalendarExpenseIsValid(jointBill, expense, context) {
     if (!jointBill?.linkedCalendarBillId) return true;
-    const calendarBills = context?.calendarBills || [];
-    const calendarBill = calendarBills.find(b => b && b.type === 'expense' &&
-      (String(b.id) === String(jointBill.linkedCalendarBillId) ||
-       String(b.recurrenceRootId || '') === String(jointBill.linkedCalendarBillId)));
-    if (!calendarBill || !expense) return false;
-    const paymentIds = new Set([
-      ...(Array.isArray(calendarBill.paymentTransactionIds) ? calendarBill.paymentTransactionIds : []),
-      calendarBill.linkedTransactionId,
-      ...(context?.transactions || []).filter(t => String(t.calendarBillId || '') === String(calendarBill.id)).map(t => t.id)
-    ].filter(Boolean).map(String));
-    if (!paymentIds.has(String(expense.id))) return false;
-    if (expense.calendarBillId && String(expense.calendarBillId) !== String(calendarBill.id)) return false;
-    return true;
+    if (!expense) return false;
+    const rootId = String(jointBill.linkedCalendarBillId);
+    const candidates = (context?.calendarBills || []).filter(b => b && b.type === 'expense' &&
+      (String(b.id) === rootId || String(b.recurrenceRootId || '') === rootId));
+    return candidates.some(calendarBill => {
+      const paymentIds = new Set([
+        ...(Array.isArray(calendarBill.paymentTransactionIds) ? calendarBill.paymentTransactionIds : []),
+        calendarBill.linkedTransactionId,
+        ...(context?.transactions || []).filter(t => String(t.calendarBillId || '') === String(calendarBill.id)).map(t => t.id)
+      ].filter(Boolean).map(String));
+      if (!paymentIds.has(String(expense.id))) return false;
+      if (expense.calendarBillId && String(expense.calendarBillId) !== String(calendarBill.id)) return false;
+      // If the household bill has an occurrence date, require the matching calendar occurrence.
+      if (jointBill.date && calendarBill.date && String(jointBill.date) !== String(calendarBill.date)) return false;
+      return true;
+    });
   }
 
   function validateSettlement(input, context) {
@@ -77,7 +80,7 @@
         if (expense.refundOfTransactionId || expense.isReversal || expense.reversalOfTransactionId || expense.reconciledDuplicate) errors.push(`The linked transaction for "${bill.name}" is a refund, reversal or duplicate.`);
         if (!linkedCalendarExpenseIsValid(bill, expense, context)) errors.push(`The linked transaction for "${bill.name}" is not a payment recorded against its linked Calendar bill.`);
       }
-      const shareCents = Math.max(0, toCents((Number(bill.amount) || 0) * (Number(bill.splitPct) || 0) / 100));
+      const shareCents = Math.max(0, Math.round(toCents(Number(bill.amount) || 0) * (Number(bill.splitPct) || 0) / 100));
       const adjustmentCents = (context?.jointAdjustments || []).filter(a => active(a) && String(a.billId) === String(bill.id) && String(a.ym) === String(bill.ym))
         .reduce((sum, a) => sum + (a.type === 'additional' ? 1 : -1) * Math.abs(Number(a.amountCents) || 0), 0);
       const obligationCents = Math.max(0, shareCents + adjustmentCents);
@@ -99,7 +102,7 @@
   }
 
   function billBalances(jointBill, settlements, adjustments = []) {
-    const shareCents = Math.max(0, toCents((Number(jointBill.amount) || 0) * (Number(jointBill.splitPct) || 0) / 100));
+    const shareCents = Math.max(0, Math.round(toCents(Number(jointBill.amount) || 0) * (Number(jointBill.splitPct) || 0) / 100));
     const adjustmentCents = (adjustments || []).filter(a => active(a) && String(a.billId) === String(jointBill.id) && String(a.ym) === String(jointBill.ym))
       .reduce((sum, a) => sum + (a.type === 'additional' ? 1 : -1) * Math.abs(Number(a.amountCents) || 0), 0);
     const obligationCents = Math.max(0, shareCents + adjustmentCents);
@@ -119,12 +122,23 @@
     const errors = [];
     const available = creditPositionCents(context?.settlements, context?.transactions, context?.creditEvents).availableCreditCents;
     const amount = Number(event?.amountCents);
+    if (!['refund', 'application'].includes(String(event?.type || ''))) errors.push('Credit event type must be refund or application.');
     if (!Number.isSafeInteger(amount) || amount <= 0) errors.push('Enter a positive credit amount in whole cents.');
     else if (amount > available) errors.push('The credit event exceeds the available household settlement credit.');
     const tx = getTransaction(context?.transactions, event?.transactionId);
     if (!tx) errors.push('Link the credit event to its existing ledger transaction.');
     else if (event.type === 'refund' && String(tx.type).toLowerCase() !== 'income') errors.push('A partner refund must link to an existing income/deposit transaction.');
-    else if (event.type === 'application' && !['expense', 'transfer'].includes(String(tx.type).toLowerCase())) errors.push('A credit application must link to the existing transaction for the household expense it covers.');
+    else if (event.type === 'application' && String(tx.type).toLowerCase() !== 'expense') errors.push('A credit application must link to an existing household expense transaction.');
+    if (event?.type === 'application') {
+      const bill = getBill(context?.jointBills, event.jointBillId);
+      if (!bill) errors.push('Select the household bill that receives this credit application.');
+      else if (tx && !linkedCalendarExpenseIsValid(bill, tx, context)) errors.push('The linked expense does not belong to the selected household bill.');
+      else if (bill && tx) {
+        const already = (context?.creditEvents || []).filter(e => active(e) && e.type === 'application' && String(e.jointBillId) === String(bill.id) && String(e.id) !== String(event.id)).reduce((n,e)=>n+Math.max(0,Number(e.amountCents)||0),0);
+        const balance = billBalances(bill, context?.settlements || [], context?.jointAdjustments || []);
+        if (already + (Number.isSafeInteger(amount) ? amount : 0) > balance.outstandingCents) errors.push('The credit application exceeds the remaining household bill share.');
+      }
+    }
     return { valid: errors.length === 0, errors, availableCreditCents: available };
   }
 
@@ -169,7 +183,8 @@
     state.householdSettlementCreditEvents = Array.isArray(state.householdSettlementCreditEvents) ? state.householdSettlementCreditEvents : [];
     const context = {
       settlements: state.householdSettlements || [], transactions: state.transactions || [],
-      creditEvents: state.householdSettlementCreditEvents
+      jointBills: state.jointBills || [], calendarBills: state.calendarBills || [],
+      jointAdjustments: state.jointAdjustments || [], creditEvents: state.householdSettlementCreditEvents
     };
     const validation = validateCreditEvent(input, context);
     if (!validation.valid) return { saved: false, validation };
