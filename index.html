@@ -6547,6 +6547,7 @@ Bonus" rows="4"></textarea></div>
 </form>
 </div>
 </div>
+<script src="js/household-settlement-reconciliation.js"></script>
 <!-- SCRIPT -->
 <script>
     function formatFinancial(val, isExpense = false) {
@@ -7327,6 +7328,10 @@ Bonus" rows="4"></textarea></div>
     saveData(); // Persist additive migrations before the next browser refresh.
 
     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+    // Household settlement reconciliation records are additive and never create ledger transactions.
+    state.householdSettlements = Array.isArray(state.householdSettlements) ? state.householdSettlements : [];
+    state.householdSettlementCreditEvents = Array.isArray(state.householdSettlementCreditEvents) ? state.householdSettlementCreditEvents : [];
 
     state.schemaVersion = FINHUB_SCHEMA_VERSION;
     function saveData() { state.schemaVersion = FINHUB_SCHEMA_VERSION; localStorage.setItem(FINHUB_STATE_KEY, JSON.stringify(state)); if (typeof updateSidebarNetWorth === 'function') updateSidebarNetWorth(); }
