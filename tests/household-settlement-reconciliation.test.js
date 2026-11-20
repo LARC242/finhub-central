@@ -240,3 +240,14 @@ test('reversing a settlement reverses its linked credit application', () => {
   assert.equal(state.householdSettlementCreditEvents[0].status, 'reversed');
   assert.equal(core.billBalances(jointBills[0], [settlement], [], state.householdSettlementCreditEvents).outstandingCents, 118000);
 });
+
+
+test('does not allocate more than the remaining amount of a linked expense transaction', () => {
+  const smallExpense = { id: 'partial-rent-expense', type: 'Expense', amount: 60, date: '2026-11-02' };
+  const result = core.validateSettlement({
+    ym: '2026-11', bankTransactionId: 'bank-1',
+    allocations: [{ jointBillId: 'rent', expenseTransactionId: 'partial-rent-expense', amountCents: 7000 }]
+  }, { ...context, transactions: [...transactions, smallExpense] });
+  assert.equal(result.valid, false);
+  assert.ok(result.errors.some(e => e.includes('exceed the remaining amount of that expense transaction')));
+});
