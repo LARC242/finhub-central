@@ -5367,23 +5367,26 @@ body[data-finhub-theme] .fh-ledger-view-toggle:focus-visible {
 </div>
 </div>
 </div>
-<div id="household-settlement-panel" class="space-y-4">
-  <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3" id="household-settlement-summary"></div>
-  <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
-    <section class="bg-white dark:bg-gray-900 p-4 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-3">
-      <h4 class="font-bold text-sm">Reconciled withdrawals</h4>
+<div id="household-settlement-panel" class="space-y-3">
+  <div class="grid grid-cols-2 xl:grid-cols-4 gap-2" id="household-settlement-summary"></div>
+  <details class="fh-disclosure">
+    <summary class="fh-disclosure-trigger"><span>Payments &amp; reconciliation</span><span class="global-collapsible-description">Reconciled withdrawals and allocation history</span></summary>
+    <div class="fh-disclosure-panel p-3 space-y-3">
+      <div class="flex items-center justify-between gap-2"><p class="text-xs text-gray-500">Link existing e-Transfers to household bill obligations. No ledger transactions are created or changed.</p><button type="button" class="px-3 py-2 rounded-xl text-xs font-semibold fh-semantic-button fh-btn-primary" onclick="openHouseholdSettlementModal()"><i class="fa-solid fa-link mr-1"></i> Reconcile e-Transfer</button></div>
       <div id="household-settlement-history" class="space-y-2"><p class="text-xs text-gray-500">No reconciled withdrawals yet.</p></div>
-    </section>
-    <section class="bg-white dark:bg-gray-900 p-4 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-3">
-      <h4 class="font-bold text-sm">Household overpayment receivable</h4>
-      <div id="household-settlement-credit-summary" class="space-y-2"></div>
-      <div class="border-t border-gray-200 dark:border-gray-800 pt-2">
-        <h5 class="text-xs font-semibold mb-1">Refunds and credit applications</h5>
-        <div id="household-settlement-credit-events"><p class="text-xs text-gray-500">No credit events recorded.</p></div>
-      </div>
-    </section>
-  </div>
+    </div>
+  </details>
+  <details class="fh-disclosure">
+    <summary class="fh-disclosure-trigger"><span>Credits &amp; prior balances</span><span class="global-collapsible-description">Receivables, refunds and applied credits</span></summary>
+    <div class="fh-disclosure-panel p-3 space-y-3">
+      <div class="flex items-center justify-between gap-2"><div><h4 class="font-semibold text-sm">Household overpayment receivable</h4><div id="household-settlement-credit-summary" class="space-y-1 mt-2"></div></div><button type="button" class="px-3 py-2 rounded-xl text-xs font-semibold fh-semantic-button fh-btn-primary" onclick="openHouseholdCreditEventModal()">Record refund / apply credit</button></div>
+      <div class="border-t border-gray-200 dark:border-gray-800 pt-2"><h5 class="text-xs font-semibold mb-1">Refunds and credit applications</h5><div id="household-settlement-credit-events"><p class="text-xs text-gray-500">No credit events recorded.</p></div></div>
+    </div>
+  </details>
 </div>
+<details class="fh-disclosure" id="joint-monthly-breakdown" open>
+<summary class="fh-disclosure-trigger"><span>Monthly household breakdown</span><span class="global-collapsible-description">Your share, adjusted amount owed and household bills</span></summary>
+<div class="fh-disclosure-panel p-2 sm:p-3 space-y-3">
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 space-y-4 shadow-sm">
 <div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-800 pb-3">
@@ -5423,6 +5426,9 @@ body[data-finhub-theme] .fh-ledger-view-toggle:focus-visible {
 </div>
 </div>
 </div>
+
+</div>
+</details>
 </section>
 <!-- TAB 5: DEBT PAYOFF -->
 <section class="tab-content hidden space-y-6" id="tab-debt">
@@ -14596,15 +14602,22 @@ No payment links or balance changes were retained.`);
           return sum + Math.max(0, originalCents - reversedCents);
         }, 0);
       const manualTotalCents = Number.isFinite(transactionAmountToCents(meta.transfersSent)) ? transactionAmountToCents(meta.transfersSent) : 0;
-      const legacy = Object.prototype.hasOwnProperty.call(meta, 'legacyTransfersSent')
-        ? Math.max(0, transactionAmountToCents(meta.legacyTransfersSent))
-        : Math.max(0, manualTotalCents - linked);
-      const reconciledAllocated = (state.householdSettlements || []).filter(s => String(s.ym) === String(ym) && !s.reversedAt && s.status !== 'void')
+      const reconciledAllocated = (state.householdSettlements || []).filter(s => String(s.ym) === String(ym) && !s.reversedAt && s.status !== 'void' && s.status !== 'reversed')
         .reduce((sum, settlement) => sum + (settlement.allocations || []).reduce((n, allocation) => n + Math.max(0, Number(allocation.amountCents) || 0), 0), 0);
       const monthBillIds = new Set((state.jointBills || []).filter(b => String(b.ym) === String(ym)).map(b => String(b.id)));
-      const activeSettlementIds = new Set((state.householdSettlements || []).filter(item => !item.reversedAt && item.status !== 'void').map(item => String(item.id)));
+      const activeSettlementIds = new Set((state.householdSettlements || []).filter(item => !item.reversedAt && item.status !== 'void' && item.status !== 'reversed').map(item => String(item.id)));
       const appliedCredits = (state.householdSettlementCreditEvents || []).filter(event => !event.reversedAt && event.status !== 'void' && event.type === 'application' && activeSettlementIds.has(String(event.settlementId)) && monthBillIds.has(String(event.jointBillId)))
         .reduce((sum, event) => sum + Math.max(0, Number(event.amountCents) || 0), 0);
+
+      // transfersSent is the displayed all-in total. legacyTransfersSent is its
+      // non-ledger remainder. Older saved records may predate Household Settlement
+      // reconciliation, so cap the stored remainder after subtracting newly linked
+      // e-Transfer allocations and applied credits to avoid counting them twice.
+      const maximumLegacyCents = Math.max(0, manualTotalCents - linked - reconciledAllocated - appliedCredits);
+      const storedLegacyCents = Object.prototype.hasOwnProperty.call(meta, 'legacyTransfersSent')
+        ? Math.max(0, transactionAmountToCents(meta.legacyTransfersSent))
+        : maximumLegacyCents;
+      const legacy = Math.min(storedLegacyCents, maximumLegacyCents);
       return linked + legacy + reconciledAllocated + appliedCredits;
     }
     function jointReconciliationCreditCentsForMonth(ym) {
