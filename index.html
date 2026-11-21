@@ -6553,6 +6553,84 @@ Bonus" rows="4"></textarea></div>
 </div>
 <script src="https://cdn.jsdelivr.net/gh/LARC242/finhub-central@38a79ed2f35d332079ffabcef7e1d1738e5f25a7/js/household-settlement-reconciliation.js" onerror="alert('FinHub could not load the Household Settlement core module. Please check your internet connection and reopen this file.'); console.error('FinHub: could not load household settlement core module.')"></script>
 <script src="https://cdn.jsdelivr.net/gh/LARC242/finhub-central@10d8a99c4a0883c357368210339e19c9c7149842/js/household-settlement-ui.js" onerror="alert('FinHub could not load the Household Settlement buttons. Please check your internet connection and reopen this file.'); console.error('FinHub: could not load household settlement UI module.')"></script>
+<script>
+/* FinHub household-settlement calendar-link fallback.
+ * The primary linker resolves recurring occurrences by recurrenceRootId. Older or
+ * manually-created one-off calendar entries may have no recurrenceRootId, even
+ * though the household bill is linked to the recurring series. In that case,
+ * link only a unique exact-date + name + personal-share amount match.
+ */
+(function (root) {
+  'use strict';
+  const originalRender = root.renderHouseholdSettlementPanel;
+  const originalSave = root.saveHouseholdSettlement;
+  const norm = value => String(value || '').trim().toLocaleLowerCase().replace(/[^a-z0-9]/g, '');
+  const cents = value => Math.round((Number(value) || 0) * 100);
+  function repairUnmatchedSettlementCalendarLinks() {
+    if (typeof state === 'undefined' || !state || !Array.isArray(state.householdSettlements)) return false;
+    let changed = false;
+    (state.householdSettlements || []).filter(s => !s.reversedAt && s.status !== 'void' && s.status !== 'reversed').forEach(settlement => {
+      (settlement.allocations || []).forEach(allocation => {
+        const jointBill = (state.jointBills || []).find(item => String(item.id) === String(allocation.jointBillId) && String(item.ym) === String(settlement.ym));
+        if (!jointBill || !jointBill.linkedCalendarBillId) return;
+        const rootId = String(jointBill.linkedCalendarBillId);
+        const normalCandidates = (state.calendarBills || []).filter(item => item && item.type === 'expense' &&
+          (String(item.id) === rootId || String(item.recurrenceRootId || '') === rootId) &&
+          String(item.date || '').slice(0, 7) === String(settlement.ym) && !item.recurrenceOccurrenceDeleted);
+        // The normal module handles recurring instances. This fallback is for a
+        // separate one-off record which has no recurrenceRootId at all.
+        if (normalCandidates.length) return;
+        const dueDate = String(jointBill.dueDate || '');
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(dueDate) || dueDate.slice(0, 7) !== String(settlement.ym)) return;
+        const billName = norm(jointBill.name);
+        const expectedShareCents = Math.max(0, Math.round(cents(jointBill.amount) * (Number(jointBill.splitPct) || 0) / 100));
+        const exactMatches = (state.calendarBills || []).filter(item => {
+          if (!item || item.type !== 'expense' || String(item.date || '') !== dueDate || item.recurrenceOccurrenceDeleted) return false;
+          const calendarName = norm(item.vendor || item.desc);
+          return calendarName === billName && cents(item.amount) === expectedShareCents;
+        });
+        // Never guess if the date/name/amount combination is not unique.
+        if (exactMatches.length !== 1) {
+          if (exactMatches.length > 1) console.warn('FinHub: ambiguous household calendar link; skipped repair for', jointBill.name, dueDate);
+          return;
+        }
+        const calendarBill = exactMatches[0];
+        calendarBill.householdSettlementManaged = true;
+        calendarBill.householdSettlementAllocations = Array.isArray(calendarBill.householdSettlementAllocations)
+          ? calendarBill.householdSettlementAllocations : [];
+        const existing = calendarBill.householdSettlementAllocations.find(item =>
+          String(item.settlementId) === String(settlement.id) && String(item.jointBillId) === String(allocation.jointBillId));
+        if (!existing) {
+          calendarBill.householdSettlementAllocations.push({
+            settlementId: String(settlement.id),
+            jointBillId: String(allocation.jointBillId),
+            amountCents: Number(allocation.amountCents) || 0
+          });
+          changed = true;
+        }
+        if (typeof root.syncCalendarBillPaymentState === 'function') root.syncCalendarBillPaymentState(calendarBill);
+      });
+    });
+    if (changed && typeof root.saveData === 'function') root.saveData();
+    return changed;
+  }
+  if (typeof originalRender === 'function') {
+    root.renderHouseholdSettlementPanel = function (...args) {
+      const result = originalRender.apply(this, args);
+      repairUnmatchedSettlementCalendarLinks();
+      return result;
+    };
+  }
+  if (typeof originalSave === 'function') {
+    root.saveHouseholdSettlement = function (...args) {
+      const result = originalSave.apply(this, args);
+      repairUnmatchedSettlementCalendarLinks();
+      return result;
+    };
+  }
+  root.repairUnmatchedSettlementCalendarLinks = repairUnmatchedSettlementCalendarLinks;
+})(window);
+</script>
 <!-- Household settlement test build v9: allocate e-Transfers directly to household bill obligations -->
 <!-- SCRIPT -->
 <script>
