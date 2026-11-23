@@ -12871,49 +12871,76 @@ ${acc.name}`);
     }
 
     function getVariableBillCalendarLinkId(bill) { return String(bill?.recurrenceRootId || bill?.id || ''); }
-    function getVariableBillCalendarSource(linkId) {
+    function normalizeVariableBillCalendarLinkId(linkId) {
+      const raw=String(linkId||''); if(!raw)return '';
+      const source=(state.calendarBills||[]).find(b=>b&&String(b.id)===raw);
+      return String(source?.recurrenceRootId||source?.id||raw);
+    }
+    function getVariableBillCalendarSource(linkId, period = String(state.selectedZbbPeriod || '')) {
       if (!linkId) return null;
-      const bills=(state.calendarBills || []).filter(b => b && b.type === 'expense' && !b.recurrenceOccurrenceDeleted);
-      // A recurring series may be represented by a root/template and generated dated occurrences.
-      // Resolve either the root ID or any occurrence belonging to that root.
-      return bills.find(b => String(b.id) === String(linkId)) ||
-        bills.find(b => String(b.recurrenceRootId || '') === String(linkId)) || null;
+      const root=normalizeVariableBillCalendarLinkId(linkId);
+      const family=(state.calendarBills || []).filter(b=>b&&b.type==='expense'&&!b.recurrenceOccurrenceDeleted&&getVariableBillCalendarLinkId(b)===root);
+      // Prefer the actual occurrence for the selected budget month. Fall back to
+      // the series root only when that month has no generated occurrence yet.
+      return family.find(b=>String(b.date||'').slice(0,7)===String(period)) ||
+        family.find(b=>!b.recurrenceGenerated) || family[0] || null;
     }
     function getVariableBillJointSource(linkId, period = (getActiveZbbTemplate()?.period || state.selectedZbbPeriod || '')) {
-      const root = String(linkId || '');
-      if (!root) return null;
-      const source = getVariableBillCalendarSource(root);
-      const normalized = String(source?.recurrenceRootId || source?.id || root);
-      return (state.jointBills || []).find(b => String(b.ym || '') === String(period) && String(b.linkedCalendarBillId || '') === normalized) ||
-        (state.jointBills || []).find(b => String(b.linkedCalendarBillId || '') === normalized) || null;
+      const root=normalizeVariableBillCalendarLinkId(linkId);
+      if(!root||!period)return null;
+      // Household bill links are period-specific. Never fall back to a different
+      // month: doing so can silently apply last month's split or amount.
+      return (state.jointBills||[]).find(b=>String(b.ym||'')===String(period)&&normalizeVariableBillCalendarLinkId(b.linkedCalendarBillId)===root)||null;
+    }
+    function getVariableBillMonthlyTarget(linkId, period) {
+      const joint=getVariableBillJointSource(linkId,period);
+      if(joint){
+        const grossCents=Math.max(0,Math.round((Number(joint.amount)||0)*100));
+        const pct=Math.max(0,Number(joint.splitPct)||0);
+        return {amount:Math.round(grossCents*pct/100)/100,joint};
+      }
+      const occurrence=getVariableBillCalendarSource(linkId,period);
+      return {amount:Math.max(0,Number(occurrence?.amount)||0),joint:null};
     }
     function populateVariableBillCalendarOptions(selectedId = '', editId = '') {
-      const select = document.getElementById('variable-bill-calendar-link'); if (!select) return;
-      const zbb = getActiveZbbTemplate();
-      const linked = new Set([...(zbb.bills || []).map(x=>x.linkedCalendarBillId), ...(zbb.variable || []).map(x=>x.linkedCalendarBillId), ...(zbb.variableBills || []).filter(x=>String(x.id)!==String(editId)).map(x=>x.linkedCalendarBillId)].filter(Boolean).map(String));
-      const bills=(state.calendarBills || []).filter(b=>b && b.type==='expense' && !b.recurrenceOccurrenceDeleted);
+      const select=document.getElementById('variable-bill-calendar-link'); if(!select)return;
+      const zbb=getActiveZbbTemplate();
+      const period=String(state.selectedZbbPeriod||zbb.period||'');
+      const rootOf=value=>normalizeVariableBillCalendarLinkId(value);
+      // Duplicate prevention is scoped to the selected month and compares
+      // normalized recurring-series IDs, not individual occurrence IDs.
+      const linked=new Set([...(zbb.bills||[]),...(zbb.variable||[]),...(zbb.variableBills||[]).filter(x=>String(x.id)!==String(editId))]
+        .map(x=>rootOf(x.linkedCalendarBillId)).filter(Boolean));
+      const bills=(state.calendarBills||[]).filter(b=>b&&b.type==='expense'&&!b.recurrenceOccurrenceDeleted);
       const families=new Map();
       bills.forEach(b=>{
-        const id=getVariableBillCalendarLinkId(b); if(!id)return;
+        const id=getVariableBillCalendarLinkId(b);if(!id)return;
         const current=families.get(id);
-        if(!current || (!b.recurrenceGenerated && current.recurrenceGenerated)) families.set(id,b);
+        if(!current||(!b.recurrenceGenerated&&current.recurrenceGenerated))families.set(id,b);
       });
-      const period = String(state.selectedZbbPeriod || '');
-      const opts=[...families.entries()].map(([id,b])=>{
-        if(linked.has(id) && id!==String(selectedId)) return '';
+      const opts=[...families.entries()].map(([id,root])=>{
+        if(linked.has(id)&&id!==rootOf(selectedId))return '';
         const family=bills.filter(x=>getVariableBillCalendarLinkId(x)===id);
-        const upcoming=family.filter(x=>String(x.date||'')>=new Date().toISOString().slice(0,10)).sort((a,b)=>String(a.date).localeCompare(String(b.date)))[0];
-        const dateLabel=upcoming?.date || b.date;
-        const recurringLabel=b.recurring || (family.length>1 ? 'recurring' : 'scheduled');
+        const occurrence=family.find(x=>String(x.date||'').slice(0,7)===period);
+        const source=occurrence||root;
         const joint=getVariableBillJointSource(id,period);
-        const share=joint ? (Math.round((Number(joint.amount)||0)*100)*Number(joint.splitPct||0)/100)/100 : Number(b.amount)||0;
-        const householdLabel=joint ? ` · ${formatFinancial(share)} share · ${joint.name} household bill` : '';
-        const label=`${b.vendor || b.desc || 'Unnamed bill'} · ${formatFinancial(b.amount||0)}${householdLabel} · ${recurringLabel}${dateLabel ? ' · '+formatDateMDY(dateLabel):''}`;
+        const amount=joint?getVariableBillMonthlyTarget(id,period).amount:Number(source.amount)||0;
+        const dateLabel=occurrence?.date||root.date||'';
+        const recurringLabel=root.recurring||(family.length>1?'recurring':'scheduled');
+        const householdLabel=joint?` · ${formatFinancial(amount)} share · ${joint.name||'Household bill'}`:'';
+        const periodLabel=period?` · ${period}`:'';
+        const label=`${root.vendor||root.desc||'Unnamed bill'} · ${formatFinancial(amount)}${householdLabel}${periodLabel} · ${recurringLabel}${dateLabel?' · '+formatDateMDY(dateLabel):''}`;
         return `<option value="${escapeHtml(id)}">${escapeHtml(label)}</option>`;
       }).filter(Boolean);
-      select.innerHTML='<option value="">Manual variable bill</option>'+opts.join(''); select.value=selectedId||'';
+      select.innerHTML='<option value="">Manual variable bill</option>'+opts.join('');
+      select.value=rootOf(selectedId)||'';
     }
-    function handleVariableBillCalendarLink(linkId){const source=getVariableBillCalendarSource(linkId);if(!source)return;document.getElementById('variable-bill-name').value=source.vendor||source.desc||'';document.getElementById('variable-bill-monthly').value=(Number(source.amount)||0).toFixed(2);}
+    function handleVariableBillCalendarLink(linkId){
+      const source=getVariableBillCalendarSource(linkId,String(state.selectedZbbPeriod||''));if(!source)return;
+      const target=getVariableBillMonthlyTarget(linkId,String(state.selectedZbbPeriod||''));
+      document.getElementById('variable-bill-name').value=source.vendor||source.desc||'';
+      document.getElementById('variable-bill-monthly').value=Number(target.amount||0).toFixed(2);
+    }
     function getVariableBillShiftPeriod(period, offset=1) {
       const [year,month]=String(period||'').split('-').map(Number);
       if(!year||!month)return period;
@@ -13087,7 +13114,9 @@ ${acc.name}`);
     function saveVariableBill(event){
       event.preventDefault(); const zbb=getActiveZbbTemplate(); zbb.variableBills=zbb.variableBills||[];
       const editId=document.getElementById('variable-bill-edit-id').value; const linkId=document.getElementById('variable-bill-calendar-link').value;
-      const source=linkId?getVariableBillCalendarSource(linkId):null; if(linkId&&!source){alert('The selected Calendar expense is no longer available. Refresh and select it again.');return;}
+      const period=String(state.selectedZbbPeriod||zbb.period||'');
+      const normalizedLinkId=linkId?normalizeVariableBillCalendarLinkId(linkId):'';
+      const source=linkId?getVariableBillCalendarSource(normalizedLinkId,period):null; if(linkId&&!source){alert('The selected Calendar expense is no longer available. Refresh and select it again.');return;}
       const reserveAccountId=document.getElementById('variable-bill-reserve-account').value;const reserveAccount=(state.accounts||[]).find(a=>String(a.id)===String(reserveAccountId)&&a.type==='asset'&&!a.archived);if(!reserveAccount){alert('Choose an active asset savings account to hold this bill reserve.');return;}
       const name=String(source?.vendor||source?.desc||document.getElementById('variable-bill-name').value||'').trim();
       const monthly=Number(document.getElementById('variable-bill-monthly').value); const split=['p1','p2','p3'].map(k=>Number(document.getElementById('variable-bill-'+k).value)); const opening=Number(document.getElementById('variable-bill-opening').value||0);
@@ -13100,11 +13129,13 @@ ${acc.name}`);
       item.name=name; item.monthly=monthly; item.splitMode='pct'; item.split=split; item.openingReserve=opening; item.reserveAccountId=String(reserveAccount.id);
       const cashEntry=getVariableBillCashEntry(item);if(cashEntry.accountId!==String(reserveAccount.id)){const cashPos=getVariableBillCashPosition(item);if(cashPos.balance>0.005){alert('This bill already has cash reserved in another account. Release that balance before changing its reserve account.');return;}cashEntry.accountId=String(reserveAccount.id);}
       if(linkId){
-        item.linkedCalendarBillId=String(source.recurrenceRootId || source.id || linkId);
-        const joint=getVariableBillJointSource(item.linkedCalendarBillId, String(state.selectedZbbPeriod || ''));
-        if(joint){item.linkedJointBillId=String(joint.id);item.monthly=Math.round(Math.round((Number(joint.amount)||0)*100)*Number(joint.splitPct||0)/100)/100;}
-        else delete item.linkedJointBillId;
-      }else{delete item.linkedCalendarBillId;delete item.linkedJointBillId;}
+        item.linkedCalendarBillId=normalizedLinkId;
+        const target=getVariableBillMonthlyTarget(normalizedLinkId,period);
+        const joint=target.joint;
+        if(joint){item.linkedJointBillId=String(joint.id);item.monthly=target.amount;}
+        else {delete item.linkedJointBillId;item.monthly=target.amount;}
+        item.linkedPeriod=period;
+      }else{delete item.linkedCalendarBillId;delete item.linkedJointBillId;delete item.linkedPeriod;}
       // New/edited funding schedule is reflected in the current monthly template; reserve math stays separate from expense recognition.
       saveData(); closeVariableBillModal(); renderZbbPlanner();
     }
