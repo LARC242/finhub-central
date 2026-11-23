@@ -12879,6 +12879,14 @@ ${acc.name}`);
       return bills.find(b => String(b.id) === String(linkId)) ||
         bills.find(b => String(b.recurrenceRootId || '') === String(linkId)) || null;
     }
+    function getVariableBillJointSource(linkId, period = (getActiveZbbTemplate()?.period || state.selectedZbbPeriod || '')) {
+      const root = String(linkId || '');
+      if (!root) return null;
+      const source = getVariableBillCalendarSource(root);
+      const normalized = String(source?.recurrenceRootId || source?.id || root);
+      return (state.jointBills || []).find(b => String(b.ym || '') === String(period) && String(b.linkedCalendarBillId || '') === normalized) ||
+        (state.jointBills || []).find(b => String(b.linkedCalendarBillId || '') === normalized) || null;
+    }
     function populateVariableBillCalendarOptions(selectedId = '', editId = '') {
       const select = document.getElementById('variable-bill-calendar-link'); if (!select) return;
       const zbb = getActiveZbbTemplate();
@@ -12888,16 +12896,19 @@ ${acc.name}`);
       bills.forEach(b=>{
         const id=getVariableBillCalendarLinkId(b); if(!id)return;
         const current=families.get(id);
-        // Prefer the recurring root/template for its stable vendor, amount and schedule.
         if(!current || (!b.recurrenceGenerated && current.recurrenceGenerated)) families.set(id,b);
       });
+      const period = String(state.selectedZbbPeriod || '');
       const opts=[...families.entries()].map(([id,b])=>{
         if(linked.has(id) && id!==String(selectedId)) return '';
         const family=bills.filter(x=>getVariableBillCalendarLinkId(x)===id);
         const upcoming=family.filter(x=>String(x.date||'')>=new Date().toISOString().slice(0,10)).sort((a,b)=>String(a.date).localeCompare(String(b.date)))[0];
         const dateLabel=upcoming?.date || b.date;
         const recurringLabel=b.recurring || (family.length>1 ? 'recurring' : 'scheduled');
-        const label=`${b.vendor || b.desc || 'Unnamed bill'} · ${formatFinancial(b.amount||0)} · ${recurringLabel}${dateLabel ? ' · '+formatDateMDY(dateLabel):''}`;
+        const joint=getVariableBillJointSource(id,period);
+        const share=joint ? (Math.round((Number(joint.amount)||0)*100)*Number(joint.splitPct||0)/100)/100 : Number(b.amount)||0;
+        const householdLabel=joint ? ` · ${formatFinancial(share)} share · ${joint.name} household bill` : '';
+        const label=`${b.vendor || b.desc || 'Unnamed bill'} · ${formatFinancial(b.amount||0)}${householdLabel} · ${recurringLabel}${dateLabel ? ' · '+formatDateMDY(dateLabel):''}`;
         return `<option value="${escapeHtml(id)}">${escapeHtml(label)}</option>`;
       }).filter(Boolean);
       select.innerHTML='<option value="">Manual variable bill</option>'+opts.join(''); select.value=selectedId||'';
@@ -13088,7 +13099,12 @@ ${acc.name}`);
       if(!item){item={id:`zvb_${Date.now()}_${Math.random().toString(36).slice(2,7)}`};zbb.variableBills.push(item);}
       item.name=name; item.monthly=monthly; item.splitMode='pct'; item.split=split; item.openingReserve=opening; item.reserveAccountId=String(reserveAccount.id);
       const cashEntry=getVariableBillCashEntry(item);if(cashEntry.accountId!==String(reserveAccount.id)){const cashPos=getVariableBillCashPosition(item);if(cashPos.balance>0.005){alert('This bill already has cash reserved in another account. Release that balance before changing its reserve account.');return;}cashEntry.accountId=String(reserveAccount.id);}
-      if(linkId)item.linkedCalendarBillId=linkId;else delete item.linkedCalendarBillId;
+      if(linkId){
+        item.linkedCalendarBillId=String(source.recurrenceRootId || source.id || linkId);
+        const joint=getVariableBillJointSource(item.linkedCalendarBillId, String(state.selectedZbbPeriod || ''));
+        if(joint){item.linkedJointBillId=String(joint.id);item.monthly=Math.round(Math.round((Number(joint.amount)||0)*100)*Number(joint.splitPct||0)/100)/100;}
+        else delete item.linkedJointBillId;
+      }else{delete item.linkedCalendarBillId;delete item.linkedJointBillId;}
       // New/edited funding schedule is reflected in the current monthly template; reserve math stays separate from expense recognition.
       saveData(); closeVariableBillModal(); renderZbbPlanner();
     }
