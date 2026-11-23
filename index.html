@@ -11526,112 +11526,67 @@ ${acc.name}`);
         alert('This bucket still has money allocated. Move or release its full balance before deleting it.');
         return;
       }
+
+      // Gather every planner-line reference before deleting anything. The same
+      // logical line may be copied into multiple pay-period templates.
       const linkedIds = new Set([
         ...(bucket.linkedPlannerItemIds || []).map(String),
         ...(bucket.linkedZbbItemId ? [String(bucket.linkedZbbItemId)] : [])
       ]);
-      // Also discover any planner rows that explicitly point back to this bucket.
       Object.values(state.zbbTemplates || {}).forEach(template => (template.savings || []).forEach(item => {
         if (String(item.linkedBucketId || '') === String(bucket.id) ||
-            String(item.unifiedFundId || '') === `fund_${bucket.id}`) linkedIds.add(String(item.id));
+            String(item.unifiedFundId || '') === `fund_${bucket.id}`) {
+          if (item.id != null) linkedIds.add(String(item.id));
+        }
       }));
+
+      // The Savings Goals cards are generated from the unified master ledger.
+      // Collect all master-fund IDs that point to this bucket OR to one of its
+      // linked planner lines, including older planner-derived migration records.
+      const master = unifiedSavingsFundsLedger();
+      const masterIds = new Set([`fund_${bucket.id}`]);
+      (master.funds || []).forEach(fund => {
+        const plannerRefs = [
+          ...(fund.legacyPlannerItemIds || []),
+          ...(fund.legacyRefs?.plannerItemIds || [])
+        ].map(String);
+        if (String(fund.legacyBucketId || '') === String(bucket.id) ||
+            String(fund.legacyRefs?.bucketId || '') === String(bucket.id) ||
+            plannerRefs.some(id => linkedIds.has(id))) {
+          masterIds.add(String(fund.id));
+        }
+      });
+
       const linkedCount = linkedIds.size;
       const historyCount = (bucket.history || []).length;
       const warning = historyCount
         ? ` It also has ${historyCount} historical entr${historyCount === 1 ? 'y' : 'ies'}, which will be permanently removed from this bucket.`
         : '';
-      if (!confirm(`Permanently delete the zero-balance bucket "${bucket.name}" and its ${linkedCount} linked paycheque planner line(s)?${warning} This cannot be undone except with Undo.`)) return;
-      captureUndo('Delete sinking-fund bucket and linked planner lines');
-      sinkingBucketLedger().buckets = sinkingBucketLedger().buckets.filter(item => String(item.id) !== String(bucket.id));
+      if (!confirm(`Permanently delete the zero-balance bucket "${bucket.name}", its ${linkedCount} linked paycheque planner line(s), and its Savings Goals tracker?${warning} This cannot be undone except with Undo.`)) return;
+
+      captureUndo('Delete sinking-fund bucket, planner lines and savings goal');
+      sinkingBucketLedger().buckets = sinkingBucketLedger().buckets.filter(item =>
+        String(item.id) !== String(bucket.id)
+      );
+
       Object.values(state.zbbTemplates || {}).forEach(template => {
         template.savings = (template.savings || []).filter(item =>
           !linkedIds.has(String(item.id)) &&
           String(item.linkedBucketId || '') !== String(bucket.id) &&
-          String(item.unifiedFundId || '') !== `fund_${bucket.id}`
-        );
-      });
-      const master = unifiedSavingsFundsLedger();
-      // A migrated bucket may have a planner-derived master ID (fund_planner_...)
-      // rather than fund_<bucketId>. Remove by every durable reference to this bucket.
-      master.funds = master.funds.filter(fund =>
-        String(fund.id) !== `fund_${bucket.id}` &&
-        String(fund.legacyBucketId || '') !== String(bucket.id) &&
-        String(fund.legacyRefs?.bucketId || '') !== String(bucket.id)
-      );
-      // Remove any remaining planner rows which reference this bucket's master ID.
-      const masterIds = new Set([`fund_${bucket.id}`]);
-      Object.values(state.zbbTemplates || {}).forEach(template => {
-        template.savings = (template.savings || []).filter(item =>
           !masterIds.has(String(item.unifiedFundId || ''))
         );
       });
+
+      master.funds = (master.funds || []).filter(fund => !masterIds.has(String(fund.id)));
+
       saveData();
       closeSinkingBucketModal();
       renderZbbPlanner();
-    }
-    function archiveSinkingBucketFromEditor() {
-      const id = document.getElementById('sinking-bucket-edit-id')?.value;
-      const bucket = getSinkingBucketById(id); if (!bucket) return;
-      if (Math.abs(Number(bucket.balance) || 0) > 0.005) { alert('Move or release the remaining balance before archiving this bucket.'); return; }
-      if (!(bucket.history || []).length) { alert('An empty bucket with no history can be deleted instead.'); return; }
-      if (!confirm(`Archive “${bucket.name}”? Its history will be retained, but it will no longer appear in active reconciliation.`)) return;
-      captureUndo('Archive sinking-fund bucket'); bucket.archived = true; bucket.archivedAt = new Date().toISOString();
-      (state.zbbTemplates ? Object.values(state.zbbTemplates) : []).forEach(template => { (template.savings || []).forEach(item => { if (String(item.linkedBucketId || '') === String(bucket.id)) { item.archivedBucket = true; } }); });
-      saveData(); closeSinkingBucketModal(); renderZbbPlanner();
-    }
-    function renderSinkingBucketManager() {
-      refreshUnifiedSavingsFundsFromLegacy();
-      const host = document.getElementById('sinking-bucket-manager');
-      if (!host) return;
-      const funds = unifiedSavingsFundsLedger().funds.filter(fund => fund.classification === 'sinking' && fund.status !== 'archived');
-      const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-      const money = value => formatFinancial(Number(value) || 0);
-      if (!funds.length) {
-        host.innerHTML = '<div class="rounded-xl border border-dashed p-4 text-sm" style="border-color:var(--fh-border);color:var(--fh-muted)">No sinking funds yet. Add a fund to begin tracking money set aside.</div>';
-        return;
+      if (typeof renderSavingsGoalPlanner === 'function') {
+        const active = getActiveZbbTemplate();
+        renderSavingsGoalPlanner(active, getActiveZbbPeriodKey?.() || '');
       }
-      host.innerHTML = funds.map(fund => {
-        const bucket = fund.legacyBucketId ? getSinkingBucketById(fund.legacyBucketId) : null;
-        const plannerId = fund.legacyPlannerItemIds?.[0] || fund.legacyRefs?.plannerItemIds?.[0] || '';
-        const planner = Object.values(state.zbbTemplates || {}).map(t => (t.savings || []).find(item => String(item.id) === String(plannerId))).find(Boolean);
-        const balance = getUnifiedSavingsFundActualBalance(fund);
-        const target = (Number(fund.targetCents) || 0) / 100;
-        const pct = target > 0 ? Math.min(100, Math.max(0, balance / target * 100)) : 0;
-        const monthly = (Number(fund.monthlyCents) || 0) / 100;
-        const split = Array.isArray(fund.split) ? fund.split : [0,0,0];
-        const detailsId = `fh-fund-details-${String(fund.id).replace(/[^a-zA-Z0-9_-]/g,'')}`;
-        const editAction = bucket
-          ? `openSinkingBucketModal('${esc(bucket.id)}')`
-          : (planner ? `openSavingsAllocationModal('${esc(planner.id)}')` : `alert('This legacy fund needs review before it can be edited.')`);
-        const activityActions = bucket ? `<div class="flex flex-wrap gap-2 mt-3">
-          <button type="button" class="fh-savings-add-button" onclick="openSinkingBucketActivityModal('${esc(bucket.id)}','allocate')">Add</button>
-          <button type="button" class="fh-savings-add-button" onclick="openSinkingBucketActivityModal('${esc(bucket.id)}','transfer')">Move</button>
-          <button type="button" class="fh-savings-add-button" onclick="openSinkingBucketActivityModal('${esc(bucket.id)}','release')">Release</button>
-        </div>` : `<p class="text-xs mt-2" style="color:var(--fh-muted)">Dedicated-account balance follows its linked bank account.</p>`;
-        return `<article class="fh-savings-fund-card rounded-xl border p-3" style="border-color:var(--fh-border);background:var(--fh-card)">
-          <div class="flex items-start justify-between gap-3">
-            <div class="min-w-0 flex-1">
-              <div class="flex items-center gap-2"><strong class="text-sm" style="color:var(--fh-ink)">${esc(fund.name)}</strong><span class="text-[10px] rounded-full px-2 py-0.5" style="background:var(--fh-surface);color:var(--fh-muted)">${fund.balanceMode === 'dedicated' ? 'Dedicated' : 'Shared'}</span></div>
-              <div class="text-sm font-semibold tabular-nums mt-1" style="color:var(--fh-ink)">${money(balance)}${target > 0 ? ` <span class="text-xs font-normal" style="color:var(--fh-muted)">/ ${money(target)}</span>` : ''}</div>
-              ${target > 0 ? `<div class="h-1.5 rounded-full overflow-hidden mt-2" style="background:var(--fh-border)"><div class="h-full rounded-full" style="width:${pct.toFixed(1)}%;background:var(--fh-accent)"></div></div><div class="text-[10px] mt-1" style="color:var(--fh-muted)">${pct.toFixed(0)}% of target</div>` : ''}
-            </div>
-            <div class="flex items-center gap-1 shrink-0">
-              <button type="button" class="fh-action-button-compact" aria-label="Edit ${esc(fund.name)}" title="Edit fund" onclick="${editAction}"><i class="fa-solid fa-pen"></i></button>
-              <button type="button" class="fh-action-button-compact" aria-label="Show ${esc(fund.name)} details" aria-expanded="false" aria-controls="${detailsId}" onclick="const d=document.getElementById('${detailsId}');const open=d.classList.toggle('hidden')===false;this.setAttribute('aria-expanded',String(open));"><i class="fa-solid fa-chevron-down"></i></button>
-            </div>
-          </div>
-          <div id="${detailsId}" class="hidden mt-3 pt-3 border-t text-xs" style="border-color:var(--fh-border);color:var(--fh-muted)">
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              <div><span class="block">Monthly</span><strong style="color:var(--fh-ink)">${money(monthly)}</strong></div>
-              <div><span class="block">Paycheque 1</span><strong style="color:var(--fh-ink)">${money(monthly * (Number(split[0]) || 0) / 100)}</strong></div>
-              <div><span class="block">Paycheque 2</span><strong style="color:var(--fh-ink)">${money(monthly * (Number(split[1]) || 0) / 100)}</strong></div>
-              <div><span class="block">Paycheque 3</span><strong style="color:var(--fh-ink)">${money(monthly * (Number(split[2]) || 0) / 100)}</strong></div>
-            </div>
-            ${fund.targetDate ? `<div class="mt-2">Target date · ${esc(fund.targetDate)}</div>` : ''}
-            ${activityActions}
-          </div>
-        </article>`;
-      }).join('');
+      if (typeof renderSinkingBucketManager === 'function') renderSinkingBucketManager();
     }
 
     // Shared, cents-based budget calculation layer. All planner totals and integrity
@@ -38883,6 +38838,43 @@ html:not(.dark) #tab-biweekly .fh-savings-allocation-card .fh-savings-allocation
 html:not(.dark) #tab-biweekly .fh-savings-allocation-card .fh-savings-allocation-plan-actions button:hover {filter:brightness(.94);}
 html:not(.dark) #tab-biweekly .fh-savings-allocation-card .fh-savings-allocation-account-actions button:last-child {background:#fff!important;color:#244258!important;border-color:#b8cbd3!important;}
 </style>
+
+<style id="fh-allocation-header-theme-contrast-fix-20261123">
+/* Allocation account titles and metric headings must remain readable in every theme. */
+body[data-finhub-theme] #tab-biweekly .fh-savings-allocation-card-heading h4,
+body[data-finhub-theme] #tab-biweekly .fh-savings-allocation-card-heading h4 a,
+body[data-finhub-theme] #tab-biweekly .fh-savings-allocation-card-heading h4 button,
+body[data-finhub-theme] #tab-biweekly .fh-savings-allocation-card-metrics .fh-savings-allocation-metric > span,
+body[data-finhub-theme] #tab-biweekly .fh-savings-allocation-card-metrics .fh-savings-allocation-metric > strong,
+body[data-finhub-theme] #tab-biweekly .fh-savings-allocation-lines-visible > .fh-savings-allocation-bucket-heading,
+body[data-finhub-theme] #tab-biweekly .fh-savings-allocation-lines-visible .fh-savings-allocation-plan-line,
+body[data-finhub-theme] #tab-biweekly .fh-savings-allocation-lines-visible .fh-savings-allocation-plan-line strong {
+  color: var(--fh-planner-text, var(--fh-ui-ink, var(--fh-ink, #172033))) !important;
+  opacity: 1 !important;
+}
+body[data-finhub-theme] #tab-biweekly .fh-savings-allocation-card-metrics .fh-savings-allocation-metric > span {
+  color: var(--fh-planner-muted, var(--fh-ui-muted, var(--fh-muted, #64748b))) !important;
+  font-weight: 700 !important;
+}
+/* Some themes use data-theme rather than the html.dark class to signal dark mode. */
+html.dark body[data-finhub-theme] #tab-biweekly .fh-savings-allocation-card-heading h4,
+html.dark body[data-finhub-theme] #tab-biweekly .fh-savings-allocation-card-heading h4 a,
+html.dark body[data-finhub-theme] #tab-biweekly .fh-savings-allocation-card-heading h4 button,
+html.dark body[data-finhub-theme] #tab-biweekly .fh-savings-allocation-card-metrics .fh-savings-allocation-metric > strong,
+html[data-theme="dark"] body[data-finhub-theme] #tab-biweekly .fh-savings-allocation-card-heading h4,
+html[data-theme="dark"] body[data-finhub-theme] #tab-biweekly .fh-savings-allocation-card-heading h4 a,
+html[data-theme="dark"] body[data-finhub-theme] #tab-biweekly .fh-savings-allocation-card-heading h4 button,
+html[data-theme="dark"] body[data-finhub-theme] #tab-biweekly .fh-savings-allocation-card-metrics .fh-savings-allocation-metric > strong {
+  color: var(--fh-dark-ink, var(--fh-planner-text, var(--fh-ui-ink, #f3f4f6))) !important;
+  opacity: 1 !important;
+}
+html.dark body[data-finhub-theme] #tab-biweekly .fh-savings-allocation-card-metrics .fh-savings-allocation-metric > span,
+html[data-theme="dark"] body[data-finhub-theme] #tab-biweekly .fh-savings-allocation-card-metrics .fh-savings-allocation-metric > span {
+  color: var(--fh-dark-muted, var(--fh-planner-muted, var(--fh-ui-muted, #cbd5e1))) !important;
+  opacity: 1 !important;
+}
+</style>
+
 </body>
 
 <style id="finhub-v241-unified-bills-funding-layout">
