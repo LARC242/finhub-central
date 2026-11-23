@@ -12369,27 +12369,83 @@ ${acc.name}`);
         bills.find(b => String(b.recurrenceRootId || '') === String(linkId)) || null;
     }
     function populateVariableBillCalendarOptions(selectedId = '', editId = '') {
-      const select = document.getElementById('variable-bill-calendar-link'); if (!select) return;
+      const select = document.getElementById('variable-bill-calendar-link');
+      if (!select) return;
+
       const zbb = getActiveZbbTemplate();
-      const linked = new Set([...(zbb.bills || []).map(x=>x.linkedCalendarBillId), ...(zbb.variable || []).map(x=>x.linkedCalendarBillId), ...(zbb.variableBills || []).filter(x=>String(x.id)!==String(editId)).map(x=>x.linkedCalendarBillId)].filter(Boolean).map(String));
-      const bills=(state.calendarBills || []).filter(b=>b && b.type==='expense' && !b.recurrenceOccurrenceDeleted);
-      const families=new Map();
-      bills.forEach(b=>{
-        const id=getVariableBillCalendarLinkId(b); if(!id)return;
-        const current=families.get(id);
-        // Prefer the recurring root/template for its stable vendor, amount and schedule.
-        if(!current || (!b.recurrenceGenerated && current.recurrenceGenerated)) families.set(id,b);
+      const fundingPeriod = String(state.selectedZbbPeriod || new Date().toISOString().slice(0, 7));
+      const targetBillPeriod = getVariableBillShiftPeriod(fundingPeriod, 1);
+      const targetStart = `${targetBillPeriod}-01`;
+      const targetMonthLabel = new Date(`${targetStart}T00:00:00`).toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+      const selectedFamilyId = selectedId ? getVariableBillCalendarLinkId(getVariableBillCalendarSource(selectedId) || { id: selectedId }) : '';
+      const bills = (state.calendarBills || []).filter(b =>
+        b && b.type === 'expense' && !b.recurrenceOccurrenceDeleted && b.date
+      );
+
+      // Normalize every saved link to its recurring-series root. This makes a
+      // root link and a generated occurrence link count as the same bill.
+      const canonicalId = rawId => {
+        if (!rawId) return '';
+        const match = bills.find(b => String(b.id) === String(rawId)) ||
+          bills.find(b => String(b.recurrenceRootId || '') === String(rawId));
+        return match ? getVariableBillCalendarLinkId(match) : String(rawId);
+      };
+      const linkedElsewhere = new Set([
+        ...(zbb.bills || []).map(x => x.linkedCalendarBillId),
+        ...(zbb.variable || []).map(x => x.linkedCalendarBillId),
+        ...(zbb.variableBills || []).filter(x => String(x.id) !== String(editId)).map(x => x.linkedCalendarBillId)
+      ].filter(Boolean).map(canonicalId));
+
+      const families = new Map();
+      bills.forEach(b => {
+        const familyId = getVariableBillCalendarLinkId(b);
+        if (!familyId) return;
+        if (!families.has(familyId)) families.set(familyId, []);
+        families.get(familyId).push(b);
       });
-      const opts=[...families.entries()].map(([id,b])=>{
-        if(linked.has(id) && id!==String(selectedId)) return '';
-        const family=bills.filter(x=>getVariableBillCalendarLinkId(x)===id);
-        const upcoming=family.filter(x=>String(x.date||'')>=new Date().toISOString().slice(0,10)).sort((a,b)=>String(a.date).localeCompare(String(b.date)))[0];
-        const dateLabel=upcoming?.date || b.date;
-        const recurringLabel=b.recurring || (family.length>1 ? 'recurring' : 'scheduled');
-        const label=`${b.vendor || b.desc || 'Unnamed bill'} · ${formatFinancial(b.amount||0)} · ${recurringLabel}${dateLabel ? ' · '+formatDateMDY(dateLabel):''}`;
-        return `<option value="${escapeHtml(id)}">${escapeHtml(label)}</option>`;
-      }).filter(Boolean);
-      select.innerHTML='<option value="">Manual variable bill</option>'+opts.join(''); select.value=selectedId||'';
+
+      const dueNextMonth = [];
+      const otherUpcoming = [];
+      families.forEach((family, familyId) => {
+        // Do not offer a second budget line for the same calendar series in
+        // this funding month. The line currently being edited remains visible.
+        if (linkedElsewhere.has(familyId) && familyId !== selectedFamilyId) return;
+
+        family.sort((a, b) => String(a.date).localeCompare(String(b.date)));
+        const targetOccurrence = family.find(b => String(b.date).slice(0, 7) === targetBillPeriod);
+        const nextOccurrence = family.find(b => String(b.date) >= targetStart);
+        const representative = family.find(b => !b.recurrenceGenerated) || family[0];
+        const occurrence = targetOccurrence || nextOccurrence || family[family.length - 1];
+        if (!representative || !occurrence) return;
+
+        const status = occurrence.paid || occurrence.paymentStatus === 'paid'
+          ? 'Paid'
+          : occurrence.paymentStatus === 'partial' || Number(occurrence.paidAmountCents) > 0
+            ? 'Partially paid'
+            : 'Unpaid';
+        const dueLabel = occurrence.date ? formatDateMDY(occurrence.date) : 'Date not set';
+        const recurringLabel = representative.recurring || (family.length > 1 ? 'Recurring' : 'Scheduled');
+        const label = `${representative.vendor || representative.desc || 'Unnamed bill'} · ${formatFinancial(occurrence.amount ?? representative.amount ?? 0)} · Due ${dueLabel} · ${status}`;
+        const option = { id: familyId, label, target: !!targetOccurrence, date: String(occurrence.date || ''), recurringLabel };
+        (targetOccurrence ? dueNextMonth : otherUpcoming).push(option);
+      });
+
+      const renderOptions = rows => rows.sort((a, b) => a.date.localeCompare(b.date) || a.label.localeCompare(b.label))
+        .map(row => `<option value="${escapeHtml(row.id)}">${escapeHtml(row.label)}</option>`).join('');
+      const groups = [];
+      if (dueNextMonth.length) groups.push(`<optgroup label="Due in ${escapeHtml(targetMonthLabel)}">${renderOptions(dueNextMonth)}</optgroup>`);
+      if (otherUpcoming.length) groups.push(`<optgroup label="Other upcoming calendar bills">${renderOptions(otherUpcoming)}</optgroup>`);
+      if (!groups.length) groups.push('<option disabled value="">No eligible upcoming calendar bills</option>');
+
+      select.innerHTML = '<option value="">Manual variable bill</option>' + groups.join('');
+      // Preserve an existing link even if its occurrence is historical or the
+      // calendar series was edited after the budget line was created.
+      if (selectedId && !Array.from(select.options).some(option => option.value === String(selectedId))) {
+        const source = getVariableBillCalendarSource(selectedId);
+        const label = source ? `${source.vendor || source.desc || 'Linked bill'} · Existing link` : 'Existing calendar link (source unavailable)';
+        select.insertAdjacentHTML('beforeend', `<option value="${escapeHtml(String(selectedId))}">${escapeHtml(label)}</option>`);
+      }
+      select.value = selectedId || '';
     }
     function handleVariableBillCalendarLink(linkId){const source=getVariableBillCalendarSource(linkId);if(!source)return;document.getElementById('variable-bill-name').value=source.vendor||source.desc||'';document.getElementById('variable-bill-monthly').value=(Number(source.amount)||0).toFixed(2);}
     function getVariableBillShiftPeriod(period, offset=1) {
