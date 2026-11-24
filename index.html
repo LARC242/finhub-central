@@ -6568,7 +6568,18 @@ Bonus" rows="4"></textarea></div>
   <h3 id="variable-bill-modal-title" class="text-lg font-bold">Add Variable Bill</h3>
   <form id="variable-bill-form" class="space-y-3" onsubmit="saveVariableBill(event)">
    <input type="hidden" id="variable-bill-edit-id"/>
-   <div><label class="block text-xs font-semibold text-gray-500 mb-1">Bills Calendar expense (optional)</label><select id="variable-bill-calendar-link" onchange="handleVariableBillCalendarLink(this.value)" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm"><option value="">Manual variable bill</option></select><p class="text-[10px] text-gray-400 mt-1">Link an existing calendar expense so paid amounts can reduce this reserve. A calendar link does not create a transaction.</p></div>
+   <div><label class="block text-xs font-semibold text-gray-500 mb-1">Bills Calendar expense (optional)</label><div class="relative" id="variable-bill-calendar-picker">
+    <button id="variable-bill-calendar-picker-trigger" type="button" aria-expanded="false" aria-controls="variable-bill-calendar-picker-panel" onclick="toggleVariableBillCalendarPicker()" class="w-full flex items-center justify-between gap-3 rounded-xl border px-3 py-3 text-left text-sm" style="background:var(--fh-control-bg,var(--fh-surface-raised));border-color:var(--fh-control-border,var(--fh-surface-border));color:var(--fh-surface-text)">
+     <span class="min-w-0"><span class="block text-[10px] font-semibold uppercase tracking-wide" style="color:var(--fh-muted)">Calendar connection</span><span id="variable-bill-calendar-picker-value" class="block truncate font-semibold">Manual variable bill</span></span>
+     <i class="fa-solid fa-chevron-down text-xs" style="color:var(--fh-muted)"></i>
+    </button>
+    <div id="variable-bill-calendar-picker-panel" class="hidden absolute left-0 right-0 top-full mt-2 z-[80] rounded-xl border shadow-2xl p-2 space-y-2" style="background:var(--fh-surface-modal,var(--fh-card));border-color:var(--fh-surface-border);color:var(--fh-surface-text)">
+     <div class="relative"><i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-xs" style="color:var(--fh-muted)"></i><input id="variable-bill-calendar-picker-search" type="search" autocomplete="off" placeholder="Search vendor, amount or due date..." oninput="renderVariableBillCalendarPicker()" class="w-full rounded-lg border py-2 pl-8 pr-3 text-sm" style="background:var(--fh-control-bg,var(--fh-surface-raised));border-color:var(--fh-control-border,var(--fh-surface-border));color:var(--fh-surface-text)"/></div>
+     <div id="variable-bill-calendar-picker-results" class="max-h-64 overflow-y-auto space-y-1" role="listbox" aria-label="Available calendar expenses"></div>
+    </div>
+    <select id="variable-bill-calendar-link" onchange="handleVariableBillCalendarLink(this.value);renderVariableBillCalendarPicker()" class="hidden" aria-hidden="true" tabindex="-1"><option value="">Manual variable bill</option></select>
+   </div>
+   <p class="text-[10px] text-gray-400 mt-1">Link an existing calendar expense so paid amounts can reduce this reserve. A calendar link does not create a transaction.</p></div>
    <div><label class="block text-xs font-semibold text-gray-500 mb-1">Bill name</label><input id="variable-bill-name" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" placeholder="e.g. Hydro"/></div>
    <div><label class="block text-xs font-semibold text-gray-500 mb-1">Estimated monthly amount ($)</label><input id="variable-bill-monthly" type="number" min="0" step="0.01" required class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" placeholder="0.00"/></div>
    <div><label class="block text-xs font-semibold text-gray-500 mb-1">Paycheque funding split (%)</label><div class="grid grid-cols-3 gap-2"><label class="text-xs">P1<input id="variable-bill-p1" type="number" min="0" step="0.01" value="50" class="w-full mt-1 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-2"/></label><label class="text-xs">P2<input id="variable-bill-p2" type="number" min="0" step="0.01" value="50" class="w-full mt-1 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-2"/></label><label class="text-xs">P3<input id="variable-bill-p3" type="number" min="0" step="0.01" value="0" class="w-full mt-1 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-2"/></label></div><p class="text-[10px] text-gray-400 mt-1">P1 and P2 should total 100% by default. P3 is a separate optional allocation for a third-paycheque month.</p></div>
@@ -6585,7 +6596,22 @@ Bonus" rows="4"></textarea></div>
 <form class="space-y-3" id="zbb-item-form" onsubmit="saveZbbItem(event)">
 <input id="zbb-item-type" type="hidden" value=""/>
 <input id="zbb-item-edit-id" type="hidden" value=""/>
-<div class="hidden" id="zbb-calendar-link-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Calendar bill</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="zbb-calendar-link" onchange="handleZbbCalendarBillLink(this.value)"><option value="">Manual budget item (not linked)</option></select><p class="text-[10px] text-gray-400 mt-1">Choose an existing recurring Calendar bill to link it. If it does not exist yet, create it in Calendar first, then return here and select it. Linking does not create a payment or transaction.</p><button type="button" class="mt-2 text-xs font-semibold underline text-cyan-500" onclick="closeZbbItemModal();switchTab('calendar')">Create a bill in Calendar</button></div>
+<div class="hidden" id="zbb-calendar-link-wrap">
+<label class="block text-xs font-semibold text-gray-500 mb-1">Calendar bill</label>
+<div class="relative" id="zbb-calendar-bill-picker">
+  <button id="zbb-calendar-bill-picker-trigger" type="button" aria-expanded="false" aria-controls="zbb-calendar-bill-picker-panel" onclick="toggleZbbCalendarBillPicker()" class="w-full flex items-center justify-between gap-3 rounded-xl border px-3 py-3 text-left text-sm" style="background:var(--fh-control-bg,var(--fh-surface-raised));border-color:var(--fh-control-border,var(--fh-surface-border));color:var(--fh-surface-text)">
+    <span class="min-w-0"><span class="block text-[10px] font-semibold uppercase tracking-wide" style="color:var(--fh-muted)">Calendar connection</span><span id="zbb-calendar-bill-picker-value" class="block truncate font-semibold">Manual budget item (not linked)</span></span>
+    <i class="fa-solid fa-chevron-down text-xs" style="color:var(--fh-muted)"></i>
+  </button>
+  <div id="zbb-calendar-bill-picker-panel" class="hidden absolute left-0 right-0 top-full mt-2 z-[80] rounded-xl border shadow-2xl p-2 space-y-2" style="background:var(--fh-surface-modal,var(--fh-card));border-color:var(--fh-surface-border);color:var(--fh-surface-text)">
+    <div class="relative"><i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-xs" style="color:var(--fh-muted)"></i><input id="zbb-calendar-bill-picker-search" type="search" autocomplete="off" placeholder="Search bill, vendor or amount..." oninput="renderZbbCalendarBillPicker()" class="w-full rounded-lg border py-2 pl-8 pr-3 text-sm" style="background:var(--fh-control-bg,var(--fh-surface-raised));border-color:var(--fh-control-border,var(--fh-surface-border));color:var(--fh-surface-text)"/></div>
+    <div id="zbb-calendar-bill-picker-results" class="max-h-64 overflow-y-auto space-y-1" role="listbox" aria-label="Available Calendar bills"></div>
+  </div>
+  <select class="hidden" id="zbb-calendar-link" onchange="handleZbbCalendarBillLink(this.value)"><option value="">Manual budget item (not linked)</option></select>
+</div>
+<p class="text-[10px] text-gray-400 mt-1">Choose an existing recurring Calendar bill to link it. If it does not exist yet, create it in Calendar first, then return here and select it. Linking does not create a payment or transaction.</p>
+<button type="button" class="mt-2 text-xs font-semibold underline text-cyan-500" onclick="closeZbbItemModal();switchTab('calendar')">Create a bill in Calendar</button>
+</div>
 <div class="hidden" id="zbb-calendar-income-link-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Link an existing recurring calendar income</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="zbb-calendar-income-link" onchange="handleZbbCalendarIncomeLink(this.value)"><option value="">Manual income item (not linked)</option></select><p class="text-[10px] text-gray-400 mt-1">The monthly budget amount is calculated from the Calendar recurrence (weekly, biweekly, monthly or yearly). Paycheque splits remain editable. Linking does not create a received income transaction.</p></div>
 <div class="hidden" id="zbb-calendar-debt-link-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Link an existing scheduled Calendar debt payment</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="zbb-calendar-debt-link" onchange="handleZbbCalendarDebtLink(this.value)"><option value="">Manual debt budget item (not linked)</option></select><p class="text-[10px] text-gray-400 mt-1">Links the recurring scheduled payment and its debt account. This does not record a payment or change either account balance.</p></div>
 <div class="hidden" id="zbb-calendar-variable-link-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Link a Bills Calendar expense</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="zbb-calendar-variable-link" onchange="handleZbbCalendarVariableLink(this.value)"><option value="">Manual variable bucket (not linked)</option></select><p class="text-[10px] text-gray-400 mt-1">Links this variable bucket to an existing Calendar expense. The pool allocation remains controlled here; linking does not create a payment or transaction.</p></div>
@@ -12902,14 +12928,50 @@ ${acc.name}`);
       const occurrence=getVariableBillCalendarSource(linkId,period);
       return {amount:Math.max(0,Number(occurrence?.amount)||0),joint:null};
     }
+    function toggleVariableBillCalendarPicker(force){
+      const panel=document.getElementById('variable-bill-calendar-picker-panel');
+      const trigger=document.getElementById('variable-bill-calendar-picker-trigger');
+      if(!panel||!trigger)return;
+      const open=typeof force==='boolean'?force:panel.classList.contains('hidden');
+      panel.classList.toggle('hidden',!open);
+      trigger.setAttribute('aria-expanded',String(open));
+      if(open){const search=document.getElementById('variable-bill-calendar-picker-search');if(search){search.value='';renderVariableBillCalendarPicker();search.focus();}}
+    }
+    function renderVariableBillCalendarPicker(){
+      const select=document.getElementById('variable-bill-calendar-link');
+      const results=document.getElementById('variable-bill-calendar-picker-results');
+      const value=document.getElementById('variable-bill-calendar-picker-value');
+      const search=document.getElementById('variable-bill-calendar-picker-search');
+      if(!select||!results||!value)return;
+      const selected=select.options[select.selectedIndex];
+      value.textContent=selected?.textContent||'Manual variable bill';
+      const term=String(search?.value||'').trim().toLocaleLowerCase();
+      const options=[...select.options].filter(option=>!term||option.textContent.toLocaleLowerCase().includes(term));
+      results.innerHTML=options.length?options.map(option=>{
+        const active=option.value===select.value;
+        return `<button type="button" role="option" aria-selected="${active}" data-variable-calendar-option="${escapeHtml(option.value)}" onclick="selectVariableBillCalendarOption(this.dataset.variableCalendarOption)" class="w-full rounded-lg px-3 py-2.5 text-left text-sm transition flex items-start justify-between gap-2" style="background:${active?'var(--fh-surface-selected,var(--fh-surface-raised))':'transparent'};color:var(--fh-surface-text);border:1px solid ${active?'var(--fh-primary)':'transparent'}"><span class="min-w-0"><span class="block font-semibold">${escapeHtml(option.textContent.split(' · ')[0])}</span><span class="block text-xs mt-0.5" style="color:var(--fh-muted)">${escapeHtml(option.textContent.split(' · ').slice(1).join(' · '))}</span></span>${active?'<i class="fa-solid fa-check mt-1 text-xs" style="color:var(--fh-primary)"></i>':''}</button>`;
+      }).join(''):'<div class="px-3 py-5 text-center text-xs" style="color:var(--fh-muted)">No matching Calendar expenses. Try another search.</div>';
+    }
+    function selectVariableBillCalendarOption(value){
+      const select=document.getElementById('variable-bill-calendar-link');if(!select)return;
+      select.value=String(value||'');
+      handleVariableBillCalendarLink(select.value);
+      renderVariableBillCalendarPicker();
+      toggleVariableBillCalendarPicker(false);
+    }
     function populateVariableBillCalendarOptions(selectedId = '', editId = '') {
       const select=document.getElementById('variable-bill-calendar-link'); if(!select)return;
       const zbb=getActiveZbbTemplate();
       const period=String(state.selectedZbbPeriod||zbb.period||'');
+      const billPeriod=getVariableBillShiftPeriod(period,1);
       const rootOf=value=>normalizeVariableBillCalendarLinkId(value);
       // Duplicate prevention is scoped to the selected month and compares
       // normalized recurring-series IDs, not individual occurrence IDs.
-      const linked=new Set([...(zbb.bills||[]),...(zbb.variable||[]),...(zbb.variableBills||[]).filter(x=>String(x.id)!==String(editId))]
+      // Zero-value legacy variable lines are migration placeholders, not active
+      // reserve schedules. Keep their Calendar families selectable so the user can
+      // replace them with the dedicated Variable Bills workflow.
+      const legacyLinked=(zbb.variable||[]).filter(x=>Number(x.monthly||0)>0);
+      const linked=new Set([...(zbb.bills||[]),...legacyLinked,...(zbb.variableBills||[]).filter(x=>String(x.id)!==String(editId))]
         .map(x=>rootOf(x.linkedCalendarBillId)).filter(Boolean));
       const bills=(state.calendarBills||[]).filter(b=>b&&b.type==='expense'&&!b.recurrenceOccurrenceDeleted);
       const families=new Map();
@@ -12923,21 +12985,26 @@ ${acc.name}`);
         const family=bills.filter(x=>getVariableBillCalendarLinkId(x)===id);
         const occurrence=family.find(x=>String(x.date||'').slice(0,7)===period);
         const source=occurrence||root;
-        const joint=getVariableBillJointSource(id,period);
-        const amount=joint?getVariableBillMonthlyTarget(id,period).amount:Number(source.amount)||0;
-        const dateLabel=occurrence?.date||root.date||'';
+        const targetOccurrence=family.find(x=>String(x.date||'').slice(0,7)===billPeriod);
+        const billSource=targetOccurrence||occurrence||root;
+        const joint=getVariableBillJointSource(id,billPeriod);
+        const amount=joint?getVariableBillMonthlyTarget(id,billPeriod).amount:Number(billSource.amount)||0;
+        const dateLabel=billSource?.date||'';
         const recurringLabel=root.recurring||(family.length>1?'recurring':'scheduled');
         const householdLabel=joint?` · ${formatFinancial(amount)} share · ${joint.name||'Household bill'}`:'';
-        const periodLabel=period?` · ${period}`:'';
+        const periodLabel=billPeriod?` · Due ${billPeriod}`:'';
         const label=`${root.vendor||root.desc||'Unnamed bill'} · ${formatFinancial(amount)}${householdLabel}${periodLabel} · ${recurringLabel}${dateLabel?' · '+formatDateMDY(dateLabel):''}`;
         return `<option value="${escapeHtml(id)}">${escapeHtml(label)}</option>`;
       }).filter(Boolean);
       select.innerHTML='<option value="">Manual variable bill</option>'+opts.join('');
       select.value=rootOf(selectedId)||'';
+      renderVariableBillCalendarPicker();
     }
     function handleVariableBillCalendarLink(linkId){
-      const source=getVariableBillCalendarSource(linkId,String(state.selectedZbbPeriod||''));if(!source)return;
-      const target=getVariableBillMonthlyTarget(linkId,String(state.selectedZbbPeriod||''));
+      const fundingPeriod=String(state.selectedZbbPeriod||'');
+      const billPeriod=getVariableBillShiftPeriod(fundingPeriod,1);
+      const source=getVariableBillCalendarSource(linkId,billPeriod);if(!source)return;
+      const target=getVariableBillMonthlyTarget(linkId,billPeriod);
       document.getElementById('variable-bill-name').value=source.vendor||source.desc||'';
       document.getElementById('variable-bill-monthly').value=Number(target.amount||0).toFixed(2);
     }
@@ -13116,7 +13183,8 @@ ${acc.name}`);
       const editId=document.getElementById('variable-bill-edit-id').value; const linkId=document.getElementById('variable-bill-calendar-link').value;
       const period=String(state.selectedZbbPeriod||zbb.period||'');
       const normalizedLinkId=linkId?normalizeVariableBillCalendarLinkId(linkId):'';
-      const source=linkId?getVariableBillCalendarSource(normalizedLinkId,period):null; if(linkId&&!source){alert('The selected Calendar expense is no longer available. Refresh and select it again.');return;}
+      const billPeriod=getVariableBillShiftPeriod(period,1);
+      const source=linkId?getVariableBillCalendarSource(normalizedLinkId,billPeriod):null; if(linkId&&!source){alert('The selected Calendar expense is no longer available. Refresh and select it again.');return;}
       const reserveAccountId=document.getElementById('variable-bill-reserve-account').value;const reserveAccount=(state.accounts||[]).find(a=>String(a.id)===String(reserveAccountId)&&a.type==='asset'&&!a.archived);if(!reserveAccount){alert('Choose an active asset savings account to hold this bill reserve.');return;}
       const name=String(source?.vendor||source?.desc||document.getElementById('variable-bill-name').value||'').trim();
       const monthly=Number(document.getElementById('variable-bill-monthly').value); const split=['p1','p2','p3'].map(k=>Number(document.getElementById('variable-bill-'+k).value)); const opening=Number(document.getElementById('variable-bill-opening').value||0);
@@ -13130,11 +13198,14 @@ ${acc.name}`);
       const cashEntry=getVariableBillCashEntry(item);if(cashEntry.accountId!==String(reserveAccount.id)){const cashPos=getVariableBillCashPosition(item);if(cashPos.balance>0.005){alert('This bill already has cash reserved in another account. Release that balance before changing its reserve account.');return;}cashEntry.accountId=String(reserveAccount.id);}
       if(linkId){
         item.linkedCalendarBillId=normalizedLinkId;
-        const target=getVariableBillMonthlyTarget(normalizedLinkId,period);
+        const target=getVariableBillMonthlyTarget(normalizedLinkId,billPeriod);
         const joint=target.joint;
         if(joint){item.linkedJointBillId=String(joint.id);item.monthly=target.amount;}
         else {delete item.linkedJointBillId;item.monthly=target.amount;}
-        item.linkedPeriod=period;
+        item.linkedPeriod=billPeriod;
+        // Replace matching zero-dollar legacy placeholders after the dedicated
+        // reserve schedule has been saved, avoiding duplicate planner lines.
+        zbb.variable=(zbb.variable||[]).filter(old=>!(Number(old.monthly||0)===0&&normalizeVariableBillCalendarLinkId(old.linkedCalendarBillId)===normalizedLinkId));
       }else{delete item.linkedCalendarBillId;delete item.linkedJointBillId;delete item.linkedPeriod;}
       // New/edited funding schedule is reflected in the current monthly template; reserve math stays separate from expense recognition.
       saveData(); closeVariableBillModal(); renderZbbPlanner();
@@ -13753,7 +13824,7 @@ ${acc.name}`);
             const status = linked
               ? '<span class="fh-fixed-bill-linked" title="Linked to Calendar" aria-label="Linked to Calendar"><i class="fa-solid fa-check" aria-hidden="true"></i></span>'
               : `<button type="button" class="fh-fixed-bill-link" onclick="event.stopPropagation();openFixedBillCalendarLink('${id}')" title="Link to Calendar">Link</button>`;
-            return `<div class="fh-fixed-bill-row"><div class="fh-fixed-bill-name">${billName}</div><div class="fh-fixed-bill-value"><strong class="fh-fixed-bill-amount accounting-num">${money(current)}</strong>${status}</div></div>`;
+            return `<div class="fh-fixed-bill-row"><div class="fh-fixed-bill-name">${billName}</div><div class="fh-fixed-bill-value"><strong class="fh-fixed-bill-amount accounting-num" data-current-amount-cents="${Math.round((Number(current)||0)*100)}">${money(current)}</strong>${status}</div></div>`;
           }).join('');
           container.innerHTML = `${rows || '<p class="text-xs text-gray-400 py-3">No fixed bills added yet.</p>'}`;
           return;
@@ -14158,6 +14229,20 @@ ${acc.name}`);
       const candidates = (state.calendarBills || []).filter(b => b && b.type === 'expense' && !b.recurrenceGenerated);
       return candidates.find(b => String(b.id) === String(linkId) || String(b.recurrenceRootId || '') === String(linkId)) || null;
     }
+    // Household Settlement must resolve the occurrence in the selected settlement
+    // month, not the recurring series root (which may carry last month's date).
+    function getJointCalendarBillSource(linkId, period = String(state.selectedJointYM || '')) {
+      if (!linkId) return null;
+      const rootId = getZbbCalendarBillLinkId(
+        (state.calendarBills || []).find(b => b && (String(b.id) === String(linkId) || String(b.recurrenceRootId || '') === String(linkId))) || { id: linkId }
+      );
+      const family = (state.calendarBills || []).filter(b =>
+        b && b.type === 'expense' && !b.recurrenceOccurrenceDeleted &&
+        getZbbCalendarBillLinkId(b) === rootId
+      );
+      return family.find(b => String(b.date || '').slice(0, 7) === String(period)) ||
+        family.find(b => !b.recurrenceGenerated) || family[0] || null;
+    }
     function getZbbCalendarIncomeSource(linkId) {
       if (!linkId) return null;
       return (state.calendarBills || []).find(b => b && b.type === 'income' && !b.recurrenceGenerated &&
@@ -14214,6 +14299,42 @@ ${acc.name}`);
       toggleZbbSplitModeType();
     }
 
+    function toggleZbbCalendarBillPicker(force) {
+      const panel=document.getElementById('zbb-calendar-bill-picker-panel');
+      const trigger=document.getElementById('zbb-calendar-bill-picker-trigger');
+      if(!panel||!trigger)return;
+      const open=typeof force==='boolean'?force:panel.classList.contains('hidden');
+      panel.classList.toggle('hidden',!open);
+      trigger.setAttribute('aria-expanded',String(open));
+      if(open){
+        const search=document.getElementById('zbb-calendar-bill-picker-search');
+        if(search){search.value='';renderZbbCalendarBillPicker();search.focus();}
+      }
+    }
+    function renderZbbCalendarBillPicker() {
+      const select=document.getElementById('zbb-calendar-link');
+      const results=document.getElementById('zbb-calendar-bill-picker-results');
+      const value=document.getElementById('zbb-calendar-bill-picker-value');
+      const search=document.getElementById('zbb-calendar-bill-picker-search');
+      if(!select||!results||!value)return;
+      const selected=select.options[select.selectedIndex];
+      value.textContent=selected?.textContent||'Manual budget item (not linked)';
+      const term=String(search?.value||'').trim().toLocaleLowerCase();
+      const options=[...select.options].filter(option=>!term||option.textContent.toLocaleLowerCase().includes(term));
+      results.innerHTML=options.length?options.map(option=>{
+        const active=option.value===select.value;
+        const parts=option.textContent.split(' · ');
+        return `<button type="button" role="option" aria-selected="${active}" data-zbb-calendar-option="${escapeHtml(option.value)}" onclick="selectZbbCalendarBillOption(this.dataset.zbbCalendarOption)" class="w-full rounded-lg px-3 py-2.5 text-left text-sm transition flex items-start justify-between gap-2" style="background:${active?'var(--fh-surface-selected,var(--fh-surface-raised))':'transparent'};color:var(--fh-surface-text);border:1px solid ${active?'var(--fh-primary)':'transparent'}"><span class="min-w-0"><span class="block font-semibold">${escapeHtml(parts[0])}</span><span class="block text-xs mt-0.5" style="color:var(--fh-muted)">${escapeHtml(parts.slice(1).join(' · ')||'Manual budget item')}</span></span>${active?'<i class="fa-solid fa-check mt-1 text-xs" style="color:var(--fh-primary)"></i>':''}</button>`;
+      }).join(''):'<div class="px-3 py-5 text-center text-xs" style="color:var(--fh-muted)">No matching Calendar bills. Try another search.</div>';
+    }
+    function selectZbbCalendarBillOption(value) {
+      const select=document.getElementById('zbb-calendar-link');
+      if(!select)return;
+      select.value=String(value||'');
+      handleZbbCalendarBillLink(select.value);
+      renderZbbCalendarBillPicker();
+      toggleZbbCalendarBillPicker(false);
+    }
     function populateZbbCalendarBillLink(selectedId = '') {
       const select = document.getElementById('zbb-calendar-link');
       if (!select) return;
@@ -14234,6 +14355,7 @@ ${acc.name}`);
         return `<option value="${escapeHtml(id)}">${escapeHtml(label)}</option>`;
       }).join('');
       select.value = selectedId || '';
+      renderZbbCalendarBillPicker();
     }
     function handleZbbCalendarBillLink(linkId) {
       const source = getZbbCalendarBillSource(linkId);
@@ -17076,9 +17198,12 @@ No payment links or balance changes were retained.`);
         if (!id || seen.has(id)) return '';
         seen.add(id);
         const frequency = String(b.recurring || 'monthly');
-        const amount = Number(b.amount) || 0;
+        const occurrence = getJointCalendarBillSource(id, String(state.selectedJointYM || ''));
+        const amount = Number(occurrence?.amount ?? b.amount) || 0;
+        const occurrenceDate = occurrence?.date || b.date || '';
         const monthly = frequency === 'weekly' ? amount * 52 / 12 : frequency === 'biweekly' ? amount * 26 / 12 : frequency === 'yearly' ? amount / 12 : amount;
-        const label = `${b.vendor || b.desc || 'Scheduled bill'} · Your share $${amount.toFixed(2)} ${frequency} · $${monthly.toFixed(2)} monthly`;
+        const monthLabel = String(state.selectedJointYM || '').trim();
+        const label = `${b.vendor || b.desc || 'Scheduled bill'} · Your share $${amount.toFixed(2)} ${frequency} · $${monthly.toFixed(2)} monthly${monthLabel ? ` · ${monthLabel}` : ''}${occurrenceDate ? ` · Due ${formatDateMDY(occurrenceDate)}` : ''}`;
         return `<option value="${String(id).replace(/&/g,'&amp;').replace(/"/g,'&quot;')}" ${String(id) === String(selectedId) ? 'selected' : ''}>${label.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</option>`;
       }).join('');
       select.innerHTML = '<option value="">Manual household bill (not linked)</option>' + options;
@@ -17087,7 +17212,7 @@ No payment links or balance changes were retained.`);
     }
     function onJointCalendarBillLinkChange(id) {
       if (!id) return;
-      const source = getZbbCalendarBillSource(id);
+      const source = getJointCalendarBillSource(id, String(state.selectedJointYM || ''));
       if (!source) return;
       const name = document.getElementById('jb-name');
       const amount = document.getElementById('jb-amount');
@@ -17114,7 +17239,7 @@ No payment links or balance changes were retained.`);
     function onJointBillSplitChange() {
       const linkedId = document.getElementById('jb-calendar-link')?.value || '';
       if (linkedId) {
-        const source = getZbbCalendarBillSource(linkedId);
+        const source = getJointCalendarBillSource(linkedId, String(state.selectedJointYM || ''));
         if (source) {
           const raw = Math.max(0, Number(source.amount) || 0);
           const f = source.recurring || 'monthly';
@@ -17139,7 +17264,7 @@ No payment links or balance changes were retained.`);
       }
       const linkedId = document.getElementById('jb-calendar-link')?.value || '';
       if (linkedId) {
-        const source = getZbbCalendarBillSource(linkedId);
+        const source = getJointCalendarBillSource(linkedId, String(state.selectedJointYM || ''));
         if (source) {
           const raw = Math.max(0, Number(source.amount) || 0);
           const f = source.recurring || 'monthly';
@@ -17178,7 +17303,7 @@ No payment links or balance changes were retained.`);
       const linkedCalendarBillId = document.getElementById('jb-calendar-link')?.value || '';
       let householdAmount = enteredShare / (splitPct / 100);
       if (linkedCalendarBillId) {
-        const source = getZbbCalendarBillSource(linkedCalendarBillId);
+        const source = getJointCalendarBillSource(linkedCalendarBillId, ym);
         if (!source) { alert('The linked Calendar bill could not be found. Please choose it again or unlink it.'); return; }
         const raw = Math.max(0, Number(source.amount) || 0);
         const f = source.recurring || 'monthly';
@@ -38922,6 +39047,52 @@ html[data-theme="dark"] body[data-finhub-theme] #tab-biweekly .fh-savings-alloca
 }
 </style>
 
+
+<style id="fh-light-mode-savings-allocation-header-contrast-fix-20261123">
+/* Light mode only: account names in the Paycheque Planner allocation cards
+   must use the same high-contrast ink as the surrounding card content.
+   Dark mode and all layout, typography, and theme accent choices are unchanged. */
+html:not(.dark) body[data-finhub-theme] #tab-biweekly .fh-savings-allocation-card-heading :is(
+  h4,
+  .fh-savings-account-link,
+  .fh-savings-account-unlinked
+) {
+  color:var(--fh-ui-ink,#183047) !important;
+}
+</style>
+
+<script id="fh-variable-bill-calendar-picker-events">
+document.addEventListener('click',function(event){
+ const root=document.getElementById('variable-bill-calendar-picker');
+ if(root&&!root.contains(event.target))toggleVariableBillCalendarPicker(false);
+ const fixedRoot=document.getElementById('zbb-calendar-bill-picker');
+ if(fixedRoot&&!fixedRoot.contains(event.target))toggleZbbCalendarBillPicker(false);
+});
+</script>
+
+<style id="fh-light-mode-modal-cancel-contrast-20261123">
+/* Light themes: secondary modal actions need a visible surface and readable ink.
+   Keep the app's existing font, shape, spacing and theme accent on primary actions. */
+html:not(.dark) #zbb-item-modal .fh-zbb-modal-actions > .fh-zbb-modal-cancel-button,
+html:not(.dark) .fh-zbb-modal-cancel-button {
+  color:var(--fh-ui-ink,#173044)!important;
+  background:var(--fh-control-bg,#dcefed)!important;
+  border:1px solid var(--fh-control-border,#8bbdb9)!important;
+  box-shadow:inset 0 0 0 1px rgba(23,48,68,.05)!important;
+}
+html:not(.dark) #zbb-item-modal .fh-zbb-modal-actions > .fh-zbb-modal-cancel-button:hover,
+html:not(.dark) .fh-zbb-modal-cancel-button:hover {
+  color:var(--fh-ui-ink,#173044)!important;
+  background:var(--fh-control-hover-bg,#c9e5e2)!important;
+  border-color:var(--fh-accent,#0b8588)!important;
+}
+html:not(.dark) #zbb-item-modal .fh-zbb-modal-actions > .fh-zbb-modal-cancel-button:focus-visible,
+html:not(.dark) .fh-zbb-modal-cancel-button:focus-visible {
+  outline:2px solid var(--fh-accent,#0b8588)!important;
+  outline-offset:2px!important;
+}
+</style>
+
 </body>
 
 <style id="finhub-v241-unified-bills-funding-layout">
@@ -39969,20 +40140,34 @@ html.dark body[data-finhub-theme] .fh-scheduled-summary .fh-scheduled-net-negati
     const list=card&&$('#zbb-bills-list',card);
     if(!card||!list)return;
     const cycle=Math.max(1,Math.min(3,Number(state?.selectedPayCycle||1)));
+    // Use the same source and allocation formula as the Fixed Bills row renderer.
+    // The previous DOM-summing approach could run before rows were populated and
+    // incorrectly replace a valid total with zero.
     const items=(typeof getActiveZbbTemplate==='function' && getActiveZbbTemplate()?.bills) || [];
     let total=0;
     items.forEach(item=>{
-      const split=item.split||[50,50,0];
-      total += item.splitMode==='dollar' ? (Number(split[cycle-1])||0) : (Number(item.monthly)||0)*((Number(split[cycle-1])||0)/100);
+      const split=Array.isArray(item.split)?item.split:[50,50,0];
+      total += item.splitMode==='dollar'
+        ? (Number(split[cycle-1])||0)
+        : (Number(item.monthly)||0)*((Number(split[cycle-1])||0)/100);
     });
     const header=$('.fh-card-heading-row',card);
     if(header){
       let amount=$('.fh-fixed-current-total',header);
-      if(!amount){amount=document.createElement('strong');amount.className='fh-fixed-current-total accounting-num';header.insertBefore(amount,header.querySelector('.fh-bills-add-button'));}
+      if(!amount){
+        amount=document.createElement('strong');
+        amount.className='fh-fixed-current-total accounting-num';
+        const title=header.querySelector('h4');
+        if(title)title.insertAdjacentElement('afterend',amount);
+        else header.appendChild(amount);
+      }
       amount.textContent=money(total);
+      amount.setAttribute('aria-label',`Fixed Bills this paycheque ${money(total)}`);
       const add=header.querySelector('.fh-bills-add-button');
-      if(add && add.parentElement!==card){card.appendChild(add);}
-      if(add){add.innerHTML='<i class="fa-solid fa-plus" aria-hidden="true"></i><span>Add Bill</span>';add.setAttribute('aria-label','Add fixed bill');}
+      if(add){
+        add.innerHTML='<i class="fa-solid fa-plus" aria-hidden="true"></i><span>Add Bill</span>';
+        add.setAttribute('aria-label','Add fixed bill');
+      }
     }
   }
   function renderReserveSummary(){
