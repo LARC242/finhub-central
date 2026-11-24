@@ -6613,7 +6613,21 @@ Bonus" rows="4"></textarea></div>
 <button type="button" class="mt-2 text-xs font-semibold underline text-cyan-500" onclick="closeZbbItemModal();switchTab('calendar')">Create a bill in Calendar</button>
 </div>
 <div class="hidden" id="zbb-calendar-income-link-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Link an existing recurring calendar income</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="zbb-calendar-income-link" onchange="handleZbbCalendarIncomeLink(this.value)"><option value="">Manual income item (not linked)</option></select><p class="text-[10px] text-gray-400 mt-1">The monthly budget amount is calculated from the Calendar recurrence (weekly, biweekly, monthly or yearly). Paycheque splits remain editable. Linking does not create a received income transaction.</p></div>
-<div class="hidden" id="zbb-calendar-debt-link-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Link an existing scheduled Calendar debt payment</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="zbb-calendar-debt-link" onchange="handleZbbCalendarDebtLink(this.value)"><option value="">Manual debt budget item (not linked)</option></select><p class="text-[10px] text-gray-400 mt-1">Links the recurring scheduled payment and its debt account. This does not record a payment or change either account balance.</p></div>
+<div class="hidden" id="zbb-calendar-debt-link-wrap">
+<label class="block text-xs font-semibold text-gray-500 mb-1">Calendar payment connection</label>
+<div class="relative" id="zbb-calendar-debt-picker">
+  <button id="zbb-calendar-debt-picker-trigger" type="button" aria-expanded="false" aria-controls="zbb-calendar-debt-picker-panel" onclick="toggleZbbCalendarDebtPicker()" class="w-full flex items-center justify-between gap-3 rounded-xl border px-3 py-3 text-left text-sm" style="background:var(--fh-control-bg,var(--fh-surface-raised));border-color:var(--fh-control-border,var(--fh-surface-border));color:var(--fh-surface-text)">
+    <span class="min-w-0"><span class="block text-[10px] font-semibold uppercase tracking-wide" style="color:var(--fh-muted)">Scheduled debt payment</span><span id="zbb-calendar-debt-picker-value" class="block truncate font-semibold">Manual debt budget item (not linked)</span></span>
+    <i class="fa-solid fa-chevron-down text-xs" style="color:var(--fh-muted)"></i>
+  </button>
+  <div id="zbb-calendar-debt-picker-panel" class="hidden absolute left-0 right-0 top-full mt-2 z-[80] rounded-xl border shadow-2xl p-2 space-y-2" style="background:var(--fh-surface-modal,var(--fh-card));border-color:var(--fh-surface-border);color:var(--fh-surface-text)">
+    <div class="relative"><i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-xs" style="color:var(--fh-muted)"></i><input id="zbb-calendar-debt-picker-search" type="search" autocomplete="off" placeholder="Search payment, debt account or amount..." oninput="renderZbbCalendarDebtPicker()" class="w-full rounded-lg border py-2 pl-8 pr-3 text-sm" style="background:var(--fh-control-bg,var(--fh-surface-raised));border-color:var(--fh-control-border,var(--fh-surface-border));color:var(--fh-surface-text)"/></div>
+    <div id="zbb-calendar-debt-picker-results" class="max-h-64 overflow-y-auto space-y-1" role="listbox" aria-label="Available scheduled debt payments"></div>
+  </div>
+  <select class="hidden" id="zbb-calendar-debt-link" onchange="handleZbbCalendarDebtLink(this.value)"><option value="">Manual debt budget item (not linked)</option></select>
+</div>
+<p class="text-[10px] text-gray-400 mt-1">Link an existing scheduled Calendar debt payment to this debt budget line. This does not record a payment or change either account balance.</p>
+</div>
 <div class="hidden" id="zbb-calendar-variable-link-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Link a Bills Calendar expense</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="zbb-calendar-variable-link" onchange="handleZbbCalendarVariableLink(this.value)"><option value="">Manual variable bucket (not linked)</option></select><p class="text-[10px] text-gray-400 mt-1">Links this variable bucket to an existing Calendar expense. The pool allocation remains controlled here; linking does not create a payment or transaction.</p></div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Description / Name</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="zbb-item-name" required="" type="text"/></div>
 <div class="hidden" id="zbb-savings-linked-account-wrap">
@@ -8749,6 +8763,93 @@ Bonus" rows="4"></textarea></div>
 
     let finhubTabHistory = [];
     let finhubCurrentTab = 'dashboard';
+    let calendarModalReturnContext = null;
+    let finhubModalReturnContext = null;
+    const FINHUB_RETURN_MODAL_SELECTOR = [
+      '#calendar-modal','#transaction-modal','#account-modal','#account-detail-modal',
+      '#debt-detail-modal','#debt-payment-modal','#joint-bill-modal','#joint-etransfer-modal',
+      '#zbb-item-modal','#transfer-modal','#category-modal','#income-category-modal',
+      '#type-modal','#merchant-rule-modal','#sinking-bucket-modal',
+      '#sinking-bucket-activity-modal','#interest-charge-modal',
+      '#available-to-spend-modal','#recon-modal','#backup-import-preview-modal'
+    ].join(',');
+    function captureFinHubModalReturnContext() {
+      const current=finhubCurrentTab || 'dashboard';
+      const previous=finhubTabHistory.length ? finhubTabHistory[finhubTabHistory.length-1] : null;
+      const previousTab=typeof previous==='string'?previous:previous?.tabId;
+      // If the current tab was only entered to host a modal, return to the page
+      // that initiated the navigation. Otherwise return to the current page.
+      const originTab=(previousTab && previousTab!==current) ? previousTab : current;
+      if(originTab==='dashboard') return captureFinHubPagePosition('dashboard');
+      const entry=captureFinHubPagePosition(originTab);
+      return entry;
+    }
+    function registerFinHubModalReturn(modal) {
+      if(!modal || modal.__fhReturnRegistered)return;
+      modal.__fhReturnRegistered=true;
+      modal.__fhReturnOrigin=null;
+      const isVisible=()=>!modal.classList.contains('hidden') && getComputedStyle(modal).display!=='none';
+      const observer=new MutationObserver(()=>{
+        const visible=isVisible();
+        if(visible && !modal.__fhReturnWasVisible){
+          modal.__fhReturnOrigin=captureFinHubModalReturnContext();
+        } else if(!visible && modal.__fhReturnWasVisible && modal.__fhReturnOrigin){
+          const context=modal.__fhReturnOrigin;
+          modal.__fhReturnOrigin=null;
+          if(modal.id!=='calendar-modal'){
+            const current=finhubCurrentTab;
+            if(context.tabId && current!==context.tabId && document.getElementById(`tab-${context.tabId}`)){
+              switchTab(context.tabId,true);
+            }
+            restoreFinHubPagePosition(context);
+          }
+        }
+        modal.__fhReturnWasVisible=visible;
+      });
+      observer.observe(modal,{attributes:true,attributeFilter:['class','style','aria-hidden']});
+      modal.__fhReturnObserver=observer;
+      modal.__fhReturnWasVisible=isVisible();
+    }
+    function initFinHubModalReturnNavigation(){
+      document.querySelectorAll(FINHUB_RETURN_MODAL_SELECTOR).forEach(registerFinHubModalReturn);
+    }
+    document.addEventListener('DOMContentLoaded',initFinHubModalReturnNavigation,{once:true});
+    if(document.readyState!=='loading')initFinHubModalReturnNavigation();
+
+    function captureFinHubPagePosition(tabId) {
+      const page=document.getElementById(`tab-${tabId}`);
+      const scrollPositions=[];
+      if(page){
+        page.querySelectorAll('*').forEach(el=>{
+          if(el.id && el.scrollHeight>el.clientHeight+4 && el.clientHeight>0){
+            scrollPositions.push({id:el.id,top:el.scrollTop,left:el.scrollLeft});
+          }
+        });
+      }
+      return {tabId,windowX:window.scrollX||0,windowY:window.scrollY||0,scrollPositions};
+    }
+    function restoreFinHubPagePosition(entry) {
+      if(!entry)return;
+      requestAnimationFrame(()=>{
+        window.scrollTo(Number(entry.windowX)||0,Number(entry.windowY)||0);
+        (entry.scrollPositions||[]).forEach(position=>{
+          const el=document.getElementById(position.id);
+          if(el){el.scrollTop=Number(position.top)||0;el.scrollLeft=Number(position.left)||0;}
+        });
+      });
+    }
+
+    const finhubModalDiscoveryObserver=new MutationObserver(records=>{
+      records.forEach(record=>{
+        record.addedNodes.forEach(node=>{
+          if(node.nodeType!==1)return;
+          if(node.matches?.(FINHUB_RETURN_MODAL_SELECTOR))registerFinHubModalReturn(node);
+          node.querySelectorAll?.(FINHUB_RETURN_MODAL_SELECTOR).forEach(registerFinHubModalReturn);
+        });
+      });
+    });
+    finhubModalDiscoveryObserver.observe(document.documentElement,{childList:true,subtree:true});
+
     function updateFinHubBackButton() {
       const btn=document.getElementById('finhub-back-button');
       if(btn){
@@ -8761,13 +8862,17 @@ Bonus" rows="4"></textarea></div>
     }
     function goBackFinHubPage() {
       const previous=finhubTabHistory.pop();
-      if(previous) switchTab(previous,true);
+      if(previous){
+        const tabId=typeof previous==='string'?previous:previous.tabId;
+        switchTab(tabId,true);
+        if(typeof previous==='object')restoreFinHubPagePosition(previous);
+      }
       updateFinHubBackButton();
     }
     function switchTab(tabId, isBackNavigation=false) {
       if(!document.getElementById(`tab-${tabId}`)) return;
       if(!isBackNavigation && finhubCurrentTab!==tabId) {
-        if(finhubCurrentTab && document.getElementById(`tab-${finhubCurrentTab}`)) finhubTabHistory.push(finhubCurrentTab);
+        if(finhubCurrentTab && document.getElementById(`tab-${finhubCurrentTab}`)) { finhubTabHistory.push(captureFinHubPagePosition(finhubCurrentTab)); if(finhubTabHistory.length>50)finhubTabHistory.shift(); }
       }
       finhubCurrentTab=tabId;
       updateFinHubBackButton();
@@ -8810,6 +8915,7 @@ Bonus" rows="4"></textarea></div>
       applyThemeColor(state.appThemeColor || 'indigo');
       applyVisualTheme(state.appVisualTheme || 'finhubblue');
       syncPageDisclosureControls();
+      if(!isBackNavigation) window.scrollTo({top:0,left:0,behavior:'instant'});
     }
 
     /*
@@ -9159,6 +9265,10 @@ Bonus" rows="4"></textarea></div>
       state.currentMonth = month - 1;
       state.calendarView = 'monthly';
       saveData();
+      // Remember the originating dashboard position before opening the Calendar
+      // editor. The modal is an overlay; closing it should return to this page,
+      // not leave the user on the Calendar tab.
+      calendarModalReturnContext = captureFinHubPagePosition('dashboard');
       switchTab('calendar');
       editCalendarItem(item.id);
     }
@@ -13801,13 +13911,55 @@ ${acc.name}`);
         container.innerHTML = '';
         if (sectionKey === 'debt') {
           const money = n => formatFinancial(Number(n) || 0);
+          const cycle = Math.max(1, Math.min(3, Number(state?.selectedPayCycle || 1)));
           const rows = (itemsList || []).map(item => {
-            const split = item.split || [50,50,0];
-            const alloc = [0,1,2].map(i => item.linkedCalendarDebtId ? getZbbItemCycleCents(item, i+1)/100 : (item.splitMode === 'dollar' ? (Number(split[i])||0) : (Number(item.monthly)||0) * ((Number(split[i])||0)/100)));
-            const link = item.linkedCalendarDebtId ? (item.linkStatus === 'source-missing' ? '<span class="text-[10px] text-rose-500">Scheduled payment unavailable</span>' : item.linkStatus === 'account-unmatched' ? '<span class="text-[10px] text-amber-500">Debt account unmatched</span>' : `<button type="button" class="fh-open-details-icon ml-1 align-middle" onclick="event.stopPropagation();openDashboardCalendarItem(decodeURIComponent('${encodeURIComponent(String(item.linkedCalendarDebtId))}'))" title="Open linked scheduled debt payment in Calendar" aria-label="Open linked scheduled debt payment"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></button>`) : '<span>Manual item</span>';
-            return `<div class="grid grid-cols-[minmax(0,1.5fr)_repeat(3,minmax(62px,0.7fr))_auto] gap-2 items-center bg-gray-50 dark:bg-gray-950 p-3 rounded-xl border border-gray-200 dark:border-gray-800 text-xs"><div class="min-w-0"><div class="font-semibold truncate">${escapeHtml(item.name)}</div><div class="text-[10px] text-gray-400">Debt budget · ${money(item.monthly)} monthly · ${link}</div></div><div class="text-right"><div class="text-[9px] text-gray-400">P1</div><strong class="accounting-num">${money(alloc[0])}</strong></div><div class="text-right"><div class="text-[9px] text-gray-400">P2</div><strong class="accounting-num">${money(alloc[1])}</strong></div><div class="text-right"><div class="text-[9px] text-gray-400">P3</div><strong class="accounting-num">${money(alloc[2])}</strong></div><div class="flex gap-2"><button onclick="openZbbItemModal('debt','${item.id}')" class="text-indigo-400" title="Edit debt allocation"><i class="fa-solid fa-pen"></i></button><button onclick="deleteZbbItem('debt','${item.id}')" class="fh-zbb-delete-button text-rose-500" title="Delete debt line"><i class="fa-solid fa-trash"></i></button></div></div>`;
+            const split = Array.isArray(item.split) ? item.split : [50,50,0];
+            const alloc = item.linkedCalendarDebtId
+              ? [1,2,3].map(payCycle => getZbbItemCycleCents(item, payCycle) / 100)
+              : [0,1,2].map(i => item.splitMode === 'dollar'
+                  ? (Number(split[i]) || 0)
+                  : (Number(item.monthly) || 0) * ((Number(split[i]) || 0) / 100));
+            const account = (state.accounts || []).find(a => a && a.type === 'debt' &&
+              (String(a.id) === String(item.linkedAccountId || '') ||
+               String(a.id) === String(resolveDebtAccountForBill(getZbbCalendarDebtSource(item.linkedCalendarDebtId))?.id || '')));
+            const source = item.linkedCalendarDebtId ? getZbbCalendarDebtSource(item.linkedCalendarDebtId) : null;
+            const due = account ? formatDebtDueSchedule(account) : (source?.date ? formatDateMDY(source.date) : '');
+            const linked = !!item.linkedCalendarDebtId && item.linkStatus !== 'source-missing' && !!source;
+            const status = linked
+              ? `<span class="fh-debt-calendar-status is-linked"><i class="fa-solid fa-calendar-check" aria-hidden="true"></i> Calendar linked</span>`
+              : item.linkStatus === 'source-missing'
+                ? `<span class="fh-debt-calendar-status is-missing">Calendar payment unavailable</span>`
+                : `<button type="button" class="fh-debt-calendar-link" onclick="openZbbItemModal('debt','${escapeHtml(String(item.id))}')">Link Calendar payment</button>`;
+            const balance = account ? money(account.balance || 0) : '—';
+            const current = alloc[cycle - 1] || 0;
+            const payCells = alloc.map((amount, index) =>
+              `<span class="fh-debt-pay-chip${index + 1 === cycle ? ' is-current' : ''}"><span>P${index + 1}</span><strong class="accounting-num">${money(amount)}</strong></span>`
+            ).join('');
+            const safeId = String(item.id).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+            return `<article class="fh-debt-budget-card">
+              <div class="fh-debt-budget-main">
+                <div class="fh-debt-budget-title-row">
+                  <button type="button" class="fh-debt-budget-name" onclick="openZbbItemModal('debt','${safeId}')" title="Edit ${escapeHtml(item.name)}">${escapeHtml(item.name || 'Debt payment')}</button>
+                  ${status}
+                </div>
+                <div class="fh-debt-budget-meta">
+                  <span>Balance <strong class="accounting-num">${balance}</strong></span>
+                  <span>Minimum <strong class="accounting-num">${money(item.monthly)}</strong> / month</span>
+                  ${due ? `<span>Due <strong>${escapeHtml(due)}</strong></span>` : ''}
+                </div>
+                <div class="fh-debt-pay-allocation">${payCells}</div>
+              </div>
+              <div class="fh-debt-budget-current">
+                <span>This paycheque</span>
+                <strong class="accounting-num">${money(current)}</strong>
+                <div class="fh-debt-budget-actions">
+                  <button type="button" onclick="openZbbItemModal('debt','${safeId}')" title="Edit debt allocation" aria-label="Edit ${escapeHtml(item.name)}"><i class="fa-solid fa-pen" aria-hidden="true"></i></button>
+                  <button type="button" class="fh-zbb-delete-button" onclick="deleteZbbItem('debt','${safeId}')" title="Delete debt budget line" aria-label="Delete ${escapeHtml(item.name)}"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+                </div>
+              </div>
+            </article>`;
           }).join('');
-          container.innerHTML = `<div class="grid grid-cols-[minmax(0,1.5fr)_repeat(3,minmax(62px,0.7fr))_auto] gap-2 px-3 text-[10px] uppercase tracking-wide text-gray-400"><div>Debt payment</div><div class="text-right">Paycheque 1</div><div class="text-right">Paycheque 2</div><div class="text-right">Third cheque</div><div></div></div>${rows || '<p class="text-xs text-gray-400 py-3">No debt payments added yet.</p>'}<p class="text-[10px] text-gray-400">Linked scheduled payments are budget references only. Recording the actual payment remains a separate Calendar/ledger action.</p>`;
+          container.innerHTML = `${rows || '<p class="fh-debt-empty">No debt payments added yet. Add a debt payment or refresh minimums from your Debt accounts.</p>'}<p class="fh-debt-budget-note">Calendar links are planning references only. Record the actual payment once in Calendar/Transactions; the debt balance changes only when the actual payment is recorded.</p>`;
           return;
         }
         if (sectionKey === 'bill') {
@@ -14380,6 +14532,42 @@ ${acc.name}`);
       if (frequency === 'yearly') return Math.round(amount / 12 * 100) / 100;
       return Math.round(amount * 100) / 100;
     }
+    function toggleZbbCalendarDebtPicker(force) {
+      const panel=document.getElementById('zbb-calendar-debt-picker-panel');
+      const trigger=document.getElementById('zbb-calendar-debt-picker-trigger');
+      if(!panel||!trigger)return;
+      const open=typeof force==='boolean'?force:panel.classList.contains('hidden');
+      panel.classList.toggle('hidden',!open);
+      trigger.setAttribute('aria-expanded',String(open));
+      if(open){
+        const search=document.getElementById('zbb-calendar-debt-picker-search');
+        if(search){search.value='';renderZbbCalendarDebtPicker();search.focus();}
+      }
+    }
+    function renderZbbCalendarDebtPicker() {
+      const select=document.getElementById('zbb-calendar-debt-link');
+      const results=document.getElementById('zbb-calendar-debt-picker-results');
+      const value=document.getElementById('zbb-calendar-debt-picker-value');
+      const search=document.getElementById('zbb-calendar-debt-picker-search');
+      if(!select||!results||!value)return;
+      const selected=select.options[select.selectedIndex];
+      value.textContent=selected?.textContent||'Manual debt budget item (not linked)';
+      const term=String(search?.value||'').trim().toLocaleLowerCase();
+      const options=[...select.options].filter(option=>!term||option.textContent.toLocaleLowerCase().includes(term));
+      results.innerHTML=options.length?options.map(option=>{
+        const active=option.value===select.value;
+        const parts=option.textContent.split(' · ');
+        return `<button type="button" role="option" aria-selected="${active}" data-zbb-debt-option="${escapeHtml(option.value)}" onclick="selectZbbCalendarDebtOption(this.dataset.zbbDebtOption)" class="w-full rounded-lg px-3 py-2.5 text-left text-sm transition flex items-start justify-between gap-2" style="background:${active?'var(--fh-surface-selected,var(--fh-surface-raised))':'transparent'};color:var(--fh-surface-text);border:1px solid ${active?'var(--fh-primary)':'transparent'}"><span class="min-w-0"><span class="block font-semibold">${escapeHtml(parts[0])}</span><span class="block text-xs mt-0.5" style="color:var(--fh-muted)">${escapeHtml(parts.slice(1).join(' · ')||'Manual debt budget item')}</span></span>${active?'<i class="fa-solid fa-check mt-1 text-xs" style="color:var(--fh-primary)"></i>':''}</button>`;
+      }).join(''):'<div class="px-3 py-5 text-center text-xs" style="color:var(--fh-muted)">No matching scheduled debt payments.</div>';
+    }
+    function selectZbbCalendarDebtOption(value) {
+      const select=document.getElementById('zbb-calendar-debt-link');
+      if(!select)return;
+      select.value=String(value||'');
+      handleZbbCalendarDebtLink(select.value);
+      renderZbbCalendarDebtPicker();
+      toggleZbbCalendarDebtPicker(false);
+    }
     function populateZbbCalendarDebtLink(selectedId = '') {
       const select = document.getElementById('zbb-calendar-debt-link');
       if (!select) return;
@@ -14397,6 +14585,7 @@ ${acc.name}`);
       }).filter(Boolean);
       select.innerHTML = '<option value="">Manual debt budget item (not linked)</option>' + opts.join('');
       select.value = selectedId || '';
+      renderZbbCalendarDebtPicker();
     }
     function handleZbbCalendarDebtLink(linkId) {
       const source = getZbbCalendarDebtSource(linkId);
@@ -15676,6 +15865,7 @@ No payment links or balance changes were retained.`);
     }
 
     function openCalendarModal(dateStr = '') {
+      calendarModalReturnContext = null;
       document.getElementById('cal-modal-title').innerText = "Schedule Recurring Item";
       document.getElementById('cal-edit-id').value = "";
       document.getElementById('cal-desc').value = '';
@@ -15698,6 +15888,9 @@ No payment links or balance changes were retained.`);
     }
 
     function editCalendarItem(id, e) {
+      if(!calendarModalReturnContext && finhubCurrentTab==='dashboard'){
+        calendarModalReturnContext=captureFinHubPagePosition('dashboard');
+      }
       if (e) e.stopPropagation();
       const item = state.calendarBills.find(b => b.id === id);
       if (!item) return;
@@ -16406,7 +16599,29 @@ No payment links or balance changes were retained.`);
       if (typeof renderZbbFundingTracker === 'function') renderZbbFundingTracker();
     }
 
-    function closeCalendarModal() { document.getElementById('calendar-modal').classList.add('hidden'); }
+    function closeCalendarModal() {
+      const modal=document.getElementById('calendar-modal');
+      if(modal)modal.classList.add('hidden');
+      const returnContext=calendarModalReturnContext;
+      calendarModalReturnContext=null;
+      if(returnContext?.tabId && document.getElementById(`tab-${returnContext.tabId}`)){
+        switchTab(returnContext.tabId,true);
+        restoreFinHubPagePosition(returnContext);
+      }
+    }
+
+    // Escape must use the same close path as the modal's X and Cancel buttons.
+    // Capture phase prevents another generic modal handler from merely hiding the
+    // overlay and leaving the user on the Calendar tab.
+    document.addEventListener('keydown',function(event){
+      if(event.key!=='Escape')return;
+      const modal=document.getElementById('calendar-modal');
+      if(!modal || modal.classList.contains('hidden') || !calendarModalReturnContext)return;
+      event.preventDefault();
+      event.stopPropagation();
+      if(typeof event.stopImmediatePropagation==='function')event.stopImmediatePropagation();
+      closeCalendarModal();
+    },true);
 
     function saveCalendarItem(e) {
       e.preventDefault();
@@ -39067,6 +39282,8 @@ document.addEventListener('click',function(event){
  if(root&&!root.contains(event.target))toggleVariableBillCalendarPicker(false);
  const fixedRoot=document.getElementById('zbb-calendar-bill-picker');
  if(fixedRoot&&!fixedRoot.contains(event.target))toggleZbbCalendarBillPicker(false);
+ const debtRoot=document.getElementById('zbb-calendar-debt-picker');
+ if(debtRoot&&!debtRoot.contains(event.target))toggleZbbCalendarDebtPicker(false);
 });
 </script>
 
@@ -39090,6 +39307,90 @@ html:not(.dark) #zbb-item-modal .fh-zbb-modal-actions > .fh-zbb-modal-cancel-but
 html:not(.dark) .fh-zbb-modal-cancel-button:focus-visible {
   outline:2px solid var(--fh-accent,#0b8588)!important;
   outline-offset:2px!important;
+}
+</style>
+
+
+<style id="fh-debt-compact-card-redesign-20261123">
+#tab-biweekly #zbb-debt-list{display:grid;gap:9px}
+#tab-biweekly #zbb-debt-list .fh-debt-budget-card{
+ display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:14px;
+ padding:12px 14px;border:1px solid var(--fh-ui-border,var(--fh-planner-border,#c8e2df));
+ border-radius:14px;background:var(--fh-ui-card,var(--fh-planner-card-bg,transparent));
+ color:var(--fh-ui-ink,var(--fh-planner-text,inherit));min-width:0;
+}
+#tab-biweekly #zbb-debt-list .fh-debt-budget-main{min-width:0;display:grid;gap:7px}
+#tab-biweekly #zbb-debt-list .fh-debt-budget-title-row{display:flex;align-items:center;flex-wrap:wrap;gap:8px;min-width:0}
+#tab-biweekly #zbb-debt-list .fh-debt-budget-name{font-weight:800;font-size:14px;text-align:left;color:var(--fh-ui-ink,var(--fh-planner-text,inherit));min-width:0}
+#tab-biweekly #zbb-debt-list .fh-debt-budget-name:hover{text-decoration:underline;text-underline-offset:3px}
+#tab-biweekly #zbb-debt-list .fh-debt-calendar-status{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;white-space:nowrap}
+#tab-biweekly #zbb-debt-list .fh-debt-calendar-status.is-linked{color:var(--fh-status-income,var(--fh-accent,#078b8b))}
+#tab-biweekly #zbb-debt-list .fh-debt-calendar-status.is-missing{color:var(--fh-danger,#c74650)}
+#tab-biweekly #zbb-debt-list .fh-debt-calendar-link{font-size:10px;font-weight:700;color:var(--fh-primary,var(--fh-accent,#078b8b));text-decoration:underline;text-underline-offset:2px}
+#tab-biweekly #zbb-debt-list .fh-debt-budget-meta{display:flex;align-items:center;flex-wrap:wrap;gap:5px 14px;font-size:10px;color:var(--fh-ui-muted,var(--fh-planner-muted,#60758a))}
+#tab-biweekly #zbb-debt-list .fh-debt-budget-meta strong{font-weight:750;color:var(--fh-ui-ink,var(--fh-planner-text,inherit))}
+#tab-biweekly #zbb-debt-list .fh-debt-pay-allocation{display:flex;flex-wrap:wrap;gap:5px}
+#tab-biweekly #zbb-debt-list .fh-debt-pay-chip{display:inline-flex;align-items:center;gap:6px;padding:3px 7px;border-radius:7px;border:1px solid var(--fh-ui-border,var(--fh-planner-border,#c8e2df));font-size:10px;color:var(--fh-ui-muted,var(--fh-planner-muted,#60758a));background:var(--fh-control-bg,transparent)}
+#tab-biweekly #zbb-debt-list .fh-debt-pay-chip strong{font-size:10px;color:var(--fh-ui-ink,var(--fh-planner-text,inherit))}
+#tab-biweekly #zbb-debt-list .fh-debt-pay-chip.is-current{border-color:var(--fh-accent,#078b8b);background:color-mix(in srgb,var(--fh-accent,#078b8b) 10%,transparent)}
+#tab-biweekly #zbb-debt-list .fh-debt-budget-current{display:grid;justify-items:end;gap:5px;min-width:105px}
+#tab-biweekly #zbb-debt-list .fh-debt-budget-current>span{font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--fh-ui-muted,var(--fh-planner-muted,#60758a));font-weight:700}
+#tab-biweekly #zbb-debt-list .fh-debt-budget-current>strong{font-size:17px;font-weight:900;color:var(--fh-ui-ink,var(--fh-planner-text,inherit))}
+#tab-biweekly #zbb-debt-list .fh-debt-budget-actions{display:flex;gap:8px}
+#tab-biweekly #zbb-debt-list .fh-debt-budget-actions button{width:25px;height:25px;border-radius:7px;display:grid;place-items:center;color:var(--fh-primary,var(--fh-accent,#078b8b))}
+#tab-biweekly #zbb-debt-list .fh-debt-budget-actions button:hover{background:color-mix(in srgb,var(--fh-accent,#078b8b) 12%,transparent)}
+#tab-biweekly #zbb-debt-list .fh-debt-budget-actions .fh-zbb-delete-button{color:var(--fh-danger,#dc3545)}
+#tab-biweekly #zbb-debt-list .fh-debt-budget-note,#tab-biweekly #zbb-debt-list .fh-debt-empty{font-size:10px;color:var(--fh-ui-muted,var(--fh-planner-muted,#60758a));padding:2px 3px}
+@media(max-width:620px){
+ #tab-biweekly #zbb-debt-list .fh-debt-budget-card{grid-template-columns:minmax(0,1fr);gap:9px}
+ #tab-biweekly #zbb-debt-list .fh-debt-budget-current{grid-template-columns:1fr auto;align-items:center;justify-items:start;min-width:0;border-top:1px solid var(--fh-ui-border,var(--fh-planner-border,#c8e2df));padding-top:8px}
+ #tab-biweekly #zbb-debt-list .fh-debt-budget-current>span{grid-column:1}
+ #tab-biweekly #zbb-debt-list .fh-debt-budget-current>strong{grid-column:2;grid-row:1/3}
+ #tab-biweekly #zbb-debt-list .fh-debt-budget-actions{grid-column:1}
+}
+</style>
+
+
+<style id="fh-fixed-bill-full-name-cell-hover-20261123">
+/* Make the fixed-bill title button occupy the complete name cell.
+   Hover/focus highlight therefore fills the row's title area, not just the text. */
+#tab-biweekly .fh-bills-fixed-card .fh-fixed-bill-row{
+  align-items:stretch!important;
+}
+#tab-biweekly .fh-bills-fixed-card .fh-fixed-bill-name{
+  display:flex!important;
+  align-items:stretch!important;
+  align-self:stretch!important;
+  width:100%!important;
+  min-width:0!important;
+  min-height:100%!important;
+}
+#tab-biweekly .fh-bills-fixed-card .fh-fixed-bill-name .fh-fixed-bill-calendar-name{
+  display:flex!important;
+  flex:1 1 auto!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  align-self:stretch!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  min-height:100%!important;
+  box-sizing:border-box!important;
+  margin:0!important;
+  padding:10px 12px!important;
+  border-radius:9px!important;
+  text-align:left!important;
+}
+#tab-biweekly .fh-bills-fixed-card .fh-fixed-bill-name .fh-fixed-bill-calendar-name:hover,
+#tab-biweekly .fh-bills-fixed-card .fh-fixed-bill-name .fh-fixed-bill-calendar-name:focus-visible{
+  background:color-mix(in srgb,var(--fh-accent,#20bdb5) 14%,transparent)!important;
+  color:var(--fh-accent,#078b8b)!important;
+  text-decoration:underline!important;
+  text-underline-offset:3px!important;
+  outline:none!important;
+}
+#tab-biweekly .fh-bills-fixed-card .fh-fixed-bill-name .fh-fixed-bill-calendar-name:focus-visible{
+  box-shadow:inset 0 0 0 2px var(--fh-accent,#078b8b)!important;
 }
 </style>
 
