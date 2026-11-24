@@ -527,16 +527,16 @@
     .tx-workspace-form>#tx-spending-panel{grid-column:2;grid-row:1 / span 2}
     .tx-workspace-form>#split-tx-fields{grid-column:1}
     .tx-workspace-form>div.flex.space-x-3{grid-column:1;position:sticky;bottom:0;z-index:2;padding-top:12px}
-    .tx-kind-card{display:flex;flex-direction:row;align-items:center;justify-content:center;gap:6px;min-height:34px;padding:5px 8px;border:1px solid #d1d5db;border-radius:9px;background:rgba(249,250,251,.8);font-size:11px;font-weight:700;color:inherit}
-    .dark .tx-kind-card{background:rgba(3,7,18,.7);border-color:#374151}
+    .tx-kind-card{display:flex;flex-direction:row;align-items:center;justify-content:center;gap:6px;min-height:34px;padding:5px 8px;border:1px solid var(--fh-border,#d1d5db);border-radius:9px;background:var(--fh-raised,rgba(249,250,251,.8));font-size:11px;font-weight:700;color:var(--fh-ink,inherit)}
+    html.dark body[data-finhub-theme] .tx-kind-card{background:var(--fh-dark-control,var(--fh-dark-raised,var(--fh-dark-card,rgba(3,7,18,.7))));border-color:var(--fh-dark-border,#374151);color:var(--fh-dark-ink,inherit)}
     .tx-kind-card i{font-size:12px}
-    .tx-kind-card.active{border-color:#818cf8;background:rgba(99,102,241,.12);color:#6366f1;box-shadow:0 0 0 1px #818cf8}
-    .tx-analytics-tab{flex:1;padding:6px 4px;border-radius:6px;font-size:10px;font-weight:600;color:#6b7280}
-    .tx-analytics-tab.active{background:#e0e7ff;color:#4338ca}
+    .tx-kind-card.active{border-color:var(--fh-primary,#818cf8);background:var(--fh-surface-selected,rgba(99,102,241,.12));color:var(--fh-primary,var(--fh-ink,#6366f1));box-shadow:0 0 0 1px var(--fh-primary,#818cf8)}
+    .tx-analytics-tab{flex:1;padding:6px 4px;border-radius:6px;font-size:10px;font-weight:600;color:var(--fh-muted,#6b7280);background:transparent}
+    .tx-analytics-tab.active{background:var(--fh-surface-selected,#e0e7ff);color:var(--fh-primary,#4338ca)}
     .tx-analytics-chart{display:grid;grid-template-columns:minmax(105px,.85fr) minmax(0,1.15fr);align-items:center;gap:12px}
-    .tx-analytics-donut{width:min(100%,170px);aspect-ratio:1;border-radius:50%;margin:auto;position:relative;background:#e5e7eb}
-    .tx-analytics-donut:after{content:"";position:absolute;inset:27%;border-radius:50%;background:var(--donut-hole,#f9fafb)}
-    .dark .tx-analytics-donut:after{background:#030712}
+    .tx-analytics-donut{width:min(100%,170px);aspect-ratio:1;border-radius:50%;margin:auto;position:relative;background:var(--fh-raised,#e5e7eb);border:1px solid var(--fh-border,transparent)}
+    .tx-analytics-donut:after{content:"";position:absolute;inset:27%;border-radius:50%;background:var(--donut-hole,var(--fh-card,#f9fafb));border:1px solid var(--fh-border,transparent)}
+    html.dark body[data-finhub-theme] .tx-analytics-donut:after{background:var(--fh-dark-card,var(--fh-dark-page,#030712));border-color:var(--fh-dark-border,transparent)}
     @media(max-width:900px){.tx-workspace-form{grid-template-columns:minmax(0,1fr)}.tx-workspace-form>#tx-entry-fields,.tx-workspace-form>#tx-spending-panel,.tx-workspace-form>#split-tx-fields,.tx-workspace-form>div.flex.space-x-3{grid-column:1;grid-row:auto}.tx-workspace-form>#tx-spending-panel{order:5}.tx-analytics-chart{grid-template-columns:120px minmax(0,1fr)}}
 
 
@@ -9926,41 +9926,51 @@ Bonus" rows="4"></textarea></div>
       const accounts = getAvailableToSpendAccounts().filter(a => selectedIds.has(String(a.id)));
       const cents = value => Number.isFinite(Number(value)) ? Math.round(Number(value) * 100) : 0;
       const balanceCents = accounts.reduce((sum, account) => sum + cents(account.balance), 0);
-      // Sinking-fund buckets are virtual earmarks against cash already present in
-      // their linked accounts. Subtract them exactly once; they are not additional assets.
-      const bucketByAccount = new Map();
-      sinkingBucketLedger().buckets.forEach(bucket => {
-        const accountId = String(bucket.accountId || '');
-        if (!selectedIds.has(accountId)) return;
-        bucketByAccount.set(accountId, (bucketByAccount.get(accountId) || 0) + Math.max(0, cents(bucket.balance)));
+
+      // Use the canonical savings-fund ledger for earmarks. The former calculation
+      // scanned every monthly ZBB template, including historical/obsolete goals, and
+      // treated any old direct account link as a current full-account earmark. It also
+      // counted archived legacy buckets. Only active fund records should reserve cash.
+      const funds = (unifiedSavingsFundsLedger().funds || []).filter(fund =>
+        fund && fund.status !== 'archived' && selectedIds.has(String(fund.linkedAccountId || ''))
+      );
+      const sharedByAccount = new Map();
+      const dedicatedByAccount = new Set();
+      funds.forEach(fund => {
+        const accountId = String(fund.linkedAccountId || '');
+        if (!accountId) return;
+        if (fund.balanceMode === 'dedicated') {
+          dedicatedByAccount.add(accountId);
+        } else {
+          const fundBalanceCents = Math.max(0, cents(getUnifiedSavingsFundActualBalance(fund)));
+          sharedByAccount.set(accountId, (sharedByAccount.get(accountId) || 0) + fundBalanceCents);
+        }
       });
-      // A savings goal linked directly to a dedicated real account earmarks that
-      // account's balance. Use the full account balance rather than adding the
-      // virtual bucket total as well, so the same dollars are never deducted twice.
-      const dedicatedSavingsIds = new Set();
-      Object.values(state.zbbTemplates || {}).forEach(template => (template?.savings || []).forEach(goal => {
-        if (goal?.linkedAccountId && !goal?.linkedBucketId && selectedIds.has(String(goal.linkedAccountId))) dedicatedSavingsIds.add(String(goal.linkedAccountId));
-      }));
-      let bucketCents = 0;
+
+      // Dedicated savings accounts reserve their full current balance. Shared funds
+      // reserve their actual fund balances. If both record types reference one account,
+      // use the greater amount rather than double-counting the same cash.
+      let savingsEarmarkedCents = 0;
       accounts.forEach(account => {
         const id = String(account.id);
-        const virtualBucketCents = bucketByAccount.get(id) || 0;
-        const dedicatedAccountCents = dedicatedSavingsIds.has(id) ? Math.max(0, cents(account.balance)) : 0;
-        bucketCents += Math.max(virtualBucketCents, dedicatedAccountCents);
+        const sharedCents = sharedByAccount.get(id) || 0;
+        const dedicatedCents = dedicatedByAccount.has(id) ? Math.max(0, cents(account.balance)) : 0;
+        savingsEarmarkedCents += Math.max(sharedCents, dedicatedCents);
       });
-      const afterBucketsCents = balanceCents - bucketCents;
-      // This manual reserve is for additional bill money only. Savings buckets are
+
+      const afterSavingsCents = balanceCents - savingsEarmarkedCents;
+      // This manual reserve is for additional bill money only. Savings funds are
       // already deducted above and must not be entered again here.
       const rawReservedCents = cents(state.availableToSpendReserved);
       const reservedCents = Math.max(0, rawReservedCents);
       return {
         accounts,
         balance: balanceCents / 100,
-        savingsEarmarked: bucketCents / 100,
-        cashAfterBuckets: afterBucketsCents / 100,
+        savingsEarmarked: savingsEarmarkedCents / 100,
+        cashAfterBuckets: afterSavingsCents / 100,
         reserved: reservedCents / 100,
         reservedInvalid: rawReservedCents < 0,
-        unallocated: (afterBucketsCents - reservedCents) / 100
+        unallocated: (afterSavingsCents - reservedCents) / 100
       };
     }
 
@@ -9969,9 +9979,9 @@ Bonus" rows="4"></textarea></div>
       const balanceEl = document.getElementById('available-to-spend-value');
       const unallocatedEl = document.getElementById('available-to-spend-unallocated');
       const countEl = document.getElementById('available-to-spend-account-count');
-      if (balanceEl) balanceEl.textContent = formatFinancial(totals.unallocated, true);
+      if (balanceEl) balanceEl.textContent = formatFinancial(totals.unallocated);
       if (unallocatedEl) {
-        unallocatedEl.textContent = formatFinancial(totals.balance, true);
+        unallocatedEl.textContent = formatFinancial(totals.balance);
         unallocatedEl.className = `text-sm font-bold accounting-num ${totals.unallocated < 0 ? 'text-rose-600 dark:text-rose-400' : 'fh-status-income dark:fh-status-income'}`;
       }
       if (countEl) countEl.textContent = `${totals.accounts.length} account${totals.accounts.length === 1 ? '' : 's'} selected`;
@@ -39394,6 +39404,431 @@ html:not(.dark) .fh-zbb-modal-cancel-button:focus-visible {
 }
 </style>
 
+
+<!-- FinHub v281: unified application-wide UI/UX refinement layer -->
+
+<style id="finhub-v281-unified-design-system">
+/*
+  FinHub unified design-system refinement
+  Presentation-only: preserve existing DOM, data, calculations, event handlers,
+  navigation, workflows, fonts, logo, and feature-specific component sizing.
+  Semantic tokens resolve through the selected theme in both colour modes.
+*/
+body[data-finhub-theme] {
+  --fh-design-page: var(--fh-cohesion-page, var(--fh-page, #f5f7fb));
+  --fh-design-card: var(--fh-cohesion-card, var(--fh-card, #ffffff));
+  --fh-design-raised: var(--fh-cohesion-raised, var(--fh-raised, #eef2f7));
+  --fh-design-text: var(--fh-cohesion-ink, var(--fh-ink, #1f2937));
+  --fh-design-muted: var(--fh-cohesion-muted, var(--fh-muted, #64748b));
+  --fh-design-border: var(--fh-cohesion-border, var(--fh-border, #dbe2ea));
+  --fh-design-accent: var(--fh-cohesion-accent, var(--fh-primary, #0c8abc));
+  --fh-design-control: var(--fh-control, var(--control-bg, var(--fh-raised, var(--fh-card, #ffffff))));
+  --fh-design-focus: color-mix(in srgb, var(--fh-design-accent) 25%, transparent);
+  --fh-modal-bg: var(--fh-modal, var(--fh-design-card));
+  --fh-modal-ink: var(--fh-design-text);
+  --fh-modal-border: var(--fh-design-border);
+  --fh-control-radius: .65rem;
+  --fh-card-radius: 1rem;
+  --fh-control-height: 2.5rem;
+  --fh-space-section: 1.25rem;
+}
+html.dark body[data-finhub-theme] {
+  --fh-design-page: var(--fh-cohesion-page, var(--fh-dark-page, #111827));
+  --fh-design-card: var(--fh-cohesion-card, var(--fh-dark-card, #1f2937));
+  --fh-design-raised: var(--fh-cohesion-raised, var(--fh-dark-raised, #273449));
+  --fh-design-text: var(--fh-cohesion-ink, var(--fh-dark-ink, #f3f4f6));
+  --fh-design-muted: var(--fh-cohesion-muted, var(--fh-dark-muted, #cbd5e1));
+  --fh-design-border: var(--fh-cohesion-border, var(--fh-dark-border, #475569));
+  --fh-design-control: var(--fh-dark-control, var(--control-bg, var(--fh-dark-raised, var(--fh-dark-card, #273449))));
+  --fh-modal-bg: var(--fh-dark-modal, var(--fh-design-card));
+  --fh-modal-ink: var(--fh-design-text);
+  --fh-modal-border: var(--fh-design-border);
+}
+
+/* Page heading hierarchy: retain the app's current font family and established sizes. */
+body[data-finhub-theme] .fh-page-title {
+  color: var(--fh-design-text);
+  line-height: 1.22;
+  letter-spacing: -.025em;
+  text-wrap: balance;
+}
+body[data-finhub-theme] .fh-page-blurb {
+  color: var(--fh-design-muted);
+  line-height: 1.5;
+}
+body[data-finhub-theme] .tab-content h3,
+body[data-finhub-theme] .tab-content h4 {
+  text-wrap: pretty;
+}
+
+/* Consistent interaction states without flattening the existing button hierarchy. */
+body[data-finhub-theme] button,
+body[data-finhub-theme] [role="button"],
+body[data-finhub-theme] a {
+  -webkit-tap-highlight-color: transparent;
+}
+body[data-finhub-theme] button {
+  font-family: inherit;
+  transition-property: color, background-color, border-color, box-shadow, opacity;
+  transition-duration: 140ms;
+  transition-timing-function: ease;
+}
+body[data-finhub-theme] button:focus-visible,
+body[data-finhub-theme] a:focus-visible,
+body[data-finhub-theme] input:focus-visible,
+body[data-finhub-theme] select:focus-visible,
+body[data-finhub-theme] textarea:focus-visible,
+body[data-finhub-theme] [tabindex]:focus-visible {
+  outline: 2px solid var(--fh-design-accent);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px var(--fh-design-focus);
+}
+body[data-finhub-theme] button:disabled,
+body[data-finhub-theme] [aria-disabled="true"] {
+  cursor: not-allowed;
+}
+body[data-finhub-theme] .fh-action-button,
+body[data-finhub-theme] .fh-action-button-primary,
+body[data-finhub-theme] .fh-action-button-secondary,
+body[data-finhub-theme] .fh-action-button-danger,
+body[data-finhub-theme] .fh-btn-cancel,
+body[data-finhub-theme] .fh-modal-secondary-action {
+  border-radius: var(--fh-control-radius);
+  line-height: 1.25;
+}
+
+/* Standard form controls use theme semantics rather than hard-coded light/dark grays. */
+body[data-finhub-theme] :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+select, textarea).fh-standard-control,
+body[data-finhub-theme] .fh-modal-surface :is(
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+  select, textarea
+) {
+  color: var(--fh-design-text);
+  border-color: var(--fh-design-border);
+  border-radius: var(--fh-control-radius);
+}
+body[data-finhub-theme] .fh-modal-surface :is(input, select, textarea):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]) {
+  background-color: var(--fh-design-control);
+}
+body[data-finhub-theme] .fh-modal-surface :is(input, select, textarea)::placeholder {
+  color: var(--fh-design-muted);
+  opacity: .82;
+}
+body[data-finhub-theme] .fh-modal-surface label {
+  color: var(--fh-design-muted);
+}
+body[data-finhub-theme] .fh-modal-surface :is(h2,h3,h4,strong) {
+  color: var(--fh-design-text);
+}
+
+/* Modal overlays: one predictable placement and backdrop treatment. */
+#bulk-edit-modal,
+#vendor-rule-modal,
+#import-rule-modal,
+#recon-modal,
+#account-detail-modal,
+#debt-detail-modal,
+#joint-bill-modal,
+#household-settlement-modal,
+#household-credit-event-modal,
+#category-modal,
+#debt-category-modal,
+#income-category-modal,
+#type-modal,
+#merchant-rule-modal,
+#income-vendor-rule-modal,
+#variable-bill-modal,
+#zbb-item-modal,
+#calendar-modal,
+#recurrence-delete-choice-modal,
+#transfer-modal,
+#available-to-spend-modal,
+#account-modal,
+#sinking-bucket-modal,
+#sinking-bucket-activity-modal,
+#transaction-modal,
+#interest-charge-modal,
+#debt-payment-modal,
+#backup-import-preview-modal,
+#finhub-text-entry-modal {
+  box-sizing: border-box;
+  display: grid !important;
+  place-items: center !important;
+  padding: clamp(.75rem, 2.5vh, 1.5rem) !important;
+  background: rgba(8, 15, 28, .64) !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+}
+#bulk-edit-modal.hidden,
+#vendor-rule-modal.hidden,
+#import-rule-modal.hidden,
+#recon-modal.hidden,
+#account-detail-modal.hidden,
+#debt-detail-modal.hidden,
+#joint-bill-modal.hidden,
+#household-settlement-modal.hidden,
+#household-credit-event-modal.hidden,
+#category-modal.hidden,
+#debt-category-modal.hidden,
+#income-category-modal.hidden,
+#type-modal.hidden,
+#merchant-rule-modal.hidden,
+#income-vendor-rule-modal.hidden,
+#variable-bill-modal.hidden,
+#zbb-item-modal.hidden,
+#calendar-modal.hidden,
+#recurrence-delete-choice-modal.hidden,
+#transfer-modal.hidden,
+#available-to-spend-modal.hidden,
+#account-modal.hidden,
+#sinking-bucket-modal.hidden,
+#sinking-bucket-activity-modal.hidden,
+#transaction-modal.hidden,
+#interest-charge-modal.hidden,
+#debt-payment-modal.hidden,
+#backup-import-preview-modal.hidden,
+#finhub-text-entry-modal.hidden {
+  display: none !important;
+}
+/* Shared window surface. Existing max-width choices remain intact for specialized workspaces. */
+body[data-finhub-theme] :is(.fh-modal-surface, #finhub-text-entry-modal > .relative) {
+  box-sizing: border-box;
+  background: var(--fh-modal-bg) !important;
+  color: var(--fh-modal-ink) !important;
+  border: 1px solid var(--fh-modal-border) !important;
+  border-radius: 1rem !important;
+  box-shadow: 0 18px 48px rgba(8, 15, 28, .20), 0 2px 8px rgba(8, 15, 28, .08) !important;
+  opacity: 1 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  overscroll-behavior: contain;
+}
+html.dark body[data-finhub-theme] :is(.fh-modal-surface, #finhub-text-entry-modal > .relative) {
+  box-shadow: 0 22px 60px rgba(0,0,0,.42), 0 2px 10px rgba(0,0,0,.22) !important;
+}
+/* Normalize common title rows while leaving specialized transaction/workspace content untouched. */
+body[data-finhub-theme] :is(.fh-modal-surface, #finhub-text-entry-modal > .relative) > h3:first-child {
+  margin: 0 0 .9rem;
+  padding: 0 0 .85rem;
+  border-bottom: 1px solid var(--fh-modal-border);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+body[data-finhub-theme] :is(.fh-modal-surface, #finhub-text-entry-modal > .relative) > .flex:first-child {
+  min-width: 0;
+  gap: .85rem;
+  border-color: var(--fh-modal-border);
+}
+body[data-finhub-theme] :is(.fh-modal-surface, #finhub-text-entry-modal > .relative) > .flex:first-child :is(h2,h3,h4) {
+  font-size: 1rem;
+  line-height: 1.3;
+  font-weight: 700;
+  letter-spacing: -.01em;
+}
+body[data-finhub-theme] :is(.fh-modal-surface, #finhub-text-entry-modal > .relative) > .flex:first-child :is(p,small) {
+  color: var(--fh-design-muted);
+  line-height: 1.45;
+}
+/* Dialog content remains scrollable inside the viewport; form actions stay reachable. */
+body[data-finhub-theme] :is(.fh-modal-surface, #finhub-text-entry-modal > .relative) {
+  max-height: calc(100dvh - 2rem);
+  min-height: 0;
+}
+body[data-finhub-theme] :is(.fh-modal-surface, #finhub-text-entry-modal > .relative) :is(form, .overflow-y-auto, .overflow-auto) {
+  min-height: 0;
+  overscroll-behavior: contain;
+}
+body[data-finhub-theme] :is(.fh-modal-surface, #finhub-text-entry-modal > .relative) :is(button[aria-label*="Close"], button[title*="Close"]) {
+  flex: 0 0 auto;
+}
+
+/* Consistent table treatment for the application's established data-table components. */
+body[data-finhub-theme] :is(.fh-data-table, #ledger-table-container table) {
+  border-color: var(--fh-design-border);
+  color: var(--fh-design-text);
+}
+body[data-finhub-theme] :is(.fh-data-table, #ledger-table-container table) thead {
+  background: var(--fh-design-raised);
+  color: var(--fh-design-muted);
+}
+body[data-finhub-theme] :is(.fh-data-table, #ledger-table-container table) thead th {
+  border-bottom: 1px solid var(--fh-design-border);
+  font-weight: 650;
+  line-height: 1.35;
+}
+body[data-finhub-theme] :is(.fh-data-table, #ledger-table-container table) tbody tr {
+  border-color: var(--fh-design-border);
+}
+body[data-finhub-theme] :is(.fh-data-table, #ledger-table-container table) tbody tr:hover {
+  background: color-mix(in srgb, var(--fh-design-accent) 6%, transparent);
+}
+body[data-finhub-theme] :is(.fh-data-table, #ledger-table-container table) :is(th,td) {
+  vertical-align: middle;
+}
+body[data-finhub-theme] .accounting-num,
+body[data-finhub-theme] .accounting-num *,
+body[data-finhub-theme] .fh-money,
+body[data-finhub-theme] .financial-amount {
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+}
+
+/* Cards and disclosure sections share a restrained surface language. */
+body[data-finhub-theme] .global-collapsible-section,
+body[data-finhub-theme] .fh-disclosure {
+  border-color: var(--fh-design-border);
+}
+body[data-finhub-theme] .global-collapsible-section > :is(header,summary),
+body[data-finhub-theme] .fh-disclosure > summary {
+  line-height: 1.35;
+}
+body[data-finhub-theme] .global-collapsible-description {
+  color: var(--fh-design-muted);
+  line-height: 1.45;
+}
+
+/* Small-screen modal geometry: preserve each dialog's content width while preventing viewport overflow. */
+@media (max-width: 640px) {
+  #bulk-edit-modal,
+  #vendor-rule-modal,
+  #import-rule-modal,
+  #recon-modal,
+  #account-detail-modal,
+  #debt-detail-modal,
+  #joint-bill-modal,
+  #household-settlement-modal,
+  #household-credit-event-modal,
+  #category-modal,
+  #debt-category-modal,
+  #income-category-modal,
+  #type-modal,
+  #merchant-rule-modal,
+  #income-vendor-rule-modal,
+  #variable-bill-modal,
+  #zbb-item-modal,
+  #calendar-modal,
+  #recurrence-delete-choice-modal,
+  #transfer-modal,
+  #available-to-spend-modal,
+  #account-modal,
+  #sinking-bucket-modal,
+  #sinking-bucket-activity-modal,
+  #transaction-modal,
+  #interest-charge-modal,
+  #debt-payment-modal,
+  #backup-import-preview-modal {
+    padding: .65rem !important;
+  }
+  body[data-finhub-theme] :is(.fh-modal-surface, #finhub-text-entry-modal > .relative) {
+    max-width: calc(100vw - 1.3rem);
+    max-height: calc(100dvh - 1.3rem);
+    border-radius: .9rem !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  body[data-finhub-theme] button { transition-duration: 0ms !important; }
+}
+</style>
+
+
+<!-- v284: page consistency pass - planner income breakdown now uses active theme surface tokens -->
+
+<!-- v285: Transactions workspace controls and analytics now follow active theme tokens -->
+
+<style id="fh-planner-spending-selection-theme-refinement-v286">
+/* Selected spending buckets use the active Planner accent instead of a fixed turquoise. */
+body[data-finhub-theme] #tab-biweekly .fh-spending-bucket-row.is-selected td {
+  background:color-mix(in srgb,var(--fh-planner-teal,var(--fh-accent,var(--fh-primary,#12cfc2))) 12%,var(--fh-planner-panel,var(--fh-card,#fff))) !important;
+  border-top-color:var(--fh-planner-teal,var(--fh-accent,var(--fh-primary,#12cfc2))) !important;
+  border-bottom-color:var(--fh-planner-teal,var(--fh-accent,var(--fh-primary,#12cfc2))) !important;
+}
+body[data-finhub-theme] #tab-biweekly .fh-spending-bucket-row.is-selected {
+  outline:1px solid var(--fh-planner-teal,var(--fh-accent,var(--fh-primary,#12cfc2))) !important;
+  outline-offset:-1px;
+}
+body[data-finhub-theme] #tab-biweekly .fh-spending-bucket-row.is-selected .fh-bucket-select {
+  color:var(--fh-planner-teal,var(--fh-accent,var(--fh-primary,#12cfc2))) !important;
+}
+</style>
+
+
+<style id="fh-ocean-pop-light-selected-bucket-contrast-v288">
+/* Ocean Pop light mode: override the legacy dark Planner selected-row treatment. */
+html:not(.dark) body[data-finhub-theme="oceanpop"] #tab-biweekly .fh-spending-buckets-card #fh-spending-bucket-rows tr.fh-spending-bucket-row.is-selected,
+html:not(.dark) body[data-finhub-theme="oceanpop"] #tab-biweekly .fh-spending-buckets-card #fh-spending-bucket-rows tr.fh-spending-bucket-row.is-selected > td {
+  background:#DDF1EF !important;
+  background-color:#DDF1EF !important;
+  color:#183247 !important;
+  border-top:1px solid #168F8A !important;
+  border-bottom:1px solid #168F8A !important;
+}
+html:not(.dark) body[data-finhub-theme="oceanpop"] #tab-biweekly .fh-spending-buckets-card #fh-spending-bucket-rows tr.fh-spending-bucket-row.is-selected > td:first-child {
+  border-left:1px solid #168F8A !important;
+}
+html:not(.dark) body[data-finhub-theme="oceanpop"] #tab-biweekly .fh-spending-buckets-card #fh-spending-bucket-rows tr.fh-spending-bucket-row.is-selected > td:last-child {
+  border-right:1px solid #168F8A !important;
+}
+html:not(.dark) body[data-finhub-theme="oceanpop"] #tab-biweekly .fh-spending-buckets-card #fh-spending-bucket-rows tr.fh-spending-bucket-row.is-selected > td .fh-bucket-select {
+  display:block !important;
+  width:100% !important;
+  background:transparent !important;
+  background-color:transparent !important;
+  color:#11736F !important;
+  box-shadow:none !important;
+}
+html:not(.dark) body[data-finhub-theme="oceanpop"] #tab-biweekly .fh-spending-buckets-card #fh-spending-bucket-rows tr.fh-spending-bucket-row.is-selected > td .positive,
+html:not(.dark) body[data-finhub-theme="oceanpop"] #tab-biweekly .fh-spending-buckets-card #fh-spending-bucket-rows tr.fh-spending-bucket-row.is-selected > td .negative {
+  color:#183247 !important;
+}
+</style>
+
+
+<style id="fh-planner-income-bills-theme-surface-alignment-v289">
+/* Income and Bills detail surfaces follow the same light/dark theme map as the rest
+   of the Planner. Ocean Pop dark is intentionally left on its established palette. */
+:is(body[data-finhub-theme]:not([data-finhub-theme="oceanpop"]), html:not(.dark) body[data-finhub-theme="oceanpop"]) #tab-biweekly #zbb-income-list {
+  background:var(--fhp-raised) !important;
+  border-color:var(--fhp-border) !important;
+}
+:is(body[data-finhub-theme]:not([data-finhub-theme="oceanpop"]), html:not(.dark) body[data-finhub-theme="oceanpop"]) #tab-biweekly .fh-income-source-icon {
+  background:color-mix(in srgb,var(--fhp-accent) 13%,var(--fhp-raised)) !important;
+  color:var(--fhp-accent) !important;
+}
+:is(body[data-finhub-theme]:not([data-finhub-theme="oceanpop"]), html:not(.dark) body[data-finhub-theme="oceanpop"]) #tab-biweekly .fh-bills-variable-card .fh-bill-detail-row > td {
+  background:var(--fhp-raised) !important;
+  color:var(--fhp-ink) !important;
+  border-top:1px solid var(--fhp-border) !important;
+}
+:is(body[data-finhub-theme]:not([data-finhub-theme="oceanpop"]), html:not(.dark) body[data-finhub-theme="oceanpop"]) #tab-biweekly .fh-bills-variable-card .fh-bill-detail-item {
+  border-color:var(--fhp-border) !important;
+}
+:is(body[data-finhub-theme]:not([data-finhub-theme="oceanpop"]), html:not(.dark) body[data-finhub-theme="oceanpop"]) #tab-biweekly .fh-bills-variable-card .fh-bill-detail-item > i {
+  color:var(--fhp-accent) !important;
+}
+:is(body[data-finhub-theme]:not([data-finhub-theme="oceanpop"]), html:not(.dark) body[data-finhub-theme="oceanpop"]) #tab-biweekly .fh-bills-variable-card .fh-bill-detail-content small {
+  color:var(--fhp-muted) !important;
+}
+:is(body[data-finhub-theme]:not([data-finhub-theme="oceanpop"]), html:not(.dark) body[data-finhub-theme="oceanpop"]) #tab-biweekly .fh-bills-variable-card .fh-bill-detail-content strong {
+  color:var(--fhp-ink) !important;
+}
+:is(body[data-finhub-theme]:not([data-finhub-theme="oceanpop"]), html:not(.dark) body[data-finhub-theme="oceanpop"]) #tab-biweekly .fh-bills-variable-card .fh-bill-expand-toggle {
+  color:var(--fhp-accent) !important;
+}
+:is(body[data-finhub-theme]:not([data-finhub-theme="oceanpop"]), html:not(.dark) body[data-finhub-theme="oceanpop"]) #tab-biweekly .fh-bills-variable-card .fh-bill-edit-icon {
+  background:color-mix(in srgb,var(--fhp-accent) 10%,var(--fhp-card)) !important;
+  border-color:color-mix(in srgb,var(--fhp-accent) 42%,var(--fhp-border)) !important;
+  color:var(--fhp-accent) !important;
+}
+:is(body[data-finhub-theme]:not([data-finhub-theme="oceanpop"]), html:not(.dark) body[data-finhub-theme="oceanpop"]) #tab-biweekly .fh-bills-variable-card .fh-bill-edit-icon:hover,
+:is(body[data-finhub-theme]:not([data-finhub-theme="oceanpop"]), html:not(.dark) body[data-finhub-theme="oceanpop"]) #tab-biweekly .fh-bills-variable-card .fh-bill-expand-toggle:hover {
+  color:var(--fhp-primary) !important;
+  border-color:var(--fhp-accent) !important;
+}
+</style>
+
 </body>
 
 <style id="finhub-v241-unified-bills-funding-layout">
@@ -40515,7 +40950,7 @@ html.dark body[data-finhub-theme] .fh-scheduled-summary .fh-scheduled-net-negati
 #tab-biweekly .fh-income-summary-values{display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:22px!important;white-space:nowrap!important;font-size:clamp(13px,1.25vw,18px)!important;font-weight:750!important;color:var(--fh-planner-text)!important;font-variant-numeric:tabular-nums!important;}
 #tab-biweekly .fh-income-summary-values>strong{font-size:1.2em!important;font-weight:900!important;}
 #tab-biweekly .fh-income-summary-divider{height:30px;width:1px;background:var(--fh-planner-border);display:inline-block;}
-#tab-biweekly .fh-income-breakdown{display:grid!important;grid-template-columns:minmax(150px,1.05fr) repeat(3,minmax(110px,.8fr)) minmax(150px,1fr)!important;align-items:stretch!important;gap:0!important;margin:0 0 14px!important;padding:12px 10px!important;border:1px solid var(--fh-planner-border)!important;border-radius:14px!important;background:linear-gradient(105deg,rgba(9,31,47,.96),rgba(19,43,62,.96))!important;}
+#tab-biweekly .fh-income-breakdown{display:grid!important;grid-template-columns:minmax(150px,1.05fr) repeat(3,minmax(110px,.8fr)) minmax(150px,1fr)!important;align-items:stretch!important;gap:0!important;margin:0 0 14px!important;padding:12px 10px!important;border:1px solid var(--fh-planner-border)!important;border-radius:14px!important;background:linear-gradient(105deg,var(--fh-planner-card,var(--fh-card)),var(--fh-raised,var(--fh-planner-card,var(--fh-card))))!important;}
 #tab-biweekly .fh-income-occurrence-cell,#tab-biweekly .fh-income-breakdown-metric{display:flex!important;flex-direction:column!important;justify-content:center!important;gap:5px!important;min-width:0!important;padding:2px 14px!important;border-right:1px solid var(--fh-planner-border)!important;}
 #tab-biweekly .fh-income-breakdown-metric:last-child{border-right:0!important;}
 #tab-biweekly .fh-income-breakdown-label{font-size:11px!important;font-weight:700!important;color:var(--fh-planner-muted)!important;white-space:nowrap!important;}
@@ -42358,3 +42793,113 @@ html[data-theme="dark"] body #tab-biweekly .fh-savings-allocation-card-heading .
 #tab-biweekly .fh-allocation-heading-title h4{margin:0!important;}
 #tab-biweekly .fh-allocation-heading-title .fh-info-trigger{display:inline-flex!important;align-items:center!important;justify-content:center!important;width:1.2rem!important;height:1.2rem!important;min-width:1.2rem!important;padding:0!important;border:0!important;background:transparent!important;color:var(--fh-primary,var(--fh-muted))!important;box-shadow:none!important;}
 </style>
+
+
+<style id="fh-planner-savings-semantic-theme-v290">
+/* Savings Goals and Sinking Funds: use the active FinHub theme surfaces and text.
+   --fh-ui-* is already mapped to each preset/custom theme's light or dark palette. */
+body[data-finhub-theme] #tab-biweekly :is(
+  .fh-savings-reference-layout > .fh-planner-card,
+  .fh-savings-reference-layout .fh-savings-goal-card,
+  .fh-savings-goals-card #sinking-funds-progress-grid .rounded-xl,
+  .fh-savings-funds-card,
+  .fh-savings-allocation-card,
+  .fh-savings-reference-layout #zbb-savings-list > *
+) {
+  background:var(--fh-ui-card,var(--fh-card,#ffffff)) !important;
+  border-color:var(--fh-ui-border,var(--fh-border,#dbe3ed)) !important;
+  color:var(--fh-ui-ink,var(--fh-ink,#172033)) !important;
+}
+body[data-finhub-theme] #tab-biweekly .fh-savings-reference-layout .fh-savings-goal-summary,
+body[data-finhub-theme] #tab-biweekly .fh-savings-goals-card #sinking-funds-progress-grid .rounded-xl > :first-child,
+body[data-finhub-theme] #tab-biweekly .fh-savings-reference-layout .fh-sinking-bucket-table-head {
+  background:var(--fh-ui-raised,var(--fh-surface,#f1f5f9)) !important;
+  border-color:var(--fh-ui-border,var(--fh-border,#dbe3ed)) !important;
+  color:var(--fh-ui-ink,var(--fh-ink,#172033)) !important;
+}
+body[data-finhub-theme] #tab-biweekly .fh-savings-reference-layout :is(
+  h4,.fh-savings-panel-heading h4,.fh-sinking-account-heading strong,
+  .fh-sinking-bank-balance,.fh-sinking-bucket-name strong,
+  .fh-savings-goal-name,.fh-savings-goal-amount-line strong,
+  .fh-sinking-bucket-target,.fh-sinking-bucket-balance,
+  #zbb-savings-list strong
+) {
+  color:var(--fh-ui-ink,var(--fh-ink,#172033)) !important;
+}
+body[data-finhub-theme] #tab-biweekly .fh-savings-reference-layout :is(
+  small,.fh-sinking-account-meta,.fh-sinking-account-heading small,
+  .fh-sinking-bucket-name small,.fh-sinking-bucket-progress small,
+  .fh-sinking-bucket-history,.fh-savings-goal-amount-line,
+  .fh-savings-allocation-item-row span,.fh-savings-allocation-item-row small,
+  .fh-savings-allocation-card-metrics .fh-savings-allocation-metric > span,
+  .fh-savings-contributions-heading
+) {
+  color:var(--fh-ui-muted,var(--fh-muted,#64748b)) !important;
+}
+body[data-finhub-theme] #tab-biweekly .fh-savings-funds-card .fh-savings-header-total {
+  background:var(--fh-ui-raised,var(--fh-surface,#f1f5f9)) !important;
+  border-color:var(--fh-ui-border,var(--fh-border,#dbe3ed)) !important;
+}
+body[data-finhub-theme] #tab-biweekly .fh-savings-funds-card .fh-savings-header-total span {
+  color:var(--fh-ui-muted,var(--fh-muted,#64748b)) !important;
+}
+body[data-finhub-theme] #tab-biweekly .fh-savings-funds-card .fh-savings-header-total strong,
+body[data-finhub-theme] #tab-biweekly .fh-savings-allocation-card-metrics .fh-savings-allocation-metric > strong,
+body[data-finhub-theme] #tab-biweekly .fh-savings-allocation-grand-total strong,
+body[data-finhub-theme] #tab-biweekly .fh-savings-allocation-bucket-main > strong:last-child {
+  color:var(--fh-ui-ink,var(--fh-ink,#172033)) !important;
+}
+body[data-finhub-theme] #tab-biweekly .fh-savings-reference-layout #zbb-savings-list > *,
+body[data-finhub-theme] #tab-biweekly .fh-savings-funds-card .fh-savings-allocation-item-row {
+  border-color:var(--fh-ui-border,var(--fh-border,#dbe3ed)) !important;
+}
+body[data-finhub-theme] #tab-biweekly .fh-savings-reference-layout .fh-sinking-progress-track,
+body[data-finhub-theme] #tab-biweekly .fh-savings-goals-card #sinking-funds-progress-grid .h-2,
+body[data-finhub-theme] #tab-biweekly .fh-savings-goals-card #sinking-funds-progress-grid [class*="progress"] {
+  background:color-mix(in srgb,var(--fh-ui-border,var(--fh-border,#94a3b8)) 55%,var(--fh-ui-raised,var(--fh-surface,#f1f5f9))) !important;
+}
+body[data-finhub-theme] #tab-biweekly .fh-savings-reference-layout .fh-sinking-progress-fill,
+body[data-finhub-theme] #tab-biweekly .fh-savings-goals-card #sinking-funds-progress-grid .bg-teal-500,
+body[data-finhub-theme] #tab-biweekly .fh-savings-goals-card #sinking-funds-progress-grid .bg-emerald-500 {
+  background:var(--fh-primary,#0d9488) !important;
+}
+body[data-finhub-theme] #tab-biweekly .fh-savings-add-button {
+  background:color-mix(in srgb,var(--fh-primary,#0d9488) 13%,var(--fh-ui-card,#ffffff)) !important;
+  border:1px solid color-mix(in srgb,var(--fh-primary,#0d9488) 48%,var(--fh-ui-border,#dbe3ed)) !important;
+  color:var(--fh-primary,#0d9488) !important;
+}
+body[data-finhub-theme] #tab-biweekly .fh-savings-allocation-actions button,
+body[data-finhub-theme] #tab-biweekly .fh-savings-allocation-linked-account > button,
+body[data-finhub-theme] #tab-biweekly .fh-savings-allocation-account-actions > button,
+body[data-finhub-theme] #tab-biweekly .fh-savings-allocation-bucket-actions > button {
+  background:var(--fh-ui-raised,var(--fh-surface,#f1f5f9)) !important;
+  border-color:var(--fh-ui-border,var(--fh-border,#dbe3ed)) !important;
+  color:var(--fh-ui-ink,var(--fh-ink,#172033)) !important;
+}
+/* Reconciliation is a semantic success state, but its tint follows the theme. */
+html body[data-finhub-theme] #tab-biweekly .fh-savings-allocation-card-metrics .fh-savings-recon.good,
+html body[data-finhub-theme] #tab-biweekly .fh-savings-recon.good,
+html body[data-finhub-theme] #tab-biweekly .fh-savings-allocation-card-heading .fh-savings-recon.good {
+  color:var(--fh-status-income,#126b45) !important;
+  background:color-mix(in srgb,var(--fh-status-income,#126b45) 13%,var(--fh-ui-card,#ffffff)) !important;
+  border:1px solid color-mix(in srgb,var(--fh-status-income,#126b45) 48%,var(--fh-ui-border,#dbe3ed)) !important;
+}
+html.dark body[data-finhub-theme] #tab-biweekly .fh-savings-add-button {
+  background:color-mix(in srgb,var(--fh-dark-primary,var(--fh-primary,#5eead4)) 18%,var(--fh-ui-card,#1f2937)) !important;
+  border-color:color-mix(in srgb,var(--fh-dark-primary,var(--fh-primary,#5eead4)) 55%,var(--fh-ui-border,#475569)) !important;
+  color:var(--fh-dark-primary,var(--fh-primary,#5eead4)) !important;
+}
+html.dark body[data-finhub-theme] #tab-biweekly .fh-savings-reference-layout .fh-sinking-progress-fill,
+html.dark body[data-finhub-theme] #tab-biweekly .fh-savings-goals-card #sinking-funds-progress-grid .bg-teal-500,
+html.dark body[data-finhub-theme] #tab-biweekly .fh-savings-goals-card #sinking-funds-progress-grid .bg-emerald-500 {
+  background:var(--fh-dark-primary,var(--fh-primary,#5eead4)) !important;
+}
+html.dark body[data-finhub-theme] #tab-biweekly .fh-savings-allocation-card-metrics .fh-savings-recon.good,
+html.dark body[data-finhub-theme] #tab-biweekly .fh-savings-recon.good,
+html.dark body[data-finhub-theme] #tab-biweekly .fh-savings-allocation-card-heading .fh-savings-recon.good {
+  color:var(--fh-dark-status-income,var(--fh-status-income,#a2edc3)) !important;
+  background:color-mix(in srgb,var(--fh-dark-status-income,var(--fh-status-income,#a2edc3)) 18%,var(--fh-ui-card,#1f2937)) !important;
+  border-color:color-mix(in srgb,var(--fh-dark-status-income,var(--fh-status-income,#a2edc3)) 48%,var(--fh-ui-border,#475569)) !important;
+}
+</style>
+
