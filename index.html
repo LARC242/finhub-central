@@ -1,15 +1,15 @@
-<!-- FinHub v254: Paycheque Planner recurring Calendar income links -->
+<!-- FinHub v327: Fixed bill explicit expense category and subcategory mapping -->
 <!DOCTYPE html>
 
 <html class="dark" lang="en-US">
 <head>
 <!-- FinHub v235: Calendar-Linked Debt Payment Conversion Fix -->
-<meta name="finhub-version" content="v254">
+<meta name="finhub-version" content="v328">
 <!-- v231: exception register render resilience; based on v230. -->
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>FinHub Central - Financial Command Center</title>
-<meta content="stage3b-buttons-actions-number-typography-reporting-engine-v1" name="finhub-build-stage"/><meta content="v255-variable-bill-cycle-aware-reserve" name="finhub-revision"/>
+<meta content="stage3b-buttons-actions-number-typography-reporting-engine-v1" name="finhub-build-stage"/><meta content="v327-fixed-bill-explicit-expense-mapping" name="finhub-revision"/>
 <meta content="2" name="finhub-schema-version"/>
 <link href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23132A44'/%3E%3Cpath d='M18 45V19h28v7H26v5h17v7H26v7z' fill='%2300FBEA'/%3E%3Ccircle cx='47' cy='16' r='7' fill='%23FF2687'/%3E%3Ccircle cx='15' cy='49' r='5' fill='%23D8FF76'/%3E%3C/svg%3E" rel="icon" type="image/svg+xml"/>
 <script src="https://cdn.tailwindcss.com"></script>
@@ -6732,7 +6732,7 @@ Bonus" rows="4"></textarea></div>
 <div class="cal-paired-row cal-vendor-amount-row" id="cal-vendor-description-row"><div id="cal-vendor-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1"><span id="cal-vendor-label">Vendor</span> <span class="text-rose-500">*</span></label><input class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-vendor" list="cal-counterparty-options" placeholder="e.g. Employer, utility or service provider" required="" type="text"/><datalist id="cal-counterparty-options"></datalist></div><div class="cal-amount-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Amount ($)</label><input class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-amount" required="" step="0.01" type="number"/></div></div>
 <div class="cal-paired-row" id="cal-amount-mode-row"><div><label class="block text-xs font-semibold text-gray-500 mb-1" for="cal-amount-mode">Amount behavior</label><select class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-amount-mode" onchange="updateCalendarAmountModeHelp()"><option value="fixed">Fixed amount</option><option value="variable">Variable amount</option></select><p id="cal-amount-mode-help" class="text-xs mt-1" style="color:var(--fh-muted)">The scheduled amount carries forward unchanged.</p></div><div id="cal-previous-amount-wrap" class="hidden"><label class="block text-xs font-semibold text-gray-500 mb-1">Previous occurrence</label><div id="cal-previous-amount" class="fh-standard-control w-full px-3 py-2 text-sm" style="min-height:2.5rem;display:flex;align-items:center;color:var(--fh-muted)">No previous amount</div></div></div>
 <div class="hidden sm:col-span-2 rounded-xl border border-gray-200 dark:border-gray-800 p-3" id="cal-future-amount-update-wrap">
-<label class="flex items-start gap-2 text-xs font-semibold"><input id="cal-update-future-amounts" type="checkbox" class="mt-0.5 fh-theme-checkbox"/><span>Apply this amount to this and all future unpaid occurrences</span></label>
+<label class="flex items-start gap-2 text-xs font-semibold"><input id="cal-update-future-amounts" type="checkbox" class="mt-0.5 fh-theme-checkbox"/><span>Apply these changes to this and all future unpaid occurrences (amount, creditor/vendor and description)</span></label>
 <p class="text-[10px] mt-1 ml-6" style="color:var(--fh-muted)">Only the selected date and later unpaid bill or income occurrences will change. Earlier dates and occurrences with payment or receipt history remain unchanged.</p>
 </div>
 <div class="cal-paired-row cal-category-row" id="cal-category-row"><div id="cal-category-wrap"><label class="block text-xs font-semibold text-gray-500 mb-1">Category</label><select class="fh-standard-control w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="cal-category" onchange="handleCalendarCategoryChange()"><option value="">-- None --</option></select></div>
@@ -11206,6 +11206,9 @@ ${acc.name}`);
       allocationState.rec.variableAllocations[key] = value;
       saveData();
       renderZbbPlanner();
+      // Keep the Spending dashboard tied to the same saved allocation state,
+      // even if the planner renderer is invoked through a different UI path.
+      if (typeof window.__fhRefreshSpendingDashboard === 'function') window.__fhRefreshSpendingDashboard();
     }
 
     function updateVariablePoolBudget(cycle, rawValue) {
@@ -11217,6 +11220,7 @@ ${acc.name}`);
       allocationState.rec.variablePoolBudget = nextBudget;
       saveData();
       renderZbbPlanner();
+      if (typeof window.__fhRefreshSpendingDashboard === 'function') window.__fhRefreshSpendingDashboard();
     }
 
     function resetVariablePoolAllocations(cycle) {
@@ -11229,12 +11233,31 @@ ${acc.name}`);
       allocationState.rec.variableAllocations = { ...allocationState.originalPlan.allocations };
       saveData();
       renderZbbPlanner();
+      if (typeof window.__fhRefreshSpendingDashboard === 'function') window.__fhRefreshSpendingDashboard();
     }
 
     function saveVariablePoolPlan(cycle) {
       const period = state.selectedZbbPeriod || '2026-11';
       const zbb = getActiveZbbTemplate();
-      const allocationState = getVariablePoolAllocationState(zbb, cycle, period);
+      // Explicitly collect live editor values before saving. This avoids relying
+      // on blur/change event ordering when Save as New Plan is clicked directly.
+      const variableHost = document.getElementById('zbb-variable-list');
+      const liveInputs = variableHost ? Array.from(variableHost.querySelectorAll('input[data-zbb-allocation-input]')) : [];
+      const livePoolInput = document.getElementById(`variable-pool-budget-${cycle}`);
+      const liveValues = liveInputs.map(input => ({ id: String(input.dataset.zbbId || ''), value: Number(input.value) }));
+      if (liveValues.some(entry => !entry.id || !Number.isFinite(entry.value) || entry.value < 0)) {
+        alert('One or more bucket allocations are invalid. Enter amounts of zero or more before saving.');
+        return;
+      }
+      if (livePoolInput && (!Number.isFinite(Number(livePoolInput.value)) || Number(livePoolInput.value) < 0)) {
+        alert('Enter a valid pool budget of zero or more before saving.');
+        return;
+      }
+      let allocationState = getVariablePoolAllocationState(zbb, cycle, period);
+      liveValues.forEach(entry => { allocationState.rec.variableAllocations[entry.id] = Math.round(entry.value * 100) / 100; });
+      if (livePoolInput) allocationState.rec.variablePoolBudget = Math.round(Number(livePoolInput.value) * 100) / 100;
+      // Re-read the state so totals and the saved baseline include the just-entered values.
+      allocationState = getVariablePoolAllocationState(zbb, cycle, period);
       const excess = allocationState.allocated - allocationState.poolBudget;
       if (excess > 0.005 && !confirm(`Your bucket allocations exceed the pool by ${formatFinancial(excess)}. Save this as the new plan anyway?`)) return;
       if (!confirm(`Save the current ${formatFinancial(allocationState.poolBudget)} pool and bucket allocations as the new original plan?`)) return;
@@ -11246,6 +11269,7 @@ ${acc.name}`);
       };
       saveData();
       renderZbbPlanner();
+      if (typeof window.__fhRefreshSpendingDashboard === 'function') window.__fhRefreshSpendingDashboard();
     }
 
     // Virtual Sinking Funds ledger. Bucket activity changes allocations only; actual bank
@@ -12535,6 +12559,12 @@ ${acc.name}`);
             if (key && itemCounts.get(key)>1) findings.push({level:'error',kind:'mapping',text:`${section}: duplicate budget names prevent a unique scheduled-item match for “${item.name}”.`});
             else if (key && matches.length===0) findings.push({level:'info',kind:'missing-activity',text:`${section} “${item.name}” has no exactly named scheduled ${billType==='debt'?'debt payment':'bill'} in ${period}; no ledger actual was inferred.`});
             return;
+          }
+          if (section === 'Fixed bills') {
+            const mapping = getBudgetExpenseMapping(item, normalize);
+            if (mapping.kind !== 'explicit') findings.push({level:'error',kind:'mapping',text:`Fixed bill “${item.name}” requires an explicit expense category and subcategory mapping. Calendar payment status remains separate.`});
+            const duplicate = (zbb.bills || []).filter(candidate => { const candidateMapping = getBudgetExpenseMapping(candidate, normalize); return candidateMapping.kind === 'explicit' && mapping.kind === 'explicit' && candidateMapping.key === mapping.key; }).length > 1;
+            if (duplicate) findings.push({level:'error',kind:'mapping',text:`Fixed bill “${item.name}” shares its expense category/subcategory mapping with another fixed bill. Review the mapping to avoid ambiguous attribution.`});
           }
           const budgetCents=zbbMoneyCents(item.monthly);
           const scheduledCents=matches.reduce((sum,b)=>sum+zbbMoneyCents(b.amount),0);
@@ -15073,7 +15103,9 @@ ${acc.name}`);
       document.getElementById('zbb-modal-title').innerText = isEdit ? (isVariable ? 'Edit Variable Bucket' : 'Edit Budget Item') : 'Add Budget Item';
       document.getElementById('zbb-sinking-fund-opts').classList.toggle('hidden', type !== 'savings');
       document.getElementById('zbb-variable-edit-note').classList.toggle('hidden', !isVariable);
-      document.getElementById('zbb-variable-taxonomy-wrap').classList.toggle('hidden', !isVariable);
+      document.getElementById('zbb-variable-taxonomy-wrap').classList.toggle('hidden', !(isVariable || type === 'bill'));
+      const taxonomyTitle = document.querySelector('#zbb-variable-taxonomy-wrap');
+      if (taxonomyTitle) { const labels = taxonomyTitle.querySelectorAll('label'); if (labels[0]) labels[0].textContent = type === 'bill' ? 'Fixed Bill Expense Category' : 'Expense Category'; if (labels[1]) labels[1].textContent = type === 'bill' ? 'Fixed Bill Expense Subcategory' : 'Expense Subcategory'; const note = taxonomyTitle.querySelector('p'); if (note) note.textContent = type === 'bill' ? 'Required mapping for this fixed expense budget line. Calendar payment and settlement status remain managed separately.' : 'Transactions matching this category and subcategory count toward this budget line. Leave unlinked if this is a manual bucket.'; }
       document.getElementById('zbb-item-monthly-wrap').classList.remove('hidden');
       document.getElementById('zbb-item-split-wrap').classList.remove('hidden');
       document.getElementById('zbb-item-split-details').classList.remove('hidden');
@@ -15108,6 +15140,7 @@ ${acc.name}`);
         document.getElementById('zbb-item-edit-id').value = String(item.id);
         document.getElementById('zbb-item-name').value = item.name || '';
         if (type === 'bill') populateZbbCalendarBillLink(item.linkedCalendarBillId || '');
+        if (type === 'bill') { populateZbbVariableCategories(item.expenseCategory || ''); populateZbbVariableSubcategories(item.expenseSubcategory || ''); }
         if (type === 'income') populateZbbCalendarIncomeLink(item.linkedCalendarIncomeId || '');
         if (type === 'debt') populateZbbCalendarDebtLink(item.linkedCalendarDebtId || '');
         if (isVariable) {
@@ -15144,7 +15177,7 @@ ${acc.name}`);
         document.getElementById('zbb-item-form').reset();
         document.getElementById('zbb-item-type').value = type;
         if (type === 'income') populateZbbCalendarIncomeLink('');
-        if (type === 'bill') populateZbbCalendarBillLink('');
+        if (type === 'bill') { populateZbbCalendarBillLink(''); populateZbbVariableCategories(''); populateZbbVariableSubcategories(''); }
         if (type === 'debt') populateZbbCalendarDebtLink('');
         if (type === 'variable') populateZbbCalendarVariableLink('');
         document.getElementById('zbb-split-mode-type').value = 'pct';
@@ -15176,6 +15209,9 @@ ${acc.name}`);
       const linkedCalendarBillId = type === 'bill' ? (document.getElementById('zbb-calendar-link')?.value || '') : '';
       const linkedCalendarBill = linkedCalendarBillId ? getZbbCalendarBillSource(linkedCalendarBillId) : null;
       if (linkedCalendarBillId && !linkedCalendarBill) { alert('The linked calendar bill is no longer available. Refresh the planner and select it again.'); return; }
+      const fixedExpenseCategory = type === 'bill' ? (document.getElementById('zbb-variable-category')?.value || '') : '';
+      const fixedExpenseSubcategory = type === 'bill' ? (document.getElementById('zbb-variable-subcategory')?.value || '') : '';
+      if (type === 'bill' && (!fixedExpenseCategory || !fixedExpenseSubcategory)) { alert('Choose both an expense category and expense subcategory for this fixed bill.'); return; }
       const linkedCalendarIncomeId = type === 'income' ? (document.getElementById('zbb-calendar-income-link')?.value || '') : '';
       const linkedCalendarIncome = linkedCalendarIncomeId ? getZbbCalendarIncomeSource(linkedCalendarIncomeId) : null;
       if (linkedCalendarIncomeId && !linkedCalendarIncome) { alert('The linked calendar income is no longer available. Refresh the planner and select it again.'); return; }
@@ -15266,13 +15302,13 @@ ${acc.name}`);
       if (editId) {
         const item = list.find(i => String(i.id) === String(editId));
         if (!item) { alert('This budget item could not be found. Please close the editor and try again.'); return; }
-        item.name = linkedCalendarBill ? (linkedCalendarBill.vendor || linkedCalendarBill.desc || name) : linkedCalendarIncome ? (linkedCalendarIncome.vendor || linkedCalendarIncome.desc || name) : name; item.monthly = linkedCalendarBill ? (Number(linkedCalendarBill.amount) || 0) : linkedCalendarIncome ? getZbbCalendarIncomeMonthlyAmount(linkedCalendarIncome) : linkedCalendarDebt ? getZbbCalendarDebtMonthlyAmount(linkedCalendarDebt) : monthly; item.splitMode = splitMode; item.split = split; if (type === 'bill') { if (linkedCalendarBillId) item.linkedCalendarBillId = linkedCalendarBillId; else delete item.linkedCalendarBillId; } if (type === 'income') { if (linkedCalendarIncomeId) item.linkedCalendarIncomeId = linkedCalendarIncomeId; else delete item.linkedCalendarIncomeId; } if (type === 'debt') { if (linkedCalendarDebtId) { item.linkedCalendarDebtId = linkedCalendarDebtId; item.linkedAccountId = linkedCalendarDebtAccount.id; } else delete item.linkedCalendarDebtId; } Object.assign(item, extraSavingsData);
+        item.name = linkedCalendarBill ? (linkedCalendarBill.vendor || linkedCalendarBill.desc || name) : linkedCalendarIncome ? (linkedCalendarIncome.vendor || linkedCalendarIncome.desc || name) : name; item.monthly = linkedCalendarBill ? (Number(linkedCalendarBill.amount) || 0) : linkedCalendarIncome ? getZbbCalendarIncomeMonthlyAmount(linkedCalendarIncome) : linkedCalendarDebt ? getZbbCalendarDebtMonthlyAmount(linkedCalendarDebt) : monthly; item.splitMode = splitMode; item.split = split; if (type === 'bill') { item.expenseCategory = fixedExpenseCategory; item.expenseSubcategory = fixedExpenseSubcategory; if (linkedCalendarBillId) item.linkedCalendarBillId = linkedCalendarBillId; else delete item.linkedCalendarBillId; } if (type === 'income') { if (linkedCalendarIncomeId) item.linkedCalendarIncomeId = linkedCalendarIncomeId; else delete item.linkedCalendarIncomeId; } if (type === 'debt') { if (linkedCalendarDebtId) { item.linkedCalendarDebtId = linkedCalendarDebtId; item.linkedAccountId = linkedCalendarDebtAccount.id; } else delete item.linkedCalendarDebtId; } Object.assign(item, extraSavingsData);
         if (type === 'savings') {
           const linkedBucket = item.linkedBucketId ? getSinkingBucketById(item.linkedBucketId) : sinkingBucketLedger().buckets.find(bucket => String(bucket.linkedZbbItemId || '') === String(item.id));
           if (linkedBucket) { linkedBucket.targetBal = Number(extraSavingsData.targetBal) || 0; linkedBucket.targetDate = extraSavingsData.targetDate || ''; }
         }
       } else {
-        list.push({ id: `zbb_${Date.now()}_${Math.random().toString(36).slice(2,7)}`, name: linkedCalendarBill ? (linkedCalendarBill.vendor || linkedCalendarBill.desc || name) : linkedCalendarIncome ? (linkedCalendarIncome.vendor || linkedCalendarIncome.desc || name) : linkedCalendarDebt ? (linkedCalendarDebt.desc || linkedCalendarDebt.vendor || name) : name, monthly: linkedCalendarBill ? (Number(linkedCalendarBill.amount) || 0) : linkedCalendarIncome ? getZbbCalendarIncomeMonthlyAmount(linkedCalendarIncome) : linkedCalendarDebt ? getZbbCalendarDebtMonthlyAmount(linkedCalendarDebt) : monthly, splitMode, split, ...(type === 'bill' && linkedCalendarBillId ? { linkedCalendarBillId } : {}), ...(type === 'income' && linkedCalendarIncomeId ? { linkedCalendarIncomeId } : {}), ...(type === 'debt' && linkedCalendarDebtId ? { linkedCalendarDebtId, linkedAccountId: linkedCalendarDebtAccount.id } : {}), ...extraSavingsData });
+        list.push({ id: `zbb_${Date.now()}_${Math.random().toString(36).slice(2,7)}`, name: linkedCalendarBill ? (linkedCalendarBill.vendor || linkedCalendarBill.desc || name) : linkedCalendarIncome ? (linkedCalendarIncome.vendor || linkedCalendarIncome.desc || name) : linkedCalendarDebt ? (linkedCalendarDebt.desc || linkedCalendarDebt.vendor || name) : name, monthly: linkedCalendarBill ? (Number(linkedCalendarBill.amount) || 0) : linkedCalendarIncome ? getZbbCalendarIncomeMonthlyAmount(linkedCalendarIncome) : linkedCalendarDebt ? getZbbCalendarDebtMonthlyAmount(linkedCalendarDebt) : monthly, splitMode, split, ...(type === 'bill' ? { expenseCategory: fixedExpenseCategory, expenseSubcategory: fixedExpenseSubcategory, ...(linkedCalendarBillId ? { linkedCalendarBillId } : {}) } : {}), ...(type === 'income' && linkedCalendarIncomeId ? { linkedCalendarIncomeId } : {}), ...(type === 'debt' && linkedCalendarDebtId ? { linkedCalendarDebtId, linkedAccountId: linkedCalendarDebtAccount.id } : {}), ...extraSavingsData });
       }
       saveData(); closeZbbItemModal(); renderZbbPlanner();
     }
@@ -15444,6 +15480,8 @@ ${acc.name}`);
               ...root,
               id: `${root.id}_rec_${date.replace(/-/g, '')}`,
               date,
+              vendor: root.recurrenceFutureVendor !== undefined ? root.recurrenceFutureVendor : root.vendor,
+              desc: root.recurrenceFutureDesc !== undefined ? root.recurrenceFutureDesc : root.desc,
               paid: false,
               linkedTransactionId: undefined,
               recurrenceRootId: root.id,
@@ -16199,6 +16237,10 @@ No payment links or balance changes were retained.`);
       // Store forward defaults on the series root so occurrences created beyond
       // the currently materialized calendar horizon receive the revised values.
       root.recurrenceFutureAmount = Number(enteredAmount);
+      // Keep descriptive series defaults in step with amount changes. These
+      // fields are metadata only and do not alter linked transactions or debt balances.
+      root.recurrenceFutureVendor = String(savedItem.vendor || '').trim();
+      root.recurrenceFutureDesc = String(savedItem.desc || '').trim();
       if (savedItem.type === 'debt' && Number.isFinite(Number(enteredPrincipalAmount))) {
         root.recurrenceFuturePrincipalAmount = Number(enteredPrincipalAmount);
       }
@@ -16209,6 +16251,8 @@ No payment links or balance changes were retained.`);
         const hasPaymentHistory = !!candidate.paid || getCalendarBillPaymentTransactions(candidate).length > 0 || getCalendarBillSettlement(candidate).missingIds.length > 0;
         if (hasPaymentHistory) { skipped++; return; }
         candidate.amount = Number(enteredAmount);
+        candidate.vendor = root.recurrenceFutureVendor;
+        candidate.desc = root.recurrenceFutureDesc;
         if (savedItem.type === 'debt' && Number.isFinite(Number(enteredPrincipalAmount))) {
           candidate.principalAmount = Number(enteredPrincipalAmount);
         }
