@@ -6378,45 +6378,42 @@ html.dark #zbb-item-modal .fh-zbb-modal-cancel-button{color:#f1f7fb!important;ba
 </div>
 </div>
 <!-- MODAL: DEBT ACCOUNT DETAIL EDIT -->
-<div aria-labelledby="debt-detail-modal-accessible-title" aria-modal="true" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden z-50" id="debt-detail-modal" role="dialog">
-<div class="dark:border-gray-800 w-full max-w-3xl space-y-4 fh-modal-surface">
-<h3 class="text-lg font-bold" id="debt-detail-modal-accessible-title">Edit Debt Details &amp; Minimum Payment</h3>
+<div aria-labelledby="debt-detail-modal-accessible-title" aria-modal="true" class="fixed inset-0 bg-black/70 flex items-center justify-center p-2 sm:p-4 hidden z-50 overflow-y-auto" id="debt-detail-modal" role="dialog">
+<div class="dark:border-gray-800 w-full max-w-4xl max-h-[calc(100dvh-1rem)] overflow-y-auto fh-modal-surface p-4 sm:p-5 rounded-2xl space-y-3 ed-compact-modal">
+<div class="flex items-center justify-between gap-3 border-b border-gray-200 dark:border-gray-700 pb-3"><h3 class="text-lg font-bold" id="debt-detail-modal-accessible-title">Edit Debt Details &amp; Minimum Payment</h3><button aria-label="Close" class="fh-btn-cancel rounded-lg px-3 py-1" onclick="closeDebtDetailModal()" type="button">×</button></div>
 <form class="space-y-3" id="debt-detail-form" onsubmit="saveDebtDetails(event)">
-<input id="edit-debt-id" type="hidden"/>
-<div><label class="block text-xs font-semibold text-gray-500 mb-1">Debt Name</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="ed-name" required="" type="text"/></div>
-<div class="grid grid-cols-2 gap-3">
-<div><label class="block text-xs font-semibold text-gray-500 mb-1">Starting Balance ($)</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="ed-startbal" step="0.01" type="number"/></div>
-<div><label class="block text-xs font-semibold text-gray-500 mb-1">Current Balance ($)</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="ed-balance" required="" step="0.01" type="number"/></div>
+<input id="edit-debt-id" type="hidden"/><input id="ed-startbal" type="hidden"/>
+<div><label class="block text-xs font-semibold text-gray-500 mb-1" for="ed-name">Debt Name</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="ed-name" required="" type="text"/></div>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+<div><label class="block text-xs font-semibold text-gray-500 mb-1" for="ed-balance">Current Balance ($)</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="ed-balance" required="" step="0.01" type="number"/></div>
+<div><label class="block text-xs font-semibold text-gray-500 mb-1" for="ed-apr">Current APR (%)</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="ed-apr" min="0" step="0.01" type="number" value="19.99"/></div>
+<div><label class="block text-xs font-semibold text-gray-500 mb-1" for="ed-minpay">Current Monthly Minimum ($)</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="ed-minpay" min="0" step="0.01" type="number" value="50"/></div>
 </div>
-<div class="grid grid-cols-2 gap-3">
-<div><label class="block text-xs font-semibold text-gray-500 mb-1">Current APR (%)</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="ed-apr" min="0" step="0.01" type="number" value="19.99"/></div>
-<div><label class="block text-xs font-semibold text-gray-500 mb-1">Current Monthly Minimum ($)</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="ed-minpay" min="0" step="0.01" type="number" value="50"/></div>
+<section class="rounded-xl border border-gray-200 dark:border-gray-700 p-3 space-y-2">
+<div class="flex items-center justify-between gap-2"><h4 class="font-semibold text-sm">APR &amp; Rate History</h4><label class="text-xs text-gray-500 flex items-center gap-2">Effective date <input class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1" id="ed-apr-effective-date" type="date"/></label></div>
+<div class="flex items-center justify-between gap-2 text-xs font-semibold text-gray-500"><span>Saved rate history</span><button class="text-indigo-600 dark:text-indigo-300" onclick="document.getElementById('ed-apr-history').classList.toggle('hidden')" type="button">Show / hide history</button></div>
+<div class="text-xs text-gray-600 dark:text-gray-300" id="ed-apr-history"></div>
+<p class="text-[11px] text-gray-500">APR changes update payoff projections from the effective date forward. Past transactions and closed monthly snapshots are not changed. Record actual interest when charged.</p>
+</section>
+<section class="rounded-xl border border-gray-200 dark:border-gray-700 p-3 space-y-2">
+<h4 class="font-semibold text-sm">Payment Settings</h4>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+<div><label class="block text-xs font-semibold text-gray-500 mb-1" for="ed-payment-method">Typical Payment Method</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="ed-payment-method"><option value="principal-interest">Principal + interest (default full payment to principal unless split entered)</option><option value="interest-only">Interest-only (no principal reduction)</option><option value="principal-only">Principal-only</option><option value="custom">Custom split when recording payment</option></select></div>
+<div><label class="block text-xs font-semibold text-gray-500 mb-1" for="ed-due-day">Payment Due Day (monthly)</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="ed-due-day"><option value="">Not entered</option><option value="1">1st</option><option value="2">2nd</option><option value="3">3rd</option><option value="4">4th</option><option value="5">5th</option><option value="6">6th</option><option value="7">7th</option><option value="8">8th</option><option value="9">9th</option><option value="10">10th</option><option value="11">11th</option><option value="12">12th</option><option value="13">13th</option><option value="14">14th</option><option value="15">15th</option><option value="16">16th</option><option value="17">17th</option><option value="18">18th</option><option value="19">19th</option><option value="20">20th</option><option value="21">21st</option><option value="22">22nd</option><option value="23">23rd</option><option value="24">24th</option><option value="25">25th</option><option value="26">26th</option><option value="27">27th</option><option value="28">28th</option><option value="29">29th</option><option value="30">30th</option><option value="31">31st</option></select></div></div>
+<details class="ed-scheduling-settings rounded-lg border border-gray-200 dark:border-gray-700 p-2 space-y-2"><summary class="text-xs font-semibold cursor-pointer">Additional settings (optional)</summary>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+<div><label class="block text-xs font-semibold text-gray-500 mb-1" for="ed-weekend-rule">Weekend adjustment</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm" id="ed-weekend-rule"><option value="none">No adjustment</option><option value="previous-business-day">Previous Friday</option><option value="next-business-day">Next Monday</option></select></div>
+<div><label class="block text-xs font-semibold text-gray-500 mb-1" for="ed-limit">Credit Limit ($)</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm" id="ed-limit" min="0" step="0.01" type="number"/></div>
 </div>
-<div class="rounded-xl border border-indigo-200 dark:border-indigo-900 bg-indigo-50/60 dark:bg-indigo-950/20 p-3 space-y-2">
-<div class="text-xs font-semibold text-indigo-700 dark:text-indigo-300">Promotional or scheduled APR change (optional)</div>
-<div class="grid grid-cols-2 gap-3">
-<div><label class="block text-[10px] text-gray-500 mb-1">New APR (%)</label><input class="w-full bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-2 text-sm" id="ed-apr-after-change" min="0" placeholder="e.g. 26.99" step="0.01" type="number"/></div>
-<div><label class="block text-[10px] text-gray-500 mb-1">Effective date</label><input class="w-full bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-2 text-sm" id="ed-apr-change-date" lang="en-US" type="date"/></div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+<div><label class="block text-xs font-semibold text-gray-500 mb-1" for="ed-apr-after-change">Scheduled APR (%)</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm" id="ed-apr-after-change" min="0" placeholder="e.g. 26.99" step="0.01" type="number"/></div>
+<div><label class="block text-xs font-semibold text-gray-500 mb-1" for="ed-apr-change-date">Scheduled effective date</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm" id="ed-apr-change-date" lang="en-US" type="date"/></div>
 </div>
-<p class="text-[10px] text-gray-500">Enter both fields to include a future rate change in payoff estimates. Leave both blank when the APR is not scheduled to change.</p>
-</div>
-<div><label class="block text-xs font-semibold text-gray-500 mb-1">Typical Payment Method</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="ed-payment-method"><option value="principal-interest">Principal + interest (default full payment to principal unless split entered)</option><option value="interest-only">Interest-only (no principal reduction)</option><option value="principal-only">Principal-only</option><option value="custom">Custom split when recording payment</option></select></div>
-<div class="grid grid-cols-2 gap-3">
-<div><label class="block text-xs font-semibold text-gray-500 mb-1">Payment Due Day (monthly)</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="ed-due-day"><option value="">Not entered</option><option value="1">1st</option><option value="2">2nd</option><option value="3">3rd</option><option value="4">4th</option><option value="5">5th</option><option value="6">6th</option><option value="7">7th</option><option value="8">8th</option><option value="9">9th</option><option value="10">10th</option><option value="11">11th</option><option value="12">12th</option><option value="13">13th</option><option value="14">14th</option><option value="15">15th</option><option value="16">16th</option><option value="17">17th</option><option value="18">18th</option><option value="19">19th</option><option value="20">20th</option><option value="21">21st</option><option value="22">22nd</option><option value="23">23rd</option><option value="24">24th</option><option value="25">25th</option><option value="26">26th</option><option value="27">27th</option><option value="28">28th</option><option value="29">29th</option><option value="30">30th</option><option value="31">31st</option></select></div>
-<details class="ed-scheduling-settings rounded-xl border p-3 space-y-3"><summary class="text-xs font-semibold cursor-pointer">Payment scheduling settings</summary><div class="ed-weekend-adjustment-setting"><label class="block text-xs font-semibold text-gray-500 mb-1">Weekend adjustment</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="ed-weekend-rule"><option value="none">No adjustment</option><option value="previous-business-day">Previous Friday</option><option value="next-business-day">Next Monday</option></select></div><p class="text-[11px] text-gray-500">Controls the expected recurring payment date when the due day falls on a weekend. It does not record the actual paid date.</p></details>
-</div>
-<div class="grid grid-cols-2 gap-3">
-<div><label class="block text-xs font-semibold text-gray-500 mb-1">Credit Limit ($)</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="ed-limit" min="0" step="0.01" type="number"/></div>
-<div class="text-[11px] text-gray-500 self-end pb-2">The due day stays fixed. FinHub can adjust the expected date when it falls on a weekend.</div>
-</div>
-<div><label class="block text-xs font-semibold text-gray-500 mb-1">Notes / Strategy</label><textarea class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-2 text-xs" id="ed-notes" placeholder="Add debt notes..." rows="2"></textarea></div>
-<div class="flex flex-col-reverse sm:flex-row gap-3 pt-3">
-<button class="flex-1 min-w-0 py-3 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel fh-modal-secondary-action" onclick="closeDebtDetailModal()" type="button">Cancel</button>
-<button class="flex-1 py-2 text-white rounded-xl text-sm font-semibold theme-bg" type="submit">Save Debt</button>
-</div>
-</form>
-</div>
-</div>
+<div><label class="block text-xs font-semibold text-gray-500 mb-1" for="ed-notes">Notes / Strategy</label><textarea class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg p-2 text-xs" id="ed-notes" placeholder="Add debt notes..." rows="2"></textarea></div>
+<p class="text-[11px] text-gray-500">Weekend settings control the expected recurring payment date, not the actual paid date. Enter both scheduled APR fields or leave both blank.</p>
+</details></section>
+<div class="flex flex-col-reverse sm:flex-row justify-end gap-2 border-t border-gray-200 dark:border-gray-700 pt-3"><button class="sm:min-w-28 px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold fh-btn-cancel" onclick="closeDebtDetailModal()" type="button">Cancel</button><button class="sm:min-w-40 px-5 py-2 text-white rounded-xl text-sm font-semibold theme-bg" type="submit">Save Changes</button></div>
+</form></div></div>
 <!-- MODAL: ADD / EDIT JOINT HOUSEHOLD BILL -->
 <div aria-labelledby="joint-modal-title" aria-modal="true" class="fixed inset-0 bg-black/70 flex items-start sm:items-center justify-center p-2 sm:p-4 hidden z-50 overflow-y-auto" id="joint-bill-modal" role="dialog">
 <div class="dark:border-gray-800 w-full max-w-2xl max-h-[calc(100dvh-1rem)] sm:max-h-[calc(100dvh-2rem)] overflow-y-auto space-y-4 fh-modal-surface p-4 sm:p-6 rounded-2xl">
@@ -10692,11 +10689,12 @@ Bonus" rows="4"></textarea></div>
       }
       const aprDetail = document.getElementById('acc-detail-apr');
       if (aprDetail) {
-        const hasInterestRate = acc.interestRate !== undefined && acc.interestRate !== null && acc.interestRate !== '';
+        const displayedRate = acc.type === 'debt' ? getDebtAPRAtDate(acc, new Date()) : Number(acc.interestRate);
+        const hasInterestRate = (acc.type === 'debt' && Number.isFinite(displayedRate)) || (acc.type === 'asset' && acc.interestRate !== undefined && acc.interestRate !== null && acc.interestRate !== '');
         const showInterestRate = (acc.type === 'debt' || acc.type === 'asset') && hasInterestRate;
         const rateLabel = acc.type === 'asset' ? 'Interest rate (APY/APR)' : 'Current APR';
         aprDetail.classList.toggle('hidden', !showInterestRate);
-        aprDetail.textContent = showInterestRate ? `${rateLabel}: ${Number(acc.interestRate).toFixed(2)}%` : '';
+        aprDetail.textContent = showInterestRate ? `${rateLabel}: ${Number(displayedRate).toFixed(2)}%` : '';
       }
       const totalChanges = activity.reduce((sum, entry) => sum + (Number(entry.change) || 0), 0);
       const currentBalance = Number(acc.balance) || 0;
@@ -10712,12 +10710,13 @@ Bonus" rows="4"></textarea></div>
       const balanceLabel = acc.type === 'debt' ? 'Outstanding balance' : 'Calculated balance';
       // An unset opening balance remains a derived suggestion until the user explicitly saves one.
       summary.className = 'grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-2';
-      const hasInterestRate = (acc.type === 'debt' || acc.type === 'asset') && acc.interestRate !== undefined && acc.interestRate !== null && acc.interestRate !== '';
+      const displayedAccountRate = acc.type === 'debt' ? getDebtAPRAtDate(acc, new Date()) : Number(acc.interestRate);
+      const hasInterestRate = acc.type === 'debt' ? Number.isFinite(displayedAccountRate) : (acc.type === 'asset' && acc.interestRate !== undefined && acc.interestRate !== null && acc.interestRate !== '');
       const interestRateLabel = acc.type === 'asset' ? 'Interest rate (APY/APR)' : 'Current APR';
       const openingBalanceHelp = "As of the start of this account's recorded activity. Saving adjusts the current balance by the same difference; it does not create a transaction.";
       summary.innerHTML = `
         <div class="acc-balance-summary-card acc-opening-balance-card"><div class="acc-balance-summary-label flex items-center gap-1"><span>Opening balance${hasSavedOpeningBalance ? ' · saved' : ' · derived'}</span><button type="button" data-fh-info="opening-balance" aria-label="About opening balance" aria-expanded="false" class="fh-info-trigger"><i class="fa-solid fa-circle-info" aria-hidden="true"></i></button></div><div class="flex items-center gap-1.5 mt-1"><span class="acc-balance-summary-currency">$</span><input id="acc-opening-balance-input" type="number" step="0.01" value="${Number(openingBalance).toFixed(2)}" class="acc-opening-balance-input min-w-0 flex-1 w-full rounded-lg px-2 py-1 text-sm font-bold accounting-num ${openingBalance < -0.005 ? 'acc-balance-negative' : openingBalance > 0.005 ? 'acc-balance-positive' : ''}" /><button onclick="saveAccountOpeningBalance()" class="acc-opening-balance-save shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold">Save</button></div></div>
-        ${hasInterestRate ? `<div class="acc-balance-summary-card acc-interest-rate-card"><div class="acc-balance-summary-label">${interestRateLabel}</div><div class="text-sm font-bold accounting-num mt-1">${Number(acc.interestRate).toFixed(2)}%</div></div>` : ''}
+        ${hasInterestRate ? `<div class="acc-balance-summary-card acc-interest-rate-card"><div class="acc-balance-summary-label">${interestRateLabel}</div><div class="text-sm font-bold accounting-num mt-1">${Number(displayedAccountRate).toFixed(2)}%</div></div>` : ''}
         <div class="acc-balance-summary-card"><div class="acc-balance-summary-label">${balanceLabel}</div><div class="text-base font-bold accounting-num acc-balance-value mt-1 ${currentBalance < -0.005 ? 'acc-balance-negative' : currentBalance > 0.005 ? 'acc-balance-positive' : ''}">${formatFinancial(currentBalance)}</div></div>
         <div class="acc-balance-summary-card"><div class="acc-balance-summary-label">Activity records</div><div class="text-base font-bold mt-1">${activity.length}</div></div>
         <div class="acc-balance-summary-card"><div class="acc-balance-summary-label">Calculated ending balance</div><div class="text-base font-bold mt-1 accounting-num acc-balance-value ${calculatedEndingBalance < -0.005 ? 'acc-balance-negative' : calculatedEndingBalance > 0.005 ? 'acc-balance-positive' : ''}">${formatFinancial(calculatedEndingBalance)}</div><div class="text-[9px] ${Math.abs(balanceDifference) < 0.005 ? 'fh-status-income' : 'text-amber-600'} mt-1">${Math.abs(balanceDifference) < 0.005 ? 'Matches current balance' : `Difference vs current: ${formatFinancial(balanceDifference)}`}</div>${hasSavedOpeningBalance && Math.abs(balanceDifference) >= 0.005 ? `<button type="button" onclick="syncAccountBalanceToActivity('${String(acc.id).replace(/'/g, '&#39;')}')" class="mt-2 w-full px-2 py-1.5 rounded-lg  text-white text-xs font-semibold">Sync balance to activity</button><div class="text-[9px] text-gray-400 mt-1">Updates the saved balance to the opening balance plus recorded activity. No transactions are created.</div>` : ''}</div>`;
@@ -10785,13 +10784,22 @@ Bonus" rows="4"></textarea></div>
       const min=minRaw===''?null:Number(minRaw), max=maxRaw===''?null:Number(maxRaw);
       const sort=document.getElementById('acc-activity-sort')?.value||'date-desc';const effectiveSort=sort==='date-desc'&&window.accRunningSort?window.accRunningSort:sort;
       const all=window.currentAccountActivityEntries||[];
-      const picks=window.accColumnSelections||{};const currentAccForFilter=state.accounts.find(a=>String(a.id)===String(window.currentEditingAccountId));let runningForFilter=(Number(currentAccForFilter?.balance)||0)-all.reduce((n,e)=>n+(Number(e.change)||0),0);const runningFilterMap=new Map();all.forEach(e=>{runningForFilter+=Number(e.change)||0;runningFilterMap.set(String(e.id),runningForFilter.toFixed(2));});const entries=all.filter(e => (!search || `${e.vendor||''} ${e.description||''} ${e.type||''}`.toLowerCase().includes(search)) && (!vendorSearch || String(e.vendor||'').toLowerCase().includes(vendorSearch)) && (!descriptionSearch || String(e.description||'').toLowerCase().includes(descriptionSearch)) && (!window.accColumnActive.has('vendor')||picks.vendor.has(String(e.vendor||'').trim())) && (!window.accColumnActive.has('description')||picks.description.has(String(e.description||'').trim())) && (!window.accColumnActive.has('type')||picks.type.has(String(e.type||'').trim())) && (!window.accColumnActive.has('amount')||picks.amount.has((Number(e.change)||0).toFixed(2))) && (!window.accColumnActive.has('running')||picks.running.has(runningFilterMap.get(String(e.id)))) && (!window.accDateFilterActive || (selectedDates instanceof Set && selectedDates.has(String(e.date||'')))) && (!type || e.type===type) && (!from || (ledgerDateKey(e.date)||'')>=from) && (!to || (ledgerDateKey(e.date)||'')<=to) && (!periodFrom || (ledgerDateKey(e.date)||'')>=periodFrom) && (!periodTo || (ledgerDateKey(e.date)||'')<=periodTo) && (min===null || Math.abs(Number(e.change)||0)>=min) && (max===null || Math.abs(Number(e.change)||0)<=max)).sort((a,b)=>{const av=ledgerDateKey(a.date)||'',bv=ledgerDateKey(b.date)||'';switch(effectiveSort){case'date-asc':return av.localeCompare(bv);case'vendor-asc':return String(a.vendor||'').localeCompare(String(b.vendor||''));case'vendor-desc':return String(b.vendor||'').localeCompare(String(a.vendor||''));case'description-asc':return String(a.description||'').localeCompare(String(b.description||''));case'description-desc':return String(b.description||'').localeCompare(String(a.description||''));case'type-asc':return String(a.type||'').localeCompare(String(b.type||''));case'type-desc':return String(b.type||'').localeCompare(String(a.type||''));case'amount-desc':return (Number(b.change)||0)-(Number(a.change)||0);case'amount-asc':return (Number(a.change)||0)-(Number(b.change)||0);case'running-asc':return Number(runningFilterMap.get(String(a.id))||0)-Number(runningFilterMap.get(String(b.id))||0);case'running-desc':return Number(runningFilterMap.get(String(b.id))||0)-Number(runningFilterMap.get(String(a.id))||0);default:return bv.localeCompare(av);}});
+      const picks=window.accColumnSelections||{};
+      const currentAccForFilter=state.accounts.find(a=>String(a.id)===String(window.currentEditingAccountId));
+      const allActivityTotal=all.reduce((n,e)=>n+(Number(e.change)||0),0);
+      const derivedOpeningForFilter=(Number(currentAccForFilter?.balance)||0)-allActivityTotal;
+      const openingBalanceForFilter=currentAccForFilter && accountHasSavedOpeningBalance(currentAccForFilter) ? Number(currentAccForFilter.openingBalance) : derivedOpeningForFilter;
+      let runningForFilter=openingBalanceForFilter;
+      const runningFilterMap=new Map();
+      all.forEach(e=>{runningForFilter+=Number(e.change)||0;runningFilterMap.set(String(e.id),runningForFilter.toFixed(2));});
+      const entries=all.filter(e => (!search || `${e.vendor||''} ${e.description||''} ${e.type||''}`.toLowerCase().includes(search)) && (!vendorSearch || String(e.vendor||'').toLowerCase().includes(vendorSearch)) && (!descriptionSearch || String(e.description||'').toLowerCase().includes(descriptionSearch)) && (!window.accColumnActive.has('vendor')||picks.vendor.has(String(e.vendor||'').trim())) && (!window.accColumnActive.has('description')||picks.description.has(String(e.description||'').trim())) && (!window.accColumnActive.has('type')||picks.type.has(String(e.type||'').trim())) && (!window.accColumnActive.has('amount')||picks.amount.has((Number(e.change)||0).toFixed(2))) && (!window.accColumnActive.has('running')||picks.running.has(runningFilterMap.get(String(e.id)))) && (!window.accDateFilterActive || (selectedDates instanceof Set && selectedDates.has(String(e.date||'')))) && (!type || e.type===type) && (!from || (ledgerDateKey(e.date)||'')>=from) && (!to || (ledgerDateKey(e.date)||'')<=to) && (!periodFrom || (ledgerDateKey(e.date)||'')>=periodFrom) && (!periodTo || (ledgerDateKey(e.date)||'')<=periodTo) && (min===null || Math.abs(Number(e.change)||0)>=min) && (max===null || Math.abs(Number(e.change)||0)<=max)).sort((a,b)=>{const av=ledgerDateKey(a.date)||'',bv=ledgerDateKey(b.date)||'';switch(effectiveSort){case'date-asc':return av.localeCompare(bv);case'vendor-asc':return String(a.vendor||'').localeCompare(String(b.vendor||''));case'vendor-desc':return String(b.vendor||'').localeCompare(String(a.vendor||''));case'description-asc':return String(a.description||'').localeCompare(String(b.description||''));case'description-desc':return String(b.description||'').localeCompare(String(a.description||''));case'type-asc':return String(a.type||'').localeCompare(String(b.type||''));case'type-desc':return String(b.type||'').localeCompare(String(a.type||''));case'amount-desc':return (Number(b.change)||0)-(Number(a.change)||0);case'amount-asc':return (Number(a.change)||0)-(Number(b.change)||0);case'running-asc':return Number(runningFilterMap.get(String(a.id))||0)-Number(runningFilterMap.get(String(b.id))||0);case'running-desc':return Number(runningFilterMap.get(String(b.id))||0)-Number(runningFilterMap.get(String(a.id))||0);default:return bv.localeCompare(av);}});
       const tbody=document.getElementById('acc-detail-rows'); if(!tbody)return;
       const acc=state.accounts.find(a=>String(a.id)===String(window.currentEditingAccountId)); if(!acc)return;
       const total=entries.reduce((sum,e)=>sum+(Number(e.change)||0),0);
-      let running=(Number(acc.balance)||0)-all.reduce((sum,e)=>sum+(Number(e.change)||0),0);
+      const displayOpeningBalance=accountHasSavedOpeningBalance(acc) ? Number(acc.openingBalance) : (Number(acc.balance)||0)-allActivityTotal;
+      let running=displayOpeningBalance;
       const runningById=new Map(); all.forEach(entry=>{ running += Number(entry.change)||0; runningById.set(String(entry.id),running); });
-      tbody.innerHTML=`<tr class="acc-opening-balance-row"><td class="px-3 py-1.5">—</td><td class="px-3 py-1.5">—</td><td class="px-4 py-3 font-semibold" colspan="1">Opening balance</td><td class="px-3 py-1.5">Opening balance</td><td class="px-3 py-1.5 text-right">—</td><td class="px-3 py-1.5 text-right font-bold accounting-num">${formatFinancial(running)}</td></tr>`;
+      tbody.innerHTML=`<tr class="acc-opening-balance-row"><td class="px-3 py-1.5">—</td><td class="px-3 py-1.5">—</td><td class="px-4 py-3 font-semibold" colspan="1">Opening balance</td><td class="px-3 py-1.5">Opening balance</td><td class="px-3 py-1.5 text-right">—</td><td class="px-3 py-1.5 text-right font-bold accounting-num">${formatFinancial(displayOpeningBalance)}</td></tr>`;
       if(!entries.length) tbody.innerHTML+='<tr><td colspan="6" class="px-4 py-4 text-center text-xs text-gray-400">No activity matches these filters.</td></tr>';
       else entries.forEach(entry=>{ const negative=entry.change<0; const favorable=acc.type==='debt'&&negative; const changeText=entry.change===0?'—':formatFinancial(Math.abs(entry.change),negative); tbody.innerHTML += `<tr class="acc-activity-row" data-activity-entry-id="${escapeHtml(String(entry.id))}"><td class="px-3 py-1.5 whitespace-nowrap">${formatDateMDY(entry.date)}</td><td class="px-3 py-1.5"><button type="button" data-account-activity-transaction-id="${escapeHtml(String(entry.transactionId || entry.id).replace(/_incoming$/, ''))}" class="account-activity-vendor-link text-left font-medium text-indigo-600 dark:text-indigo-400 hover:underline" title="Open transaction for editing" aria-label="Edit transaction: ${escapeHtml(entry.vendor||entry.description||entry.type||'activity record')}">${escapeHtml(entry.vendor||'—')}</button></td><td class="px-3 py-1.5">${escapeHtml(entry.description||'—')}</td><td class="px-3 py-1.5">${escapeHtml(entry.type||'')}</td><td class="px-4 py-3 text-right font-semibold accounting-num ${favorable||(!negative&&entry.change>0)?'fh-status-income':negative?'text-rose-600':'text-gray-400'}">${changeText}</td><td class="px-3 py-1.5 text-right font-bold accounting-num">${formatFinancial(runningById.get(String(entry.id)) ?? 0)}</td></tr>`; });
       const foot=document.getElementById('acc-detail-foot'); if(foot) foot.innerHTML=`<tr><td colspan="4" class="px-3 py-1.5">Filtered activity total (${entries.length} records)</td><td class="px-4 py-3 text-right accounting-num">${formatFinancial(Math.abs(total),total<0)}</td><td class="px-4 py-3 text-right accounting-num">${formatFinancial(Number(acc.balance)||0)}</td></tr>`;
@@ -22060,30 +22068,41 @@ No payment links or balance changes were retained.`);
     }
 
     function getDebtAPRAtDate(debt, date) {
-      const currentAPR = Number(debt.apr);
-      const futureAPR = debt.aprAfterChange === undefined || debt.aprAfterChange === null || debt.aprAfterChange === ''
+      const currentAPR = Number(debt?.apr);
+      const targetDate = date instanceof Date ? date : debtDateOnly(date);
+      const hasSavedHistory = Array.isArray(debt?.aprHistory) && debt.aprHistory.length > 0;
+      const history = hasSavedHistory ? debt.aprHistory
+        .map(item => ({ effectiveDate: item?.effectiveDate ? debtDateOnly(item.effectiveDate) : null, apr: item?.apr === null || item?.apr === undefined || item?.apr === '' ? NaN : Number(item.apr) }))
+        .filter(item => Number.isFinite(item.apr) && item.apr >= 0)
+        .sort((a, b) => (a.effectiveDate?.getTime() ?? -Infinity) - (b.effectiveDate?.getTime() ?? -Infinity)) : [];
+      let rate = hasSavedHistory ? NaN : (Number.isFinite(currentAPR) ? currentAPR : NaN);
+      const baseline = history.find(item => !item.effectiveDate);
+      if (baseline) rate = baseline.apr;
+      if (targetDate) history.filter(item => item.effectiveDate && item.effectiveDate <= targetDate).forEach(item => { rate = item.apr; });
+      const futureAPR = debt?.aprAfterChange === undefined || debt?.aprAfterChange === null || debt?.aprAfterChange === ''
         ? null : Number(debt.aprAfterChange);
-      const changeDate = debtDateOnly(debt.aprChangeDate);
-      if (futureAPR !== null && Number.isFinite(futureAPR) && changeDate && date >= changeDate) return futureAPR;
-      return currentAPR;
+      const changeDate = debtDateOnly(debt?.aprChangeDate);
+      if (futureAPR !== null && Number.isFinite(futureAPR) && changeDate && targetDate && targetDate >= changeDate) rate = futureAPR;
+      return rate;
     }
 
     function calculateDebtInterestForPeriod(balance, debt, periodStart, periodEnd) {
-      const days = Math.max(0, Math.round((periodEnd - periodStart) / 86400000));
-      if (!days || balance <= 0) return 0;
-      const futureAPR = debt.aprAfterChange === undefined || debt.aprAfterChange === null || debt.aprAfterChange === ''
-        ? null : Number(debt.aprAfterChange);
-      const changeDate = debtDateOnly(debt.aprChangeDate);
-      const currentAPR = Number(debt.apr);
+      const totalDays = Math.max(0, Math.round((periodEnd - periodStart) / 86400000));
+      if (!totalDays || balance <= 0) return 0;
+      const boundaries = (Array.isArray(debt?.aprHistory) ? debt.aprHistory : [])
+        .map(item => debtDateOnly(item?.effectiveDate)).filter(date => date && date > periodStart && date < periodEnd);
+      const scheduledDate = debtDateOnly(debt?.aprChangeDate);
+      if (scheduledDate && scheduledDate > periodStart && scheduledDate < periodEnd) boundaries.push(scheduledDate);
+      boundaries.sort((a, b) => a - b);
+      const uniqueBoundaries = boundaries.filter((date, index) => !index || date.getTime() !== boundaries[index - 1].getTime());
+      const points = [periodStart, ...uniqueBoundaries, periodEnd];
       let interest = 0;
-      if (futureAPR !== null && Number.isFinite(futureAPR) && changeDate && changeDate > periodStart && changeDate < periodEnd) {
-        const daysBefore = Math.max(0, Math.round((changeDate - periodStart) / 86400000));
-        const daysAfter = days - daysBefore;
-        interest = balance * ((currentAPR * daysBefore) + (futureAPR * daysAfter)) / 100 / 365;
-      } else {
-        const annualRate = futureAPR !== null && Number.isFinite(futureAPR) && changeDate && changeDate <= periodStart
-          ? futureAPR : currentAPR;
-        interest = balance * annualRate / 100 * days / 365;
+      for (let index = 0; index < points.length - 1; index++) {
+        const segmentStart = points[index];
+        const segmentEnd = points[index + 1];
+        const days = Math.max(0, Math.round((segmentEnd - segmentStart) / 86400000));
+        const apr = getDebtAPRAtDate(debt, segmentStart);
+        if (days && Number.isFinite(apr) && apr >= 0) interest += balance * apr / 100 * days / 365;
       }
       return Math.round(interest * 100) / 100;
     }
@@ -22701,7 +22720,7 @@ No payment links or balance changes were retained.`);
       const strategy = ['custom', 'snowball', 'avalanche'].includes(state.debtStrategy) ? state.debtStrategy : 'custom';
       if (strategySelect && strategySelect.value !== strategy) strategySelect.value = strategy;
       if (strategy === 'snowball') debts.sort((a,b) => (Number(a.balance)||0) - (Number(b.balance)||0));
-      if (strategy === 'avalanche') debts.sort((a,b) => (Number(b.apr)||0) - (Number(a.apr)||0));
+      if (strategy === 'avalanche') debts.sort((a,b) => (getDebtAPRAtDate(b, new Date())||0) - (getDebtAPRAtDate(a, new Date())||0));
 
       const totalBal = debts.reduce((s, d) => s + (Number(d.balance)||0), 0);
       const knownMinimums = debts.filter(d => (Number(d.balance) || 0) > 0.005 && Number.isFinite(Number(d.minPay)) && d.minPay !== '' && Number(d.minPay) > 0).reduce((s,d)=>s+Number(d.minPay),0);
@@ -22740,7 +22759,7 @@ No payment links or balance changes were retained.`);
           if (debtHasUnscheduledAprChangeNote(d)) missing.push('APR change note not scheduled');
           if (hasBalance && !debtDueDayOfMonth(d)) missing.push('Due day');
           const status = missing.length ? `<span class="text-amber-600">Missing: ${missing.join(', ')}</span>` : `<span class="fh-status-income">Complete</span>`;
-          overview.innerHTML += `<tr class="  cursor-pointer" onclick="openDebtDetailModal('${d.id}')"><td class="px-4 py-3 font-semibold">${d.name}</td><td class="px-3 py-3 text-right accounting-num">${formatFinancial(d.balance||0)}</td><td class="px-3 py-3 text-right">${d.apr!==undefined && d.apr!==null && d.apr!=='' ? `${Number(d.apr).toFixed(2)}%` : '—'}</td><td class="px-3 py-3 text-right accounting-num">${d.minPay!==undefined && d.minPay!==null && d.minPay!=='' ? formatFinancial(d.minPay) : '—'}</td><td class="px-3 py-3">${formatDebtDueSchedule(d)}</td><td class="px-3 py-3 text-right accounting-num">${d.limit ? formatFinancial(d.limit) : '—'}</td><td class="px-3 py-1.5">${status}</td></tr>`;
+          overview.innerHTML += `<tr class="  cursor-pointer" onclick="openDebtDetailModal('${d.id}')"><td class="px-4 py-3 font-semibold">${d.name}</td><td class="px-3 py-3 text-right accounting-num">${formatFinancial(d.balance||0)}</td><td class="px-3 py-3 text-right">${d.apr!==undefined && d.apr!==null && d.apr!=='' ? `${Number(getDebtAPRAtDate(d, new Date())).toFixed(2)}%` : '—'}</td><td class="px-3 py-3 text-right accounting-num">${d.minPay!==undefined && d.minPay!==null && d.minPay!=='' ? formatFinancial(d.minPay) : '—'}</td><td class="px-3 py-3">${formatDebtDueSchedule(d)}</td><td class="px-3 py-3 text-right accounting-num">${d.limit ? formatFinancial(d.limit) : '—'}</td><td class="px-3 py-1.5">${status}</td></tr>`;
         });
         if (!debts.length) overview.innerHTML = `<tr><td colspan="7" class="px-4 py-5 text-center text-gray-400">No debt accounts added yet.</td></tr>`;
         if (foot) foot.innerHTML = `<tr><td class="px-3 py-1.5">TOTAL / KNOWN MINIMUMS</td><td class="px-3 py-3 text-right">${formatFinancial(totalBal)}</td><td></td><td class="px-3 py-3 text-right">${formatFinancial(knownMinimums)}</td><td colspan="3" class="px-4 py-3 text-right text-gray-500">${missingMinimums ? `${missingMinimums} minimum(s) not included` : 'All minimums entered'}</td></tr>`;
@@ -22755,7 +22774,7 @@ No payment links or balance changes were retained.`);
       list.innerHTML = ''; picker.innerHTML = '';
       debts.forEach((d, idx) => {
         picker.innerHTML += `<option value="${d.id}">${d.name}</option>`;
-        list.innerHTML += `<div class="flex justify-between items-center bg-gray-50 dark:bg-gray-950 p-3 rounded-xl text-xs  border border-transparent transition-colors"><div onclick="openDebtDetailModal('${d.id}')" class="cursor-pointer flex-1"><div class="font-bold">${d.name} <span class="text-[10px] text-gray-400 ml-2">(APR: ${d.apr!==undefined && d.apr!==null && d.apr!=='' ? Number(d.apr).toFixed(2)+'%' : 'Not entered'} | Min: ${d.minPay!==undefined && d.minPay!==null && d.minPay!=='' ? formatFinancial(d.minPay) : 'Not entered'})</span></div><div class="text-[10px] text-gray-400">Due: ${formatDebtDueSchedule(d)} | Limit: ${formatFinancial(d.limit||0)} | ${d.notes || 'No notes'}</div></div><div class="flex items-center space-x-3"><span class="font-bold text-rose-600 accounting-num">${formatFinancial(d.balance||0)}</span><div class="flex flex-col space-y-0.5"><button onclick="moveDebtPriority('${d.id}', -1)" title="Move Up" class="text-gray-400  text-[10px] px-1"><i class="fa-solid fa-chevron-up"></i></button><button onclick="moveDebtPriority('${d.id}', 1)" title="Move Down" class="text-gray-400  text-[10px] px-1"><i class="fa-solid fa-chevron-down"></i></button></div></div></div>`;
+        list.innerHTML += `<div class="flex justify-between items-center bg-gray-50 dark:bg-gray-950 p-3 rounded-xl text-xs  border border-transparent transition-colors"><div onclick="openDebtDetailModal('${d.id}')" class="cursor-pointer flex-1"><div class="font-bold">${d.name} <span class="text-[10px] text-gray-400 ml-2">(APR: ${d.apr!==undefined && d.apr!==null && d.apr!=='' ? Number(getDebtAPRAtDate(d, new Date())).toFixed(2)+'%' : 'Not entered'} | Min: ${d.minPay!==undefined && d.minPay!==null && d.minPay!=='' ? formatFinancial(d.minPay) : 'Not entered'})</span></div><div class="text-[10px] text-gray-400">Due: ${formatDebtDueSchedule(d)} | Limit: ${formatFinancial(d.limit||0)} | ${d.notes || 'No notes'}</div></div><div class="flex items-center space-x-3"><span class="font-bold text-rose-600 accounting-num">${formatFinancial(d.balance||0)}</span><div class="flex flex-col space-y-0.5"><button onclick="moveDebtPriority('${d.id}', -1)" title="Move Up" class="text-gray-400  text-[10px] px-1"><i class="fa-solid fa-chevron-up"></i></button><button onclick="moveDebtPriority('${d.id}', 1)" title="Move Down" class="text-gray-400  text-[10px] px-1"><i class="fa-solid fa-chevron-down"></i></button></div></div></div>`;
       });
 
       const baseline = simulateDebtPayoff(debts, 0);
@@ -22798,6 +22817,18 @@ No payment links or balance changes were retained.`);
       document.getElementById('ed-balance').value = d.balance;
       document.getElementById('ed-startbal').value = d.startBal ?? d.balance;
       document.getElementById('ed-apr').value = d.apr ?? '';
+      const aprEffectiveDateInput = document.getElementById('ed-apr-effective-date');
+      if (aprEffectiveDateInput) {
+        const today = new Date();
+        aprEffectiveDateInput.value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+      }
+      const aprHistoryHost = document.getElementById('ed-apr-history');
+      if (aprHistoryHost) {
+        const history = Array.isArray(d.aprHistory) ? d.aprHistory.slice().sort((a,b) => String(a.effectiveDate || '').localeCompare(String(b.effectiveDate || ''))) : [];
+        aprHistoryHost.innerHTML = history.length
+          ? `<div class="font-semibold mb-1">Saved APR history</div>${history.map(item => `<div class="flex justify-between gap-3"><span>${item.effectiveDate ? escapeHtml(item.effectiveDate) : 'Earlier rate (date not recorded)'}</span><span class="font-semibold">${Number(item.apr).toFixed(2)}%</span></div>`).join('')}`
+          : '<span>No dated APR changes recorded yet. Your existing APR will be preserved as the starting rate when you first change it.';
+      }
       document.getElementById('ed-minpay').value = d.minPay ?? '';
       document.getElementById('ed-apr-after-change').value = d.aprAfterChange ?? '';
       document.getElementById('ed-apr-change-date').value = d.aprChangeDate || '';
@@ -22818,8 +22849,9 @@ No payment links or balance changes were retained.`);
 
       const name = document.getElementById('ed-name').value.trim();
       const balanceRaw = document.getElementById('ed-balance').value.trim();
-      const startRaw = document.getElementById('ed-startbal').value.trim();
+      const startRaw = String(d.startBal ?? d.balance ?? '').trim();
       const aprRaw = document.getElementById('ed-apr').value.trim();
+      const aprEffectiveDateRaw = document.getElementById('ed-apr-effective-date')?.value || '';
       const minimumRaw = document.getElementById('ed-minpay').value.trim();
       const futureAprRaw = document.getElementById('ed-apr-after-change').value.trim();
       const futureDateRaw = document.getElementById('ed-apr-change-date').value;
@@ -22837,6 +22869,16 @@ No payment links or balance changes were retained.`);
       if (balance === null || !Number.isFinite(balance) || balance < 0) { alert('Enter a valid current balance of zero or more.'); return; }
       if (startBalance !== null && (!Number.isFinite(startBalance) || startBalance < 0)) { alert('Enter a valid starting balance of zero or more.'); return; }
       if (apr !== null && (!Number.isFinite(apr) || apr < 0)) { alert('APR must be zero or greater.'); return; }
+      const existingAprValue = d.apr === '' || d.apr === null || d.apr === undefined ? null : Number(d.apr);
+      const aprIsChanging = apr !== null && (existingAprValue === null || !Number.isFinite(existingAprValue) || Math.abs(apr - existingAprValue) >= 0.000001);
+      if (aprIsChanging) {
+        if (!aprEffectiveDateRaw || !debtDateOnly(aprEffectiveDateRaw)) { alert('Enter the effective date for the new APR.'); return; }
+        const now = new Date();
+        const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        if (aprEffectiveDateRaw > today) { alert('For a future APR change, use the Promotional or scheduled APR change fields below.'); return; }
+        const latestHistoryDate = (Array.isArray(d.aprHistory) ? d.aprHistory : []).map(item => String(item?.effectiveDate || '')).filter(Boolean).sort().pop() || '';
+        if (latestHistoryDate && aprEffectiveDateRaw < latestHistoryDate) { alert(`The effective date cannot be earlier than the latest saved APR change (${latestHistoryDate}). This field updates the current rate; it does not rewrite earlier rate history.`); return; }
+      }
       if (minimum !== null && (!Number.isFinite(minimum) || minimum < 0)) { alert('Minimum payment must be zero or greater.'); return; }
       if (limit !== null && (!Number.isFinite(limit) || limit < 0)) { alert('Credit limit must be zero or greater.'); return; }
       if ((futureAprRaw === '') !== (futureDateRaw === '')) { alert('Enter both a future APR and its effective date, or leave both fields blank.'); return; }
@@ -22848,10 +22890,22 @@ No payment links or balance changes were retained.`);
         if (!confirm('The APR change effective date is in the past. Save it anyway?')) return;
       }
 
+      const refreshAccountDetail = window.currentEditingAccountId === d.id && !document.getElementById('account-detail-modal')?.classList.contains('hidden');
       captureUndo(`Edit debt details for "${d.name}"`);
       d.name = name;
       d.balance = Math.round(balance * 100) / 100;
       d.startBal = startBalance === null ? d.balance : Math.round(startBalance * 100) / 100;
+      const previousAPR = d.apr === '' || d.apr === null || d.apr === undefined ? null : Number(d.apr);
+      if (aprIsChanging) {
+        const history = Array.isArray(d.aprHistory) ? d.aprHistory.map(item => ({ ...item })) : [];
+        if (!history.some(item => !item.effectiveDate) && !history.length) history.push({ effectiveDate: null, apr: Number.isFinite(previousAPR) ? previousAPR : null, recordedAt: new Date().toISOString(), source: Number.isFinite(previousAPR) ? 'legacy-baseline' : 'unknown-before-first-rate' });
+        const existingAtDate = history.findIndex(item => String(item.effectiveDate || '') === aprEffectiveDateRaw);
+        const nextRateEntry = { effectiveDate: aprEffectiveDateRaw, apr: Math.round(apr * 100) / 100, recordedAt: new Date().toISOString(), source: 'user-updated' };
+        if (existingAtDate >= 0) history[existingAtDate] = nextRateEntry;
+        else history.push(nextRateEntry);
+        history.sort((a,b) => String(a.effectiveDate || '').localeCompare(String(b.effectiveDate || '')));
+        d.aprHistory = history;
+      }
       d.apr = apr;
       d.minPay = minimum === null ? null : Math.round(minimum * 100) / 100;
       d.aprAfterChange = futureApr === null ? null : futureApr;
@@ -22863,6 +22917,7 @@ No payment links or balance changes were retained.`);
       d.limit = limit === null ? 0 : Math.round(limit * 100) / 100;
       d.notes = document.getElementById('ed-notes').value;
       saveData(); closeDebtDetailModal(); renderDebtPlanner(); renderDashboard();
+      if (refreshAccountDetail) openAccountDetail(d.id);
     }
 
     function renderDebtPaymentHistory() {
