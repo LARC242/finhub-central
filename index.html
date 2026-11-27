@@ -1,15 +1,17 @@
-<!-- FinHub v327: Fixed bill explicit expense category and subcategory mapping -->
+<!-- FinHub v371: retain income/expense section on unbudgeted findings so allocation actions can route correctly. -->
+<!-- FinHub v362: fixed-bill category suggestions from linked Calendar/payment records; suggestions only, no automatic data writes. -->
+<!-- FinHub v360: Reconcile household-settlement allocations and explicit Calendar links without duplicating the settlement bank transaction. -->
 <!DOCTYPE html>
 
 <html class="dark" lang="en-US">
 <head>
 <!-- FinHub v235: Calendar-Linked Debt Payment Conversion Fix -->
-<meta name="finhub-version" content="v328">
+<meta name="finhub-version" content="v369">
 <!-- v231: exception register render resilience; based on v230. -->
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>FinHub Central - Financial Command Center</title>
-<meta content="stage3b-buttons-actions-number-typography-reporting-engine-v1" name="finhub-build-stage"/><meta content="v327-fixed-bill-explicit-expense-mapping" name="finhub-revision"/>
+<title>FinHub Central - Financial Command Center · v369</title>
+<meta content="stage3b-buttons-actions-number-typography-reporting-engine-v1" name="finhub-build-stage"/><meta content="v371-unbudgeted-activity-section-fix" name="finhub-revision"/>
 <meta content="2" name="finhub-schema-version"/>
 <link href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23132A44'/%3E%3Cpath d='M18 45V19h28v7H26v5h17v7H26v7z' fill='%2300FBEA'/%3E%3Ccircle cx='47' cy='16' r='7' fill='%23FF2687'/%3E%3Ccircle cx='15' cy='49' r='5' fill='%23D8FF76'/%3E%3C/svg%3E" rel="icon" type="image/svg+xml"/>
 <script src="https://cdn.tailwindcss.com"></script>
@@ -5282,6 +5284,55 @@ html.dark #zbb-item-modal .fh-zbb-modal-cancel-button{color:#f1f7fb!important;ba
   }
 </style>
 
+
+<style id="fh-v335-fixed-bill-earmark-display">
+#tab-biweekly .fh-fixed-bill-earmark{margin:10px 0 2px;padding:10px 12px;border:1px solid var(--fh-planner-border,rgba(148,163,184,.25));border-radius:12px;background:var(--fh-planner-panel,rgba(148,163,184,.06));color:var(--fh-planner-text,inherit);font-size:11px}
+#tab-biweekly .fh-fixed-bill-earmark-heading{font-weight:750;margin-bottom:6px}
+#tab-biweekly .fh-fixed-bill-earmark-lines{display:grid;gap:4px}
+#tab-biweekly .fh-fixed-bill-earmark-lines>div{display:flex;justify-content:space-between;gap:8px}
+#tab-biweekly .fh-fixed-bill-earmark-total{display:flex;justify-content:space-between;gap:8px;border-top:1px solid var(--fh-planner-border,rgba(148,163,184,.25));margin-top:7px;padding-top:7px;font-weight:750}
+#tab-biweekly .fh-fixed-bill-earmark p{margin:5px 0 0;color:var(--fh-planner-muted,#94a3b8);font-size:10px}
+</style>
+
+<style id="fh-v342-budget-item-modal-layout">
+#zbb-item-modal{padding:14px!important}
+#zbb-item-modal>.fh-modal-surface,#zbb-item-modal>div{box-sizing:border-box!important;width:min(100%,620px)!important;max-width:620px!important;max-height:min(90dvh,900px)!important;padding:22px!important;display:flex!important;flex-direction:column!important;overflow:hidden!important;border-radius:20px!important}
+#zbb-item-modal #zbb-item-form{min-height:0!important;overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior:contain!important;-webkit-overflow-scrolling:touch!important;padding:1px 2px 3px 1px!important}
+#zbb-item-modal #zbb-item-form>div{min-width:0!important}
+#zbb-item-modal input,#zbb-item-modal select{box-sizing:border-box!important;min-width:0!important;max-width:100%!important}
+#zbb-item-modal #zbb-item-form>div:last-child{position:sticky!important;bottom:-3px!important;z-index:2!important;padding:12px 0 3px!important;margin-top:4px!important;background:var(--fh-modal,var(--fh-ui-card,#172f49))!important}
+#zbb-item-form .fh-v342-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;align-items:end;min-width:0}
+#zbb-item-form .fh-v342-row>*{min-width:0}
+#zbb-item-form .fh-v342-info{position:relative;display:inline-flex;vertical-align:middle;margin-left:7px;align-items:center}
+#zbb-item-form .fh-v342-info button{width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;color:var(--theme-primary,var(--fh-accent));font-size:14px}
+#zbb-item-form .fh-v342-info button:hover{background:var(--fh-surface-raised)}
+#zbb-item-form .fh-v342-info [data-copy]{display:none;position:absolute;z-index:40;left:0;top:calc(100% + 6px);width:min(260px,70vw);padding:10px;border:1px solid var(--fh-surface-border);border-radius:10px;background:var(--fh-surface-modal,var(--fh-card));color:var(--fh-surface-text);font-size:12px;line-height:1.45;box-shadow:0 8px 24px #0002}
+#zbb-item-form .fh-v342-info.open [data-copy]{display:block}
+@media(max-width:700px){#zbb-item-modal{padding:10px!important;align-items:center!important}#zbb-item-modal>.fh-modal-surface,#zbb-item-modal>div{width:min(100%,560px)!important;max-width:calc(100vw - 20px)!important;max-height:calc(100dvh - 20px)!important;padding:16px!important;gap:12px!important;border-radius:17px!important}#zbb-item-modal #zbb-modal-title{font-size:1.2rem!important;line-height:1.25!important}#zbb-item-modal #zbb-item-form{display:flex!important;flex-direction:column!important;gap:12px!important}#zbb-item-modal #zbb-item-form>div{margin:0!important}#zbb-item-modal #zbb-item-split-wrap{grid-template-columns:minmax(0,1fr)!important;gap:6px!important}#zbb-item-modal #zbb-item-split-wrap>div:last-child{padding:0!important;align-self:auto!important;font-size:.72rem!important;line-height:1.35!important}#zbb-item-modal #zbb-sinking-fund-opts>.grid{grid-template-columns:minmax(0,1fr)!important;gap:10px!important}#zbb-item-modal #zbb-item-form>div:last-child{gap:9px!important}#zbb-item-modal #zbb-item-form>div:last-child button{min-height:46px!important;padding:.7rem .8rem!important;font-size:.9rem!important}#zbb-item-modal #zbb-item-split-details .grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important}#zbb-item-modal #zbb-item-split-details input{width:100%!important;min-width:0!important;padding:.55rem .5rem!important;font-size:.9rem!important}}
+@media(max-width:560px){#zbb-item-form .fh-v342-row{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:380px){#zbb-item-modal{padding:7px!important}#zbb-item-modal>.fh-modal-surface,#zbb-item-modal>div{max-width:calc(100vw - 14px)!important;padding:13px!important}#zbb-item-modal #zbb-item-form>div:last-child{flex-direction:column!important}#zbb-item-modal #zbb-item-form>div:last-child button{width:100%!important}}
+</style>
+<style id="fh-v349-modal-info-and-cancel-theme">
+#zbb-item-form .fh-v342-info [data-copy]{display:none!important;}
+#zbb-item-form .fh-v342-info.open [data-copy]{display:block!important;}
+#zbb-item-modal .fh-zbb-modal-actions>.fh-zbb-modal-cancel-button{
+  background:var(--fh-ui-card,var(--fh-surface-raised,var(--fh-card-bg,#252238)))!important;
+  color:var(--fh-ui-ink,var(--fh-text,#f3efff))!important;
+  border:1px solid var(--fh-ui-border,var(--fh-card-border,rgba(170,140,255,.32)))!important;
+}
+#zbb-item-modal .fh-zbb-modal-actions>.fh-zbb-modal-cancel-button:hover{
+  background:var(--fh-ui-hover,var(--fh-surface-hover,var(--fh-ui-card,#302b46)))!important;
+  border-color:var(--fh-accent,var(--theme-primary,#a879ff))!important;
+}
+</style>
+<style id="fh-v350-split-mode-label-and-width">
+/* Keep Split Mode as a full-width control in its half of the two-column row. */
+#zbb-item-form #zbb-item-split-wrap{grid-template-columns:minmax(0,1fr)!important;width:100%!important;min-width:0!important}
+#zbb-item-form #zbb-item-split-wrap>div:first-child{width:100%!important;min-width:0!important}
+#zbb-item-form #zbb-item-split-wrap>div:first-child>label{display:inline-flex!important;align-items:center!important;gap:6px!important;width:auto!important;margin-bottom:8px!important}
+#zbb-item-form #zbb-item-split-wrap>div:first-child>.fh-v342-info{margin:0!important;vertical-align:middle!important}
+#zbb-item-form #zbb-item-split-wrap>div:first-child>select{display:block!important;width:100%!important;max-width:100%!important}
+</style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 min-h-screen flex flex-col md:flex-row transition-colors duration-200 relative" id="app-body">
 <!-- UNDO TOAST NOTIFICATION -->
@@ -6875,10 +6926,14 @@ Bonus" rows="4"></textarea></div>
 <h3 class="text-lg font-bold" id="sinking-bucket-modal-title">Add Sinking-Fund Bucket</h3>
 <form class="space-y-3" id="sinking-bucket-form" onsubmit="saveSinkingBucket(event)">
 <input id="sinking-bucket-edit-id" type="hidden" value=""/>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Bucket Name</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="sinking-bucket-name" maxlength="80" placeholder="e.g. Pets" required="" type="text"/></div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Funding Purpose</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="sinking-bucket-funding-class"><option value="sinking">Sinking Fund</option><option value="debt_reserve">Debt Payment Reserve</option><option value="bill_reserve">Bill Reserve</option></select><p class="text-[10px] text-gray-400 mt-1">Choose how this contribution is classified in the Paycheque Planner.</p></div>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Linked Bank Account (Optional)</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="sinking-bucket-account"></select><p class="text-[10px] text-gray-400 mt-1">If linked, this bucket will automatically appear in that account's reconciliation.</p></div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Link Existing Paycheque Planner Line (Optional)</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="sinking-bucket-existing-line"><option value="">Create a new planner line if a contribution is entered</option></select><p class="text-[10px] text-gray-400 mt-1">Use this to connect an existing unlinked line, such as Variable Bills, instead of creating a duplicate.</p></div>
+</div>
 <div class="rounded-xl border border-gray-200 dark:border-gray-700 p-3 space-y-2">
   <div class="text-xs font-bold">Paycheque Contribution Plan</div>
   <div><label class="block text-xs font-semibold text-gray-500 mb-1">Monthly Contribution ($)</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="sinking-bucket-monthly" type="number" min="0" step="0.01" placeholder="Optional"/></div>
@@ -7349,7 +7404,7 @@ Bonus" rows="4"></textarea></div>
       { name: 'Transportation', subcategories: ['Gas','Car Maintenance','Parking'] },
       { name: 'Kids & Activities', subcategories: ['Gymnastics','Soccer','School Expenses'] },
       { name: 'Pets', subcategories: ['Food','Veterinary','Supplies'] },
-      { name: 'Personal & Lifestyle', subcategories: ['Clothing','Entertainment','Personal Care'] },
+      { name: 'Personal & Lifestyle', subcategories: ['Clothing','Entertainment','Personal Care','Gifts & Giving'] },
       // Interest remains an expense for reporting, even when it is recorded in a Debt workflow.
       { name: 'Debt Service', subcategories: ['Interest Expense'] }
     ];
@@ -11123,12 +11178,23 @@ ${acc.name}`);
     }
 
     function setPayCycle(cycle) {
-      const dates = getScheduledPaydaysForMonth(state.selectedZbbPeriod || '2026-11');
-      if (cycle === 3 && dates.length < 3) return;
-      state.selectedPayCycle = cycle;
-      refreshPaydaySelector(state.selectedZbbPeriod || '2026-11');
-      document.querySelectorAll('.cycle-num-label').forEach(el => el.innerText = cycle);
-      saveData(); renderZbbPlanner();
+      const period = state.selectedZbbPeriod || '2026-11';
+      const dates = getScheduledPaydaysForMonth(period);
+      const selected = Math.max(1, Math.min(3, Number(cycle) || 1));
+      if (selected === 3 && dates.length < 3) return;
+      // Update the canonical selection before any renderer reads the active pool.
+      state.selectedPayCycle = selected;
+      refreshPaydaySelector(period);
+      document.querySelectorAll('.cycle-num-label').forEach(el => el.innerText = selected);
+      saveData();
+      renderZbbPlanner();
+      // The Spending dashboard is a separate presentation layer. Refresh it
+      // explicitly after the planner has committed the selected cycle so its
+      // allocations, transaction window, chart, and detail panel all use the
+      // same P1/P2/P3 record. The hook is also used by other planner updates.
+      if (typeof window.__fhRefreshSpendingDashboard === 'function') {
+        window.__fhRefreshSpendingDashboard();
+      }
     }
 
     function getActiveZbbTemplate() {
@@ -11339,10 +11405,14 @@ ${acc.name}`);
         if (Object.prototype.hasOwnProperty.call(overrides, String(item.id))) opening = Number(overrides[String(item.id)]) || 0;
         let funded = 0;
         if (template && monthItem) {
-          [1,2,3].forEach(cycle => {
+          // Only count allocations for paycheques that actually occur in this
+          // calendar month. A stale P3 record in a two-payday month must not
+          // inflate the variable-expense reserve carry-forward balance.
+          const scheduledCycleCount = Math.min(3, getScheduledPaydaysForMonth(monthKey).length);
+          for (let cycle = 1; cycle <= scheduledCycleCount; cycle++) {
             const allocationState = getVariablePoolAllocationState(template, cycle, monthKey);
             funded += Math.max(0, Number(allocationState.allocations[String(monthItem.id)]) || 0);
-          });
+          }
         }
         const spent = monthItem ? getVariableReserveActuals(monthItem, monthKey) : 0;
         const available = Math.round((opening + funded - spent) * 100) / 100;
@@ -11913,11 +11983,171 @@ ${acc.name}`);
         if (source && frequency === 'weekly') return paymentCents * 2;
       }
       if (item?.linkedCalendarIncomeId) {
-        const source = getZbbCalendarIncomeSource(item.linkedCalendarIncomeId);
+        // Resolve actual received income directly from the official pay-cycle
+        // slot before resolving the recurring source. An early bank deposit
+        // can be a generated one-off occurrence (recurring='none') whose
+        // recurrenceRootId is correct even when the budget line's stored root
+        // link is stale or deleted.
+        {
+          const periodForReceipt = String(state.selectedZbbPeriod || '2026-11');
+          const paydaysForReceipt = getScheduledPaydaysForMonth(periodForReceipt);
+          const paydayForReceipt = paydaysForReceipt[Number(cycle)-1];
+          if (paydayForReceipt) {
+            const slotForReceipt = `${paydayForReceipt.getFullYear()}-${String(paydayForReceipt.getMonth()+1).padStart(2,'0')}-${String(paydayForReceipt.getDate()).padStart(2,'0')}`;
+            const linkedRecord = (state.calendarBills || []).find(b =>
+              b && b.type === 'income' &&
+              (String(b.id) === String(item.linkedCalendarIncomeId) ||
+               String(b.recurrenceRootId || '') === String(item.linkedCalendarIncomeId))
+            );
+            const expectedAccount = String(linkedRecord?.accountId || linkedRecord?.depositAccountId || '');
+            const normalizePayee = value => String(value || '').trim().toLowerCase().replace(/[^a-z0-9]/g,'');
+            const expectedPayee = normalizePayee(item.name || linkedRecord?.vendor || linkedRecord?.desc);
+            // The posted Ledger transaction is the authoritative receipt. Its
+            // calendarBillId points to the exact generated recurrence occurrence.
+            // Use that relationship first; do not compare the root's description
+            // ("Payday") with the occurrence's vendor ("CNPS").
+            const linkedReceipts = (state.transactions || []).filter(tx => {
+              if (!tx || String(tx.type || '').toLowerCase() !== 'income') return false;
+              if (!Number.isFinite(Number(tx.amount))) return false;
+              if (expectedAccount && String(tx.accountId || '') !== expectedAccount) return false;
+              const occurrence = (state.calendarBills || []).find(b =>
+                b && b.type === 'income' &&
+                String(b.id || '') === String(tx.calendarBillId || '')
+              );
+              const occurrencePayee = normalizePayee(occurrence?.vendor || occurrence?.desc);
+              return !!occurrence &&
+                occurrence.paid === true &&
+                String(occurrence.recurrenceSlotDate || '').slice(0,10) === slotForReceipt &&
+                (!expectedAccount || String(occurrence.accountId || occurrence.depositAccountId || '') === expectedAccount) &&
+                !!expectedPayee && occurrencePayee === expectedPayee;
+            });
+            if (linkedReceipts.length === 1) {
+              return zbbMoneyCents(linkedReceipts[0].amount);
+            }
+            // Fallback for installations where a paid occurrence exists but
+            // payment history has not yet produced a linked Ledger transaction.
+            const receivedForSlot = (state.calendarBills || []).filter(b =>
+              b && b.type === 'income' &&
+              String(b.recurrenceSlotDate || '').slice(0,10) === slotForReceipt &&
+              b.paid === true &&
+              (!expectedAccount || String(b.accountId || b.depositAccountId || '') === expectedAccount) &&
+              (normalizePayee(b.vendor) === normalizePayee(item.name) ||
+               normalizePayee(b.desc) === normalizePayee(item.name)) &&
+              Number.isFinite(Number(b.amount))
+            );
+            if (receivedForSlot.length === 1) {
+              return zbbMoneyCents(receivedForSlot[0].amount);
+            }
+          }
+        }
+        // Resolve the stored link even when its root has been marked deleted.
+        // The deleted root is needed as the reference for a safe replacement
+        // lookup; the public helper intentionally hides deleted series.
+        let source = (state.calendarBills || []).find(b =>
+          b && b.type === 'income' && !b.recurrenceGenerated &&
+          (String(b.id) === String(item.linkedCalendarIncomeId) ||
+           String(b.recurrenceRootId || '') === String(item.linkedCalendarIncomeId))
+        ) || getZbbCalendarIncomeSource(item.linkedCalendarIncomeId);
+        // Repair stale Payday links when the original Calendar series was
+        // deleted and a unique active replacement series owns this cycle's
+        // paid occurrence. Match by income type, recurrence slot, account,
+        // description and recurrence frequency; never guess across accounts.
+        if (source?.recurrenceOccurrenceDeleted) {
+          const periodForRepair = String(state.selectedZbbPeriod || '2026-11');
+          const paydaysForRepair = getScheduledPaydaysForMonth(periodForRepair);
+          const paydayForRepair = paydaysForRepair[Number(cycle)-1];
+          if (paydayForRepair) {
+            const slotForRepair = `${paydayForRepair.getFullYear()}-${String(paydayForRepair.getMonth()+1).padStart(2,'0')}-${String(paydayForRepair.getDate()).padStart(2,'0')}`;
+            const accountForRepair = String(source.accountId || '');
+            const descForRepair = String(source.desc || item.name || '').trim().toLowerCase();
+            const replacementRoots = (state.calendarBills || []).filter(candidate =>
+              candidate && candidate.type === 'income' &&
+              candidate.recurrenceGenerated !== true &&
+              candidate.recurrenceOccurrenceDeleted !== true &&
+              candidate.recurring === source.recurring &&
+              String(candidate.accountId || '') === accountForRepair &&
+              String(candidate.desc || '').trim().toLowerCase() === descForRepair &&
+              (state.calendarBills || []).some(occurrence =>
+                occurrence && occurrence.type === 'income' &&
+                occurrence.recurrenceGenerated === true &&
+                String(occurrence.recurrenceRootId || '') === String(candidate.id) &&
+                String(occurrence.recurrenceSlotDate || '').slice(0,10) === slotForRepair &&
+                !!occurrence.paid
+              )
+            );
+            if (replacementRoots.length === 1) {
+              source = replacementRoots[0];
+              item.linkedCalendarIncomeId = String(source.id);
+              item.linkStatus = 'linked';
+              try { saveData(); } catch (_) {}
+            }
+          }
+        }
         const frequency = source?.recurring || 'none';
         const depositCents = zbbMoneyCents(source?.amount);
-        if (source && frequency === 'biweekly') return depositCents;
-        if (source && frequency === 'weekly') return depositCents * 2;
+        if (source && (frequency === 'biweekly' || frequency === 'weekly')) {
+          // Calendar series define the expected recurring deposit. For the
+          // selected month, prefer the individual payday occurrence amount
+          // when that occurrence exists; an edited occurrence must override
+          // the series amount for this Planner cycle only.
+          const period = String(state.selectedZbbPeriod || '2026-11');
+          const paydays = getScheduledPaydaysForMonth(period);
+          const payday = paydays[Number(cycle) - 1];
+          if (payday) {
+            const occurrenceDate = `${payday.getFullYear()}-${String(payday.getMonth()+1).padStart(2,'0')}-${String(payday.getDate()).padStart(2,'0')}`;
+            const linkId = String(item.linkedCalendarIncomeId);
+            // A bank deposit can arrive shortly before the official scheduled
+          // payday (for example, Thursday Nov 26 for the Friday Nov 27 cycle).
+          // Match the linked recurrence occurrence within a narrow +/-3-day
+          // window, preferring the closest date, instead of requiring an exact
+          // date match. This keeps the override tied to this pay cycle only.
+          const paydayTime = new Date(payday.getFullYear(), payday.getMonth(), payday.getDate()).getTime();
+          const sourceAccountId = String(source.accountId || source.depositAccountId || '');
+          const isSamePaydayCycle = b => {
+            const slot = String(b.recurrenceSlotDate || '').slice(0,10);
+            const rawDate = String(b.date || '').slice(0,10);
+            // Exact recurrence slot is authoritative for early deposits.
+            if (slot === occurrenceDate) return true;
+            // Fallback only for the linked recurrence's own occurrence.
+            if (String(b.recurrenceRootId || '') === linkId ||
+                (String(b.id || '') === linkId && !b.recurrenceGenerated)) {
+              if (!/^\d{4}-\d{2}-\d{2}$/.test(rawDate)) return false;
+              const parts = rawDate.split('-').map(Number);
+              const time = new Date(parts[0], parts[1]-1, parts[2]).getTime();
+              return Math.abs(Math.round((time - paydayTime) / 86400000)) <= 3;
+            }
+            return false;
+          };
+          let candidates = (state.calendarBills || []).filter(b =>
+            b && b.type === 'income' && isSamePaydayCycle(b) &&
+            (!sourceAccountId || String(b.accountId || b.depositAccountId || '') === sourceAccountId)
+          );
+          // Prefer a received/paid occurrence over an unpaid scheduled duplicate.
+          candidates.sort((a,b) =>
+            Number(!!b.paid) - Number(!!a.paid) ||
+            Number(!!b.recurrenceSlotDate) - Number(!!a.recurrenceSlotDate)
+          );
+          const occurrence = candidates[0] || null;
+            if (occurrence && Number.isFinite(Number(occurrence.amount))) {
+              const actualCents = zbbMoneyCents(occurrence.amount);
+              if (frequency === 'biweekly') return actualCents;
+              // A weekly series contributes two deposits to a biweekly
+              // Planner cycle; use the occurrence override plus the next
+              // scheduled weekly occurrence when available.
+              const nextDate = new Date(payday.getFullYear(), payday.getMonth(), payday.getDate()+7);
+              const nextISO = `${nextDate.getFullYear()}-${String(nextDate.getMonth()+1).padStart(2,'0')}-${String(nextDate.getDate()).padStart(2,'0')}`;
+              const nextOccurrence = (state.calendarBills || []).find(b =>
+                b && b.type === 'income' &&
+                String(b.date || '').slice(0,10) === nextISO &&
+                (String(b.recurrenceRootId || '') === linkId ||
+                 (String(b.id || '') === linkId && !b.recurrenceGenerated))
+              );
+              return actualCents + (nextOccurrence ? zbbMoneyCents(nextOccurrence.amount) : depositCents);
+            }
+          }
+          if (frequency === 'biweekly') return depositCents;
+          if (frequency === 'weekly') return depositCents * 2;
+        }
       }
 
       const split = Array.isArray(item?.split) ? item.split : [50, 50, 0];
@@ -12483,14 +12713,131 @@ ${acc.name}`);
       const [year, month] = period.split('-').map(Number);
       const end = `${period}-${String(new Date(year, month, 0).getDate()).padStart(2,'0')}`;
       const txs = (state.transactions || []).filter(tx => tx && tx.date >= start && tx.date <= end && !tx.reconciledDuplicate);
-      const components = getFinancialReportingComponents(txs).filter(c => { const tx=c.transaction||{}; const category=normalize(c.category||tx.category); const vendor=normalize(tx.vendor||tx.payee||''); const desc=normalize(tx.desc||tx.description||tx.bankDescription||''); return !(c.section==='expense' && (tx.type==='Transfer' || category==='transfer' || !!tx.transferToAccountId || (category==='uncategorized' && (/^transfer/.test(vendor)||/^transfer/.test(desc)||/^cardload/.test(vendor)||/^loadfrom/.test(vendor))))); });
+      // A household settlement can represent one bank transaction allocated across
+      // several scheduled bills. When the active allocation total agrees with that
+      // transaction, reconcile the allocation against the bill rows and exclude the
+      // aggregate bank transaction from category/unbudgeted matching. If it does not
+      // agree, retain the transaction in ledger matching and raise an explicit review.
+      const householdSettlementBankTransactionIds = new Set();
+      const householdSettlementReviewFindings = [];
+      (state.householdSettlements || []).filter(item => item && String(item.ym || '') === period && !item.reversedAt && !['void','reversed'].includes(String(item.status || '').toLowerCase())).forEach(settlement => {
+        const transactionId = String(settlement.bankTransactionId || '');
+        const transaction = txs.find(tx => String(tx.id) === transactionId);
+        const allocatedCents = (settlement.allocations || []).reduce((sum, allocation) => sum + Math.max(0, Number(allocation.amountCents) || 0), 0);
+        if (!transactionId || !transaction) {
+          householdSettlementReviewFindings.push({level:'warning',kind:'household-settlement-link',period,text:`Household settlement ${settlement.id || ''} has no matching bank transaction in ${period}; bill allocations were not used to suppress any ledger activity.`.trim(),affectedTransactionIds:transactionId?[transactionId]:[]});
+          return;
+        }
+        const transactionCents = Math.abs(transactionAmountToCents(Number(transaction.amount) || 0));
+        if (transaction.type === 'Expense' && allocatedCents > 0 && Math.abs(transactionCents - allocatedCents) <= 5) {
+          householdSettlementBankTransactionIds.add(transactionId);
+        } else {
+          householdSettlementReviewFindings.push({level:'warning',kind:'household-settlement-amount-difference',period,text:`Household settlement ${settlement.id || ''} allocates ${formatFinancial(allocatedCents/100)} but its bank transaction ${transaction.vendor || transaction.desc || transactionId} is ${formatFinancial(transactionCents/100)}. The transaction remains in ledger matching and the allocation difference needs review.`,affectedTransactionIds:[transactionId]});
+        }
+      });
+      const components = getFinancialReportingComponents(txs).filter(c => { const tx=c.transaction||{}; const category=normalize(c.category||tx.category); const vendor=normalize(tx.vendor||tx.payee||''); const desc=normalize(tx.desc||tx.description||tx.bankDescription||''); return !(tx.id && householdSettlementBankTransactionIds.has(String(tx.id))) && !(c.section==='expense' && (tx.type==='Transfer' || category==='transfer' || !!tx.transferToAccountId || (category==='uncategorized' && (/^transfer/.test(vendor)||/^transfer/.test(desc)||/^cardload/.test(vendor)||/^loadfrom/.test(vendor))))); });
       const rows = [];
-      const findings = [];
+      const findings = [...householdSettlementReviewFindings];
       // Income linked to a scheduled Calendar occurrence can be validly matched
       // when the sole income budget line has no category on the ledger transaction.
       // Retain those transaction IDs so the later unbudgeted scan honours that match.
       const coveredCalendarIncomeTransactionIds = new Set();
       const today = new Date().toISOString().slice(0,10);
+      const monthBills = (state.calendarBills || []).filter(b => b && !b.recurrenceOccurrenceDeleted && String(b.date||'').slice(0,7)===period);
+      // Mirror the household-allocation settlement calculation used by Calendar,
+      // without mutating bill flags or saving state during a read-only reconciliation.
+      const getReconciliationBillSettlement = bill => {
+        const settlement = getCalendarBillSettlement(bill);
+        if (!bill || !bill.householdSettlementManaged) return settlement;
+        const activeSettlementIds = new Set((state.householdSettlements || [])
+          .filter(item => !item.reversedAt && item.status !== 'void' && item.status !== 'reversed')
+          .map(item => String(item.id)));
+        const allAllocations = Array.isArray(bill.householdSettlementAllocations) ? bill.householdSettlementAllocations : [];
+        const linkedJointBillIds = new Set(allAllocations.map(item => String(item.jointBillId)));
+        const activeAllocations = allAllocations.filter(item => activeSettlementIds.has(String(item.settlementId)));
+        const householdPaidCents = activeAllocations.reduce((sum, item) => sum + Math.max(0, Number(item.amountCents) || 0), 0);
+        const householdObligationCents = (state.jointBills || []).filter(item =>
+          linkedJointBillIds.has(String(item.id)) && String(item.ym) === String(bill.date || '').slice(0, 7))
+          .reduce((sum, item) => {
+            const share = Math.round(transactionAmountToCents(Number(item.amount) || 0) * (Number(item.splitPct) || 0) / 100);
+            const adjustments = (state.jointAdjustments || []).filter(adj => !adj.reversedAt && adj.status !== 'void' &&
+              String(adj.billId) === String(item.id) && String(adj.ym) === String(item.ym))
+              .reduce((n, adj) => n + (adj.type === 'additional' ? 1 : -1) * Math.abs(Number(adj.amountCents) || 0), 0);
+            return sum + Math.max(0, share + adjustments);
+          }, 0);
+        return {...settlement, paidCents:householdPaidCents, amountCents:householdObligationCents, householdManaged:true};
+      };
+      // An imported debt-payment reversal without reversalOfTransactionId must never
+      // be assigned to an original payment automatically. Still surface it as a
+      // reconciliation exception, and flag any scheduled debt rows that contain a
+      // plausible original payment so the gross settlement is not mistaken for a
+      // confirmed net settlement. Candidate matching is review-only: it does not
+      // alter balances, transaction links, or paid amounts.
+      const debtBillsWithUnlinkedReversalReview = new Set();
+      txs.filter(tx => tx.type === 'Debt Payment Reversal' && !String(tx.reversalOfTransactionId || '').trim()).forEach(reversal => {
+        const candidates = reversal.accountId && reversal.debtAccountId
+          ? findDebtPaymentReversalCandidates({
+              importType:'Debt Payment Reversal',
+              amount:Math.abs(Number(reversal.amount) || 0),
+              date:reversal.date,
+              accountId:reversal.accountId,
+              debtAccountId:reversal.debtAccountId,
+              description:reversal.bankDescription || reversal.vendor || reversal.desc || ''
+            })
+          : [];
+        const candidateBillIds = new Set();
+        candidates.forEach(payment => {
+          getCalendarBillsLinkedToTransactionId(payment.id).forEach(bill => {
+            if (bill && bill.type === 'debt' && monthBills.some(monthBill => String(monthBill.id) === String(bill.id))) candidateBillIds.add(String(bill.id));
+          });
+          if (payment.calendarBillId && monthBills.some(bill => String(bill.id) === String(payment.calendarBillId) && bill.type === 'debt')) {
+            candidateBillIds.add(String(payment.calendarBillId));
+          }
+        });
+        candidateBillIds.forEach(id => debtBillsWithUnlinkedReversalReview.add(id));
+        const candidateSummary = candidates.length
+          ? `Possible original payment(s), for review only: ${candidates.map(payment => `${payment.vendor || payment.desc || 'Debt payment'} on ${payment.date || 'an undated entry'} (${formatFinancial(Math.abs(Number(payment.amount) || 0))})`).join('; ')}.`
+          : 'No possible original payment was identified using the funding account, debt account, remaining amount and date-window checks.';
+        findings.push({
+          level:'warning',
+          kind:'unlinked-debt-payment-reversal',
+          period,
+          text:`Debt payment reversal “${reversal.vendor || reversal.desc || reversal.bankDescription || 'Unlabelled reversal'}” dated ${reversal.date || 'undated'} for ${formatFinancial(Math.abs(Number(reversal.amount) || 0))} is not linked to an original debt payment. FinHub has retained its cash, principal and interest effects but has not reduced any original payment or Calendar settlement. ${candidateSummary} Confirm a link only if the bank return belongs to that payment.`,
+          affectedTransactionIds:[String(reversal.id), ...candidates.map(payment => String(payment.id))]
+        });
+      });
+      // Calendar-linked fixed and variable bill payments are reconciled on their
+      // scheduled rows below. Exclude those exact transactions from category-based
+      // variable-expense matching as well, or a shared category mapping can count
+      // the same payment twice (once as a scheduled bill and once as pool spending).
+      const coveredScheduledExpenseTransactionIds = new Set();
+      const coveredDebtPaymentTransactionIds = new Set();
+      const scheduledExpenseBudgetItems = [...(zbb.bills || []), ...(zbb.variableBills || [])];
+      const scheduledExpenseNameCounts = new Map();
+      scheduledExpenseBudgetItems.forEach(item => {
+        const key = normalize(item.name);
+        if (key) scheduledExpenseNameCounts.set(key, (scheduledExpenseNameCounts.get(key) || 0) + 1);
+      });
+      const scheduledExpenseNames = new Set([...scheduledExpenseNameCounts.entries()].filter(([, count]) => count === 1).map(([key]) => key));
+      monthBills.filter(bill => bill.type === 'expense').forEach(bill => {
+        const billName = normalize(bill.desc || bill.vendor || '');
+        const explicitlyLinked = scheduledExpenseBudgetItems.some(item => String(item.linkedCalendarBillId || '') === String(bill.id) || String(bill.recurrenceRootId || '') === String(item.linkedCalendarBillId || ''));
+        if (!explicitlyLinked && (!billName || !scheduledExpenseNames.has(billName))) return;
+        getCalendarBillSettlement(bill).validTransactions.forEach(tx => {
+          if (tx && !tx.reconciledDuplicate) coveredScheduledExpenseTransactionIds.add(String(tx.id));
+        });
+      });
+      const debtNameCounts = new Map();
+      (zbb.debts || []).forEach(item => { const key=normalize(item.name); if(key) debtNameCounts.set(key,(debtNameCounts.get(key)||0)+1); });
+      const uniqueDebtNames = new Set([...debtNameCounts.entries()].filter(([,count])=>count===1).map(([key])=>key));
+      monthBills.filter(bill => bill.type === 'debt').forEach(bill => {
+        const billName=normalize(bill.desc || bill.vendor || '');
+        const explicitlyLinked = (zbb.debts || []).some(item => String(item.linkedCalendarDebtId || '') === String(bill.id) || String(bill.recurrenceRootId || '') === String(item.linkedCalendarDebtId || ''));
+        if(!explicitlyLinked && (!billName || !uniqueDebtNames.has(billName))) return;
+        getCalendarBillSettlement(bill).validTransactions.forEach(tx => {
+          if(tx && !tx.reconciledDuplicate) coveredDebtPaymentTransactionIds.add(String(tx.id));
+        });
+      });
       const pushCategoryRows = (items, section, ledgerSection) => {
         const seen = new Map();
         const mappingCounts = new Map();
@@ -12522,10 +12869,14 @@ ${acc.name}`);
           if (ledgerSection === 'expense' && expenseMapping.kind === 'invalid') {
             findings.push({level:'error',kind:'mapping',text:`Variable expenses “${item.name || 'Unnamed line'}” has an incomplete category/subcategory mapping. Both fields are required; no actuals were assigned.`});
           }
-          let matches = duplicateMapping || (ledgerSection === 'expense' && expenseMapping.kind === 'invalid') ? [] : components.filter(c => c.section === ledgerSection && (ledgerSection === 'expense'
+          const linkedIncomeId = ledgerSection === 'income' ? String(item.linkedCalendarIncomeId || '') : '';
+          let matches = duplicateMapping || (ledgerSection === 'expense' && expenseMapping.kind === 'invalid') ? [] : components.filter(c => c.section === ledgerSection && (ledgerSection !== 'expense' || !c.transaction?.id || (!coveredScheduledExpenseTransactionIds.has(String(c.transaction.id)) && !coveredDebtPaymentTransactionIds.has(String(c.transaction.id)))) && (ledgerSection === 'expense'
             ? budgetExpenseComponentMatches(expenseMapping, c, normalize)
-            : normalize(c.category) === key));
-          if (ledgerSection === 'income' && !matches.length && (zbb.incomes || []).length === 1) {
+            : linkedIncomeId ? String(c.transaction?.calendarBillId || '') === linkedIncomeId : normalize(c.category) === key));
+          if (ledgerSection === 'income' && linkedIncomeId && matches.length) {
+            matches.forEach(component => { if (component.transaction?.id) coveredCalendarIncomeTransactionIds.add(String(component.transaction.id)); });
+          }
+          if (ledgerSection === 'income' && !linkedIncomeId && !matches.length && (zbb.incomes || []).length === 1) {
             const scheduledIncomeIds = new Set((state.calendarBills || []).filter(b => b && b.type === 'income' && String(b.date || '').slice(0,7) === period).map(b => String(b.id)));
             matches = components.filter(c => c.section === 'income' && !String(c.transaction?.category || '').trim() && c.transaction?.calendarBillId && scheduledIncomeIds.has(String(c.transaction.calendarBillId)));
             matches.forEach(component => {
@@ -12535,14 +12886,24 @@ ${acc.name}`);
           const budgetCents = zbbMoneyCents(item.monthly);
           const hasActivity = matches.length > 0;
           const actualCents = hasActivity ? matches.reduce((sum,c)=>sum+zbbMoneyCents(c.amount),0) : null;
-          rows.push({section,name:item.name,budgetItemId:item.id==null?'':String(item.id),budgetCents,actualCents,source:ledgerSection==='income'?'Income transactions · category':'Expense transactions · subcategory',matched:hasActivity,status:hasActivity?'Recorded':'Awaiting activity',statusKind:hasActivity?'recorded':'pending'});
-          if (!hasActivity) findings.push({level:'info',kind:'missing-activity',text:`${section} “${item.name}” has no matching ${ledgerSection==='income'?'income category':'expense subcategory'} ledger activity in ${period}. This is awaiting activity, not a mapping error.`});
+          const performanceStatus = ledgerSection === 'expense' && hasActivity
+            ? (actualCents > budgetCents ? 'Over allocation' : 'Within allocation')
+            : (hasActivity ? 'Recorded' : 'Awaiting activity');
+          const rowStatus = ledgerSection === 'expense' && hasActivity
+            ? `Budgeted — ${performanceStatus}`
+            : (hasActivity ? 'Recorded' : 'Awaiting activity');
+          rows.push({section,name:item.name,budgetItemId:item.id==null?'':String(item.id),budgetCents,actualCents,source:ledgerSection==='income'?'Income transactions · category':'Expense transactions · category + subcategory',matched:hasActivity,status:rowStatus,statusKind:ledgerSection==='expense'&&hasActivity?(performanceStatus==='Over allocation'?'attention':'recorded'):(hasActivity?'recorded':'pending'),coverageStatus:ledgerSection==='expense'?'Budgeted':null,performanceStatus:ledgerSection==='expense'&&hasActivity?performanceStatus:null});
+          if (!hasActivity) findings.push({level:'info',kind:'missing-activity',text:`${section} “${item.name}” has no matching ${ledgerSection==='income'?'income category':'expense category/subcategory'} ledger activity in ${period}. This is awaiting activity, not a mapping error.`});
+          if (ledgerSection === 'income' && linkedIncomeId && !hasActivity) {
+            const otherSameNameBillIds = new Set(monthBills.filter(bill => bill.type === 'income' && String(bill.id) !== linkedIncomeId && normalize(bill.desc || bill.vendor || '') === key).map(bill => String(bill.id)));
+            const differentlyLinkedIncome = components.filter(component => component.section === 'income' && component.transaction?.calendarBillId && otherSameNameBillIds.has(String(component.transaction.calendarBillId)));
+            if (differentlyLinkedIncome.length) findings.push({level:'warning',kind:'calendar-link-mismatch',text:`Income “${item.name}” is linked to Calendar item ${linkedIncomeId}, but same-name income activity is linked to a different Calendar occurrence. FinHub did not move or infer the link; review the duplicate or outdated Calendar link.`,affectedTransactionIds:differentlyLinkedIncome.map(component=>String(component.transaction.id)).filter(Boolean)});
+          }
         });
       };
       pushCategoryRows(zbb.incomes || [], 'Income', 'income');
       pushCategoryRows(zbb.variable || [], 'Variable expenses', 'expense');
 
-      const monthBills = (state.calendarBills || []).filter(b => b && !b.recurrenceOccurrenceDeleted && String(b.date||'').slice(0,7)===period);
       const pushScheduledRows = (items, billType, section) => {
         const billGroups = new Map();
         monthBills.filter(b=>b.type===billType).forEach(bill=>{
@@ -12554,8 +12915,14 @@ ${acc.name}`);
         const itemCounts = new Map();
         (items||[]).forEach(item=>{const key=normalize(item.name);if(key)itemCounts.set(key,(itemCounts.get(key)||0)+1);});
         (items||[]).forEach(item=>{
-          const key=normalize(item.name), matches=billGroups.get(key)||[];
-          if (!key || itemCounts.get(key)>1 || matches.length===0) {
+          const key=normalize(item.name);
+          const linkedCalendarId = String(billType === 'debt' ? (item.linkedCalendarDebtId || '') : billType === 'income' ? (item.linkedCalendarIncomeId || '') : (item.linkedCalendarBillId || '')).trim();
+          const linkedMatches = linkedCalendarId ? monthBills.filter(bill => bill.type === billType && (String(bill.id) === linkedCalendarId || String(bill.recurrenceRootId || '') === linkedCalendarId)) : [];
+          const matches = linkedMatches.length ? linkedMatches : (billGroups.get(key)||[]);
+          if (linkedCalendarId && !linkedMatches.length && matches.length === 1) {
+            findings.push({level:'warning',kind:'calendar-link-mismatch',text:`${section} “${item.name}” is linked to Calendar item ${linkedCalendarId}, but ${period} was matched by name to a different scheduled occurrence. FinHub did not change the link; review whether the budget item should point to this month’s occurrence or recurring series.`,affectedTransactionIds:matches.flatMap(bill=>getReconciliationBillSettlement(bill).validTransactions.map(tx=>String(tx.id)))});
+          }
+          if (!key || itemCounts.get(key)>1 || matches.length===0 || matches.length>1) {
             if (key && itemCounts.get(key)>1) findings.push({level:'error',kind:'mapping',text:`${section}: duplicate budget names prevent a unique scheduled-item match for “${item.name}”.`});
             else if (key && matches.length===0) findings.push({level:'info',kind:'missing-activity',text:`${section} “${item.name}” has no exactly named scheduled ${billType==='debt'?'debt payment':'bill'} in ${period}; no ledger actual was inferred.`});
             return;
@@ -12563,17 +12930,42 @@ ${acc.name}`);
           if (section === 'Fixed bills') {
             const mapping = getBudgetExpenseMapping(item, normalize);
             if (mapping.kind !== 'explicit') findings.push({level:'error',kind:'mapping',text:`Fixed bill “${item.name}” requires an explicit expense category and subcategory mapping. Calendar payment status remains separate.`});
-            const duplicate = (zbb.bills || []).filter(candidate => { const candidateMapping = getBudgetExpenseMapping(candidate, normalize); return candidateMapping.kind === 'explicit' && mapping.kind === 'explicit' && candidateMapping.key === mapping.key; }).length > 1;
-            if (duplicate) findings.push({level:'error',kind:'mapping',text:`Fixed bill “${item.name}” shares its expense category/subcategory mapping with another fixed bill. Review the mapping to avoid ambiguous attribution.`});
+            // Fixed bills are reconciled through their uniquely matched Calendar
+            // occurrence (or a unique exact-name scheduled occurrence), not by
+            // allocating category-only ledger components. Therefore two fixed
+            // bills may legitimately share a category/subcategory (for example,
+            // separate subscriptions) without creating double counting. The
+            // explicit mapping is still required; uniqueness remains enforced
+            // for variable-spending buckets where category matching assigns actuals.
           }
           const budgetCents=zbbMoneyCents(item.monthly);
-          const scheduledCents=matches.reduce((sum,b)=>sum+zbbMoneyCents(b.amount),0);
-          const paidCents=matches.reduce((sum,b)=>sum+getCalendarBillSettlement(b).paidCents,0);
+          const billSettlements = matches.map(bill => ({bill, settlement:getReconciliationBillSettlement(bill)}));
+          const scheduledCents=billSettlements.reduce((sum,entry)=>sum+zbbMoneyCents(entry.settlement.householdManaged ? entry.settlement.amountCents/100 : entry.bill.amount),0);
+          const paidCents=billSettlements.reduce((sum,entry)=>sum+entry.settlement.paidCents,0);
           const outstandingCents=Math.max(0,scheduledCents-paidCents);
           const hasPayment=paidCents>0;
           const hasFutureDue=matches.some(b=>String(b.date||'')>today);
-          const status=outstandingCents<=1?'Settled':hasPayment?'Partially paid':hasFutureDue?'Upcoming':'Unpaid';
-          rows.push({section,name:item.name,budgetItemId:item.id==null?'':String(item.id),budgetCents,actualCents:hasPayment?paidCents:null,source:`${matches.length} scheduled item(s); linked ledger payments`,matched:true,scheduledCents,outstandingCents,status,statusKind:outstandingCents<=1?'recorded':hasFutureDue?'pending':'attention'});
+          const hasUnlinkedReversalReview = billType === 'debt' && matches.some(bill => debtBillsWithUnlinkedReversalReview.has(String(bill.id)));
+          const status=hasUnlinkedReversalReview?'Needs review — possible unlinked reversal':outstandingCents<=1?'Settled':hasPayment?'Partially paid':hasFutureDue?'Upcoming':'Unpaid';
+          if (billType === 'debt') {
+            // Debt-payment cash outflow is not an expense total: principal reduces
+            // the liability, while only the interest component is an expense.
+            // Allocate net settlement proportionally when linked payments have
+            // recorded reversals, avoiding an overstated principal/interest split.
+            const validPayments=matches.flatMap(b=>getCalendarBillSettlement(b).validTransactions);
+            const grossPaidCents=validPayments.reduce((sum,tx)=>sum+Math.max(0,transactionAmountToCents(Math.abs(Number(tx.amount)||0))),0);
+            const grossInterestCents=validPayments.reduce((sum,tx)=>sum+Math.min(
+              Math.max(0,transactionAmountToCents(Math.abs(Number(tx.amount)||0))),
+              Math.max(0,transactionAmountToCents(Number(tx.debtInterestAmount)||0))
+            ),0);
+            const netInterestCents=grossPaidCents>0?Math.min(paidCents,Math.round(grossInterestCents*paidCents/grossPaidCents)):0;
+            const netPrincipalCents=Math.max(0,paidCents-netInterestCents);
+            rows.push({section,name:item.name,budgetItemId:item.id==null?'':String(item.id),budgetCents,actualCents:null,principalPaidCents:hasPayment&&!hasUnlinkedReversalReview?netPrincipalCents:null,interestPaidCents:hasPayment&&!hasUnlinkedReversalReview?netInterestCents:null,totalPaymentCents:hasPayment&&!hasUnlinkedReversalReview?paidCents:null,source:hasUnlinkedReversalReview?`${matches.length} scheduled debt payment(s); possible unlinked reversal · net settlement not confirmed`:`${matches.length} scheduled debt payment(s); linked ledger payments · principal excluded from expenses`,matched:true,scheduledCents,outstandingCents,status:hasUnlinkedReversalReview?`${status} · net principal / interest not confirmed`:hasPayment?`${status} · principal / interest separated`:`${status} · no payment recorded`,statusKind:hasUnlinkedReversalReview?'attention':outstandingCents<=1?'recorded':hasFutureDue?'pending':'attention',accountingTreatment:'Debt principal reduces the liability; only interest is an expense. Unlinked reversals require confirmation before settlement can be netted.'});
+          } else {
+            const performanceStatus=hasPayment?(paidCents>budgetCents?'Over allocation':'Within allocation'):null;
+            const usesHouseholdSettlement = billSettlements.some(entry => entry.settlement.householdManaged);
+            rows.push({section,name:item.name,budgetItemId:item.id==null?'':String(item.id),budgetCents,actualCents:hasPayment?paidCents:null,source:`${matches.length} scheduled item(s); ${usesHouseholdSettlement?'household settlement allocations + linked ledger payments':'linked ledger payments'}`,matched:true,scheduledCents,outstandingCents,status:hasPayment?`Budgeted — ${performanceStatus} · ${status}`:status,statusKind:hasPayment?(performanceStatus==='Over allocation'?'attention':'recorded'):outstandingCents<=1?'recorded':hasFutureDue?'pending':'attention',coverageStatus:'Budgeted',performanceStatus});
+          }
           if (scheduledCents !== budgetCents) findings.push({level:'warning',kind:'amount-difference',text:`${section} “${item.name}”: budget plan ${formatFinancial(budgetCents/100)} differs from scheduled amount ${formatFinancial(scheduledCents/100)}.`});
           if (outstandingCents>1) findings.push({level:'info',kind:'missing-activity',text:`${section} “${item.name}”: ${formatFinancial(paidCents/100)} paid of ${formatFinancial(scheduledCents/100)} scheduled; ${formatFinancial(outstandingCents/100)} remains ${hasFutureDue?'upcoming':'unpaid'}.`});
         });
@@ -12599,42 +12991,47 @@ ${acc.name}`);
       // occurrence and linked payment transactions, not through the variable-pool
       // category mapping. Exclude only uniquely matched, explicitly linked payments
       // from the unbudgeted-variable-actual list; never infer a link from amount alone.
-      const coveredScheduledExpenseTransactionIds = new Set();
-      const scheduledExpenseBudgetItems = [...(zbb.bills || []), ...(zbb.variableBills || [])];
-      const scheduledExpenseNameCounts = new Map();
-      scheduledExpenseBudgetItems.forEach(item => {
-        const key = normalize(item.name);
-        if (key) scheduledExpenseNameCounts.set(key, (scheduledExpenseNameCounts.get(key) || 0) + 1);
-      });
-      const scheduledExpenseNames = new Set(
-        [...scheduledExpenseNameCounts.entries()].filter(([, count]) => count === 1).map(([key]) => key)
-      );
-      monthBills.filter(bill => bill.type === 'expense').forEach(bill => {
-        const billName = normalize(bill.desc || bill.vendor || '');
-        if (!billName || !scheduledExpenseNames.has(billName)) return;
-        getCalendarBillSettlement(bill).validTransactions.forEach(tx => {
-          if (tx && !tx.reconciledDuplicate) coveredScheduledExpenseTransactionIds.add(String(tx.id));
-        });
-      });
+      // Scheduled linked payments were collected before category matching so they cannot be assigned twice.
       const unmatchedActuals = components.filter(c=>{
         if(c.section==='income') {
           if (c.transaction?.id && coveredCalendarIncomeTransactionIds.has(String(c.transaction.id))) return false;
           return !budgetKeys.has(`income:${normalize(c.category)}`);
         }
         if(c.section!=='expense') return false;
-        if (c.transaction?.id && coveredScheduledExpenseTransactionIds.has(String(c.transaction.id))) return false;
+        if (c.transaction?.id && (coveredScheduledExpenseTransactionIds.has(String(c.transaction.id)) || coveredDebtPaymentTransactionIds.has(String(c.transaction.id)))) return false;
         const explicitKey=`expense-map:${normalize(c.category)}:${normalize(c.subcategory)}`;
         const legacyKey=`expense-legacy:${normalize(c.subcategory)}`;
         return !budgetKeys.has(explicitKey) && !budgetKeys.has(legacyKey);
       });
       const uniqueUnmatched = new Map();
       unmatchedActuals.forEach(c=>{
-        const label=c.section==='expense'?(c.subcategory && normalize(c.subcategory)!=='uncategorized'?c.subcategory:'Uncategorized (missing subcategory)'):c.category;
-        const key=`${c.section}:${normalize(label)}`;
-        if(!uniqueUnmatched.has(key))uniqueUnmatched.set(key,{section:c.section,category:label,transactionIds:new Set()});
-        const id=c.transaction?.id;if(id)uniqueUnmatched.get(key).transactionIds.add(String(id));
+        const category=c.category || 'Uncategorized';
+        const subcategory=c.section==='expense'
+          ? (c.subcategory && normalize(c.subcategory)!=='uncategorized'?c.subcategory:'Uncategorized (missing subcategory)')
+          : '';
+        // Keep the full category/subcategory pair in the grouping key. Two
+        // different parent categories can legitimately reuse the same subcategory
+        // label and must not be collapsed into one review finding.
+        const key=c.section==='expense'
+          ? `expense:${normalize(category)}:${normalize(subcategory)}`
+          : `income:${normalize(category)}`;
+        if(!uniqueUnmatched.has(key))uniqueUnmatched.set(key,{section:c.section,category,subcategory,transactionIds:new Set(),amountCents:0,componentCount:0,anonymousTransactionCount:0});
+        const group=uniqueUnmatched.get(key);
+        group.amountCents += zbbMoneyCents(c.amount);
+        group.componentCount += 1;
+        const id=c.transaction?.id;
+        if(id)group.transactionIds.add(String(id));
+        else group.anonymousTransactionCount += 1;
       });
-      uniqueUnmatched.forEach(item=>findings.push({level:'info',kind:'unbudgeted-activity',text:`Ledger ${item.section} subcategory “${item.category}” has no matching budget line using the required category/subcategory mapping. It remains in ledger reporting and is not assigned to another line.`,affectedTransactionIds:[...item.transactionIds]}));
+      uniqueUnmatched.forEach(item=>{
+        const transactionIds=[...item.transactionIds];
+        const transactionCount=transactionIds.length+item.anonymousTransactionCount;
+        const amountLabel=formatFinancial(item.amountCents/100);
+        const ledgerLabel=item.section==='expense'
+          ? `category “${item.category}” / subcategory “${item.subcategory}”`
+          : `income category “${item.category}”`;
+        findings.push({level:'info',kind:'unbudgeted-activity',coverageStatus:'Unbudgeted',section:item.section,category:item.category,subcategory:item.subcategory||null,amountCents:item.amountCents,transactionCount,componentCount:item.componentCount,text:`Unbudgeted — Ledger ${ledgerLabel}: ${amountLabel} across ${transactionCount} transaction(s). No matching budget line exists using the required category/subcategory mapping. The amount remains in ledger reporting and has not been assigned to another line.`,affectedTransactionIds:transactionIds});
+      });
 
       // Sinking-fund monthly actuals come from dated bucket allocation/release
       // history. Internal bucket transfers are excluded. Accumulated balances are
@@ -12712,6 +13109,7 @@ ${acc.name}`);
     function getIntegrityExceptionPresentation(description) {
       const text=String(description||'');
       const rules=[
+        [/^Debt payment reversal “(.+?)” dated /i, 'Unlinked debt payment reversal', text],
         [/^Ledger .* has no corresponding budget line\./i, 'Unmapped ledger category', 'This transaction category has no matching budget line. It remains in ledger reporting and has not been assigned elsewhere.'],
         [/^Transaction Log contains (\d+) expense category label\(s\) not matched to a variable budget line:/i, 'Unmapped expense categories', 'Some ledger expense categories do not have matching variable budget lines. Review the category names before changing any mappings.'],
         [/^(\d+) scheduled item\(s\) have outstanding amounts in (\d{4}-\d{2})/i, 'Scheduled payments outstanding', 'Some scheduled items still have an unpaid balance for this month. Check their remaining amounts and due dates.'],
@@ -12850,10 +13248,229 @@ ${acc.name}`);
         const statusClass=row.statusKind==='recorded'?'fh-status-income':row.statusKind==='attention'?'text-amber-600 dark:text-amber-300':row.statusKind==='reference'?'text-gray-500':'text-sky-600 dark:text-sky-300';
         return `<tr class="border-t border-gray-100 dark:border-gray-800"><td class="px-2 py-2"><div class="font-semibold">${escapeHtml(row.name)}</div><div class="text-[10px] text-gray-400">${escapeHtml(row.section)} · ${escapeHtml(row.source)}</div></td><td class="px-2 py-2 text-right accounting-num">${row.budgetCents===null?'—':formatFinancial(row.budgetCents/100)}</td><td class="px-2 py-2 text-right accounting-num">${row.actualCents===null?'—':formatFinancial(row.actualCents/100)}</td><td class="px-2 py-2 text-right accounting-num">${varianceLabel}</td><td class="px-2 py-2 text-right text-[10px] font-semibold ${statusClass}">${escapeHtml(row.status||'—')}</td></tr>`;
       }).join('');
-      const findings=result.findings.map(f=>`<li class="text-xs ${f.level==='error'?'text-rose-700 dark:text-rose-300':f.level==='warning'?'text-amber-800 dark:text-amber-300':f.kind==='missing-activity'?'text-sky-700 dark:text-sky-300':'text-gray-600 dark:text-gray-300'}">${escapeHtml(f.text)}</li>`).join('');
-      const summaries=`<div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-[11px]"><div class="rounded-lg bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 p-2"><strong class="block text-base accounting-num ${errors?'text-rose-600 dark:text-rose-300':'fh-status-income'}">${errors}</strong><span class="text-gray-500">Mapping issues</span></div><div class="rounded-lg bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 p-2"><strong class="block text-base accounting-num ${amountDifferences?'text-amber-600 dark:text-amber-300':'fh-status-income'}">${amountDifferences}</strong><span class="text-gray-500">Amount differences</span></div><div class="rounded-lg bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 p-2"><strong class="block text-base accounting-num ${missingActivity?'text-sky-600 dark:text-sky-300':'fh-status-income'}">${missingActivity}</strong><span class="text-gray-500">Awaiting activity</span></div><div class="rounded-lg bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 p-2"><strong class="block text-base accounting-num">${otherNotes}</strong><span class="text-gray-500">Other notes</span></div></div>`;
-      host.innerHTML=`<details class="fh-monthly-subpanel"><summary class="fh-monthly-subpanel-summary"><strong>Budget-to-ledger reconciliation</strong><span class="fh-monthly-summary-meta">${status}</span></summary><div class="fh-monthly-subpanel-body space-y-3"><div class="flex flex-wrap items-center justify-between gap-2"><span class="text-[11px] text-gray-500">${escapeHtml(period)} · Planned amounts compared with linked ledger activity</span>${statusPill}</div>${summaries}<div class="overflow-x-auto"><table class="w-full text-xs"><thead><tr class="text-[10px] uppercase tracking-wide text-gray-400"><th class="px-2 py-1 text-left">Budget line / source</th><th class="px-2 py-1 text-right">Planned</th><th class="px-2 py-1 text-right">Ledger actual</th><th class="px-2 py-1 text-right">Variance</th><th class="px-2 py-1 text-right">Status</th></tr></thead><tbody>${rows||'<tr><td colspan="5" class="px-2 py-3 text-gray-400">No budget lines available to reconcile.</td></tr>'}</tbody></table></div><ul class="fh-monthly-findings">${findings||'<li class="text-xs fh-status-income">No mapping, amount or activity exceptions were detected.</li>'}</ul><details class="fh-monthly-help"><summary>How matching works</summary><p>Income is matched by category or an explicitly linked scheduled income item. Variable spending buckets are matched strictly against expense subcategories, never parent categories. Fixed bills and debt payments are matched to scheduled items by normalized description and linked ledger payments. Sinking-fund monthly contributions use dated bucket allocation/release history; accumulated balances are shown separately as references and are not compared with monthly contributions. Transfers and account balances are not treated as expenses. Unmatched items remain unassigned rather than being guessed.</p></details></div></details>`;
+      const currentUnbudgetedDecisionKeys=new Set(result.findings.filter(f=>f.kind==='unbudgeted-activity').map(f=>getBudgetUnbudgetedDecisionKey(period,f)));
+      const findings=result.findings.map(f=>{
+        const baseClass=`text-xs ${f.level==='error'?'text-rose-700 dark:text-rose-300':f.level==='warning'?'text-amber-800 dark:text-amber-300':f.kind==='missing-activity'?'text-sky-700 dark:text-sky-300':'text-gray-600 dark:text-gray-300'}`;
+        if(f.kind!=='unbudgeted-activity') return `<li class="${baseClass} py-1"><details><summary class="cursor-pointer font-semibold">${escapeHtml(f.kind==='amount-difference'?'Amount difference':f.kind==='missing-activity'?'Awaiting ledger activity':f.kind==='mapping-issue'?'Mapping issue':'Review note')}</summary><p class="mt-1 text-[11px] text-gray-500">${escapeHtml(f.text)}</p></details></li>`;
+        const decision=getBudgetUnbudgetedDecision(period,f);
+        const decisionLabels={allocate:'Add to budget',reallocate:'Reallocate existing budget',irregular:'One-time / irregular',leave:'Leave unbudgeted'};
+        const decisionMarkup=decision?`<div class="mt-2 rounded-lg border border-gray-200 dark:border-gray-700 p-2"><div class="font-semibold">Decision recorded: ${escapeHtml(decisionLabels[decision.choice]||decision.choice)}</div><div class="text-[10px] text-gray-500">${escapeHtml(formatDateTimeMDY(decision.decidedAt))}${decision.note?` · ${escapeHtml(decision.note)}`:''}</div><button type="button" class="mt-1 text-[10px] underline" onclick="reviewBudgetUnbudgetedActivity('${escapeHtml(period)}',${escapeHtml(JSON.stringify(encodeURIComponent(JSON.stringify(f))))})">Change decision</button></div>`:'';
+        const actions=decision?'':[['allocate','Add to budget'],['reallocate','Reallocate existing budget'],['irregular','One-time / irregular'],['leave','Leave unbudgeted']].map(([choice,label])=>`<button type="button" class="rounded-lg border border-gray-300 dark:border-gray-600 px-2 py-1.5 text-[10px] font-semibold hover:bg-gray-100 dark:hover:bg-gray-800" onclick="beginBudgetUnbudgetedDecision('${escapeHtml(period)}',${escapeHtml(JSON.stringify(encodeURIComponent(JSON.stringify(f))))},'${choice}')">${label}</button>`).join('');
+        const activityTitle=`${f.section==='income'?'Income':'Expense'} · ${f.category||'Uncategorized'}${f.subcategory?` / ${f.subcategory}`:''}`;
+        const activityMeta=`${formatFinancial((Number(f.amountCents)||0)/100)} · ${Number(f.transactionCount)||0} ${Number(f.transactionCount)===1?'transaction':'transactions'}`;
+        return `<li class="${baseClass} rounded-lg border border-amber-200 dark:border-amber-900/60 px-3 py-2"><div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1"><strong class="text-[11px]">${escapeHtml(activityTitle)}</strong><span class="text-[11px] accounting-num">${activityMeta}</span></div><details class="mt-1"><summary class="cursor-pointer text-[10px] text-gray-500">Details</summary><p class="mt-1 text-[11px] text-gray-500">${escapeHtml(f.text)}</p></details>${decisionMarkup}<div class="mt-2 flex flex-wrap items-center gap-1.5"><span class="text-[10px] font-semibold text-gray-600 dark:text-gray-300 mr-1">${decision?'Decision':'Choose'}:</span>${actions}</div></li>`;
+      }).join('');
+      const savedDecisionCards=Object.entries(state.budgetUnbudgetedDecisions||{}).filter(([key,decision])=>String(decision?.period||'')===String(period) && !currentUnbudgetedDecisionKeys.has(key)).map(([key,decision])=>{
+        const finding={section:decision.section,category:decision.category,subcategory:decision.subcategory,amountCents:decision.amountCents,transactionCount:decision.transactionCount,affectedTransactionIds:Array.isArray(decision.transactionIds)?decision.transactionIds:[]};
+        const labels={allocate:'Added to budget',reallocate:'Reallocated existing budget',irregular:'One-time / irregular',leave:'Left unbudgeted'};
+        const encoded=JSON.stringify(encodeURIComponent(JSON.stringify(finding)));
+        return `<li class="text-xs rounded-lg border border-gray-200 dark:border-gray-700 p-3"><div class="font-semibold">${escapeHtml(finding.category||'Uncategorized')}${finding.subcategory?` / ${escapeHtml(finding.subcategory)}`:''}</div><div class="mt-1 text-gray-500">${escapeHtml(labels[decision.choice]||'Decision recorded')} · ${formatFinancial((Number(finding.amountCents)||0)/100)} · ${Number(finding.transactionCount)||0} transaction(s)</div><div class="mt-1 text-[10px] text-gray-500">${escapeHtml(formatDateTimeMDY(decision.decidedAt))}${decision.note?` · ${escapeHtml(decision.note)}`:''}</div><button type="button" class="mt-1 text-[10px] underline" onclick="reviewBudgetUnbudgetedActivity('${escapeHtml(period)}',${encoded})">Change decision</button></li>`;
+      }).join('');
+      const findingsMarkup=`${findings}${savedDecisionCards}`;
+      const summaries=`<div class="grid grid-cols-4 gap-1.5 text-[10px]"><div class="rounded-md bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 px-2 py-1.5"><strong class="block text-sm accounting-num ${errors?'text-rose-600 dark:text-rose-300':'fh-status-income'}">${errors}</strong><span class="text-gray-500">Mapping</span></div><div class="rounded-md bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 px-2 py-1.5"><strong class="block text-sm accounting-num ${amountDifferences?'text-amber-600 dark:text-amber-300':'fh-status-income'}">${amountDifferences}</strong><span class="text-gray-500">Differences</span></div><div class="rounded-md bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 px-2 py-1.5"><strong class="block text-sm accounting-num ${missingActivity?'text-sky-600 dark:text-sky-300':'fh-status-income'}">${missingActivity}</strong><span class="text-gray-500">Pending</span></div><div class="rounded-md bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 px-2 py-1.5"><strong class="block text-sm accounting-num">${otherNotes}</strong><span class="text-gray-500">Notes</span></div></div>`;
+      host.innerHTML=`<details class="fh-monthly-subpanel"><summary class="fh-monthly-subpanel-summary"><strong>Budget vs. actual</strong><span class="fh-monthly-summary-meta">${status}</span></summary><div class="fh-monthly-subpanel-body space-y-2"><div class="flex flex-wrap items-center justify-between gap-2"><span class="text-[10px] text-gray-500">${escapeHtml(period)}</span>${statusPill}</div>${summaries}<ul class="fh-monthly-findings space-y-1.5">${findingsMarkup||'<li class="text-xs fh-status-income">All clear — no exceptions.</li>'}</ul><details class="fh-monthly-help"><summary>Budget line detail (${result.rows.length})</summary><div class="overflow-x-auto mt-2"><table class="w-full text-xs"><thead><tr class="text-[10px] uppercase tracking-wide text-gray-400"><th class="px-2 py-1 text-left">Budget line</th><th class="px-2 py-1 text-right">Planned</th><th class="px-2 py-1 text-right">Actual</th><th class="px-2 py-1 text-right">Variance</th><th class="px-2 py-1 text-right">Status</th></tr></thead><tbody>${rows||'<tr><td colspan="5" class="px-2 py-3 text-gray-400">No budget lines available.</td></tr>'}</tbody></table></div></details><details class="fh-monthly-help"><summary>How matching works</summary><p>Income matches by category or explicitly linked scheduled income. Variable spending matches exact expense subcategories. Fixed bills and debt payments match scheduled items and linked payments. Sinking-fund contributions use dated allocation/release history. Transfers and account balances are excluded. Unmatched items remain unassigned rather than guessed.</p></details></div></details>`;
       renderFinancialReviewExceptionRegister();
+    }
+
+    // Release 1: capture an explicit decision for each grouped unbudgeted finding.
+    // Allocate/reallocate choices update only the selected month's working budget;
+    // transactions and actuals remain untouched, and saved close snapshots stay fixed.
+    function getBudgetUnbudgetedDecisionKey(period, finding) {
+      const norm=value=>String(value||'').toLocaleLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'');
+      return [String(period),String(finding.section||''),norm(finding.category),norm(finding.subcategory)].join('|');
+    }
+    function getBudgetUnbudgetedDecision(period, finding) {
+      const key=getBudgetUnbudgetedDecisionKey(period,finding);
+      return state.budgetUnbudgetedDecisions?.[key] || null;
+    }
+    function getUnbudgetedDecisionTemplate(period) {
+      if (!state.zbbTemplates) state.zbbTemplates={};
+      if (state.zbbTemplates[period]) return state.zbbTemplates[period];
+      if (String(period)===String(state.selectedZbbPeriod||'')) return getActiveZbbTemplate();
+      return null;
+    }
+    function closeBudgetUnbudgetedDecisionModal() {
+      document.getElementById('fh-unbudgeted-decision-modal')?.remove();
+    }
+    function beginBudgetUnbudgetedDecision(period, encodedFinding, choice) {
+      const allowed=['allocate','reallocate','irregular','leave'];
+      if(!allowed.includes(choice)) return;
+      let finding;
+      try { finding=JSON.parse(decodeURIComponent(encodedFinding)); } catch(e) { alert('This unbudgeted group could not be read. Refresh the review and try again.'); return; }
+      if (choice==='irregular' || choice==='leave') {
+        const label=choice==='irregular'?'One-time / irregular':'Leave unbudgeted';
+        const note=prompt(`${label}\n\n${finding.category||'Uncategorized'}${finding.subcategory?' / '+finding.subcategory:''}\nActual: ${formatFinancial((Number(finding.amountCents)||0)/100)}\nTransactions: ${Number(finding.transactionCount)||0}\n\nOptional note:`);
+        if(note===null)return;
+        captureUndo('Record unbudgeted activity decision');
+        persistBudgetUnbudgetedDecision(period,finding,choice,{note:note.trim(),application:null});
+        return;
+      }
+      const isIncome=String(finding.section||'')==='income';
+      if (!isIncome && String(finding.section||'')!=='expense') { alert('This activity type cannot be allocated through the budget planner. No changes were made.'); return; }
+      const zbb=getUnbudgetedDecisionTemplate(period);
+      if(!zbb) { alert('The working budget for this month could not be found. No changes were made.'); return; }
+      const targetList=isIncome?(Array.isArray(zbb.incomes)?zbb.incomes:(zbb.incomes=[])):(Array.isArray(zbb.variable)?zbb.variable:(zbb.variable=[]));
+      const donors=choice==='reallocate'?targetList.filter(item=>item && (isIncome ? (!item.linkedCalendarIncomeId && String(item.name||'').toLowerCase()!==String(finding.category||'').toLowerCase()) : (!item.linkedCalendarBillId && item.expenseCategory && item.expenseSubcategory && !(String(item.expenseCategory).toLowerCase()===String(finding.category||'').toLowerCase() && String(item.expenseSubcategory).toLowerCase()===String(finding.subcategory||'').toLowerCase())))):[];
+      if(choice==='reallocate' && !donors.length) { alert('There are no existing mapped variable budget buckets available to reallocate from. Choose Add to budget or another review decision.'); return; }
+      const donorOptions=donors.map(item=>`<option value="${escapeHtml(String(item.id))}">${escapeHtml(item.name||item.expenseSubcategory)}${isIncome?'':` · ${escapeHtml(item.expenseCategory)} / ${escapeHtml(item.expenseSubcategory)}`}</option>`).join('');
+      const title=choice==='allocate'?'Add this activity to the budget':'Reallocate existing budget money';
+      const explanation=choice==='allocate'
+        ? (isIncome?'Enter the planned income to add for this month, split across the paycheques.':'Enter the amount to add to this month’s variable budget. The variable pool will increase by the same total, making the change explicit in the zero-based plan.')
+        : (isIncome?'Choose the existing income line to reclassify. The total planned income will remain unchanged.':'Choose the existing variable bucket to fund this one. The amounts below will be moved from that bucket; the total variable pool will not increase.');
+      const donorMarkup=choice==='reallocate'?`<label class="block text-xs font-semibold mb-1" for="fh-unbudgeted-donor">${isIncome?'Reclassify income from':'Move money from'}</label><select id="fh-unbudgeted-donor" class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 p-2 text-sm">${donorOptions}</select>`:'';
+      const modal=document.createElement('div');
+      modal.id='fh-unbudgeted-decision-modal';
+      modal.className='fixed inset-0 z-[10000] flex items-center justify-center bg-black/60 p-3';
+      modal.innerHTML=`<div role="dialog" aria-modal="true" aria-labelledby="fh-unbudgeted-modal-title" class="w-full max-w-lg rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-2xl"><div class="flex items-start justify-between gap-3"><div><h2 id="fh-unbudgeted-modal-title" class="text-base font-bold">${title}</h2><p class="mt-1 text-xs text-gray-500">${escapeHtml(finding.category||'Uncategorized')} / ${escapeHtml(finding.subcategory||'Uncategorized')} · Actual ${formatFinancial((Number(finding.amountCents)||0)/100)} across ${Number(finding.transactionCount)||0} transaction(s)</p></div><button type="button" id="fh-unbudgeted-close" class="rounded-lg px-2 py-1 text-gray-500" aria-label="Close">✕</button></div><p class="my-3 text-xs text-gray-600 dark:text-gray-300">${explanation}</p>${donorMarkup}<div class="grid grid-cols-3 gap-2 mt-3"><label class="text-xs">Paycheque 1 ($)<input id="fh-unbudgeted-p1" type="number" min="0" step="0.01" value="0.00" class="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-950 p-2 text-sm text-right"></label><label class="text-xs">Paycheque 2 ($)<input id="fh-unbudgeted-p2" type="number" min="0" step="0.01" value="0.00" class="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-950 p-2 text-sm text-right"></label><label class="text-xs">Paycheque 3 ($)<input id="fh-unbudgeted-p3" type="number" min="0" step="0.01" value="0.00" class="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-950 p-2 text-sm text-right"></label></div><div class="mt-3 flex items-center justify-between rounded-lg bg-gray-50 dark:bg-gray-800 p-2 text-sm"><span class="font-semibold">Total allocation</span><strong id="fh-unbudgeted-total" class="accounting-num">$0.00</strong></div><label class="block mt-3 text-xs">Optional note<textarea id="fh-unbudgeted-note" rows="2" class="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-950 p-2 text-sm"></textarea></label><div id="fh-unbudgeted-error" class="mt-2 text-xs text-rose-600" role="alert"></div><div class="mt-4 flex justify-end gap-2"><button type="button" id="fh-unbudgeted-cancel" class="rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 text-xs font-semibold">Cancel</button><button type="button" id="fh-unbudgeted-apply" class="rounded-lg bg-blue-600 text-white px-3 py-2 text-xs font-semibold">${choice==='allocate'?'Add allocation':'Reallocate funds'}</button></div></div>`;
+      document.body.appendChild(modal);
+      const amountInputs=['fh-unbudgeted-p1','fh-unbudgeted-p2','fh-unbudgeted-p3'].map(id=>document.getElementById(id));
+      const totalEl=document.getElementById('fh-unbudgeted-total');
+      const updateTotal=()=>{const total=amountInputs.reduce((sum,input)=>sum+Math.max(0,Number(input.value)||0),0);totalEl.textContent=formatFinancial(total);};
+      amountInputs.forEach(input=>input.addEventListener('input',updateTotal));
+      const close=()=>closeBudgetUnbudgetedDecisionModal();
+      document.getElementById('fh-unbudgeted-close').addEventListener('click',close);
+      document.getElementById('fh-unbudgeted-cancel').addEventListener('click',close);
+      document.getElementById('fh-unbudgeted-apply').addEventListener('click',()=>{
+        const cents=amountInputs.map(input=>Math.round((Number(input.value)||0)*100));
+        const totalCents=cents.reduce((a,b)=>a+b,0);
+        const error=document.getElementById('fh-unbudgeted-error');
+        if(cents.some(value=>value<0) || totalCents<=0) { error.textContent='Enter a total allocation greater than zero, using valid non-negative amounts.'; return; }
+        const current=getUnbudgetedDecisionTemplate(period);
+        if(!current) { error.textContent='The selected month’s budget is no longer available.'; return; }
+        const id=`zv_${Date.now()}_${Math.random().toString(36).slice(2,7)}`;
+        const category=String(finding.category||'').trim(), subcategory=String(finding.subcategory||'').trim();
+        if(!category || (!isIncome && !subcategory)) { error.textContent=isIncome?'This income group needs a category before it can be budgeted.':'This group needs both an expense category and subcategory before it can be budgeted.'; return; }
+        if(isIncome ? (current.incomes||[]).some(item=>String(item.name||'').toLowerCase()===category.toLowerCase()) : (current.variable||[]).some(item=>String(item.expenseCategory||'').toLowerCase()===category.toLowerCase() && String(item.expenseSubcategory||'').toLowerCase()===subcategory.toLowerCase())) { error.textContent='A budget line already uses this category mapping. Refresh the reconciliation before continuing.'; return; }
+        captureUndo(choice==='allocate'?'Add unbudgeted activity to monthly budget':'Reallocate monthly variable budget');
+        let application;
+        if(choice==='allocate') {
+          if(isIncome) {
+            current.incomes.push({id,name:category,monthly:totalCents/100,splitMode:'dollar',split:cents.map(value=>value/100)});
+            application={type:'income-allocate',itemId:id,amountCentsByCycle:cents};
+          } else {
+            const poolBefore=[];
+            [1,2,3].forEach((cycle,index)=>{
+              const allocationState=getVariablePoolAllocationState(current,cycle,period);
+              poolBefore.push({cycle,poolBudgetCents:Math.round((Number(allocationState.poolBudget)||0)*100)});
+            });
+            current.variable.push({id,name:subcategory,monthly:totalCents/100,splitMode:'dollar',split:cents.map(value=>value/100),expenseCategory:category,expenseSubcategory:subcategory});
+            [1,2,3].forEach((cycle,index)=>{
+              const allocationState=getVariablePoolAllocationState(current,cycle,period);
+              allocationState.rec.variableAllocations[id]=cents[index]/100;
+              allocationState.rec.variablePoolBudget=Math.round(((Number(allocationState.rec.variablePoolBudget)||0)+(cents[index]/100))*100)/100;
+            });
+            application={type:'allocate',itemId:id,amountCentsByCycle:cents,poolBefore};
+          }
+        } else {
+          const donorId=document.getElementById('fh-unbudgeted-donor')?.value||'';
+          const donor=targetList.find(item=>String(item.id)===donorId);
+          if(!donor) { error.textContent='Choose a valid existing budget line to fund this allocation.'; return; }
+          const beforeDonor={monthly:donor.monthly,splitMode:donor.splitMode,split:Array.isArray(donor.split)?donor.split.slice():[50,50,0]};
+          const donorBefore=[];
+          for(let cycle=1;cycle<=3;cycle++) {
+            const available=isIncome?Math.round(getZbbItemCycleCents(donor,cycle)):Math.round((Number(getVariablePoolAllocationState(current,cycle,period).allocations[donorId])||0)*100);
+            if(cents[cycle-1]>available) { error.textContent=`Paycheque ${cycle} has only ${formatFinancial(available/100)} available in ${donor.name||'the selected bucket'}. Reduce that allocation or choose another source.`; return; }
+            donorBefore.push({cycle,amountCents:available});
+          }
+          const remaining=donorBefore.map((entry,index)=>entry.amountCents-cents[index]);
+          donor.monthly=remaining.reduce((sum,value)=>sum+value,0)/100;
+          donor.splitMode='dollar'; donor.split=remaining.map(value=>value/100);
+          if(isIncome) {
+            current.incomes.push({id,name:category,monthly:totalCents/100,splitMode:'dollar',split:cents.map(value=>value/100)});
+            application={type:'income-reallocate',itemId:id,donorId,beforeDonor,donorBefore,amountCentsByCycle:cents};
+          } else {
+            [1,2,3].forEach((cycle,index)=>{
+              const allocationState=getVariablePoolAllocationState(current,cycle,period);
+              allocationState.rec.variableAllocations[donorId]=Math.round(((Number(allocationState.rec.variableAllocations[donorId])||0)-(cents[index]/100))*100)/100;
+              allocationState.rec.variableAllocations[id]=cents[index]/100;
+            });
+            current.variable.push({id,name:subcategory,monthly:totalCents/100,splitMode:'dollar',split:cents.map(value=>value/100),expenseCategory:category,expenseSubcategory:subcategory});
+            application={type:'reallocate',itemId:id,donorId,beforeDonor,donorBefore,amountCentsByCycle:cents};
+          }
+        }
+        const decisionNote=document.getElementById('fh-unbudgeted-note')?.value.trim()||'';
+        // Close the transient dialog before persistence triggers reconciliation/planner re-rendering.
+        // This prevents a render exception or DOM replacement from leaving a stale modal visible
+        // after the allocation itself has already been committed.
+        close();
+        persistBudgetUnbudgetedDecision(period,finding,choice,{note:decisionNote,application});
+      });
+    }
+    function persistBudgetUnbudgetedDecision(period,finding,choice,details={}) {
+      const key=getBudgetUnbudgetedDecisionKey(period,finding);
+      state.budgetUnbudgetedDecisions=state.budgetUnbudgetedDecisions||{};
+      state.budgetUnbudgetedDecisions[key]={schemaVersion:2,period:String(period),section:String(finding.section||''),category:String(finding.category||''),subcategory:String(finding.subcategory||''),amountCents:Number(finding.amountCents)||0,transactionCount:Number(finding.transactionCount)||0,transactionIds:Array.isArray(finding.affectedTransactionIds)?finding.affectedTransactionIds.slice():[],choice,note:String(details.note||''),application:details.application||null,decidedAt:new Date().toISOString()};
+      saveData();
+      const template=getUnbudgetedDecisionTemplate(period);
+      if(template) { renderBudgetLedgerReconciliation(period,template); if(String(period)===String(state.selectedZbbPeriod||'')) renderZbbPlanner(); }
+      else if(typeof renderMonthlyClose==='function') renderMonthlyClose();
+    }
+    function reverseBudgetUnbudgetedDecision(period,finding,decision) {
+      const application=decision?.application;
+      if(!application) return true;
+      const zbb=getUnbudgetedDecisionTemplate(period);
+      if(!zbb) { alert('The original month template is unavailable, so the applied budget decision cannot safely be reversed.'); return false; }
+      const isIncome=String(application.type||'').startsWith('income-');
+      const list=isIncome?(zbb.incomes||[]):(zbb.variable||[]);
+      const item=list.find(entry=>String(entry.id)===String(application.itemId));
+      if(!item) { alert('The budget item created by this decision cannot be found. No changes were made.'); return false; }
+      const amounts=(application.amountCentsByCycle||[]).map(value=>Math.max(0,Math.round(Number(value)||0)));
+      if(amounts.length!==3) { alert('The saved allocation details are incomplete. No changes were made.'); return false; }
+      if(application.type==='income-allocate') {
+        if(Number(item.monthly)!==amounts.reduce((sum,value)=>sum+value,0)/100 || !Array.isArray(item.split) || item.split.some((value,index)=>Math.round((Number(value)||0)*100)!==amounts[index])) { alert('This income budget line has been edited since the decision was applied. Review or restore that line manually before changing the decision.'); return false; }
+        list.splice(list.indexOf(item),1);
+      } else if(application.type==='income-reallocate') {
+        const donor=list.find(entry=>String(entry.id)===String(application.donorId));
+        if(!donor || donor.linkedCalendarIncomeId) { alert('The original income line is missing or now linked to Calendar. No changes were made.'); return false; }
+        if(Number(item.monthly)!==amounts.reduce((sum,value)=>sum+value,0)/100 || !Array.isArray(item.split) || item.split.some((value,index)=>Math.round((Number(value)||0)*100)!==amounts[index])) { alert('The new income line has been edited since the decision was applied. Review or restore that line manually before changing the decision.'); return false; }
+        const restored=[1,2,3].map((cycle,index)=>Math.round(getZbbItemCycleCents(donor,cycle))+amounts[index]);
+        donor.monthly=restored.reduce((sum,value)=>sum+value,0)/100; donor.splitMode='dollar'; donor.split=restored.map(value=>value/100);
+        list.splice(list.indexOf(item),1);
+      } else if(application.type==='allocate') {
+        if(String(item.expenseCategory||'')!==String(finding.category||'') || String(item.expenseSubcategory||'')!==String(finding.subcategory||'') || Number(item.monthly)!==amounts.reduce((sum,value)=>sum+value,0)/100 || !Array.isArray(item.split) || item.split.some((value,index)=>Math.round((Number(value)||0)*100)!==amounts[index])) { alert('This variable budget line has been edited since the decision was applied. Review or restore that line manually before changing the decision.'); return false; }
+        for(let cycle=1;cycle<=3;cycle++) {
+          const allocationState=getVariablePoolAllocationState(zbb,cycle,period);
+          if(Math.round((Number(allocationState.allocations[String(application.itemId)])||0)*100)!==amounts[cycle-1] || Math.round((Number(allocationState.poolBudget)||0)*100)<amounts[cycle-1]) { alert(`The Paycheque ${cycle} allocation or pool has changed since this decision. No changes were made.`); return false; }
+        }
+        list.splice(list.indexOf(item),1);
+        [1,2,3].forEach((cycle,index)=>{
+          const allocationState=getVariablePoolAllocationState(zbb,cycle,period);
+          delete allocationState.rec.variableAllocations[String(application.itemId)];
+          allocationState.rec.variablePoolBudget=Math.round((Number(allocationState.rec.variablePoolBudget||0)*100-amounts[index]))/100;
+        });
+      } else if(application.type==='reallocate') {
+        const donor=(zbb.variable||[]).find(entry=>String(entry.id)===String(application.donorId));
+        if(!donor) { alert('The original funding bucket cannot be found. No changes were made.'); return false; }
+        if(String(item.expenseCategory||'')!==String(finding.category||'') || String(item.expenseSubcategory||'')!==String(finding.subcategory||'') || Number(item.monthly)!==amounts.reduce((sum,value)=>sum+value,0)/100 || !Array.isArray(item.split) || item.split.some((value,index)=>Math.round((Number(value)||0)*100)!==amounts[index])) { alert('The new variable budget line has been edited since the decision was applied. Review or restore that line manually before changing the decision.'); return false; }
+        const restored=[];
+        for(let cycle=1;cycle<=3;cycle++) {
+          const allocationState=getVariablePoolAllocationState(zbb,cycle,period);
+          if(Math.round((Number(allocationState.allocations[String(application.itemId)])||0)*100)!==amounts[cycle-1]) { alert(`The Paycheque ${cycle} allocation for the new bucket has changed. No changes were made.`); return false; }
+          restored.push(Math.round((Number(allocationState.allocations[String(application.donorId)])||0)*100)+amounts[cycle-1]);
+        }
+        donor.monthly=restored.reduce((sum,value)=>sum+value,0)/100; donor.splitMode='dollar'; donor.split=restored.map(value=>value/100);
+        [1,2,3].forEach((cycle,index)=>{
+          const allocationState=getVariablePoolAllocationState(zbb,cycle,period);
+          allocationState.rec.variableAllocations[String(application.donorId)]=restored[index]/100;
+          delete allocationState.rec.variableAllocations[String(application.itemId)];
+        });
+        list.splice(list.indexOf(item),1);
+      }
+      return true;
+    }
+
+    function reviewBudgetUnbudgetedActivity(period, encodedFinding) {
+      let finding;
+      try { finding=JSON.parse(decodeURIComponent(encodedFinding)); } catch(e) { alert('This unbudgeted group could not be read. Refresh the review and try again.'); return; }
+      const key=getBudgetUnbudgetedDecisionKey(period,finding);
+      const prior=state.budgetUnbudgetedDecisions?.[key];
+      if(prior) captureUndo('Change unbudgeted activity budget decision');
+      if(prior && !reverseBudgetUnbudgetedDecision(period,finding,prior)) return;
+      if(prior) delete state.budgetUnbudgetedDecisions[key];
+      saveData();
+      const selected=document.getElementById('zbb-period-picker')?.value || period;
+      const template=getUnbudgetedDecisionTemplate(selected);
+      if(template) { renderBudgetLedgerReconciliation(selected,template); if(String(selected)===String(state.selectedZbbPeriod||'')) renderZbbPlanner(); }
     }
 
     function renderZbbBudgetVsActual(period, zbb, cycle) {
@@ -12884,6 +13501,44 @@ ${acc.name}`);
         return tx.type !== 'Transfer' && category !== 'transfer' && !tx.transferToAccountId
           && !(category === 'uncategorized' && (/^transfer/.test(vendor) || /^transfer/.test(description) || /^cardload/.test(vendor) || /^loadfrom/.test(vendor)));
       });
+      // Keep Calendar-linked fixed/variable bill payments out of variable-pool
+      // category matching. They remain in the overall ledger actual total and in
+      // their scheduled bill rows; this prevents a linked fixed bill from also
+      // appearing as variable-pool spending or unbudgeted activity.
+      const coveredScheduledExpenseTransactionIds = new Set();
+      const scheduledExpenseItems = [...(zbb.bills || []), ...(zbb.variableBills || [])];
+      const scheduledExpenseNameCounts = new Map();
+      scheduledExpenseItems.forEach(item => {
+        const key = norm(item.name);
+        if (key) scheduledExpenseNameCounts.set(key, (scheduledExpenseNameCounts.get(key) || 0) + 1);
+      });
+      const uniqueScheduledExpenseNames = new Set([...scheduledExpenseNameCounts.entries()]
+        .filter(([, count]) => count === 1).map(([key]) => key));
+      (state.calendarBills || []).filter(bill => bill && bill.type === 'expense'
+        && !bill.recurrenceOccurrenceDeleted && String(bill.date || '') >= start
+        && String(bill.date || '') <= end).forEach(bill => {
+          const billName = norm(bill.desc || bill.vendor || '');
+          if (!billName || !uniqueScheduledExpenseNames.has(billName)) return;
+          getCalendarBillSettlement(bill).validTransactions.forEach(tx => {
+            if (tx && tx.id != null && !tx.reconciledDuplicate) coveredScheduledExpenseTransactionIds.add(String(tx.id));
+          });
+        });
+      const debtNameCounts = new Map();
+      (zbb.debts || []).forEach(item => {
+        const key = norm(item.name);
+        if (key) debtNameCounts.set(key, (debtNameCounts.get(key) || 0) + 1);
+      });
+      const uniqueDebtNames = new Set([...debtNameCounts.entries()].filter(([, count]) => count === 1).map(([key]) => key));
+      const coveredDebtPaymentTransactionIds = new Set();
+      (state.calendarBills || []).filter(bill => bill && bill.type === 'debt'
+        && !bill.recurrenceOccurrenceDeleted && String(bill.date || '') >= start
+        && String(bill.date || '') <= end).forEach(bill => {
+          const billName = norm(bill.desc || bill.vendor || '');
+          if (!billName || !uniqueDebtNames.has(billName)) return;
+          getCalendarBillSettlement(bill).validTransactions.forEach(tx => {
+            if (tx && tx.id != null && !tx.reconciledDuplicate) coveredDebtPaymentTransactionIds.add(String(tx.id));
+          });
+        });
       const componentBudgetKey = component => {
         const sub = norm(component.subcategory);
         return sub && sub !== 'uncategorized' ? sub : norm(component.category);
@@ -12897,7 +13552,11 @@ ${acc.name}`);
         const key = mapping.key;
         const budget = Number(pool.allocations[item.id]) || 0;
         const matches = key && mapping.kind !== 'invalid' && budgetNames.get(key) === 1
-          ? components.filter(component => budgetExpenseComponentMatches(mapping, component, norm))
+          ? components.filter(component => {
+              const transactionId = component.transaction?.id;
+              return !(transactionId != null && (coveredScheduledExpenseTransactionIds.has(String(transactionId)) || coveredDebtPaymentTransactionIds.has(String(transactionId))))
+                && budgetExpenseComponentMatches(mapping, component, norm);
+            })
           : [];
         const actual = matches.reduce((sum, component) => sum + (Number(component.amount) || 0), 0);
         const remaining = budget - actual;
@@ -12908,10 +13567,18 @@ ${acc.name}`);
       const mappedKeys = new Set(rows.filter(row => !row.duplicate && !row.invalidMapping && row.mappingKey).map(row => row.mappingKey));
       const unbudgetedGroups = new Map();
       components.forEach(component => {
+        const transactionId = component.transaction?.id;
+        if (transactionId != null && (coveredScheduledExpenseTransactionIds.has(String(transactionId)) || coveredDebtPaymentTransactionIds.has(String(transactionId)))) return;
         const matchingMapKey = `map:${norm(component.category)}:${norm(component.subcategory)}`;
         const legacyKey = `legacy:${componentBudgetKey(component)}`;
         if (mappedKeys.has(matchingMapKey) || mappedKeys.has(legacyKey)) return;
-        const key = componentBudgetKey(component) || 'uncategorized';
+        // Keep the full category + subcategory pair as the grouping identity.
+        // Subcategory labels are not globally unique (for example, "Other" can
+        // exist under both Living Expenses and Housing & Bills), so grouping by
+        // subcategory alone would merge distinct unbudgeted spending streams.
+        const categoryKey = norm(component.category) || 'uncategorized';
+        const subcategoryKey = norm(component.subcategory) || 'uncategorized';
+        const key = `unbudgeted:${categoryKey}:${subcategoryKey}`;
         if (!unbudgetedGroups.has(key)) unbudgetedGroups.set(key, []);
         unbudgetedGroups.get(key).push(component);
       });
@@ -14104,15 +14771,17 @@ ${acc.name}`);
       const cycle2 = calculateZbbCycleTotals(zbb, 2, period);
       const cycle3 = calculateZbbCycleTotals(zbb, 3, period);
       const hasThirdPayday = getScheduledPaydaysForMonth(period).length >= 3;
-      const monthlyIncome = cycle1.income + cycle2.income;
-      const monthlyBills = cycle1.bills + cycle2.bills;
-      const monthlyVariable = cycle1.variable + cycle2.variable;
-      const monthlyDebt = cycle1.debt + cycle2.debt;
-      const monthlySavings = cycle1.savings + cycle2.savings;
-      const monthlyRemaining = cycle1.remaining + cycle2.remaining;
+      // Monthly budget totals include every scheduled payday in the selected
+      // month. P3 remains separately identifiable in its own breakdown below.
+      const monthlyIncome = cycle1.income + cycle2.income + (hasThirdPayday ? cycle3.income : 0);
+      const monthlyBills = cycle1.bills + cycle2.bills + (hasThirdPayday ? cycle3.bills : 0);
+      const monthlyVariable = cycle1.variable + cycle2.variable + (hasThirdPayday ? cycle3.variable : 0);
+      const monthlyDebt = cycle1.debt + cycle2.debt + (hasThirdPayday ? cycle3.debt : 0);
+      const monthlySavings = cycle1.savings + cycle2.savings + (hasThirdPayday ? cycle3.savings : 0);
+      const monthlyRemaining = cycle1.remaining + cycle2.remaining + (hasThirdPayday ? cycle3.remaining : 0);
       const monthlyPanel = document.getElementById('zbb-monthly-rollup');
       if (monthlyPanel) monthlyPanel.innerHTML = `
-        <div class="flex flex-wrap items-center justify-between gap-2 mb-3"><div><h3 class="font-bold text-sm">Monthly totals</h3><p class="text-[10px] text-gray-500">Paycheques 1 &amp; 2 · Third cheque shown separately when applicable</p></div></div>
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-3"><div><h3 class="font-bold text-sm">Monthly totals</h3><p class="text-[10px] text-gray-500">All scheduled paycheques · P3 shown separately when applicable</p></div></div>
         <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-2 text-xs fh-monthly-total-grid">
           <div class="fh-monthly-total-card"><div>Income</div><strong>${formatFinancial(monthlyIncome)}</strong></div>
           <div class="fh-monthly-total-card"><div>Bills (fixed + variable)</div><strong>${formatFinancial(monthlyBills, true)}</strong></div>
@@ -14121,7 +14790,7 @@ ${acc.name}`);
           <div class="fh-monthly-total-card"><div>Savings &amp; reserves</div><strong>${formatFinancial(monthlySavings, true)}</strong></div>
           <div class="fh-monthly-total-card"><div>Unallocated</div><strong>${formatFinancial(monthlyRemaining)}</strong></div>
         </div>
-        ${hasThirdPayday ? `<div class="mt-3 rounded-xl border border-indigo-200 dark:border-indigo-900 bg-indigo-50/50 dark:bg-indigo-950/20 p-3"><div class="flex items-center justify-between gap-2 mb-2"><strong class="text-xs">Third paycheque · separate allocation</strong><span class="text-[10px] text-indigo-500">Not included above</span></div><div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-xs"><div><div class="text-gray-400">Income</div><strong>${formatFinancial(cycle3.income)}</strong></div><div><div class="text-gray-400">Bills (fixed + variable)</div><strong>${formatFinancial(cycle3.bills,true)}</strong></div><div><div class="text-gray-400">Variable</div><strong>${formatFinancial(cycle3.variable,true)}</strong></div><div><div class="text-gray-400">Debt</div><strong>${formatFinancial(cycle3.debt,true)}</strong></div><div><div class="text-gray-400">Savings &amp; reserves</div><strong>${formatFinancial(cycle3.savings,true)}</strong></div><div><div class="text-gray-400">Unallocated</div><strong>${formatFinancial(cycle3.remaining)}</strong></div></div></div>` : ''}`;
+        ${hasThirdPayday ? `<div class="mt-3 rounded-xl border border-indigo-200 dark:border-indigo-900 bg-indigo-50/50 dark:bg-indigo-950/20 p-3"><div class="flex items-center justify-between gap-2 mb-2"><strong class="text-xs">Third paycheque · separate allocation</strong><span class="text-[10px] text-indigo-500">Included in monthly totals</span></div><div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-xs"><div><div class="text-gray-400">Income</div><strong>${formatFinancial(cycle3.income)}</strong></div><div><div class="text-gray-400">Bills (fixed + variable)</div><strong>${formatFinancial(cycle3.bills,true)}</strong></div><div><div class="text-gray-400">Variable</div><strong>${formatFinancial(cycle3.variable,true)}</strong></div><div><div class="text-gray-400">Debt</div><strong>${formatFinancial(cycle3.debt,true)}</strong></div><div><div class="text-gray-400">Savings &amp; reserves</div><strong>${formatFinancial(cycle3.savings,true)}</strong></div><div><div class="text-gray-400">Unallocated</div><strong>${formatFinancial(cycle3.remaining)}</strong></div></div></div>` : ''}`;
       let incomeSum = cycle1.income * 0 + 0, billsSum = 0, variableSum = 0, debtSum = 0, savingsSum = 0;
       const activeCycleTotals = calculateZbbCycleTotals(zbb, cycle, period);
       renderZbbWhatIfCalculator(activeCycleTotals, period, cycle);
@@ -14270,20 +14939,58 @@ ${acc.name}`);
         if (sectionKey === 'bill') {
           const money = n => formatFinancial(Number(n) || 0);
           const cycle = Math.max(1, Math.min(3, Number(state?.selectedPayCycle || 1)));
-          const rows = (itemsList || []).map(item => {
+          const rows = (itemsList || []).filter(item => {
+            const split = Array.isArray(item.split) ? item.split : [50,50,0];
+            const current = item.splitMode === 'dollar'
+              ? (Number(split[cycle-1]) || 0)
+              : (Number(item.monthly) || 0) * ((Number(split[cycle-1]) || 0) / 100);
+            return current > 0.005;
+          }).map(item => {
             const split = item.split || [50,50,0];
             const alloc = [0,1,2].map(i => item.splitMode === 'dollar' ? (Number(split[i])||0) : (Number(item.monthly)||0) * ((Number(split[i])||0)/100));
             const current = alloc[cycle-1] || 0;
             const id = String(item.id).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-            const safeCalendarId = encodeURIComponent(String(item.linkedCalendarBillId || ''));
             const linked = !!item.linkedCalendarBillId && item.linkStatus !== 'source-missing';
             const billName = `<button type="button" class="fh-fixed-bill-calendar-name" onclick="event.stopPropagation();openZbbItemModal('bill','${id}')" title="Edit ${escapeHtml(item.name)} — adjust details, delete, or manage its Calendar link">${escapeHtml(item.name)}</button>`;
             const status = linked
               ? '<span class="fh-fixed-bill-linked" title="Linked to Calendar" aria-label="Linked to Calendar"><i class="fa-solid fa-check" aria-hidden="true"></i></span>'
-              : `<button type="button" class="fh-fixed-bill-link" onclick="event.stopPropagation();openFixedBillCalendarLink('${id}')" title="Link to Calendar">Link</button>`;
+              : `<button type="button" class="fh-fixed-bill-link" onclick="event.stopPropagation();openFixedBillCalendarLink('${id}')" title="Link to Calendar" aria-label="Link ${escapeHtml(item.name || 'fixed bill')} to Calendar"><i class="fa-solid fa-link" aria-hidden="true"></i></button>`;
             return `<div class="fh-fixed-bill-row"><div class="fh-fixed-bill-name">${billName}</div><div class="fh-fixed-bill-value"><strong class="fh-fixed-bill-amount accounting-num" data-current-amount-cents="${Math.round((Number(current)||0)*100)}">${money(current)}</strong>${status}</div></div>`;
-          }).join('');
-          container.innerHTML = `${rows || '<p class="text-xs text-gray-400 py-3">No fixed bills added yet.</p>'}`;
+          }).join('') || '<p class="fh-fixed-bills-empty">No fixed bills allocated to this paycheque.</p>';
+
+          // Informational earmark only: identify linked fixed bills whose next
+          // actual Calendar occurrence falls after this 14-day pay period.
+          // This never changes planner totals or creates a reserve transaction.
+          const selectedMonth = String(state.selectedZbbPeriod || '2026-11');
+          const scheduledPaydays = getScheduledPaydaysForMonth(selectedMonth);
+          const payday = scheduledPaydays[cycle - 1] || null;
+          let earmarkedTotal = 0;
+          const earmarkedRows = [];
+          if (payday) {
+            const periodStart = new Date(payday.getFullYear(), payday.getMonth(), payday.getDate());
+            const periodEnd = new Date(periodStart.getFullYear(), periodStart.getMonth(), periodStart.getDate() + 14);
+            const dateKey = date => `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+            const startKey = dateKey(periodStart);
+            const endKey = dateKey(periodEnd);
+            (itemsList || []).forEach(item => {
+              const amount = Number((item.split || [50,50,0])[cycle-1]) || 0;
+              const allocation = item.splitMode === 'dollar' ? amount : (Number(item.monthly)||0) * amount / 100;
+              const linkId = String(item.linkedCalendarBillId || '');
+              if (!linkId || item.linkStatus === 'source-missing' || allocation <= 0) return;
+              const root = (state.calendarBills || []).find(b => b && (String(b.id) === linkId || String(b.recurrenceRootId || '') === linkId));
+              const rootId = String(root?.recurrenceRootId || root?.id || linkId);
+              const nextOccurrence = (state.calendarBills || [])
+                .filter(b => b && b.type === 'expense' && !b.recurrenceOccurrenceDeleted && String(b.recurrenceRootId || b.id) === rootId && String(b.date || '') >= startKey)
+                .sort((a,b) => String(a.date || '').localeCompare(String(b.date || '')))[0];
+              if (!nextOccurrence || String(nextOccurrence.date || '') < endKey || nextOccurrence.paid === true) return;
+              earmarkedTotal += allocation;
+              earmarkedRows.push(`${escapeHtml(item.name || 'Fixed bill')} · due ${escapeHtml(formatDateMDY(nextOccurrence.date))}: <strong class="accounting-num">${money(allocation)}</strong>`);
+            });
+          }
+          const earmarkMarkup = earmarkedRows.length
+            ? `<div class="fh-fixed-bill-earmark" role="note"><div class="fh-fixed-bill-earmark-heading">Planned for bills due after this paycheque</div><div class="fh-fixed-bill-earmark-lines">${earmarkedRows.map(row => `<div>${row}</div>`).join('')}</div><div class="fh-fixed-bill-earmark-total">Planned earmark <strong class="accounting-num">${money(earmarkedTotal)}</strong></div><p>Informational only · included in Fixed Bills above · actual reserve balance is optional</p></div>`
+            : '';
+          container.innerHTML = `${rows || '<p class="text-xs text-gray-400 py-3">No fixed bills added yet.</p>'}${earmarkMarkup}`;
           return;
         }
         if (sectionKey === 'variable') {
@@ -14344,7 +15051,7 @@ ${acc.name}`);
             const remainingLabel = hasSpendDates ? (duplicateMapping ? 'Check duplicate link' : `${formatFinancial(Math.abs(remaining))} ${remaining < -0.005 ? 'over' : 'left'}`) : '—';
             const detailRows = [...new Map(bucketComponents.map(component => [String(component.transaction?.id), component.transaction])).values()];
             const detailMarkup = detailRows.length ? `<details class="fh-pool-transactions mt-2"><summary class="cursor-pointer text-[10px] text-gray-500 font-semibold">Transactions (${detailRows.length})</summary><div class="fh-pool-transactions-list mt-1">${detailRows.map(tx => `<div class="fh-pool-transaction-row"><span class="fh-pool-transaction-label">${escapeHtml(formatDateMDY(tx.date))} · ${escapeHtml(tx.vendor || tx.payee || 'Unnamed transaction')}</span><strong class="accounting-num">${formatFinancial(Number(tx.amount) || 0)}</strong><button type="button" class="fh-open-details-icon" onclick="event.stopPropagation();openTransactionModal(decodeURIComponent('${encodeURIComponent(String(tx.id || '')).replace(/'/g,'%27')}'))" title="Open transaction to edit" aria-label="Open transaction ${escapeHtml(tx.vendor || tx.payee || 'details')}"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></button></div>`).join('')}</div></details>` : '';
-            container.insertAdjacentHTML('beforeend', `<div class="bg-gray-50 dark:bg-gray-950 p-3 rounded-xl border border-gray-200 dark:border-gray-800 text-xs"><div class="grid grid-cols-[minmax(0,1fr)_125px_70px_auto] gap-2 items-center"><div class="min-w-0"><div class="font-semibold truncate">${escapeHtml(item.name)} ${item.linkedCalendarBillId ? `<button type="button" class="fh-open-details-icon ml-1 align-middle" onclick="event.stopPropagation();openDashboardCalendarItem(decodeURIComponent('${encodeURIComponent(String(item.linkedCalendarBillId))}'))" title="Open linked bill in Calendar" aria-label="Open linked bill for ${escapeHtml(item.name)}"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></button>` : ''}</div><div class="text-[10px] text-gray-400">${item.expenseCategory && item.expenseSubcategory ? `${escapeHtml(item.expenseCategory)} · ${escapeHtml(item.expenseSubcategory)}` : 'Not linked to a category/subcategory'}${item.linkedCalendarBillId ? ' · Calendar linked' : ''} · Monthly target ${formatFinancial(item.monthly || 0)} · P${cycle} funding ${item.splitMode === 'dollar' ? formatFinancial((item.split || [0,0,0])[cycle-1] || 0) : `${Number((item.split || [50,50,0])[cycle-1] || 0).toFixed(1)}%`}</div></div><input type="number" min="0" step="0.01" value="${amt.toFixed(2)}" data-zbb-allocation-input="1" data-zbb-id="${escapeHtml(String(item.id))}" aria-label="${escapeHtml(item.name)} paycheque allocation" class="w-full text-right bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1.5 text-xs accounting-num"><div class="text-right text-gray-500 accounting-num" data-zbb-share="${escapeHtml(String(item.id))}">${share.toFixed(1)}%</div><div class="flex gap-2 justify-end"><button type="button" data-zbb-action="edit-variable" data-zbb-id="${escapeHtml(String(item.id))}" class="text-indigo-400" title="Edit variable bucket"><i class="fa-solid fa-pen"></i></button><button type="button" data-zbb-action="delete-variable" data-zbb-id="${escapeHtml(String(item.id))}" class="fh-zbb-delete-button text-rose-500" title="Delete variable bucket" aria-label="Delete variable bucket ${escapeHtml(item.name)}"><i class="fa-solid fa-trash"></i></button></div></div>${detailMarkup}${(() => { const reserve = getVariableExpenseReservePosition(zbb, item, period); const reserveOver = reserve.available < -0.005; const contributionRows = [1,2,3].map(fundingCycle => { const fundingState = getVariablePoolAllocationState(zbb, fundingCycle, period); return { cycle: fundingCycle, amount: Number(fundingState.allocations[String(item.id)]) || 0 }; }).filter(row => row.amount > 0.005); const fundingText = contributionRows.length ? contributionRows.map(row => `P${row.cycle} ${formatFinancial(row.amount)}`).join(' · ') : 'No paycheque funding allocated yet'; const reserveColor = reserveOver ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'; return `<div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-800"><div class="grid grid-cols-3 gap-2"><div><div class="text-[9px] text-gray-500 uppercase">P${cycle} allocated</div><strong class="accounting-num">${formatFinancial(amt)}</strong></div><div><div class="text-[9px] text-gray-500 uppercase">P${cycle} spent</div><strong class="accounting-num">${hasSpendDates ? formatFinancial(actual) : 'Set dates'}</strong></div><div><div class="text-[9px] text-gray-500 uppercase">P${cycle} remaining</div><strong class="accounting-num ${remaining < -0.005 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}">${hasSpendDates ? (remaining < -0.005 ? `${formatFinancial(Math.abs(remaining))} over` : `${formatFinancial(Math.max(0,remaining))} left`) : '—'}</strong></div></div><div class="mt-2 flex flex-wrap items-center justify-between gap-2"><div class="text-[10px] text-gray-500"><span class="font-semibold text-gray-600 dark:text-gray-300">Monthly target:</span> ${formatFinancial(Number(item.monthly) || 0)} · <span class="font-semibold text-gray-600 dark:text-gray-300">Available reserve (all paycheques):</span> <strong class="accounting-num ${reserveColor}">${formatFinancial(reserve.available)}</strong></div><details class="text-[10px]"><summary class="cursor-pointer underline text-gray-500">Reserve details</summary><div class="mt-2 rounded-lg bg-gray-100 dark:bg-gray-900 p-2 space-y-1"><div class="flex justify-between gap-3"><span class="text-gray-500">Opening balance carried forward</span><strong class="accounting-num">${formatFinancial(reserve.opening)}</strong></div><div class="flex justify-between gap-3"><span class="text-gray-500">Total funding this month</span><strong class="accounting-num text-emerald-600 dark:text-emerald-400">+${formatFinancial(reserve.funded)}</strong></div><div class="flex justify-between gap-3"><span class="text-gray-500">Actual spending</span><strong class="accounting-num">−${formatFinancial(reserve.spent)}</strong></div><button type="button" class="mt-1 underline text-gray-500" onclick="resetVariableExpenseReserve(decodeURIComponent('${encodeURIComponent(String(item.id))}'),'${period}')">Reset opening balance</button></div></details></div><p class="mt-2 text-[9px] text-gray-500">Paycheque spending and transactions use the selected paycheque dates. Available reserve is the cumulative balance across this month’s contributions and prior carry-forward, less all matched monthly expenses. Virtual allocation only — no bank transfer.${reserveOver ? ' Monthly spending exceeds the available reserve.' : ''}</p></div>`; })()}${!hasSpendDates ? '<div class="mt-1 text-[10px] text-gray-400">Set this paycheque’s spending dates to calculate the paycheque-specific spending comparison above.</div>' : duplicateMapping ? '<div class="mt-1 text-[10px] text-amber-600">Another bucket uses this same category and subcategory. Actuals are shown for review and may be duplicated.</div>' : ''}</div>`);
+            container.insertAdjacentHTML('beforeend', `<div class="bg-gray-50 dark:bg-gray-950 p-3 rounded-xl border border-gray-200 dark:border-gray-800 text-xs"><div class="grid grid-cols-[minmax(0,1fr)_125px_70px_auto] gap-2 items-center"><div class="min-w-0"><div class="font-semibold truncate">${escapeHtml(item.name)} ${item.linkedCalendarBillId ? `<button type="button" class="fh-open-details-icon ml-1 align-middle" onclick="event.stopPropagation();openDashboardCalendarItem(decodeURIComponent('${encodeURIComponent(String(item.linkedCalendarBillId))}'))" title="Open linked bill in Calendar" aria-label="Open linked bill for ${escapeHtml(item.name)}"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></button>` : ''}</div><div class="text-[10px] text-gray-400">${item.expenseCategory && item.expenseSubcategory ? `${escapeHtml(item.expenseCategory)} · ${escapeHtml(item.expenseSubcategory)}` : 'Not linked to a category/subcategory'}${item.linkedCalendarBillId ? ' · Calendar linked' : ''} · Monthly target ${formatFinancial(item.monthly || 0)} · P${cycle} funding ${item.splitMode === 'dollar' ? formatFinancial((item.split || [0,0,0])[cycle-1] || 0) : `${Number((item.split || [50,50,0])[cycle-1] || 0).toFixed(1)}%`}</div></div><input type="number" min="0" step="0.01" value="${amt.toFixed(2)}" data-zbb-allocation-input="1" data-zbb-id="${escapeHtml(String(item.id))}" aria-label="${escapeHtml(item.name)} paycheque allocation" class="w-full text-right bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1.5 text-xs accounting-num"><div class="text-right text-gray-500 accounting-num" data-zbb-share="${escapeHtml(String(item.id))}">${share.toFixed(1)}%</div><div class="flex gap-2 justify-end"><button type="button" data-zbb-action="edit-variable" data-zbb-id="${escapeHtml(String(item.id))}" class="text-indigo-400" title="Edit variable bucket"><i class="fa-solid fa-pen"></i></button><button type="button" data-zbb-action="delete-variable" data-zbb-id="${escapeHtml(String(item.id))}" class="fh-zbb-delete-button text-rose-500" title="Delete variable bucket" aria-label="Delete variable bucket ${escapeHtml(item.name)}"><i class="fa-solid fa-trash"></i></button></div></div>${detailMarkup}${(() => { const reserve = getVariableExpenseReservePosition(zbb, item, period); const reserveOver = reserve.available < -0.005; const scheduledFundingCycles = Math.min(3, getScheduledPaydaysForMonth(period).length); const contributionRows = Array.from({length: scheduledFundingCycles}, (_, index) => index + 1).map(fundingCycle => { const fundingState = getVariablePoolAllocationState(zbb, fundingCycle, period); return { cycle: fundingCycle, amount: Number(fundingState.allocations[String(item.id)]) || 0 }; }).filter(row => row.amount > 0.005); const fundingText = contributionRows.length ? contributionRows.map(row => `P${row.cycle} ${formatFinancial(row.amount)}`).join(' · ') : 'No paycheque funding allocated yet'; const reserveColor = reserveOver ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'; return `<div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-800"><div class="grid grid-cols-3 gap-2"><div><div class="text-[9px] text-gray-500 uppercase">P${cycle} allocated</div><strong class="accounting-num">${formatFinancial(amt)}</strong></div><div><div class="text-[9px] text-gray-500 uppercase">P${cycle} spent</div><strong class="accounting-num">${hasSpendDates ? formatFinancial(actual) : 'Set dates'}</strong></div><div><div class="text-[9px] text-gray-500 uppercase">P${cycle} remaining</div><strong class="accounting-num ${remaining < -0.005 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}">${hasSpendDates ? (remaining < -0.005 ? `${formatFinancial(Math.abs(remaining))} over` : `${formatFinancial(Math.max(0,remaining))} left`) : '—'}</strong></div></div><div class="mt-2 flex flex-wrap items-center justify-between gap-2"><div class="text-[10px] text-gray-500"><span class="font-semibold text-gray-600 dark:text-gray-300">Monthly target:</span> ${formatFinancial(Number(item.monthly) || 0)} · <span class="font-semibold text-gray-600 dark:text-gray-300">Available reserve (all paycheques):</span> <strong class="accounting-num ${reserveColor}">${formatFinancial(reserve.available)}</strong></div><details class="text-[10px]"><summary class="cursor-pointer underline text-gray-500">Reserve details</summary><div class="mt-2 rounded-lg bg-gray-100 dark:bg-gray-900 p-2 space-y-1"><div class="flex justify-between gap-3"><span class="text-gray-500">Opening balance carried forward</span><strong class="accounting-num">${formatFinancial(reserve.opening)}</strong></div><div class="flex justify-between gap-3"><span class="text-gray-500">Total funding this month</span><strong class="accounting-num text-emerald-600 dark:text-emerald-400">+${formatFinancial(reserve.funded)}</strong></div><div class="flex justify-between gap-3"><span class="text-gray-500">Actual spending</span><strong class="accounting-num">−${formatFinancial(reserve.spent)}</strong></div><button type="button" class="mt-1 underline text-gray-500" onclick="resetVariableExpenseReserve(decodeURIComponent('${encodeURIComponent(String(item.id))}'),'${period}')">Reset opening balance</button></div></details></div><p class="mt-2 text-[9px] text-gray-500">Paycheque spending and transactions use the selected paycheque dates. Available reserve is the cumulative balance across this month’s contributions and prior carry-forward, less all matched monthly expenses. Virtual allocation only — no bank transfer.${reserveOver ? ' Monthly spending exceeds the available reserve.' : ''}</p></div>`; })()}${!hasSpendDates ? '<div class="mt-1 text-[10px] text-gray-400">Set this paycheque’s spending dates to calculate the paycheque-specific spending comparison above.</div>' : duplicateMapping ? '<div class="mt-1 text-[10px] text-amber-600">Another bucket uses this same category and subcategory. Actuals are shown for review and may be duplicated.</div>' : ''}</div>`);
             return;
           }
           const itemIdArg = encodeURIComponent(String(item.id)).replace(/'/g, '%27');
@@ -14363,13 +15070,17 @@ ${acc.name}`);
             return;
           }
           if (sectionKey === 'savings') {
-            const editCall = item.allocationOnly
-              ? `openSavingsAllocationModal('${itemIdArg}')`
-              : `openZbbItemModal('savings','${itemIdArg}')`;
+            const editCall = `window.openSavingsPlannerItemEncoded('${itemIdArg}', ${item.allocationOnly === true ? 'true' : 'false'})`;
+            const linkedBucket = (typeof sinkingBucketLedger === 'function' ? (sinkingBucketLedger().buckets || []) : []).find(bucket =>
+              String(item.linkedBucketId || '') === String(bucket.id) || String(bucket.linkedZbbItemId || '') === String(item.id)
+            );
+            const bucketEditButton = linkedBucket
+              ? `<button type="button" onclick="openSinkingBucketModal(decodeURIComponent('${encodeURIComponent(String(linkedBucket.id)).replace("'", '%27')}'))" aria-label="Edit Sinking Funds bucket ${escapeHtml(linkedBucket.name || item.name)}" title="Edit Sinking Funds bucket"><i class="fa-solid fa-layer-group" aria-hidden="true"></i></button>`
+              : '';
             container.insertAdjacentHTML('beforeend', `<div class="fh-savings-allocation-item-row">
               <div class="min-w-0"><strong>${escapeHtml(item.name)}</strong><span>Monthly: ${formatFinancial(item.monthly || 0)} · P${cycle} split: ${escapeHtml(String(splitDesc))}</span></div>
               <div class="fh-savings-allocation-item-amount"><strong class="accounting-num">${formatFinancial(amt, true)}</strong><small>${pctOfIncome}% of income</small></div>
-              <div class="flex items-center gap-2"><button type="button" onclick="${editCall}" aria-label="Edit ${escapeHtml(item.name)}" title="Edit allocation"><i class="fa-solid fa-pen"></i></button><button type="button" class="fh-zbb-delete-button" onclick="deleteSavingsPlannerItemEncoded('${itemIdArg}')" aria-label="Delete ${escapeHtml(item.name)} and its linked sinking-fund bucket" title="Delete bucket and linked allocation line"><i class="fa-solid fa-trash"></i></button></div>
+              <div class="flex items-center gap-2">${bucketEditButton}<button type="button" onclick="${editCall}" aria-label="Edit ${escapeHtml(item.name)}" title="Edit allocation"><i class="fa-solid fa-pen" aria-hidden="true"></i></button><button type="button" class="fh-zbb-delete-button" onclick="deleteSavingsPlannerItemEncoded('${itemIdArg}')" aria-label="Delete ${escapeHtml(item.name)} and its linked sinking-fund bucket" title="Delete bucket and linked allocation line"><i class="fa-solid fa-trash" aria-hidden="true"></i></button></div>
             </div>`);
             return;
           }
@@ -14468,32 +15179,34 @@ ${acc.name}`);
       if (savingsPaychequeTotalEl) savingsPaychequeTotalEl.textContent = formatFinancial(savingsPaychequeTotal, true);
       renderSavingsAllocationSummary(zbb, cycle);
 
-      document.getElementById('zbb-sum-income').innerText = formatFinancial(incomeSum);
-      document.getElementById('zbb-sub-income-disp').innerText = formatFinancial(incomeSum);
-      document.getElementById('zbb-sub-bills-disp').innerText = formatFinancial(billsSum, true);
-      document.getElementById('zbb-rem-bills-disp').innerText = formatFinancial(remAfterBills);
-      document.getElementById('zbb-rem-bills').innerText = formatFinancial(remAfterBills);
-      document.getElementById('zbb-pct-bills').innerText = `Fixed Bills: ${incomeSum > 0 ? ((billsSum / incomeSum)*100).toFixed(1) : 0}%`;
+      { const _el = document.getElementById('zbb-sum-income'); if (_el) _el.innerText = formatFinancial(incomeSum); }
+      { const _el = document.getElementById('zbb-sub-income-disp'); if (_el) _el.innerText = formatFinancial(incomeSum); }
+      { const _el = document.getElementById('zbb-sub-bills-disp'); if (_el) _el.innerText = formatFinancial(billsSum, true); }
+      { const _el = document.getElementById('zbb-rem-bills-disp'); if (_el) _el.innerText = formatFinancial(remAfterBills); }
+      { const _el = document.getElementById('zbb-rem-bills'); if (_el) _el.innerText = formatFinancial(remAfterBills); }
+      { const _el = document.getElementById('zbb-pct-bills'); if (_el) _el.innerText = `Fixed Bills: ${incomeSum > 0 ? ((billsSum / incomeSum)*100).toFixed(1) : 0}%`; }
 
-      document.getElementById('zbb-sub-variable-disp').innerText = formatFinancial(variableSum, true);
-      document.getElementById('zbb-rem-variable-disp').innerText = formatFinancial(remAfterVariable);
-      document.getElementById('zbb-rem-variable').innerText = formatFinancial(remAfterVariable);
-      document.getElementById('zbb-pct-variable').innerText = `Variable: ${incomeSum > 0 ? ((variableSum / incomeSum)*100).toFixed(1) : 0}%`;
+      { const _el = document.getElementById('zbb-sub-variable-disp'); if (_el) _el.innerText = formatFinancial(variableSum, true); }
+      { const _el = document.getElementById('zbb-rem-variable-disp'); if (_el) _el.innerText = formatFinancial(remAfterVariable); }
+      { const _el = document.getElementById('zbb-rem-variable'); if (_el) _el.innerText = formatFinancial(remAfterVariable); }
+      { const _el = document.getElementById('zbb-pct-variable'); if (_el) _el.innerText = `Variable: ${incomeSum > 0 ? ((variableSum / incomeSum)*100).toFixed(1) : 0}%`; }
 
-      document.getElementById('zbb-sub-debt-disp').innerText = formatFinancial(debtSum, true);
-      document.getElementById('zbb-rem-debt-disp').innerText = formatFinancial(remAfterDebt);
-      document.getElementById('zbb-rem-debt').innerText = formatFinancial(remAfterDebt);
-      document.getElementById('zbb-pct-debt').innerText = `Debt: ${incomeSum > 0 ? ((debtSum / incomeSum)*100).toFixed(1) : 0}%`;
+      { const _el = document.getElementById('zbb-sub-debt-disp'); if (_el) _el.innerText = formatFinancial(debtSum, true); }
+      { const _el = document.getElementById('zbb-rem-debt-disp'); if (_el) _el.innerText = formatFinancial(remAfterDebt); }
+      { const _el = document.getElementById('zbb-rem-debt'); if (_el) _el.innerText = formatFinancial(remAfterDebt); }
+      { const _el = document.getElementById('zbb-pct-debt'); if (_el) _el.innerText = `Debt: ${incomeSum > 0 ? ((debtSum / incomeSum)*100).toFixed(1) : 0}%`; }
 
-      document.getElementById('zbb-sub-savings-disp').innerText = formatFinancial(savingsSum, true);
-      document.getElementById('zbb-rem-savings-disp').innerText = formatFinancial(bottomLine);
+      { const _el = document.getElementById('zbb-sub-savings-disp'); if (_el) _el.innerText = formatFinancial(savingsSum, true); }
+      { const _el = document.getElementById('zbb-rem-savings-disp'); if (_el) _el.innerText = formatFinancial(bottomLine); }
       const bottomLineEl = document.getElementById('zbb-cycle-bottomline');
-      bottomLineEl.innerText = formatFinancial(bottomLine);
-      bottomLineEl.classList.remove('fh-status-income','dark:fh-status-income','text-rose-600','dark:text-rose-400','text-red-600','dark:text-red-400');
-      if (bottomLine < -0.005) bottomLineEl.classList.add('text-red-600','dark:text-red-400');
-      else bottomLineEl.classList.add('fh-status-income','dark:fh-status-income');
-      bottomLineEl.setAttribute('aria-label', bottomLine < -0.005 ? 'Overallocated: negative remaining balance' : 'Zero-based remaining balance');
-      document.getElementById('zbb-pct-savings').innerText = `Savings: ${incomeSum > 0 ? ((savingsSum / incomeSum)*100).toFixed(1) : 0}%`;
+      if (bottomLineEl) {
+        bottomLineEl.innerText = formatFinancial(bottomLine);
+        bottomLineEl.classList.remove('fh-status-income','dark:fh-status-income','text-rose-600','dark:text-rose-400','text-red-600','dark:text-red-400');
+        if (bottomLine < -0.005) bottomLineEl.classList.add('text-red-600','dark:text-red-400');
+        else bottomLineEl.classList.add('fh-status-income','dark:fh-status-income');
+        bottomLineEl.setAttribute('aria-label', bottomLine < -0.005 ? 'Overallocated: negative remaining balance' : 'Zero-based remaining balance');
+      }
+      { const _el = document.getElementById('zbb-pct-savings'); if (_el) _el.innerText = `Savings: ${incomeSum > 0 ? ((savingsSum / incomeSum)*100).toFixed(1) : 0}%`; }
 
       renderSavingsGoalPlanner(zbb, period);
       renderZbbBudgetVsActual(period, zbb, cycle);
@@ -14571,9 +15284,22 @@ ${acc.name}`);
       // next payday - 1). If the user changed either date, retain that custom range.
       const payday = getScheduledPaydaysForMonth(period)[Number(cycle)-1];
       const previousAutoStart = payday ? formatFinHubLocalISODate(new Date(payday.getFullYear(), payday.getMonth(), payday.getDate()+1)) : '';
-      const isPreviousAutomaticPaydayWindow = !!window && rec.spendingWindowBasis === 'biweekly-payday'
-        && rec.startDate === previousAutoStart && rec.endDate === window.endDate;
-      if ((isLegacyCalendarDefault || hasIncompleteWindow || isPreviousAutomaticPaydayWindow) && window) {
+      // Records explicitly marked as automatic must always follow the selected
+      // cycle's current payday window. The earlier migration only recognized one
+      // legacy start-date pattern, so a stale P1 window could survive in P2 and
+      // be redrawn unchanged after switching cycles.
+      const isAutomaticWindow = rec.spendingWindowBasis === 'biweekly-payday';
+      const isPreviousAutomaticPaydayWindow = !!window && isAutomaticWindow
+        && (rec.startDate !== window.startDate || rec.endDate !== window.endDate);
+      // Older records may have copied another cycle's automatic dates before the
+      // basis marker was introduced. Migrate only an exact match to another
+      // cycle's generated window; preserve all other unmarked/custom date ranges.
+      const matchesAnotherCycleDefault = !rec.spendingWindowBasis && [1,2,3].some(otherCycle => {
+        if (otherCycle === Number(cycle)) return false;
+        const otherWindow = getDefaultZbbPaychequeSpendingWindow(period, otherCycle);
+        return !!otherWindow && rec.startDate === otherWindow.startDate && rec.endDate === otherWindow.endDate;
+      });
+      if ((isLegacyCalendarDefault || hasIncompleteWindow || isPreviousAutomaticPaydayWindow || matchesAnotherCycleDefault) && window) {
         rec.startDate = window.startDate;
         rec.endDate = window.endDate;
         rec.spendingWindowBasis = 'biweekly-payday';
@@ -14687,6 +15413,42 @@ ${acc.name}`);
       if (!linkId) return null;
       const candidates = (state.calendarBills || []).filter(b => b && b.type === 'expense' && !b.recurrenceGenerated);
       return candidates.find(b => String(b.id) === String(linkId) || String(b.recurrenceRootId || '') === String(linkId)) || null;
+    }
+
+    // Suggest a fixed-bill taxonomy only from an existing, complete category/subcategory
+    // pair on the linked Calendar bill or its linked payment. This is a form suggestion:
+    // it does not write to the budget or transaction until the user explicitly saves.
+    function getSuggestedFixedBillExpenseMapping(item) {
+      const savedCategory = String(item?.expenseCategory || '').trim();
+      const savedSubcategory = String(item?.expenseSubcategory || '').trim();
+      if (savedCategory || savedSubcategory) return { category:savedCategory, subcategory:savedSubcategory, source:'saved mapping' };
+      const norm = value => String(value || '').toLocaleLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'');
+      const hasPair = value => !!(String(value?.category || '').trim() && String(value?.subcategory || '').trim());
+      // Confirmed user preferences are suggestions only. A saved budget mapping
+      // above always wins, and the user must still save the form to persist a choice.
+      const confirmedMerchantMappings = {
+        'kindle': { category:'Personal & Lifestyle', subcategory:'Entertainment' },
+        'disney': { category:'Living Expenses', subcategory:'Household' },
+        'spotify': { category:'Living Expenses', subcategory:'Household' }
+      };
+      const confirmed = confirmedMerchantMappings[norm(item?.name)];
+      if (confirmed) return { ...confirmed, source:'confirmed category preference' };
+      const bills = (state.calendarBills || []).filter(b => b && b.type === 'expense' && !b.recurrenceGenerated && !b.recurrenceOccurrenceDeleted);
+      const linkId = String(item?.linkedCalendarBillId || '').trim();
+      let bill = linkId ? bills.find(b => String(b.id) === linkId || String(b.recurrenceRootId || '') === linkId) || null : null;
+      const period = String(state.selectedZbbPeriod || '').trim();
+      const name = norm(item?.name);
+      const sameName = bills.filter(b => (!period || String(b.date || '').startsWith(period)) && name && norm(b.vendor || b.desc) === name);
+      if (sameName.length === 1 && hasPair(sameName[0])) bill = sameName[0];
+      else if (!hasPair(bill) && sameName.length === 1) bill = sameName[0];
+      if (hasPair(bill)) return { category:String(bill.category).trim(), subcategory:String(bill.subcategory).trim(), source:'Calendar bill' };
+      if (bill) {
+        const transactionIds = new Set([bill.linkedTransactionId, ...(Array.isArray(bill.paymentTransactionIds) ? bill.paymentTransactionIds : [])].filter(Boolean).map(String));
+        const transactions = state.transactions || [];
+        const payment = transactions.find(t => transactionIds.has(String(t.id))) || transactions.find(t => String(t.calendarBillId || '') === String(bill.id));
+        if (hasPair(payment)) return { category:String(payment.category).trim(), subcategory:String(payment.subcategory).trim(), source:'linked payment transaction' };
+      }
+      return { category:'', subcategory:'', source:'' };
     }
     // Household Settlement must resolve the occurrence in the selected settlement
     // month, not the recurring series root (which may carry last month's date).
@@ -14823,6 +15585,15 @@ ${acc.name}`);
       document.getElementById('zbb-item-monthly').value = (Number(source.amount) || 0).toFixed(2);
       document.getElementById('zbb-split-mode-type').value = 'pct';
       toggleZbbSplitModeType();
+      const categorySelect = document.getElementById('zbb-variable-category');
+      const subcategorySelect = document.getElementById('zbb-variable-subcategory');
+      if (!categorySelect?.value && !subcategorySelect?.value) {
+        const suggestion = getSuggestedFixedBillExpenseMapping({ name:source.vendor || source.desc || '', linkedCalendarBillId:linkId });
+        if (suggestion.category && suggestion.subcategory) {
+          populateZbbVariableCategories(suggestion.category);
+          populateZbbVariableSubcategories(suggestion.subcategory);
+        }
+      }
     }
 
     function getZbbCalendarDebtSource(linkId) {
@@ -14983,6 +15754,34 @@ ${acc.name}`);
       if (title) title.textContent = editId ? 'Edit Savings Allocation' : 'Add Savings Allocation';
     }
 
+    // Planner pencil actions pass URI-encoded IDs; decode once before opening the editor.
+    // This preserves the dedicated allocation editor for allocation-only lines.
+    function openSavingsPlannerItemEncoded(encodedId, allocationOnly = false) {
+      // The row renderer passes the item type directly. Do not re-query the active
+      // template here: a displayed row can belong to a rendered planner copy that
+      // is not the template currently returned by getActiveZbbTemplate().
+      let id = String(encodedId || '');
+      try { id = decodeURIComponent(id); } catch (_) {}
+      if (!id) {
+        console.error('FinHub: missing savings planner item ID for edit action.');
+        return;
+      }
+      try {
+        if (allocationOnly === true) {
+          openSavingsAllocationModal(id);
+        } else {
+          openZbbItemModal('savings', id);
+        }
+      } catch (error) {
+        console.error('FinHub: could not open savings planner editor.', error);
+        alert('The savings editor could not be opened. Please refresh FinHub and try again.');
+      }
+    }
+    window.openSavingsPlannerItemEncoded = openSavingsPlannerItemEncoded;
+    // Explicit global exports make the inline planner controls reliable across later scripts.
+    window.openZbbItemModal = openZbbItemModal;
+    window.openSavingsAllocationModal = openSavingsAllocationModal;
+
     // Dedicated reconciliation allocation line: a paycheque plan record only.
     // It deliberately does not create, rename, or modify a Sinking Funds bucket.
     function openSavingsAllocationLineModal(editId = '') {
@@ -15096,20 +15895,20 @@ ${acc.name}`);
       const billDeleteButton = document.getElementById('zbb-item-delete-btn');
       if (billDeleteButton) billDeleteButton.classList.toggle('hidden', !(type === 'bill' && isEdit));
       document.getElementById('zbb-item-type').value = type;
-      document.getElementById('zbb-calendar-link-wrap').classList.toggle('hidden', type !== 'bill');
-      document.getElementById('zbb-calendar-income-link-wrap').classList.toggle('hidden', type !== 'income');
-      document.getElementById('zbb-calendar-debt-link-wrap').classList.toggle('hidden', type !== 'debt');
-      document.getElementById('zbb-calendar-variable-link-wrap').classList.toggle('hidden', type !== 'variable');
+      document.getElementById('zbb-calendar-link-wrap')?.classList?.toggle('hidden', type !== 'bill');
+      document.getElementById('zbb-calendar-income-link-wrap')?.classList?.toggle('hidden', type !== 'income');
+      document.getElementById('zbb-calendar-debt-link-wrap')?.classList?.toggle('hidden', type !== 'debt');
+      document.getElementById('zbb-calendar-variable-link-wrap')?.classList?.toggle('hidden', type !== 'variable');
       document.getElementById('zbb-modal-title').innerText = isEdit ? (isVariable ? 'Edit Variable Bucket' : 'Edit Budget Item') : 'Add Budget Item';
-      document.getElementById('zbb-sinking-fund-opts').classList.toggle('hidden', type !== 'savings');
-      document.getElementById('zbb-variable-edit-note').classList.toggle('hidden', !isVariable);
-      document.getElementById('zbb-variable-taxonomy-wrap').classList.toggle('hidden', !(isVariable || type === 'bill'));
+      document.getElementById('zbb-sinking-fund-opts')?.classList?.toggle('hidden', type !== 'savings');
+      document.getElementById('zbb-variable-edit-note')?.classList?.toggle('hidden', !isVariable);
+      document.getElementById('zbb-variable-taxonomy-wrap')?.classList?.toggle('hidden', !(isVariable || type === 'bill'));
       const taxonomyTitle = document.querySelector('#zbb-variable-taxonomy-wrap');
-      if (taxonomyTitle) { const labels = taxonomyTitle.querySelectorAll('label'); if (labels[0]) labels[0].textContent = type === 'bill' ? 'Fixed Bill Expense Category' : 'Expense Category'; if (labels[1]) labels[1].textContent = type === 'bill' ? 'Fixed Bill Expense Subcategory' : 'Expense Subcategory'; const note = taxonomyTitle.querySelector('p'); if (note) note.textContent = type === 'bill' ? 'Required mapping for this fixed expense budget line. Calendar payment and settlement status remain managed separately.' : 'Transactions matching this category and subcategory count toward this budget line. Leave unlinked if this is a manual bucket.'; }
-      document.getElementById('zbb-item-monthly-wrap').classList.remove('hidden');
-      document.getElementById('zbb-item-split-wrap').classList.remove('hidden');
-      document.getElementById('zbb-item-split-details').classList.remove('hidden');
-      document.getElementById('zbb-variable-current-allocation-wrap').classList.add('hidden');
+      if (taxonomyTitle) { const labels = taxonomyTitle.querySelectorAll('label'); if (labels[0]) labels[0].textContent = type === 'bill' ? 'Fixed Bill Expense Category' : 'Expense Category'; if (labels[1]) labels[1].textContent = type === 'bill' ? 'Fixed Bill Expense Subcategory' : 'Expense Subcategory'; const note = taxonomyTitle.querySelector('p'); if (note) note.textContent = type === 'bill' ? 'Required mapping for this fixed expense budget line. FinHub may suggest a pair from the linked Calendar bill or payment; confirm before saving.' : 'Transactions matching this category and subcategory count toward this budget line. Leave unlinked if this is a manual bucket.'; }
+      document.getElementById('zbb-item-monthly-wrap')?.classList?.remove('hidden');
+      document.getElementById('zbb-item-split-wrap')?.classList?.remove('hidden');
+      document.getElementById('zbb-item-split-details')?.classList?.remove('hidden');
+      document.getElementById('zbb-variable-current-allocation-wrap')?.classList?.add('hidden');
       document.getElementById('zbb-variable-current-allocation-label').innerText = `Paycheque ${Number(state.selectedPayCycle || 1)} allocation ($)`;
 
       const zbb = getActiveZbbTemplate();
@@ -15132,7 +15931,7 @@ ${acc.name}`);
         if (nameLabel) nameLabel.textContent = 'Allocation name';
         const monthlyLabel = document.querySelector('#zbb-item-monthly')?.previousElementSibling;
         if (monthlyLabel) monthlyLabel.textContent = 'Monthly contribution ($)';
-        document.getElementById('zbb-sinking-fund-opts').classList.add('hidden');
+        document.getElementById('zbb-sinking-fund-opts')?.classList?.add('hidden');
       }
       if (isEdit) {
         const item = (list || []).find(i => String(i.id) === String(editId));
@@ -15140,7 +15939,15 @@ ${acc.name}`);
         document.getElementById('zbb-item-edit-id').value = String(item.id);
         document.getElementById('zbb-item-name').value = item.name || '';
         if (type === 'bill') populateZbbCalendarBillLink(item.linkedCalendarBillId || '');
-        if (type === 'bill') { populateZbbVariableCategories(item.expenseCategory || ''); populateZbbVariableSubcategories(item.expenseSubcategory || ''); }
+        if (type === 'bill') {
+          const mappingSuggestion = getSuggestedFixedBillExpenseMapping(item);
+          populateZbbVariableCategories(mappingSuggestion.category || item.expenseCategory || '');
+          populateZbbVariableSubcategories(mappingSuggestion.subcategory || item.expenseSubcategory || '');
+          const taxonomyNote = document.querySelector('#zbb-variable-taxonomy-wrap p');
+          if (taxonomyNote && !item.expenseCategory && !item.expenseSubcategory && mappingSuggestion.source) {
+            taxonomyNote.textContent = `Suggested from ${mappingSuggestion.source}. Confirm the category and subcategory before saving; no transaction or Calendar record is changed by this suggestion.`;
+          }
+        }
         if (type === 'income') populateZbbCalendarIncomeLink(item.linkedCalendarIncomeId || '');
         if (type === 'debt') populateZbbCalendarDebtLink(item.linkedCalendarDebtId || '');
         if (isVariable) {
@@ -19422,7 +20229,7 @@ No payment links or balance changes were retained.`);
     }
     function closeReconciliationModal() { document.getElementById('recon-modal').classList.add('hidden'); }
     function downloadStatementTemplate() {
-      const csv = 'Date,Bank Description,Amount,Type,Vendor,Category,Subcategory,Debt Account,Principal,Interest,Transfer To Account\r\n';
+      const csv = 'Date,Bank Description,Amount,Type,Vendor,Category,Subcategory,Debt Account,Principal,Interest,Transfer To Account,Transfer From Account\r\n';
       const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='FinHub_Enhanced_Statement_Import_Template.csv';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
     }
     function loadStatementFile(event) {
@@ -20101,15 +20908,15 @@ No payment links or balance changes were retained.`);
     }
     function renderStatementColumnMapper(headers, signature) {
       const host=document.getElementById('recon-preview'); if(!host)return;
-      const fields=[['date','Date',true],['description','Description',true],['amount','Signed amount',false],['debit','Debit / withdrawal',false],['credit','Credit / deposit',false],['type','FinHub type',false],['vendor','Vendor',false],['category','Category',false],['subcategory','Subcategory',false],['debtAccount','Debt account',false],['principal','Principal',false],['interest','Interest',false],['transferTo','Transfer destination',false]];
+      const fields=[['date','Date',true],['description','Description',true],['amount','Signed amount',false],['debit','Debit / withdrawal',false],['credit','Credit / deposit',false],['type','FinHub type',false],['vendor','Vendor',false],['category','Category',false],['subcategory','Subcategory',false],['debtAccount','Debt account',false],['principal','Principal',false],['interest','Interest',false],['transferTo','Transfer destination',false],['transferFrom','Transfer source',false]];
       const options='<option value="">— Not mapped —</option>'+headers.map((h,i)=>`<option value="${i}">${escapeHtml(h||`Column ${i+1}`)}</option>`).join('');
       const saved=state.statementCsvMappings?.[signature]||{};
-      const aliases={date:['date','transactiondate','posteddate','bookingdate','transferdate'],description:['bankdescription','description','details','payee','memo','merchant','name','narrative','reference'],amount:['amount','transactionamount','signedamount'],debit:['debit','withdrawal','moneyout'],credit:['credit','deposit','moneyin'],type:['type','finhubtype','transactiontype'],vendor:['vendor','vendorname','cleanvendor'],category:['category','bucket'],subcategory:['subcategory','subcat'],debtAccount:['debtaccount','debtaccountname','liabilityaccount'],principal:['principal','principalportion'],interest:['interest','interestportion'],transferTo:['transfertoaccount','destinationaccount']};
+      const aliases={date:['date','transactiondate','posteddate','bookingdate','transferdate'],description:['bankdescription','description','details','payee','memo','merchant','name','narrative','reference'],amount:['amount','transactionamount','signedamount'],debit:['debit','withdrawal','moneyout'],credit:['credit','deposit','moneyin'],type:['type','finhubtype','transactiontype'],vendor:['vendor','vendorname','cleanvendor'],category:['category','bucket'],subcategory:['subcategory','subcat'],debtAccount:['debtaccount','debtaccountname','liabilityaccount'],principal:['principal','principalportion'],interest:['interest','interestportion'],transferTo:['transfertoaccount','destinationaccount'],transferFrom:['transferfromaccount','sourceaccount','fromaccount']};
       host.innerHTML=`<div class="rounded-xl border border-indigo-300/50 bg-indigo-500/5 p-3 space-y-3"><div><strong class="text-sm">Map your CSV columns</strong><p class="text-[10px] text-gray-500 mt-1">FinHub couldn't confidently identify the required columns. Choose which bank columns match each field. This mapping will be saved for this CSV layout.</p></div><div class="grid grid-cols-1 sm:grid-cols-2 gap-2">${fields.map(([key,label,required])=>{let guess=saved[key];if(guess===undefined)guess=headers.findIndex(h=>aliases[key].includes(String(h||'').toLowerCase().replace(/[^a-z]/g,'')));return `<label class="text-[11px] font-semibold text-gray-500">${label}${required?' *':''}<select id="csv-map-${key}" class="mt-1 w-full bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-2 text-xs">${options}</select></label>`}).join('')}</div><div class="flex justify-end"><button type="button" onclick="saveStatementColumnMapping('${signature}')" class="px-3 py-2 rounded-lg  text-white text-xs font-semibold">Save mapping & parse</button></div></div>`;
       fields.forEach(([key])=>{const el=document.getElementById(`csv-map-${key}`);let guess=saved[key];if(guess===undefined)guess=headers.findIndex(h=>aliases[key].includes(String(h||'').toLowerCase().replace(/[^a-z]/g,'')));if(el&&guess!==undefined&&guess>=0)el.value=String(guess);});
     }
     function saveStatementColumnMapping(signature) {
-      const keys=['date','description','amount','debit','credit','type','vendor','category','subcategory','debtAccount','principal','interest','transferTo'];
+      const keys=['date','description','amount','debit','credit','type','vendor','category','subcategory','debtAccount','principal','interest','transferTo','transferFrom'];
       const mapping={};keys.forEach(key=>{const value=document.getElementById(`csv-map-${key}`)?.value;if(value!=='')mapping[key]=Number(value);});
       if(mapping.date===undefined||mapping.description===undefined||(mapping.amount===undefined&&(mapping.debit===undefined||mapping.credit===undefined))){alert('Map Date, Description, and either Signed Amount or both Debit and Credit before continuing.');return;}
       state.statementCsvMappings[signature]=mapping;saveData();processReconciliation('csv');
@@ -20151,6 +20958,8 @@ No payment links or balance changes were retained.`);
       const principalCol=findCol('principal',['principal','principalportion']);
       const interestCol=findCol('interest',['interest','interestportion']);
       const transferToCol=findCol('transferTo',['transfertoaccount','destinationaccount']);
+      // Incoming internal-transfer rows use Transfer From Account; older CSV mappings remain valid.
+      const transferFromCol=findCol('transferFrom',['transferfromaccount','sourceaccount','fromaccount']);
       if(header&&(dateCol<0||descCol<0||(amountCol<0&&(debitCol<0||creditCol<0)))){renderStatementColumnMapper(displayHeaders,signature);return false;}
       const rows=[];const parseErrors=[];let skipped=0;const csvParseStartedAt=performance.now();
       const cell=(parts,col)=>col>=0?String(parts[col]??'').trim():'';
@@ -20205,7 +21014,8 @@ No payment links or balance changes were retained.`);
           paymentType:cell(parts,paymentTypeCol),
           principal:cell(parts,principalCol)===''?NaN:parseStatementAmount(cell(parts,principalCol)),
           interest:cell(parts,interestCol)===''?NaN:parseStatementAmount(cell(parts,interestCol)),
-          transferTo:cell(parts,transferToCol)
+          transferTo:cell(parts,transferToCol),
+          transferFrom:cell(parts,transferFromCol)
         };
         const row={id:`st_${Date.now()}_${index}_${Math.random().toString(36).slice(2,7)}`,date,bankDescription:desc,description:desc,amount,signedAmount:amountNum,type:direction,accountId,status:'pending'};
         applyStatementImportDefaults(row,explicit);
@@ -21275,10 +22085,12 @@ No payment links or balance changes were retained.`);
         const remainingCents = Math.max(0, originalCents - reversedCents);
         if (!remainingCents || cents > remainingCents) return false;
         const txDate = new Date(`${tx.date || ''}T00:00:00`).getTime();
-        const days = Math.abs(txDate - rowDate) / 86400000;
-        return Number.isFinite(days) && days <= 120;
+        // A possible original payment must predate the returned-payment credit;
+        // a later payment with the same amount is not a valid reversal candidate.
+        const days = (rowDate - txDate) / 86400000;
+        return Number.isFinite(days) && days >= 0 && days <= 120;
       }).map(tx => {
-        const days = Math.abs(new Date(`${tx.date}T00:00:00`).getTime() - rowDate) / 86400000;
+        const days = (rowDate - new Date(`${tx.date}T00:00:00`).getTime()) / 86400000;
         const sameVendor = normalizeStatementText(tx.vendor || tx.desc).split(' ').some(word => word.length > 3 && normalizeStatementText(row.description).includes(word));
         return { tx, days, score: (sameVendor ? 4 : 0) + (days <= 7 ? 3 : days <= 30 ? 2 : 0) };
       }).sort((a,b) => b.score-a.score || a.days-b.days).map(x => x.tx);
@@ -25943,6 +26755,8 @@ function openTransactionModal(requestedEditId = null) {
         source:'monthly-budget-ledger-reconciliation',
         rows:cloneCloseRecord(rows),findings:cloneCloseRecord(findings),
         summary:{rowCount:rows.length,unbudgetedFindingCount:findings.filter(f=>f.kind==='unbudgeted-activity').length,
+          unbudgetedAmountCents:findings.filter(f=>f.kind==='unbudgeted-activity').reduce((sum,f)=>sum+(Number(f.amountCents)||0),0),
+          unbudgetedTransactionCount:findings.filter(f=>f.kind==='unbudgeted-activity').reduce((sum,f)=>sum+(Number(f.transactionCount)||0),0),
           errorCount:findings.filter(f=>f.level==='error').length,warningCount:findings.filter(f=>f.level==='warning').length}
       };
     }
@@ -25966,15 +26780,21 @@ function openTransactionModal(requestedEditId = null) {
       const p=closePeriod(),existing=state.monthlyCloseSnapshots?.[p];
       if(existing&&existing.status!=='reopened'){alert(`A ${p} close already exists. Reopen it with a reason before creating a revised close version.`);return;}
       const endDate=`${p}-${new Date(Number(p.slice(0,4)),Number(p.slice(5,7)),0).getDate()}`,d=closeMetrics(p),flags=state.monthlyCloseChecklist?.[p]||{},missing=MONTH_CLOSE_TASKS.filter(([k])=>!flags[k]);
-      if((d.unrec.length||d.unmatched.length||missing.length)&&!confirm(`${d.unrec.length} account(s), ${d.unmatched.length} transaction(s), and ${missing.length} checklist item(s) remain open. Save as incomplete?`))return;
+      const budgetPlanSnapshot=captureMonthlyBudgetPlanSnapshot(p);
+      const budgetActualSnapshot=captureMonthlyBudgetActualSnapshot(p,budgetPlanSnapshot);
+      const budgetSnapshotUnavailable=budgetPlanSnapshot.status!=='captured'||budgetActualSnapshot.status!=='captured';
+      const closeIssues=[];
+      if(budgetSnapshotUnavailable)closeIssues.push('budget snapshot unavailable');
+      if(d.unrec.length)closeIssues.push(`${d.unrec.length} account(s)`);
+      if(d.unmatched.length)closeIssues.push(`${d.unmatched.length} transaction(s)`);
+      if(missing.length)closeIssues.push(`${missing.length} checklist item(s)`);
+      if(closeIssues.length&&!confirm(`The following close items need attention: ${closeIssues.join(', ')}. Save as incomplete?`))return;
       if(!confirm(`Save the ${p} month-end snapshot using account balances as of ${endDate}? This creates a new version and preserves prior close history.`))return;
       const accountBalances=d.accounts.map(a=>{const calculated=getAccountBalanceSnapshot(a,endDate);return {id:a.id,name:a.name,type:a.type,balance:calculated?.balance??null,asOfDate:endDate,balanceBasis:calculated?.balanceBasis??'unavailable',activityCount:calculated?.activityCount??0,undatedActivityCount:calculated?.undatedActivityCount??0,statementBalance:a.actualBalance??null};}),balanceExceptions=accountBalances.filter(a=>a.balance===null).map(a=>({id:a.id,name:a.name,reason:a.balanceBasis,undatedActivityCount:a.undatedActivityCount}));
       const previous=latestCloseHistoryEvent('monthly',p),revision=(state.closeHistory||[]).filter(e=>e.periodType==='monthly'&&String(e.periodKey)===p).length+1;
-      const budgetPlanSnapshot=captureMonthlyBudgetPlanSnapshot(p);
-      const budgetActualSnapshot=captureMonthlyBudgetActualSnapshot(p,budgetPlanSnapshot);
-      const snapshot={period:p,periodEndDate:endDate,closedAt:new Date().toISOString(),revision,status:d.unrec.length||d.unmatched.length||missing.length||balanceExceptions.length?'incomplete':'completed',balanceExceptions,income:d.income,expenses:d.expense,transactionCount:d.tx.length,unmatched:d.unmatched.length,checklist:{...flags},outstandingItems:d.outstandingBills.map(b=>({id:b.id,description:b.desc,date:b.date,amount:Number(b.amount)||0,type:b.type})),accountBalances,budgetPlanSnapshot,budgetActualSnapshot};
+      const snapshot={period:p,periodEndDate:endDate,closedAt:new Date().toISOString(),revision,status:d.unrec.length||d.unmatched.length||missing.length||balanceExceptions.length||budgetSnapshotUnavailable?'incomplete':'completed',balanceExceptions,income:d.income,expenses:d.expense,transactionCount:d.tx.length,unmatched:d.unmatched.length,checklist:{...flags},outstandingItems:d.outstandingBills.map(b=>({id:b.id,description:b.desc,date:b.date,amount:Number(b.amount)||0,type:b.type})),accountBalances,budgetPlanSnapshot,budgetActualSnapshot};
       const event=appendCloseHistoryEvent({periodType:'monthly',periodKey:p,eventType:'closed',snapshot,reason:existing?'Reclosed after reopening':'Initial close',previousEventId:previous?.id||null});snapshot.lastCloseEventId=event.id;state.monthlyCloseSnapshots=state.monthlyCloseSnapshots||{};state.monthlyCloseSnapshots[p]=snapshot;
-      saveData();renderMonthlyClose();renderCheckInSnapshotHistory();alert(balanceExceptions.length?`Monthly snapshot saved as incomplete. ${balanceExceptions.length} account balance(s) could not be calculated because of undated activity. Correct the transaction dates and reopen the period before saving a new version.`:'Monthly snapshot saved. Previous close versions remain in the audit history.');
+      saveData();renderMonthlyClose();renderCheckInSnapshotHistory();alert(balanceExceptions.length?`Monthly snapshot saved as incomplete. ${balanceExceptions.length} account balance(s) could not be calculated because of undated activity. Correct the transaction dates and reopen the period before saving a new version.`:budgetSnapshotUnavailable?'Monthly snapshot saved as incomplete because the working budget snapshot is unavailable. Add or restore the period budget, then reopen the month before saving a revised close.':'Monthly snapshot saved. Previous close versions remain in the audit history.');
     }
     function reopenMonthlyClose(){
       const p=closePeriod(),snap=state.monthlyCloseSnapshots?.[p];if(!snap||snap.status==='reopened')return;
@@ -36281,8 +37101,14 @@ button[aria-describedby="acc-opening-balance-tooltip"]:focus-visible,
 @media(max-width:560px){#transaction-modal #tx-vendor-amount-row:has(#tx-transfer-destination-wrap){grid-template-columns:minmax(0,1fr)}}
 /* Sinking bucket edit modal: avoid clipped content and oversized controls. */
 #sinking-bucket-modal { overflow-y:auto; -webkit-overflow-scrolling:touch; }
-#sinking-bucket-modal > .fh-modal-surface { box-sizing:border-box; width:min(100%, 38rem); max-height:calc(100dvh - 2rem); overflow-y:auto; padding:clamp(16px,3vw,26px); }
+#sinking-bucket-modal > .fh-modal-surface { box-sizing:border-box; width:min(100%, 48rem); max-width:48rem; max-height:calc(100dvh - 2rem); overflow-y:auto; padding:clamp(16px,3vw,28px); }
 #sinking-bucket-modal input,#sinking-bucket-modal select { box-sizing:border-box; min-width:0; max-width:100%; width:100%; }
+#sinking-bucket-form > .flex.items-center.justify-between.gap-3.pt-2 { display:grid!important; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px!important; align-items:stretch!important; }
+#sinking-bucket-form > .flex.items-center.justify-between.gap-3.pt-2 > button,
+#sinking-bucket-form > .flex.items-center.justify-between.gap-3.pt-2 > div { min-width:0!important; width:100%!important; }
+#sinking-bucket-form > .flex.items-center.justify-between.gap-3.pt-2 > div { display:contents!important; }
+#sinking-bucket-form > .flex.items-center.justify-between.gap-3.pt-2 button { min-height:48px!important; height:48px!important; padding:8px 6px!important; display:flex!important; align-items:center!important; justify-content:center!important; text-align:center!important; white-space:normal!important; line-height:1.15!important; }
+@media(max-width:560px){#sinking-bucket-form > .flex.items-center.justify-between.gap-3.pt-2{grid-template-columns:repeat(2,minmax(0,1fr));}}
 </style>
 <script id="finhub-approved-batch-functionality-v1">
 (function(){
@@ -36525,8 +37351,9 @@ button[aria-describedby="acc-opening-balance-tooltip"]:focus-visible,
 #tab-biweekly .fh-pool-transaction-row .fh-open-details-icon{justify-self:end;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center}
 #tab-biweekly .fh-bills-variable-subsection{margin-top:.75rem}
 #tab-biweekly .fh-bills-table-note{line-height:1.45}
-/* Monthly reporting remains available in its own area of the app, not in the paycheque workflow. */
-#tab-biweekly details[data-planner-section="monthly-overview"],#tab-biweekly details[data-planner-section="what-if"]{display:none!important}
+/* Release 1: keep monthly financial review available from the Paycheque Planner. */
+#tab-biweekly details[data-planner-section="what-if"]{display:none!important}
+#tab-biweekly details[data-planner-section="monthly-overview"]{display:block!important}
 @media(max-width:680px){#tab-biweekly .fh-planner-section>summary.fh-planner-summary{align-items:flex-start!important;gap:.6rem!important;flex-wrap:wrap!important}#tab-biweekly .fh-planner-running-values{gap:.45rem .85rem!important}#tab-biweekly .fh-planner-running-values>div{min-width:105px!important}}
 </style>
 <script id="finhub-paycheque-planner-focused-layout-v1-script">
@@ -36624,7 +37451,7 @@ button[aria-describedby="acc-opening-balance-tooltip"]:focus-visible,
 #tab-biweekly .fh-mockup-savings-grid .fh-planner-section-content>div>div{padding:10px!important;}
 #tab-biweekly .fh-mockup-savings-grid #sinking-funds-progress-grid{display:grid;grid-template-columns:1fr!important;}
 #tab-biweekly .fh-planner-section[data-planner-section="what-if"]{display:none!important;}
-#tab-biweekly .fh-planner-support-column .fh-planner-pair-reporting{display:none!important;}
+/* Monthly Budget & Financial Review is intentionally visible in Release 1. */
 @media(max-width:900px){#tab-biweekly .fh-planner-summary{align-items:flex-start;flex-wrap:wrap;}#tab-biweekly .fh-planner-summary>div:first-child{flex-wrap:wrap;gap:8px;}#tab-biweekly .fh-planner-running-values{gap:8px!important;}#tab-biweekly .fh-planner-mockup-variable-grid,#tab-biweekly .fh-mockup-savings-grid{grid-template-columns:1fr;}#tab-biweekly .grid.grid-cols-1.sm\:grid-cols-3.gap-3{grid-template-columns:1fr!important;}}
 </style>
 
@@ -37335,7 +38162,7 @@ button[aria-describedby="acc-opening-balance-tooltip"]:focus-visible,
     if(availableEl) availableEl.textContent=money(totalAvailable);
     const pct=totalAllocated>0?Math.max(0,Math.min(100,totalSpent/totalAllocated*100)):0;
     const donut=$('#fh-spending-donut');if(donut)donut.style.setProperty('--fh-spent-pct',`${pct}%`);
-    const pctLabel=$('#fh-spending-used-label');if(pctLabel)pctLabel.textContent=`${pct.toFixed(0)}% spent${hasDates?` · ${rec.startDate} – ${rec.endDate}`:''}`;
+    const pctLabel=$('#fh-spending-used-label');if(pctLabel)pctLabel.textContent=`Paycheque ${cycle} · ${pct.toFixed(0)}% spent${hasDates?` · ${rec.startDate} – ${rec.endDate}`:''}`;
     const progress=$('#fh-spending-used-bar');if(progress)progress.style.width=`${pct}%`;
 
     const bucketBody=$('#fh-spending-bucket-rows');
@@ -40458,7 +41285,305 @@ html:not(.dark) body[data-finhub-theme="oceanpop"] #tab-biweekly .fh-spending-bu
 }
 </style>
 
-</body>
+
+<style id="fh-v337-fixed-bill-earmark-layout-isolation">
+#tab-biweekly #zbb-bills-list .fh-fixed-bill-link{display:inline-flex!important;align-items:center!important;justify-content:center!important;flex:0 0 20px!important;width:20px!important;height:20px!important;min-width:20px!important;min-height:20px!important;padding:0!important;border:1px solid var(--fh-planner-border,rgba(148,163,184,.35))!important;border-radius:50%!important;background:var(--fh-planner-panel,transparent)!important;color:var(--fh-accent,var(--fh-planner-text,#64748b))!important;text-decoration:none!important;white-space:nowrap!important;font-size:10px!important;line-height:1!important}
+#tab-biweekly #zbb-bills-list .fh-fixed-bill-link:hover{border-color:var(--fh-accent,#19d5c8)!important;color:var(--fh-accent,#19d5c8)!important}
+#tab-biweekly #zbb-bills-list .fh-fixed-bill-link i{font-size:10px!important;line-height:1!important}
+</style>
+
+
+<style id="fh-v337-fixed-bill-earmark-layout-isolation">
+/* The Fixed Bills list has legacy direct-child grid rules. The earmark is a
+   full-width informational panel, not a bill row; isolate it from those rules. */
+#tab-biweekly .fh-bills-fixed-card #zbb-bills-list > .fh-fixed-bill-earmark{
+  display:block!important;grid-column:1/-1!important;grid-row:auto!important;
+  width:100%!important;min-width:0!important;max-width:100%!important;
+  min-height:0!important;height:auto!important;margin:12px 0 2px!important;
+  padding:10px 12px!important;box-sizing:border-box!important;
+  background:var(--fh-planner-panel,rgba(148,163,184,.08))!important;
+  border:1px solid var(--fh-planner-border,rgba(148,163,184,.25))!important;
+  border-radius:12px!important;color:var(--fh-planner-text,inherit)!important;
+  text-align:left!important;
+}
+#tab-biweekly .fh-bills-fixed-card #zbb-bills-list > .fh-fixed-bill-earmark > .fh-fixed-bill-earmark-heading{
+  display:block!important;width:100%!important;min-width:0!important;
+  margin:0 0 7px!important;padding:0!important;white-space:normal!important;
+  overflow:visible!important;word-break:normal!important;overflow-wrap:anywhere!important;
+  font-size:11px!important;line-height:1.4!important;font-weight:750!important;
+}
+#tab-biweekly .fh-bills-fixed-card #zbb-bills-list > .fh-fixed-bill-earmark > .fh-fixed-bill-earmark-lines{
+  display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:5px!important;
+  width:100%!important;min-width:0!important;
+}
+#tab-biweekly .fh-bills-fixed-card #zbb-bills-list > .fh-fixed-bill-earmark .fh-fixed-bill-earmark-lines > div{
+  display:flex!important;flex-direction:row!important;align-items:flex-start!important;
+  justify-content:space-between!important;gap:8px!important;width:100%!important;
+  min-width:0!important;white-space:normal!important;word-break:normal!important;
+}
+#tab-biweekly .fh-bills-fixed-card #zbb-bills-list > .fh-fixed-bill-earmark > .fh-fixed-bill-earmark-total{
+  display:flex!important;flex-direction:row!important;align-items:center!important;
+  justify-content:space-between!important;gap:8px!important;width:100%!important;
+  min-width:0!important;margin-top:8px!important;padding-top:8px!important;
+  border-top:1px solid var(--fh-planner-border,rgba(148,163,184,.25))!important;
+}
+#tab-biweekly .fh-bills-fixed-card #zbb-bills-list > .fh-fixed-bill-earmark > p{
+  display:block!important;width:100%!important;min-width:0!important;margin:6px 0 0!important;
+  white-space:normal!important;overflow-wrap:normal!important;word-break:normal!important;
+  color:var(--fh-planner-muted,#94a3b8)!important;font-size:10px!important;line-height:1.4!important;
+}
+</style>
+
+
+<script id="fh-v342-budget-item-layout-script">
+(()=>{
+ function setup(){
+  const form=document.getElementById('zbb-item-form');if(!form||form.dataset.fhV342)return;
+  const name=form.querySelector('#zbb-item-name')?.parentElement,monthly=form.querySelector('#zbb-item-monthly-wrap'),split=form.querySelector('#zbb-item-split-wrap'),opts=form.querySelector('#zbb-sinking-fund-opts');
+  const start=opts?.querySelector('#zbb-start-bal')?.parentElement,target=opts?.querySelector('#zbb-target-bal')?.parentElement,date=opts?.querySelector('#zbb-target-date')?.parentElement;
+  if(!name||!monthly||!split||!start||!target||!date)return;
+  const top=document.createElement('div');top.className='fh-v342-row';top.append(name,monthly);
+  const middle=document.createElement('div');middle.className='fh-v342-row';middle.append(split,start);
+  const bottom=document.createElement('div');bottom.className='fh-v342-row';bottom.append(date,target);
+  // append() above already moves these existing nodes into their new rows. Do not remove them afterward.
+  const info=document.createElement('span');info.className='fh-v342-info';info.innerHTML='<button type="button" aria-label="Variable expense funding information" aria-expanded="false" title="Variable expense funding information"><i class="fa-solid fa-circle-info"></i></button><span data-copy>For variable expenses, this controls the monthly funding target across Paycheques 1, 2 and optionally 3.</span>';
+  const infoButton=info.querySelector('button');infoButton.addEventListener('click',()=>{const open=info.classList.toggle('open');infoButton.setAttribute('aria-expanded',String(open));});
+  const splitLabel=split.querySelector('label');
+  Array.from(split.children).forEach(child=>{
+    if(child!==splitLabel && /For variable expenses, this controls the monthly funding target/i.test(child.textContent||'')) child.remove();
+  });
+  if(splitLabel){splitLabel.insertAdjacentElement('afterend',info);}
+  form.insertBefore(top,form.firstChild);form.insertBefore(middle,top.nextSibling);form.insertBefore(bottom,opts);opts.classList.remove('hidden');opts.style.display='contents';form.dataset.fhV342='1';
+  const modal=document.getElementById('zbb-item-modal');
+  const update=()=>{const savings=document.getElementById('zbb-item-type')?.value==='savings';start.classList.toggle('hidden',!savings);bottom.classList.toggle('hidden',!savings);};
+  new MutationObserver(()=>{if(!modal.classList.contains('hidden'))requestAnimationFrame(update);}).observe(modal,{attributes:true,attributeFilter:['class']});
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup,{once:true});else setup();
+})();
+</script>
+<style id="fh-release1-monthly-review-visibility">
+#tab-biweekly details[data-planner-section="monthly-overview"],
+#tab-biweekly .fh-planner-pair-reporting,
+#tab-biweekly #zbb-budget-ledger-reconciliation-panel { display:block!important; visibility:visible!important; }
+#tab-biweekly details[data-planner-section="monthly-overview"] > summary { display:flex!important; }
+</style>
+
+<style id="fh-spending-pool-guided-height-20261126">
+/* The Spending Pool defines the dashboard row height. Long bucket and
+   transaction lists scroll inside their cards instead of stretching the row. */
+@media (min-width:1251px){
+  #tab-biweekly .fh-spending-layout{
+    align-items:start!important;
+    grid-auto-rows:max-content!important;
+  }
+  #tab-biweekly .fh-spending-layout>.fh-spending-pool-card{
+    align-self:start!important;height:auto!important;min-height:0!important;
+  }
+  #tab-biweekly .fh-spending-layout>.fh-spending-buckets-card,
+  #tab-biweekly .fh-spending-layout>.fh-spending-transactions-card{
+    display:flex!important;flex-direction:column!important;
+    align-self:start!important;height:var(--fh-spending-pool-height,auto)!important;
+    min-height:0!important;max-height:var(--fh-spending-pool-height,none)!important;
+    overflow:hidden!important;box-sizing:border-box!important;
+  }
+  #tab-biweekly .fh-spending-buckets-card>.fh-table-scroll{
+    flex:1 1 auto!important;min-height:0!important;max-height:none!important;
+    overflow-x:auto!important;overflow-y:auto!important;overscroll-behavior:contain;
+    scrollbar-gutter:stable;
+  }
+  #tab-biweekly .fh-spending-transactions-card>#fh-spending-transaction-list{
+    flex:1 1 auto!important;min-height:0!important;max-height:none!important;
+    overflow-x:auto!important;overflow-y:auto!important;overscroll-behavior:contain;
+    scrollbar-gutter:stable;
+  }
+}
+@media(max-width:1250px){
+  #tab-biweekly .fh-spending-layout>.fh-spending-buckets-card,
+  #tab-biweekly .fh-spending-layout>.fh-spending-transactions-card{
+    height:auto!important;max-height:none!important;
+  }
+}
+</style>
+<script id="fh-spending-pool-height-sync-20261126">
+(function(){
+  const tab=document.getElementById('tab-biweekly');
+  if(!tab || tab.dataset.fhPoolHeightSync==='1') return;
+  tab.dataset.fhPoolHeightSync='1';
+  let frame=0, observer=null, poolObserver=null;
+  function sync(){
+    if(frame) cancelAnimationFrame(frame);
+    frame=requestAnimationFrame(()=>{
+      frame=0;
+      const grid=tab.querySelector('.fh-spending-layout');
+      const pool=grid?.querySelector('.fh-spending-pool-card');
+      if(!grid||!pool) return;
+      if(window.matchMedia('(min-width:1251px)').matches){
+        const h=Math.ceil(pool.getBoundingClientRect().height);
+        if(h>0) grid.style.setProperty('--fh-spending-pool-height',h+'px');
+      }else{
+        grid.style.removeProperty('--fh-spending-pool-height');
+      }
+    });
+  }
+  function attach(){
+    const pool=tab.querySelector('.fh-spending-layout .fh-spending-pool-card');
+    if(pool && window.ResizeObserver){
+      if(poolObserver) poolObserver.disconnect();
+      poolObserver=new ResizeObserver(sync);
+      poolObserver.observe(pool);
+    }
+    sync();
+  }
+  if(window.MutationObserver){
+    observer=new MutationObserver(()=>{attach();});
+    observer.observe(tab,{childList:true,subtree:true});
+  }
+  window.addEventListener('resize',sync,{passive:true});
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',attach,{once:true});
+  else attach();
+  // Re-run after FinHub's planner refreshes the Spending dashboard.
+  window.__fhSyncSpendingPoolHeight=sync;
+})();
+</script>
+
+
+<style id="fh-spending-pool-natural-height-final-20261126">
+@media(min-width:1251px){
+  #tab-biweekly .fh-spending-layout{
+    display:grid!important;
+    grid-auto-rows:max-content!important;
+    align-items:start!important;
+  }
+  #tab-biweekly .fh-spending-layout>.fh-spending-pool-card{
+    height:max-content!important;
+    min-height:0!important;
+    max-height:none!important;
+    align-self:start!important;
+    flex:none!important;
+  }
+  #tab-biweekly .fh-spending-layout>.fh-spending-buckets-card,
+  #tab-biweekly .fh-spending-layout>.fh-spending-transactions-card{
+    height:var(--fh-spending-pool-height)!important;
+    min-height:0!important;
+    max-height:var(--fh-spending-pool-height)!important;
+    align-self:start!important;
+    display:flex!important;
+    flex-direction:column!important;
+    overflow:hidden!important;
+  }
+  #tab-biweekly .fh-spending-buckets-card>.fh-table-scroll{
+    flex:1 1 0!important;height:0!important;min-height:0!important;
+    overflow-y:auto!important;overflow-x:auto!important;
+  }
+  #tab-biweekly .fh-spending-transactions-card>#fh-spending-transaction-list{
+    flex:1 1 0!important;height:0!important;min-height:0!important;
+    overflow-y:auto!important;overflow-x:auto!important;
+  }
+}
+</style>
+<script id="fh-spending-pool-natural-height-sync-20261126">
+(function(){
+  const tab=document.getElementById('tab-biweekly');
+  if(!tab || tab.dataset.fhPoolNaturalHeightSync==='1') return;
+  tab.dataset.fhPoolNaturalHeightSync='1';
+  let raf=0, observer=null, resizeObserver=null;
+  function sync(){
+    if(raf) cancelAnimationFrame(raf);
+    raf=requestAnimationFrame(()=>{
+      raf=0;
+      const grid=tab.querySelector('.fh-spending-layout');
+      const pool=grid?.querySelector('.fh-spending-pool-card');
+      if(!grid||!pool) return;
+      if(!window.matchMedia('(min-width:1251px)').matches){
+        grid.style.removeProperty('--fh-spending-pool-height');
+        return;
+      }
+      // Measure the pool after forcing its intrinsic height, never the height
+      // imposed by the other dashboard cards.
+      const previous={height:pool.style.height,alignSelf:pool.style.alignSelf};
+      pool.style.height='max-content';
+      pool.style.alignSelf='start';
+      const h=Math.ceil(pool.getBoundingClientRect().height);
+      pool.style.height=previous.height;
+      pool.style.alignSelf=previous.alignSelf;
+      if(h>0) grid.style.setProperty('--fh-spending-pool-height',h+'px');
+    });
+  }
+  function observePool(){
+    const pool=tab.querySelector('.fh-spending-layout .fh-spending-pool-card');
+    if(pool&&window.ResizeObserver){
+      if(resizeObserver) resizeObserver.disconnect();
+      resizeObserver=new ResizeObserver(sync);
+      resizeObserver.observe(pool);
+    }
+    sync();
+  }
+  if(window.MutationObserver){
+    observer=new MutationObserver(()=>observePool());
+    observer.observe(tab,{childList:true,subtree:true});
+  }
+  window.addEventListener('resize',sync,{passive:true});
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',observePool,{once:true});
+  else observePool();
+  window.__fhSyncSpendingPoolHeight=sync;
+})();
+</script>
+
+
+<style id="fh-spending-invisible-scrollbars-v376">
+/* Keep both spending lists scrollable while hiding scrollbar chrome. */
+#tab-biweekly .fh-spending-buckets-card>.fh-table-scroll,
+#tab-biweekly .fh-spending-transactions-card>#fh-spending-transaction-list {
+  scrollbar-width: none !important;       /* Firefox */
+  -ms-overflow-style: none !important;    /* legacy Edge/IE */
+}
+#tab-biweekly .fh-spending-buckets-card>.fh-table-scroll::-webkit-scrollbar,
+#tab-biweekly .fh-spending-transactions-card>#fh-spending-transaction-list::-webkit-scrollbar {
+  display: none !important;               /* Chrome, Safari, Chromium Edge */
+  width: 0 !important;
+  height: 0 !important;
+}
+</style>
+\n
+<style id="fh-compact-monthly-review-20261126">
+#zbb-budget-ledger-reconciliation-panel .fh-monthly-subpanel-body{gap:.5rem!important}
+#zbb-budget-ledger-reconciliation-panel .fh-monthly-findings{margin:0;padding:0;list-style:none}
+#zbb-budget-ledger-reconciliation-panel .fh-monthly-help>summary{font-size:11px;font-weight:600;cursor:pointer;padding:.35rem 0}
+#zbb-budget-ledger-reconciliation-panel .fh-monthly-help>p{font-size:10px;line-height:1.45;color:var(--fh-ui-muted);padding:.35rem 0}
+#zbb-budget-ledger-reconciliation-panel .fh-monthly-subpanel-summary{padding:.55rem .75rem}
+</style>
+
+<script id="fh-category-modal-submit-close-v379">
+(function(){
+  if(window.__fhCategoryModalSubmitCloseV379) return;
+  window.__fhCategoryModalSubmitCloseV379=true;
+
+  // Attach directly to the form rather than wrapping saveCategory. The form's
+  // inline handler may be resolved independently of window.saveCategory.
+  // Capture the valid submit and close after the synchronous save/refresh code
+  // has had a chance to run.
+  function attach(){
+    const form=document.getElementById('category-form');
+    const modal=document.getElementById('category-modal');
+    if(!form || !modal || form.dataset.fhCloseOnSubmit==='true') return;
+    form.dataset.fhCloseOnSubmit='true';
+    form.addEventListener('submit',function(){
+      window.setTimeout(function(){
+        modal.classList.add('hidden');
+        modal.setAttribute('aria-hidden','true');
+      },0);
+    },true);
+  }
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',attach,{once:true});
+  } else {
+    attach();
+  }
+})();
+</script>
+
+\n<style id="fh-fixed-bills-hide-zero-empty-state-20261127">\n#tab-biweekly .fh-bills-fixed-card .fh-fixed-bills-empty{margin:8px 2px;padding:14px 10px;border:1px dashed var(--fh-planner-border,rgba(148,163,184,.35));border-radius:10px;color:var(--fh-planner-muted,#94a3b8);font-size:.82rem;text-align:center}\n</style>\n</body>
 
 <style id="finhub-v241-unified-bills-funding-layout">
 /* Unified Bills Funding: compact, consistent fixed/variable subsections. */
@@ -43766,5 +44891,94 @@ html.dark body[data-finhub-theme] #tab-biweekly .fh-savings-allocation-card-head
   line-height:1.25!important;
   font-weight:700!important;
   letter-spacing:normal!important;
+}
+</style>
+
+<style id="fh-v351-cancel-button-final-theme-colours">
+/* Final override: secondary actions use the active theme surfaces in BOTH idle and hover states. */
+html body #zbb-item-modal .fh-zbb-modal-actions > button.fh-zbb-modal-cancel-button,
+html body #zbb-item-modal .fh-zbb-modal-actions > button.fh-zbb-modal-cancel-button:visited,
+html body #zbb-item-modal .fh-zbb-modal-actions > button.fh-zbb-modal-cancel-button:active {
+  background: var(--fh-ui-card, var(--fh-surface-raised, var(--fh-card, transparent))) !important;
+  background-color: var(--fh-ui-card, var(--fh-surface-raised, var(--fh-card, transparent))) !important;
+  color: var(--fh-ui-ink, var(--fh-surface-text, inherit)) !important;
+  border: 1px solid var(--fh-ui-border, var(--fh-surface-border, currentColor)) !important;
+  box-shadow: none !important;
+}
+html body #zbb-item-modal .fh-zbb-modal-actions > button.fh-zbb-modal-cancel-button:hover {
+  background: var(--fh-surface-hover, var(--fh-ui-card, var(--fh-surface-raised, transparent))) !important;
+  background-color: var(--fh-surface-hover, var(--fh-ui-card, var(--fh-surface-raised, transparent))) !important;
+  color: var(--fh-ui-ink, var(--fh-surface-text, inherit)) !important;
+  border-color: var(--fh-accent, var(--fh-primary, var(--fh-ui-border))) !important;
+  box-shadow: none !important;
+}
+html body #zbb-item-modal .fh-zbb-modal-actions > button.fh-zbb-modal-cancel-button:focus-visible {
+  outline: 2px solid var(--fh-accent, var(--fh-primary, var(--fh-ui-border))) !important;
+  outline-offset: 2px !important;
+}
+</style>
+
+
+
+<style id="fh-spending-pool-height-final-cascade-v375">
+/* Final cascade authority: pool owns intrinsic height; sibling lists scroll. */
+@media (min-width:1251px){
+  #tab-biweekly .fh-spending-layout{
+    display:grid!important;
+    align-items:start!important;
+    grid-auto-rows:max-content!important;
+  }
+  #tab-biweekly .fh-spending-layout>.fh-spending-pool-card{
+    height:max-content!important;
+    min-height:0!important;
+    max-height:none!important;
+    align-self:start!important;
+  }
+  #tab-biweekly .fh-spending-layout>.fh-spending-buckets-card,
+  #tab-biweekly .fh-spending-layout>.fh-spending-transactions-card{
+    display:flex!important;
+    flex-direction:column!important;
+    align-self:start!important;
+    height:var(--fh-spending-pool-height)!important;
+    min-height:0!important;
+    max-height:var(--fh-spending-pool-height)!important;
+    overflow:hidden!important;
+    box-sizing:border-box!important;
+  }
+  #tab-biweekly .fh-spending-buckets-card>.fh-table-scroll{
+    flex:1 1 0!important;
+    height:0!important;
+    min-height:0!important;
+    max-height:none!important;
+    overflow-y:auto!important;
+    overflow-x:auto!important;
+    overscroll-behavior:contain!important;
+    scrollbar-gutter:stable;
+  }
+  #tab-biweekly .fh-spending-transactions-card>#fh-spending-transaction-list{
+    flex:1 1 0!important;
+    height:0!important;
+    min-height:0!important;
+    max-height:none!important;
+    overflow-y:auto!important;
+    overflow-x:auto!important;
+    overscroll-behavior:contain!important;
+    scrollbar-gutter:stable;
+  }
+}
+@media (max-width:1250px){
+  #tab-biweekly .fh-spending-layout>.fh-spending-pool-card,
+  #tab-biweekly .fh-spending-layout>.fh-spending-buckets-card,
+  #tab-biweekly .fh-spending-layout>.fh-spending-transactions-card{
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+  }
+  #tab-biweekly .fh-spending-buckets-card>.fh-table-scroll,
+  #tab-biweekly .fh-spending-transactions-card>#fh-spending-transaction-list{
+    height:auto!important;
+    max-height:60vh!important;
+    overflow-y:auto!important;
+  }
 }
 </style>
