@@ -6,11 +6,11 @@
 <html class="dark" lang="en-US">
 <head>
 <!-- FinHub v235: Calendar-Linked Debt Payment Conversion Fix -->
-<meta name="finhub-version" content="v369">
+<meta name="finhub-version" content="v392">
 <!-- v231: exception register render resilience; based on v230. -->
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>FinHub Central - Financial Command Center · v369</title>
+<title>FinHub Central - Financial Command Center · v399</title>
 <meta content="stage3b-buttons-actions-number-typography-reporting-engine-v1" name="finhub-build-stage"/><meta content="v371-unbudgeted-activity-section-fix" name="finhub-revision"/>
 <meta content="2" name="finhub-schema-version"/>
 <link href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23132A44'/%3E%3Cpath d='M18 45V19h28v7H26v5h17v7H26v7z' fill='%2300FBEA'/%3E%3Ccircle cx='47' cy='16' r='7' fill='%23FF2687'/%3E%3Ccircle cx='15' cy='49' r='5' fill='%23D8FF76'/%3E%3C/svg%3E" rel="icon" type="image/svg+xml"/>
@@ -5333,6 +5333,162 @@ html.dark #zbb-item-modal .fh-zbb-modal-cancel-button{color:#f1f7fb!important;ba
 #zbb-item-form #zbb-item-split-wrap>div:first-child>.fh-v342-info{margin:0!important;vertical-align:middle!important}
 #zbb-item-form #zbb-item-split-wrap>div:first-child>select{display:block!important;width:100%!important;max-width:100%!important}
 </style>
+<style id="fh-v391-savings-disclosure-toggle">
+#tab-biweekly .fh-savings-allocation-breakdown > summary{
+  cursor:pointer!important;
+  user-select:none;
+  pointer-events:auto!important;
+}
+#tab-biweekly .fh-savings-allocation-breakdown > summary > i{
+  transition:transform .16s ease;
+}
+#tab-biweekly .fh-savings-allocation-breakdown[open] > summary > i{
+  transform:rotate(180deg);
+}
+#tab-biweekly .fh-savings-allocation-breakdown:not([open]) .fh-savings-allocation-breakdown-body{
+  display:none!important;
+}
+</style>
+
+<style id="finhub-v394-monthly-review-location">
+/* Monthly budget rollup belongs with the month-end review workspace, not the paycheque planner. */
+#tab-biweekly details[data-planner-section="monthly-overview"]{display:none!important}
+#tab-financial-checkin details[data-planner-section="monthly-overview"]{display:block!important}
+#tab-financial-checkin details[data-planner-section="monthly-overview"]{margin-top:1rem}
+</style>
+<style id="finhub-v395-financial-review-section-cards">
+/* Financial Review: give Monthly Budget and Budget vs Actual the same
+   independent, card-like disclosure treatment as Monthly Review. */
+#tab-financial-checkin details[data-planner-section="monthly-overview"]{
+  display:block!important;
+  overflow:hidden;
+  border:1px solid var(--fh-border,rgba(148,163,184,.24));
+  border-radius:1rem;
+  background:var(--fh-surface,var(--bg-card,#fff));
+  margin-top:1rem;
+}
+#tab-financial-checkin details[data-planner-section="monthly-overview"] > summary{
+  display:flex!important;
+  align-items:center;
+  justify-content:space-between;
+  gap:.75rem;
+  min-height:3.6rem;
+  padding:1rem 1.1rem;
+  background:var(--fh-raised,rgba(148,163,184,.08));
+  cursor:pointer;
+  list-style:none;
+}
+#tab-financial-checkin details[data-planner-section="monthly-overview"] > summary::-webkit-details-marker{display:none}
+#tab-financial-checkin details[data-planner-section="monthly-overview"] > summary:after{
+  content:"";
+  width:.55rem;height:.55rem;flex:0 0 auto;
+  border-right:2px solid var(--fh-primary,var(--fh-ink));
+  border-bottom:2px solid var(--fh-primary,var(--fh-ink));
+  transform:rotate(45deg);transition:transform .15s ease;
+  margin-right:.2rem;
+}
+#tab-financial-checkin details[data-planner-section="monthly-overview"][open] > summary:after{transform:rotate(225deg)}
+#tab-financial-checkin details[data-planner-section="monthly-overview"] > div{
+  padding:1rem 1.1rem 1.1rem;
+}
+#tab-financial-checkin .fh-monthly-subpanel{
+  display:block;
+  overflow:hidden;
+  border:1px solid var(--fh-border,rgba(148,163,184,.24));
+  border-radius:.9rem;
+  background:var(--fh-card,var(--fh-surface,transparent));
+  margin-top:.75rem;
+}
+#tab-financial-checkin .fh-monthly-subpanel > .fh-monthly-subpanel-summary{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:.75rem;
+  min-height:3.25rem;
+  padding:.85rem 1rem;
+  background:var(--fh-raised,rgba(148,163,184,.07));
+  cursor:pointer;
+  list-style:none;
+}
+#tab-financial-checkin .fh-monthly-subpanel > .fh-monthly-subpanel-summary::-webkit-details-marker{display:none}
+#tab-financial-checkin .fh-monthly-subpanel > .fh-monthly-subpanel-summary:after{
+  content:"";
+  width:.5rem;height:.5rem;flex:0 0 auto;
+  border-right:2px solid var(--fh-primary,var(--fh-ink));
+  border-bottom:2px solid var(--fh-primary,var(--fh-ink));
+  transform:rotate(45deg);transition:transform .15s ease;
+}
+#tab-financial-checkin .fh-monthly-subpanel[open] > .fh-monthly-subpanel-summary:after{transform:rotate(225deg)}
+#tab-financial-checkin .fh-monthly-subpanel-body{padding:.9rem 1rem 1rem}
+</style>
+<style id="finhub-v397-budget-vs-actual-peer-card">
+#tab-financial-checkin #financial-budget-vs-actual-section{
+  display:block!important;overflow:hidden;margin-top:1rem;
+  border:1px solid var(--fh-border,rgba(148,163,184,.24));
+  border-radius:1rem;background:var(--fh-surface,var(--bg-card,#fff));
+}
+#tab-financial-checkin #financial-budget-vs-actual-section>.fh-disclosure-trigger{
+  display:flex;align-items:center;justify-content:space-between;gap:.75rem;
+  min-height:3.6rem;padding:1rem 1.1rem;
+  background:var(--fh-raised,rgba(148,163,184,.08));cursor:pointer;
+}
+#tab-financial-checkin #financial-budget-vs-actual-section>.fh-disclosure-panel{padding:1rem 1.1rem}
+#tab-financial-checkin #zbb-budget-ledger-reconciliation-panel>.fh-monthly-subpanel{
+  margin:0;border:0;border-radius:0;background:transparent;
+}
+#tab-financial-checkin #zbb-budget-ledger-reconciliation-panel>.fh-monthly-subpanel>.fh-monthly-subpanel-summary{
+  display:none!important;
+}
+#tab-financial-checkin #zbb-budget-ledger-reconciliation-panel>.fh-monthly-subpanel>.fh-monthly-subpanel-body{
+  display:block!important;padding:0;
+}
+</style><style id="finhub-v398-financial-review-header-standard">
+#tab-financial-checkin #financial-close-period-blocks details.fh-disclosure > summary.fh-disclosure-trigger,
+#tab-financial-checkin #financial-close-period-blocks details[data-planner-section="monthly-overview"] > summary.fh-disclosure-trigger,
+#tab-financial-checkin #financial-budget-vs-actual-section > summary.fh-disclosure-trigger,
+#tab-financial-checkin #data-health-details > summary.fh-disclosure-trigger{
+  display:flex!important;align-items:center!important;justify-content:space-between!important;
+  gap:1rem!important;min-height:4.25rem!important;padding:1rem 1.15rem!important;
+  text-align:left!important;
+}
+#tab-financial-checkin #financial-close-period-blocks details.fh-disclosure > summary.fh-disclosure-trigger > span:first-child,
+#tab-financial-checkin #financial-close-period-blocks details[data-planner-section="monthly-overview"] > summary.fh-disclosure-trigger > span:first-child,
+#tab-financial-checkin #financial-budget-vs-actual-section > summary.fh-disclosure-trigger > span:first-child,
+#tab-financial-checkin #data-health-details > summary.fh-disclosure-trigger > span:first-child{
+  display:block;min-width:0;flex:1 1 auto;
+}
+#tab-financial-checkin #financial-close-period-blocks details.fh-disclosure > summary strong,
+#tab-financial-checkin #financial-close-period-blocks details[data-planner-section="monthly-overview"] > summary strong,
+#tab-financial-checkin #financial-budget-vs-actual-section > summary strong,
+#tab-financial-checkin #data-health-details > summary strong{
+  display:block;font-size:1rem;line-height:1.35;font-weight:750;color:var(--fh-ink);
+}
+#tab-financial-checkin #financial-close-period-blocks details.fh-disclosure > summary span span,
+#tab-financial-checkin #financial-close-period-blocks details[data-planner-section="monthly-overview"] > summary span span,
+#tab-financial-checkin #financial-budget-vs-actual-section > summary span span,
+#tab-financial-checkin #data-health-details > summary span span{
+  display:block;margin-top:.25rem;font-size:.78rem;line-height:1.4;font-weight:400;color:var(--fh-muted,var(--text-muted,#a1a1aa));
+}
+</style>
+<style id="finhub-v399-financial-review-uniform-section-spacing">
+/* Keep the vertical rhythm consistent between all four Financial Review sections. */
+#tab-financial-checkin #financial-close-period-blocks{
+  row-gap:1.5rem!important;
+}
+#tab-financial-checkin #financial-close-period-blocks > .space-y-3{
+  display:flex!important;flex-direction:column!important;gap:1.5rem!important;
+}
+#tab-financial-checkin #financial-close-period-blocks > .space-y-3 > details,
+#tab-financial-checkin #financial-close-period-blocks > details{
+  margin-top:0!important;margin-bottom:0!important;
+}
+#tab-financial-checkin #financial-close-data-health{
+  margin-top:.5rem!important;
+}
+#tab-financial-checkin #financial-close-data-health > details{
+  margin-top:0!important;
+}
+</style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 min-h-screen flex flex-col md:flex-row transition-colors duration-200 relative" id="app-body">
 <!-- UNDO TOAST NOTIFICATION -->
@@ -5571,9 +5727,25 @@ html.dark #zbb-item-modal .fh-zbb-modal-cancel-button{color:#f1f7fb!important;ba
 <div class="space-y-4" id="checkin-panel-monthly">
 <div class="space-y-4" id="financial-checkin-workspace">
 <div class="grid grid-cols-1 gap-4" id="financial-close-period-blocks">
-<div class="space-y-3"><details class="fh-disclosure" data-global-collapsible="true"><summary class="fh-disclosure-trigger"><span>Monthly Review</span><span class="global-collapsible-description">Review month-end activity and save a monthly snapshot.</span></summary><div class="fh-disclosure-panel p-4 space-y-3"><div class="flex flex-wrap justify-between gap-2"><div><p class="text-xs text-gray-500">Work through the checklist and save a snapshot. Closing does not lock transactions.</p></div><div class="flex gap-2"><input class="border rounded-lg px-2 py-1 text-xs" id="monthly-close-period" onchange="renderMonthlyClose()" type="month"/><button class="border rounded-lg px-3 py-1 text-xs" onclick="refreshMonthlyCloseReview()" type="button">Refresh review</button></div></div><div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs" id="monthly-close-summary"></div><div class="rounded-xl bg-gray-50 dark:bg-gray-950 p-3 space-y-2"><div class="flex items-center justify-between text-sm font-semibold"><span id="monthly-close-progress-label">0 of 10 complete</span><span id="monthly-close-progress-percent">0%</span></div><div aria-label="Monthly review completion" aria-valuemax="100" aria-valuemin="0" aria-valuenow="0" class="h-2.5 rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden" role="progressbar"><div class="h-full rounded-full fh-theme-progress" id="monthly-close-progress-bar" style="width:0%"></div></div></div><div class="space-y-2 text-xs" id="monthly-close-checklist"></div><div class="flex flex-wrap gap-2"><button class="px-3 py-2 rounded-lg text-xs fh-theme-primary-button" onclick="completeMonthlyClose()">Save monthly close snapshot</button><button class="hidden px-3 py-2 border rounded-lg text-xs" id="monthly-close-reopen" onclick="reopenMonthlyClose()">Reopen month</button></div><div class="text-xs text-gray-500" id="monthly-close-history"></div></div></details></div>
+<div class="space-y-3"><details class="fh-disclosure" data-global-collapsible="true"><summary class="fh-disclosure-trigger"><span><strong class="text-base">Monthly Review</strong><span class="block text-xs text-gray-500 mt-1">Review month-end activity and save a monthly snapshot.</span></span></summary><div class="fh-disclosure-panel p-4 space-y-3"><div class="flex flex-wrap justify-between gap-2"><div><p class="text-xs text-gray-500">Work through the checklist and save a snapshot. Closing does not lock transactions.</p></div><div class="flex gap-2"><input class="border rounded-lg px-2 py-1 text-xs" id="monthly-close-period" onchange="renderMonthlyClose()" type="month"/><button class="border rounded-lg px-3 py-1 text-xs" onclick="refreshMonthlyCloseReview()" type="button">Refresh review</button></div></div><div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs" id="monthly-close-summary"></div><div class="rounded-xl bg-gray-50 dark:bg-gray-950 p-3 space-y-2"><div class="flex items-center justify-between text-sm font-semibold"><span id="monthly-close-progress-label">0 of 10 complete</span><span id="monthly-close-progress-percent">0%</span></div><div aria-label="Monthly review completion" aria-valuemax="100" aria-valuemin="0" aria-valuenow="0" class="h-2.5 rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden" role="progressbar"><div class="h-full rounded-full fh-theme-progress" id="monthly-close-progress-bar" style="width:0%"></div></div></div><div class="space-y-2 text-xs" id="monthly-close-checklist"></div><div class="flex flex-wrap gap-2"><button class="px-3 py-2 rounded-lg text-xs fh-theme-primary-button" onclick="completeMonthlyClose()">Save monthly close snapshot</button><button class="hidden px-3 py-2 border rounded-lg text-xs" id="monthly-close-reopen" onclick="reopenMonthlyClose()">Reopen month</button></div><div class="text-xs text-gray-500" id="monthly-close-history"></div></div></details>
+<details class="fh-planner-section" data-planner-section="monthly-overview" open="">
+<summary class="fh-disclosure-trigger"><span><strong class="text-base">Monthly Budget &amp; Financial Review</strong><span class="block text-xs text-gray-500 mt-1">Review monthly budget totals, funding integrity and ledger reconciliation.</span></span></summary>
+<div class="px-5 pb-5 space-y-3">
+<div id="zbb-monthly-rollup"></div>
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-3" id="zbb-integrity-review-group">
+<div class="rounded-xl border border-gray-200 dark:border-gray-800 bg-white/40 dark:bg-gray-900/30 p-3 min-w-0" id="zbb-budget-integrity-panel"></div>
+<div class="rounded-xl border border-gray-200 dark:border-gray-800 bg-white/40 dark:bg-gray-900/30 p-3 min-w-0" id="zbb-budget-funding-integrity-panel"></div>
+</div>
+
+</div>
+</details>
+<details class="fh-disclosure fh-financial-budget-actual-card" id="financial-budget-vs-actual-section" open>
+<summary class="fh-disclosure-trigger"><span><strong class="text-base">Budget vs. Actual</strong><span class="block text-xs text-gray-500 mt-1">Compare planned amounts with recorded activity and review unbudgeted transactions.</span></span></summary>
+<div class="fh-disclosure-panel p-4"><div id="zbb-budget-ledger-reconciliation-panel"></div></div>
+</details>
+</div>
 </div></div>
-<div class="fh-reorderable-section rounded-xl" id="financial-close-data-health"><h4 class="font-semibold text-sm mb-2">Data Health &amp; Integrity</h4><details class="fh-disclosure" data-fh-drag-ready="false" id="data-health-details" open=""><summary class="fh-disclosure-trigger"><span><strong class="text-sm">Data Health &amp; Integrity</strong><span class="block text-xs text-gray-500 mt-1">Read-only checks for common data quality issues</span></span></summary><div class="fh-disclosure-panel p-4"><div class="flex items-center justify-between gap-2 mb-3"><p class="text-xs text-gray-500">These checks flag records for review; they do not change your data.</p><button class="border rounded-lg px-3 py-1.5 text-xs" onclick="renderDataHealth()" type="button">Run checks</button></div><div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs" id="data-health-results"></div></div></details></div>
+<div class="fh-reorderable-section rounded-xl" id="financial-close-data-health"><details class="fh-disclosure" data-fh-drag-ready="false" id="data-health-details" open=""><summary class="fh-disclosure-trigger"><span><strong class="text-base">Data Health &amp; Integrity</strong><span class="block text-xs text-gray-500 mt-1">Run read-only checks for common data quality issues.</span></span></summary><div class="fh-disclosure-panel p-4"><div class="flex items-center justify-between gap-2 mb-3"><p class="text-xs text-gray-500">These checks flag records for review; they do not change your data.</p><button class="border rounded-lg px-3 py-1.5 text-xs" onclick="renderDataHealth()" type="button">Run checks</button></div><div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs" id="data-health-results"></div></div></details></div>
 
 </div>
 <div class="hidden space-y-4" id="checkin-panel-exceptions"><div class="fh-reorderable-section rounded-xl" id="financial-review-exception-register"><details class="fh-disclosure" id="financial-review-exceptions-details" open=""><summary class="fh-disclosure-trigger"><span><strong class="text-sm">Exception Register</strong><span class="block text-xs text-gray-500 mt-1">Track issues identified across FinHub until a later check confirms they are resolved.</span></span><span class="text-xs font-semibold text-gray-500" id="financial-review-exception-count">0 open · 0 resolved</span></summary><div class="fh-disclosure-panel p-4 space-y-3"><div class="flex flex-wrap items-center justify-between gap-2"><p class="text-xs text-gray-500">Reviewing an exception records a reason; it does not clear the issue. Exceptions resolve only when a subsequent check no longer finds them.</p><div class="flex gap-2"><select id="financial-review-exception-filter" class="fh-standard-control rounded-lg border px-2 py-1 text-xs" onchange="renderFinancialReviewExceptionRegister()"><option value="open" selected>Open issues</option><option value="reviewed">Under review</option><option value="resolved">Resolved history</option><option value="all">All statuses</option></select><select id="financial-review-exception-severity" class="fh-standard-control rounded-lg border px-2 py-1 text-xs" onchange="renderFinancialReviewExceptionRegister()"><option value="all">All levels</option><option value="error">Errors</option><option value="warning">Warnings</option><option value="info">Info</option></select></div></div><div id="financial-review-exception-list" class="space-y-2"><p class="text-xs text-gray-500">Loading saved exceptions…</p></div><p class="text-[10px] text-gray-500">Exception history is retained locally and is append-only in this file, but is not tamper-proof.</p></div></details></div></div>
@@ -5789,17 +5961,7 @@ html.dark #zbb-item-modal .fh-zbb-modal-cancel-button{color:#f1f7fb!important;ba
 </div>
 </details>
 </div><div class="fh-planner-paired-sections fh-planner-pair-reporting">
-<details class="fh-planner-section" data-planner-section="monthly-overview" open="">
-<summary class="fh-planner-summary"><div><h3 class="text-md font-bold"><i class="fa-solid fa-chart-column mr-2 theme-text"></i>Monthly Budget &amp; Financial Review</h3><p class="text-xs text-gray-400 mt-0.5">Review the monthly budget rollup, funding integrity and ledger reconciliation. Day-to-day variable bucket actuals are shown above in the Paycheque Planner.</p></div></summary>
-<div class="px-5 pb-5 space-y-3">
-<div id="zbb-monthly-rollup"></div>
-<div class="grid grid-cols-1 xl:grid-cols-2 gap-3" id="zbb-integrity-review-group">
-<div class="rounded-xl border border-gray-200 dark:border-gray-800 bg-white/40 dark:bg-gray-900/30 p-3 min-w-0" id="zbb-budget-integrity-panel"></div>
-<div class="rounded-xl border border-gray-200 dark:border-gray-800 bg-white/40 dark:bg-gray-900/30 p-3 min-w-0" id="zbb-budget-funding-integrity-panel"></div>
-</div>
-<div id="zbb-budget-ledger-reconciliation-panel"></div>
-</div>
-</details></div></div></div>
+</div></div></div>
 </section>
 <!-- TAB 3: RECURRING BILL & INCOME CALENDAR -->
 <section class="tab-content hidden space-y-6" id="tab-calendar">
@@ -7116,7 +7278,7 @@ Bonus" rows="4"></textarea></div>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Date</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="dp-date" required="" lang="en-US" type="date"/></div>
 <input id="dp-payment-type" type="hidden" value="Other Debt Payment"/>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Total payment ($)</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="dp-amount" min="0.01" oninput="updateDebtPaymentSplit()" required="" step="0.01" type="number"/></div>
-<div><label class="block text-xs font-semibold text-gray-500 mb-1">Paid from</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="dp-funding-account" required=""></select></div>
+<div><label class="block text-xs font-semibold text-gray-500 mb-1">Paid from</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="dp-funding-account" required=""></select></div><label class="flex items-start gap-2 mt-2 text-xs text-gray-600 dark:text-gray-300"><input id="dp-funded-from-savings" type="checkbox" class="mt-0.5"/> <span>Funded from previously budgeted savings (show in Unbudgeted Amounts as previously funded)</span></label>
 <div><label class="block text-xs font-semibold text-gray-500 mb-1">Debt account</label><select class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="dp-debt-account" onchange="updateDebtPaymentSplit()" required=""></select></div>
 <div class="grid grid-cols-2 gap-3"><div><label class="block text-xs font-semibold text-gray-500 mb-1">Principal ($)</label><input class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="dp-principal" min="0" oninput="this.dataset.manual='1';updateDebtPaymentSplit()" required="" step="0.01" type="number"/></div><div><label class="block text-xs font-semibold text-gray-500 mb-1">Interest ($)</label><input class="w-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2 text-sm" id="dp-interest" readonly="" type="number"/></div></div>
 <p class="text-[10px] text-gray-400" id="dp-split-help">Principal + interest must equal the total payment. Only principal reduces the debt balance; the full payment leaves the funding account.</p>
@@ -11971,6 +12133,15 @@ ${acc.name}`);
     }
     function zbbCentsMoney(cents) { return Number(cents || 0) / 100; }
     function getZbbItemCycleCents(item, cycle) {
+      // Explicit one-paycheque exception. Stored on this month's planner item,
+      // so changing one cycle never rewrites prior months or the regular schedule.
+      if (item?.paychequeOverrides && typeof item.paychequeOverrides === 'object' && !Array.isArray(item.paychequeOverrides)) {
+        const period = String(state.selectedZbbPeriod || '2026-11');
+        const key = `${period}:P${Number(cycle)}`;
+        if (Object.prototype.hasOwnProperty.call(item.paychequeOverrides, key)) {
+          return zbbMoneyCents(Math.max(0, Number(item.paychequeOverrides[key]) || 0));
+        }
+      }
       // Linked weekly/biweekly Calendar income represents real deposits per
       // 14-day paycheque period, not a percentage of its annualized monthly average.
       // Keep the monthly average for reporting, but use the scheduled deposit
@@ -12166,13 +12337,25 @@ ${acc.name}`);
       }
       return Math.round(monthlyCents * raw / 100);
     }
+    function isMomLoanPlannerDebtItem(item, zbb = getActiveZbbTemplate()) {
+      const name = String(item?.name || '').trim().toLowerCase().replace(/\\s+/g, ' ');
+      if (!['mom loan', 'mum loan', 'mother loan'].includes(name)) return false;
+      // Only move the debt payment out of the paycheque planner when a matching
+      // debt-reserve contribution line exists. This preserves the old behavior
+      // if a user has not yet configured the replacement funding allocation.
+      return (zbb?.savings || []).some(s =>
+        getSavingsFundingClass(s) === 'debt_reserve' &&
+        ['mom loan', 'mum loan', 'mother loan'].includes(String(s?.name || '').trim().toLowerCase().replace(/\\s+/g, ' '))
+      );
+    }
+
     function calculateZbbCycleTotals(zbb, cycle, period) {
       const incomeCents = (zbb.incomes || []).reduce((sum, item) => sum + getZbbItemCycleCents(item, cycle), 0);
       const billsCents = (zbb.bills || []).reduce((sum, item) => sum + getZbbItemCycleCents(item, cycle), 0)
         + (zbb.variableBills || []).reduce((sum, item) => sum + getZbbItemCycleCents(item, cycle), 0);
       const variableState = getVariablePoolAllocationState(zbb, cycle, period);
       const variableCents = zbbMoneyCents(variableState.poolBudget);
-      const debtCents = (zbb.debts || []).reduce((sum, item) => sum + getZbbItemCycleCents(item, cycle), 0)
+      const debtCents = (zbb.debts || []).filter(item => !isMomLoanPlannerDebtItem(item, zbb)).reduce((sum, item) => sum + getZbbItemCycleCents(item, cycle), 0)
         + zbbMoneyCents(getExtraDebtContributionForPaycheque(cycle));
       const savingsCents = (zbb.savings || []).filter(item => getSavingsFundingClass(item) !== 'bill_reserve')
         .reduce((sum, item) => sum + getZbbItemCycleCents(item, cycle), 0);
@@ -12738,6 +12921,28 @@ ${acc.name}`);
       const components = getFinancialReportingComponents(txs).filter(c => { const tx=c.transaction||{}; const category=normalize(c.category||tx.category); const vendor=normalize(tx.vendor||tx.payee||''); const desc=normalize(tx.desc||tx.description||tx.bankDescription||''); return !(tx.id && householdSettlementBankTransactionIds.has(String(tx.id))) && !(c.section==='expense' && (tx.type==='Transfer' || category==='transfer' || !!tx.transferToAccountId || (category==='uncategorized' && (/^transfer/.test(vendor)||/^transfer/.test(desc)||/^cardload/.test(vendor)||/^loadfrom/.test(vendor))))); });
       const rows = [];
       const findings = [...householdSettlementReviewFindings];
+      // Debt payments funded from accumulated, previously budgeted savings are
+      // disclosed separately: they are not current-paycheque allocations, but
+      // remain visible as unbudgeted current-period activity with funding context.
+      (state.debtPayments || []).filter(payment => payment &&
+        payment.fundedFromPreviouslyBudgetedSavings === true &&
+        String(payment.date || '').slice(0,7) === period
+      ).forEach(payment => {
+        const debt = (state.accounts || []).find(account => String(account.id) === String(payment.accountId));
+        const amountCents = transactionAmountToCents(Math.abs(Number(payment.amount) || 0));
+        const linkedTx = (state.transactions || []).find(tx =>
+          String(tx.id) === String(payment.transactionId) ||
+          String(tx.debtPaymentId || '') === String(payment.id)
+        );
+        findings.push({
+          level:'info', kind:'unbudgeted-activity', coverageStatus:'Unbudgeted',
+          section:'debt', category:debt?.name || 'Debt payment',
+          subcategory:'Funded from previously budgeted savings',
+          amountCents, transactionCount:1, componentCount:1,
+          text:`Unbudgeted — Debt payment ${debt?.name || 'Debt'}: ${formatFinancial(amountCents/100)} paid from ${linkedTx?.accountId ? ((state.accounts||[]).find(a=>String(a.id)===String(linkedTx.accountId))?.name || 'the selected funding account') : 'the selected funding account'}. Funded from previously budgeted savings; not an additional current-paycheque allocation.`,
+          affectedTransactionIds:linkedTx?.id ? [String(linkedTx.id)] : []
+        });
+      });
       // Income linked to a scheduled Calendar occurrence can be validly matched
       // when the sole income budget line has no category on the ledger transaction.
       // Retain those transaction IDs so the later unbudgeted scan honours that match.
@@ -13268,7 +13473,7 @@ ${acc.name}`);
       }).join('');
       const findingsMarkup=`${findings}${savedDecisionCards}`;
       const summaries=`<div class="grid grid-cols-4 gap-1.5 text-[10px]"><div class="rounded-md bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 px-2 py-1.5"><strong class="block text-sm accounting-num ${errors?'text-rose-600 dark:text-rose-300':'fh-status-income'}">${errors}</strong><span class="text-gray-500">Mapping</span></div><div class="rounded-md bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 px-2 py-1.5"><strong class="block text-sm accounting-num ${amountDifferences?'text-amber-600 dark:text-amber-300':'fh-status-income'}">${amountDifferences}</strong><span class="text-gray-500">Differences</span></div><div class="rounded-md bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 px-2 py-1.5"><strong class="block text-sm accounting-num ${missingActivity?'text-sky-600 dark:text-sky-300':'fh-status-income'}">${missingActivity}</strong><span class="text-gray-500">Pending</span></div><div class="rounded-md bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 px-2 py-1.5"><strong class="block text-sm accounting-num">${otherNotes}</strong><span class="text-gray-500">Notes</span></div></div>`;
-      host.innerHTML=`<details class="fh-monthly-subpanel"><summary class="fh-monthly-subpanel-summary"><strong>Budget vs. actual</strong><span class="fh-monthly-summary-meta">${status}</span></summary><div class="fh-monthly-subpanel-body space-y-2"><div class="flex flex-wrap items-center justify-between gap-2"><span class="text-[10px] text-gray-500">${escapeHtml(period)}</span>${statusPill}</div>${summaries}<ul class="fh-monthly-findings space-y-1.5">${findingsMarkup||'<li class="text-xs fh-status-income">All clear — no exceptions.</li>'}</ul><details class="fh-monthly-help"><summary>Budget line detail (${result.rows.length})</summary><div class="overflow-x-auto mt-2"><table class="w-full text-xs"><thead><tr class="text-[10px] uppercase tracking-wide text-gray-400"><th class="px-2 py-1 text-left">Budget line</th><th class="px-2 py-1 text-right">Planned</th><th class="px-2 py-1 text-right">Actual</th><th class="px-2 py-1 text-right">Variance</th><th class="px-2 py-1 text-right">Status</th></tr></thead><tbody>${rows||'<tr><td colspan="5" class="px-2 py-3 text-gray-400">No budget lines available.</td></tr>'}</tbody></table></div></details><details class="fh-monthly-help"><summary>How matching works</summary><p>Income matches by category or explicitly linked scheduled income. Variable spending matches exact expense subcategories. Fixed bills and debt payments match scheduled items and linked payments. Sinking-fund contributions use dated allocation/release history. Transfers and account balances are excluded. Unmatched items remain unassigned rather than guessed.</p></details></div></details>`;
+      host.innerHTML=`<details class="fh-monthly-subpanel" open><summary class="fh-monthly-subpanel-summary"><strong>Budget vs. actual detail</strong><span class="fh-monthly-summary-meta">${status}</span></summary><div class="fh-monthly-subpanel-body space-y-2"><div class="flex flex-wrap items-center justify-between gap-2"><span class="text-[10px] text-gray-500">${escapeHtml(period)}</span>${statusPill}</div>${summaries}<ul class="fh-monthly-findings space-y-1.5">${findingsMarkup||'<li class="text-xs fh-status-income">All clear — no exceptions.</li>'}</ul><details class="fh-monthly-help"><summary>Budget line detail (${result.rows.length})</summary><div class="overflow-x-auto mt-2"><table class="w-full text-xs"><thead><tr class="text-[10px] uppercase tracking-wide text-gray-400"><th class="px-2 py-1 text-left">Budget line</th><th class="px-2 py-1 text-right">Planned</th><th class="px-2 py-1 text-right">Actual</th><th class="px-2 py-1 text-right">Variance</th><th class="px-2 py-1 text-right">Status</th></tr></thead><tbody>${rows||'<tr><td colspan="5" class="px-2 py-3 text-gray-400">No budget lines available.</td></tr>'}</tbody></table></div></details><details class="fh-monthly-help"><summary>How matching works</summary><p>Income matches by category or explicitly linked scheduled income. Variable spending matches exact expense subcategories. Fixed bills and debt payments match scheduled items and linked payments. Sinking-fund contributions use dated allocation/release history. Transfers and account balances are excluded. Unmatched items remain unassigned rather than guessed.</p></details></div></details>`;
       renderFinancialReviewExceptionRegister();
     }
 
@@ -14630,6 +14835,29 @@ ${acc.name}`);
       if (changed) saveData();
       return changed;
     }
+    function updateSavingsPaychequeOverride(itemId, value) {
+      const amount = Number(value);
+      if (!Number.isFinite(amount) || amount < 0) {
+        alert('Enter a valid contribution amount of zero or more.');
+        renderZbbPlanner();
+        return;
+      }
+      const period = String(state.selectedZbbPeriod || '2026-11');
+      const cycle = Number(state.selectedPayCycle || 1);
+      const template = getActiveZbbTemplate();
+      const item = (template.savings || []).find(row => String(row.id) === String(itemId));
+      if (!item) {
+        alert('That savings contribution could not be found in the selected month.');
+        return;
+      }
+      captureUndo('Change one-paycheque savings contribution');
+      if (!item.paychequeOverrides || typeof item.paychequeOverrides !== 'object' || Array.isArray(item.paychequeOverrides)) item.paychequeOverrides = {};
+      item.paychequeOverrides[`${period}:P${cycle}`] = Math.round(amount * 100) / 100;
+      saveData();
+      renderZbbPlanner();
+    }
+    window.updateSavingsPaychequeOverride = updateSavingsPaychequeOverride;
+
     function renderSavingsAllocationSummary(zbb, cycle) {
       const host = document.getElementById('fh-savings-allocation-summary');
       if (!host) return;
@@ -14695,15 +14923,23 @@ ${acc.name}`);
           : unallocated < 0 ? 'bad' : 'neutral';
         const accountName = String(account?.name || '').toLowerCase();
         const title = account ? (accountName.includes('sinking') ? 'Sinking Funds' : accountName.includes('emergency') ? 'Emergency Buffer' : accountName.includes('tuition') ? 'Tuition' : (account.name || 'Savings account')) : (String(group.items[0]?.name || 'Unlinked allocation'));
-        const allocationLineItems = group.items.filter(item => item && item.allocationOnly === true);
+        const allocationLineItems = group.items.filter(item => item);
         const allocationLineRows = allocationLineItems.map(item => {
           const lineName = esc(item.name || 'Savings allocation');
           const planned = money(Math.abs(zbbCentsMoney(getZbbItemCycleCents(item, cycle))));
           const monthly = money(item.monthly || 0);
+          const isAllocationOnly = item.allocationOnly === true;
+          const period = String(state.selectedZbbPeriod || '2026-11');
+          const overrideKey = `${period}:P${Number(cycle)}`;
+          const hasOverride = !!(item.paychequeOverrides && Object.prototype.hasOwnProperty.call(item.paychequeOverrides, overrideKey));
+          const editAction = isAllocationOnly
+            ? `<button type="button" onclick="openSavingsAllocationLineModal('${esc(item.id || '')}')">Edit</button><button type="button" onclick="deleteSavingsAllocationLine('${esc(item.id || '')}')">Remove</button>`
+            : `<button type="button" onclick="openSinkingBucketModal('${esc(item.linkedBucketId || '')}')">Edit bucket</button>`;
           return `<div class="fh-savings-allocation-plan-line" data-allocation-line-id="${esc(item.id || '')}">
             <div class="fh-savings-allocation-bucket-main"><strong>${lineName}</strong><strong class="accounting-num">${planned}<small> / this paycheque</small></strong></div>
-            <div class="fh-savings-allocation-plan-meta">Monthly target ${monthly} · Planned contribution only; not a separate sinking-fund bucket</div>
-            <div class="fh-savings-allocation-plan-actions"><button type="button" onclick="openSavingsAllocationLineModal('${esc(item.id || '')}')">Edit</button><button type="button" onclick="deleteSavingsAllocationLine('${esc(item.id || '')}')">Remove</button></div>
+            <div class="fh-savings-allocation-plan-meta">Monthly target ${monthly} · ${isAllocationOnly ? 'Account funding allocation; not a separate sinking-fund bucket' : 'Linked sinking-fund contribution'}${hasOverride ? ' · One-time override active' : ''}</div>
+            <div class="flex flex-wrap items-center gap-2 mt-2"><label class="text-[10px] text-gray-500" for="fh-savings-override-${esc(item.id || '')}">This paycheque only ($)</label><input id="fh-savings-override-${esc(item.id || '')}" type="number" min="0" step="0.01" value="${planned.replace(/[$,]/g,'')}" class="w-28 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-2 py-1 text-right accounting-num" onchange="updateSavingsPaychequeOverride('${esc(item.id || '')}',this.value)" aria-label="${lineName} one-paycheque contribution override"></div>
+            <div class="fh-savings-allocation-plan-actions">${editAction}</div>
           </div>`;
         }).join('');
         const bucketRows = group.buckets.length
@@ -14722,8 +14958,8 @@ ${acc.name}`);
             }).join('')
           : group.items.map(item => `<div class="fh-savings-allocation-bucket-line"><div class="fh-savings-allocation-bucket-main"><strong>${esc(item.name || 'Savings allocation')}</strong><strong class="accounting-num">${money(item.savedBal)}</strong></div><span class="fh-savings-account-unlinked">No bucket ledger linked</span></div>`).join('');
         const bucketBreakdown = `<details class="fh-savings-allocation-breakdown"><summary aria-label="Show ${esc(title)} account allocation details" title="Show account allocation details"><i class="fa-solid fa-chevron-down" aria-hidden="true"></i><span>Account details</span></summary><div class="fh-savings-allocation-breakdown-body">
+          ${allocationLineRows ? `<div class="fh-savings-allocation-lines-visible"><div class="fh-savings-allocation-bucket-heading">Paycheque contribution plans <span>${allocationLineItems.length}</span></div>${allocationLineRows}</div>` : ''}
           <div class="fh-savings-allocation-linked-account"><span>Linked bank account</span><strong>${esc(account?.name || 'Not linked')}</strong>${group.items.some(item => item && item.allocationOnly !== true) ? `<button type="button" onclick="openSavingsAccountLinkManager('${esc(account?.id || '')}')">Manage links</button>` : ''}</div>
-          ${allocationLineRows ? `<div class="fh-savings-allocation-lines-visible"><div class="fh-savings-allocation-bucket-heading">Paycheque allocation lines <span>${allocationLineItems.length}</span></div>${allocationLineRows}</div>` : ''}
           <div class="fh-savings-allocation-bucket-heading">Sinking-fund bucket balances <span>${group.buckets.length}</span></div>
           ${bucketRows || '<span class="fh-savings-account-unlinked">No linked buckets</span>'}
           <div class="fh-savings-allocation-account-actions"><button type="button" onclick="openSinkingBucketModalForAccount('${esc(account?.id || '')}')">Add bucket</button>${account ? `<button type="button" onclick="unlinkSavingsAllocationAccount('${esc(account.id)}')">Unlink account</button>` : ''}</div>
@@ -14886,7 +15122,7 @@ ${acc.name}`);
         if (sectionKey === 'debt') {
           const money = n => formatFinancial(Number(n) || 0);
           const cycle = Math.max(1, Math.min(3, Number(state?.selectedPayCycle || 1)));
-          const rows = (itemsList || []).map(item => {
+          const rows = (itemsList || []).filter(item => !isMomLoanPlannerDebtItem(item, zbb) && getZbbItemCycleCents(item, cycle) > 0).map(item => {
             const split = Array.isArray(item.split) ? item.split : [50,50,0];
             const alloc = item.linkedCalendarDebtId
               ? [1,2,3].map(payCycle => getZbbItemCycleCents(item, payCycle) / 100)
@@ -24055,6 +24291,9 @@ No payment links or balance changes were retained.`);
       document.getElementById('dp-principal').value = payment ? Number(payment.principalAmount || 0).toFixed(2) : (debt?.paymentMethod === 'interest-only' ? '0.00' : '');
       funding.value = payment?.fundingAccountId || funding.value;
       document.getElementById('dp-interest').value = payment ? Number(payment.interestAmount || 0).toFixed(2) : '0.00';
+      const priorFundingFlag = payment ? !!payment.fundedFromPreviouslyBudgetedSavings : false;
+      const fundingFlagInput = document.getElementById('dp-funded-from-savings');
+      if (fundingFlagInput) fundingFlagInput.checked = priorFundingFlag;
       updateDebtPaymentSplit();
       const debtPaymentModal = document.getElementById('debt-payment-modal');
       debtPaymentModal.classList.remove('hidden');
@@ -24079,6 +24318,7 @@ No payment links or balance changes were retained.`);
       const conversionTxId = document.getElementById('dp-existing-tx-id').value;
       const accountId = document.getElementById('dp-debt-account').value;
       const fundingAccountId = document.getElementById('dp-funding-account').value;
+      const fundedFromPreviouslyBudgetedSavings = !!document.getElementById('dp-funded-from-savings')?.checked;
       const amount = Math.round(Math.max(0, Number(document.getElementById('dp-amount').value) || 0) * 100) / 100;
       const principalAmount = Math.round(Math.max(0, Number(document.getElementById('dp-principal').value) || 0) * 100) / 100;
       const interestAmount = Math.round((amount - principalAmount) * 100) / 100;
@@ -24156,6 +24396,7 @@ No payment links or balance changes were retained.`);
         oldPayment.principalAmount = principalAmount;
         oldPayment.interestAmount = interestAmount;
         oldPayment.paymentType = paymentType;
+        oldPayment.fundedFromPreviouslyBudgetedSavings = fundedFromPreviouslyBudgetedSavings;
         oldTransaction.date = date;
         oldTransaction.desc = desc;
         oldTransaction.vendor = desc;
@@ -24169,6 +24410,7 @@ No payment links or balance changes were retained.`);
         oldTransaction.debtAccountId = accountId;
         oldTransaction.debtPrincipalAmount = principalAmount;
         oldTransaction.debtInterestAmount = interestAmount;
+        oldTransaction.fundedFromPreviouslyBudgetedSavings = fundedFromPreviouslyBudgetedSavings;
         // Keep the transaction's original entry source (e.g. statement-import).
         // Track the debt workflow separately so converting/editing an imported
         // transaction does not erase where the transaction originally came from.
@@ -24182,12 +24424,13 @@ No payment links or balance changes were retained.`);
         // Its transaction ID and bank movement are preserved; no duplicate is created.
         applyTransactionBalanceEffect(conversionTransaction, -1);
         const paymentId = `dp_${Date.now()}_${Math.random().toString(36).slice(2,6)}`;
-        payment = { id: paymentId, accountId, fundingAccountId, transactionId: conversionTransaction.id, date, desc, amount, principalAmount, interestAmount, paymentType, source: 'debt-payment-log' };
+        payment = { id: paymentId, accountId, fundingAccountId, transactionId: conversionTransaction.id, date, desc, amount, principalAmount, interestAmount, paymentType, fundedFromPreviouslyBudgetedSavings, source: 'debt-payment-log' };
         paymentTransaction = {
           ...conversionTransaction,
           date, desc, vendor: desc, type: 'Debt Payment', category: 'Debt Payment', subcategory: paymentType,
           paymentType, amount, accountId: fundingAccountId, debtPaymentId: paymentId, debtAccountId: accountId,
           debtPrincipalAmount: principalAmount, debtInterestAmount: interestAmount,
+          fundedFromPreviouslyBudgetedSavings,
           // Preserve whether this began as a bank-statement import or manual entry.
           source: conversionTransaction.source || 'debt-payment-log', workflowSource: 'debt-payment-log'
         };
@@ -24198,11 +24441,12 @@ No payment links or balance changes were retained.`);
       } else {
         const paymentId = `dp_${Date.now()}_${Math.random().toString(36).slice(2,6)}`;
         const transactionId = `tx_${paymentId}`;
-        payment = { id: paymentId, accountId, fundingAccountId, transactionId, date, desc, amount, principalAmount, interestAmount, paymentType, source: 'debt-payment-log' };
+        payment = { id: paymentId, accountId, fundingAccountId, transactionId, date, desc, amount, principalAmount, interestAmount, paymentType, fundedFromPreviouslyBudgetedSavings, source: 'debt-payment-log' };
         paymentTransaction = {
           id: transactionId, date, desc, vendor: desc, type: 'Debt Payment', category: 'Debt Payment', subcategory: paymentType,
           paymentType, amount, accountId: fundingAccountId, debtPaymentId: paymentId, debtAccountId: accountId,
-          debtPrincipalAmount: principalAmount, debtInterestAmount: interestAmount, source: 'debt-payment-log'
+          debtPrincipalAmount: principalAmount, debtInterestAmount: interestAmount,
+          fundedFromPreviouslyBudgetedSavings, source: 'debt-payment-log'
         };
         state.debtPayments.push(payment);
         state.transactions.unshift(paymentTransaction);
@@ -41544,7 +41788,7 @@ html:not(.dark) body[data-finhub-theme="oceanpop"] #tab-biweekly .fh-spending-bu
   height: 0 !important;
 }
 </style>
-\n
+
 <style id="fh-compact-monthly-review-20261126">
 #zbb-budget-ledger-reconciliation-panel .fh-monthly-subpanel-body{gap:.5rem!important}
 #zbb-budget-ledger-reconciliation-panel .fh-monthly-findings{margin:0;padding:0;list-style:none}
@@ -41583,7 +41827,51 @@ html:not(.dark) body[data-finhub-theme="oceanpop"] #tab-biweekly .fh-spending-bu
 })();
 </script>
 
-\n<style id="fh-fixed-bills-hide-zero-empty-state-20261127">\n#tab-biweekly .fh-bills-fixed-card .fh-fixed-bills-empty{margin:8px 2px;padding:14px 10px;border:1px dashed var(--fh-planner-border,rgba(148,163,184,.35));border-radius:10px;color:var(--fh-planner-muted,#94a3b8);font-size:.82rem;text-align:center}\n</style>\n</body>
+<style id="fh-fixed-bills-hide-zero-empty-state-20261127">
+#tab-biweekly .fh-bills-fixed-card .fh-fixed-bills-empty{margin:8px 2px;padding:14px 10px;border:1px dashed var(--fh-planner-border,rgba(148,163,184,.35));border-radius:10px;color:var(--fh-planner-muted,#94a3b8);font-size:.82rem;text-align:center}
+</style>
+<script id="finhub-v397-financial-review-refresh">
+(function(){
+  let queued=false;
+  function refresh(){
+    if(queued)return; queued=true;
+    requestAnimationFrame(function(){
+      queued=false;
+      const tab=document.getElementById('tab-financial-checkin');
+      if(!tab || tab.classList.contains('hidden'))return;
+      if(typeof window.renderZbbPlanner==='function'){
+        try{window.renderZbbPlanner();}catch(error){console.warn('Financial Review refresh failed',error);}
+      }
+    });
+  }
+  const tab=document.getElementById('tab-financial-checkin');
+  if(tab)new MutationObserver(refresh).observe(tab,{attributes:true,attributeFilter:['class']});
+  document.addEventListener('click',function(event){
+    const trigger=event.target.closest('button,a,[role="tab"]');
+    if(!trigger)return;
+    const label=(trigger.innerText||trigger.getAttribute('aria-controls')||'').toLowerCase();
+    if(label.includes('financial review')||label.includes('financial-checkin'))setTimeout(refresh,50);
+  },true);
+  document.addEventListener('visibilitychange',refresh);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',refresh,{once:true});
+  else refresh();
+})();
+</script>
+<style id="finhub-v396-budget-actual-card">
+#tab-financial-checkin .fh-monthly-bva-section{
+  margin-top:1rem;padding:1rem;
+  border:1px solid var(--fh-border,rgba(148,163,184,.24));
+  border-radius:1rem;background:var(--fh-surface,var(--bg-card,#fff));
+}
+#tab-financial-checkin .fh-monthly-bva-heading{
+  display:flex;align-items:center;gap:.35rem;
+  margin:0 0 .75rem;font-size:1rem;font-weight:750;color:var(--fh-ink);
+}
+#tab-financial-checkin .fh-monthly-subpanel{
+  margin:0;border-radius:.8rem;
+}
+</style>
+</body>
 
 <style id="finhub-v241-unified-bills-funding-layout">
 /* Unified Bills Funding: compact, consistent fixed/variable subsections. */
