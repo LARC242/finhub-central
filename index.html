@@ -11184,6 +11184,7 @@ Bonus" rows="4"></textarea></div>
       acc.balance = Math.round((currentBalance + delta) * 100) / 100;
       saveData();
       renderDashboard();
+      if (typeof renderZbbPlanner === 'function') renderZbbPlanner();
       openAccountDetail(acc.id);
     }
 
@@ -24834,11 +24835,16 @@ No payment links or balance changes were retained.`);
         captureUndo(`Edit Account "${existing.name}"`);
         Object.assign(existing, accountData);
         saveData(); closeAccountModal(); closeAccountDetailModal(); renderDashboard(); renderLedger(); renderSinkingBucketManager();
+        // Account balances are the cash-control total for linked savings groups.
+        // Refresh the Paycheque Planner reconciliation immediately so its Balance
+        // and Unallocated figures reflect the edited shared Sinking Funds account.
+        if (typeof renderZbbPlanner === 'function') renderZbbPlanner();
       } else {
         const newAcc = { id: Date.now().toString(), ...accountData, hidden: false, archived: false };
         captureUndo(`Add Account "${newAcc.name}"`);
         state.accounts.push(newAcc);
         saveData(); closeAccountModal(); renderDashboard(); renderLedger(); renderSinkingBucketManager();
+        if (typeof renderZbbPlanner === 'function') renderZbbPlanner();
       }
     }
 
