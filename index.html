@@ -9786,6 +9786,20 @@ Bonus" rows="4"></textarea></div>
       const d = date instanceof Date ? date : new Date(date);
       return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
     }
+    // Dashboard category spending follows the month selected in Monthly Performance.
+    // Keep this range shared by the chart and its transaction-detail drilldown.
+    function getSelectedMonthlyOverviewRange() {
+      const picker = document.getElementById('monthly-overview-month-picker');
+      const value = picker?.value || monthKeyFromDate(new Date());
+      const match = /^(\d{4})-(\d{2})$/.exec(value);
+      if (!match) return getDashboardDateRange();
+      const year = Number(match[1]), month = Number(match[2]);
+      if (month < 1 || month > 12) return getDashboardDateRange();
+      const start = `${year}-${String(month).padStart(2,'0')}-01`;
+      const lastDay = new Date(year, month, 0).getDate();
+      const end = `${year}-${String(month).padStart(2,'0')}-${String(lastDay).padStart(2,'0')}`;
+      return { start, end };
+    }
     function shiftMonthlyOverview(delta) {
       const input=document.getElementById('monthly-overview-month-picker');
       const current=input?.value || monthKeyFromDate(new Date());
@@ -9896,6 +9910,8 @@ Bonus" rows="4"></textarea></div>
         const delta=(current,previous)=>previous===0?(current===0?'—':'New'):formatFinancial(current-previous);
         comparison.innerHTML=[['Income',income,prevIncome],['Expenses',expenseTotal,prevExpense],['Net cash flow',net,prevIncome-prevExpense]].map(([label,current,previous])=>`<div class="rounded-xl bg-gray-50 dark:bg-gray-950 p-3"><div class="text-xs text-gray-500">${label}</div><strong class="block text-lg accounting-num ${label==='Expenses'?'text-rose-600':(current-previous)<0?'text-rose-600':'fh-status-income'}">${delta(current,previous)}</strong><div class="text-xs text-gray-400">vs ${escapeHtml(prevKey)}</div></div>`).join('');
       }
+      // Keep Spending by Category and its detail rows synchronized with this month.
+      if (typeof renderSpendingCategoryChart === 'function') renderSpendingCategoryChart();
     }
 
 
@@ -10539,7 +10555,7 @@ Bonus" rows="4"></textarea></div>
       const level = levelEl ? (levelEl.value || state.spendingChartLevel || 'subcategory') : (state.spendingChartLevel || 'subcategory');
       if (levelEl) levelEl.value = level;
       state.spendingChartLevel = level;
-      const range = getDashboardDateRange();
+      const range = getSelectedMonthlyOverviewRange();
       const expenses = state.transactions
         .filter(t => t.date >= range.start && t.date <= range.end && t.category !== 'Transfer' && !(t.desc || '').toLowerCase().startsWith('transfer '))
         .flatMap(t => getExpenseReportingComponents(t));
@@ -10607,7 +10623,7 @@ Bonus" rows="4"></textarea></div>
 
     function showCategoryTransactions(category, level = state.spendingChartLevel || 'category') {
       const detail = document.getElementById('spending-category-detail');
-      const range = getDashboardDateRange();
+      const range = getSelectedMonthlyOverviewRange();
       const matches = state.transactions
         .filter(t => t.date >= range.start && t.date <= range.end && t.category !== 'Transfer' && !(t.desc || '').toLowerCase().startsWith('transfer '))
         .flatMap(t => getExpenseReportingComponents(t))
