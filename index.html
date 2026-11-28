@@ -43582,8 +43582,26 @@ html.dark body[data-finhub-theme] .fh-scheduled-summary .fh-scheduled-net-negati
   }
   function install(){
     if(typeof window.renderZbbPlanner==='function'&&!window.renderZbbPlanner.__fhBillsV2Wrapped){const original=window.renderZbbPlanner;const wrapped=function(){const result=original.apply(this,arguments);try{requestAnimationFrame(run);}catch(e){}return result;};wrapped.__fhBillsV2Wrapped=true;window.renderZbbPlanner=wrapped;}
-    // Avoid observing the subtree modified by run(); the wrapped planner renderer
-    // schedules this layout pass after each planner render.
+    // The planner's lexical render function can be wrapped separately from the
+    // window export. Observe only the bill-list rows so the heading total is
+    // recalculated whenever the actual list is rebuilt, including after edits.
+    const list=$('#tab-biweekly #zbb-bills-list');
+    if(list && !list.__fhFixedBillTotalObserver){
+      let queued=false;
+      const refresh=()=>{
+        if(queued)return;
+        queued=true;
+        requestAnimationFrame(()=>{
+          queued=false;
+          try{formatFixedBillsForCurrentPay();}catch(error){console.warn('Fixed Bills heading refresh skipped',error);}
+        });
+      };
+      const observer=new MutationObserver(refresh);
+      observer.observe(list,{childList:true,subtree:true,characterData:true,attributes:true});
+      list.__fhFixedBillTotalObserver=observer;
+    }
+    // Run once after initial layout and keep the heading synchronized with the
+    // selected paycheque even if the initial render completed before this script.
     run();
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
